@@ -3,7 +3,7 @@ name: the-four-primitives-and-weapons
 about: Links about me
 title: the-four-primitives-and-weapons
 labels: ''
-assignees: ''
+assignees: hrmcngs
 
 ---
 
