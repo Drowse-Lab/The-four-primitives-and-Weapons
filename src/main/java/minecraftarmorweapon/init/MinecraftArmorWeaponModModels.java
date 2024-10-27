@@ -28,6 +28,7 @@ import minecraftarmorweapon.client.model.Modelluna_Converted;
 import minecraftarmorweapon.client.model.Modelkagamiyotei;
 import minecraftarmorweapon.client.model.Modelillusioner_armor_layer_3_Converted;
 import minecraftarmorweapon.client.model.Modelhusk_Converted;
+import minecraftarmorweapon.client.model.Modelhead_player_converted;
 import minecraftarmorweapon.client.model.Modelelytra_Converted;
 import minecraftarmorweapon.client.model.Modeldoragon_leprica_armor_layer_3;
 import minecraftarmorweapon.client.model.Modelchuzume_head_Converted;
@@ -52,6 +53,7 @@ public class MinecraftArmorWeaponModModels {
 		event.registerLayerDefinition(Modelpillager_Converted.LAYER_LOCATION, Modelpillager_Converted::createBodyLayer);
 		event.registerLayerDefinition(Modeltyokusenarrowonverted.LAYER_LOCATION, Modeltyokusenarrowonverted::createBodyLayer);
 		event.registerLayerDefinition(Modelmahouzinn.LAYER_LOCATION, Modelmahouzinn::createBodyLayer);
+		event.registerLayerDefinition(Modelhead_player_converted.LAYER_LOCATION, Modelhead_player_converted::createBodyLayer);
 		event.registerLayerDefinition(Modelstray_outer_Converted.LAYER_LOCATION, Modelstray_outer_Converted::createBodyLayer);
 		event.registerLayerDefinition(Modelillusioner_armor_layer_3_Converted.LAYER_LOCATION, Modelillusioner_armor_layer_3_Converted::createBodyLayer);
 		event.registerLayerDefinition(Modelwarden_armor_layer_3.LAYER_LOCATION, Modelwarden_armor_layer_3::createBodyLayer);

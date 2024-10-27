@@ -42,6 +42,7 @@ import minecraftarmorweapon.item.ResetMaxItem;
 import minecraftarmorweapon.item.Reset1Item;
 import minecraftarmorweapon.item.ReplicaSwordOfLightItem;
 import minecraftarmorweapon.item.QuestbookItem;
+import minecraftarmorweapon.item.PumpkinHeadItem;
 import minecraftarmorweapon.item.PrototypeKatanaItem;
 import minecraftarmorweapon.item.PillagerArmorItem;
 import minecraftarmorweapon.item.OninomenItem;
@@ -252,6 +253,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> STRAY_BONE = REGISTRY.register("stray_bone", () -> new StrayBoneItem());
 	public static final RegistryObject<Item> WITHER_BONE = REGISTRY.register("wither_bone", () -> new WitherBoneItem());
 	public static final RegistryObject<Item> METEOR_ARROW_SPAWN_EGG = REGISTRY.register("meteor_arrow_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.METEOR_ARROW, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+	public static final RegistryObject<Item> PUMPKIN_HEAD_HELMET = REGISTRY.register("pumpkin_head_helmet", () -> new PumpkinHeadItem.Helmet());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, CreativeModeTab tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));
