@@ -12,3 +12,6 @@ https://legacy.curseforge.com/minecraft/mc-mods/minecraft_armor_weapon/files
 
 My Twitter (X) link
 https://twitter.com/0526ngs
+
+hatenablog
+https://ngs0526.hatenablog.com
