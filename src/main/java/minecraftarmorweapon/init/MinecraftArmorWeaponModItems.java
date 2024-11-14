@@ -21,6 +21,7 @@ import minecraftarmorweapon.item.WitherBoneItem;
 import minecraftarmorweapon.item.WindStepItem;
 import minecraftarmorweapon.item.WardenArmorItem;
 import minecraftarmorweapon.item.WarabitetouItem;
+import minecraftarmorweapon.item.TukaenaItem;
 import minecraftarmorweapon.item.ThunderboltItem;
 import minecraftarmorweapon.item.TestBowItem;
 import minecraftarmorweapon.item.TestBowArrow2Item;
@@ -123,7 +124,6 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> ILLUSIONER_ARMOR_CHESTPLATE = REGISTRY.register("illusioner_armor_chestplate", () -> new IllusionerArmorItem.Chestplate());
 	public static final RegistryObject<Item> ILLUSIONER_ARMOR_LEGGINGS = REGISTRY.register("illusioner_armor_leggings", () -> new IllusionerArmorItem.Leggings());
 	public static final RegistryObject<Item> ILLUSIONER_ARMOR_BOOTS = REGISTRY.register("illusioner_armor_boots", () -> new IllusionerArmorItem.Boots());
-	public static final RegistryObject<Item> NETHERITE_KATANA_BLOCK = block(MinecraftArmorWeaponModBlocks.NETHERITE_KATANA_BLOCK, MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO);
 	public static final RegistryObject<Item> STONE_KATANA = REGISTRY.register("stone_katana", () -> new StoneKatanaItem());
 	public static final RegistryObject<Item> A = REGISTRY.register("a", () -> new AItem());
 	public static final RegistryObject<Item> HAMMER = REGISTRY.register("hammer", () -> new HammerItem());
@@ -254,6 +254,8 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> WITHER_BONE = REGISTRY.register("wither_bone", () -> new WitherBoneItem());
 	public static final RegistryObject<Item> METEOR_ARROW_SPAWN_EGG = REGISTRY.register("meteor_arrow_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.METEOR_ARROW, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 	public static final RegistryObject<Item> PUMPKIN_HEAD_HELMET = REGISTRY.register("pumpkin_head_helmet", () -> new PumpkinHeadItem.Helmet());
+	public static final RegistryObject<Item> TUKAENA = REGISTRY.register("tukaena", () -> new TukaenaItem());
+	public static final RegistryObject<Item> ITEM_STAN = block(MinecraftArmorWeaponModBlocks.ITEM_STAN, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, CreativeModeTab tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));

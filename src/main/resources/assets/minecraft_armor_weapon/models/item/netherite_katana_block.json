@@ -1,7 +1,0 @@
-{
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "minecraft_armor_weapon:items/aa"
-  },
-  "render_type": "translucent"
-}

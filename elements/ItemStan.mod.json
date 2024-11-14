@@ -2,49 +2,49 @@
   "_fv": 43,
   "_type": "block",
   "definition": {
-    "texture": "netherite_katana",
-    "textureTop": "",
-    "textureLeft": "",
-    "textureFront": "",
-    "textureRight": "",
-    "textureBack": "",
-    "renderType": 2,
-    "customModelName": "netherite_katanablock:default",
-    "rotationMode": 5,
+    "texture": "bluepurgeair",
+    "textureTop": "bluepurgeair",
+    "textureLeft": "bluepurgeair",
+    "textureFront": "bluepurgeair",
+    "textureRight": "bluepurgeair",
+    "textureBack": "bluepurgeair",
+    "renderType": 10,
+    "customModelName": "Normal",
+    "rotationMode": 2,
     "enablePitch": false,
     "emissiveRendering": false,
     "displayFluidOverlay": false,
-    "itemTexture": "aa",
-    "particleTexture": "aa",
+    "itemTexture": "",
+    "particleTexture": "",
     "tintType": "No tint",
     "isItemTinted": false,
-    "hasTransparency": true,
+    "hasTransparency": false,
     "connectedSides": false,
-    "transparencyType": "CUTOUT",
-    "disableOffset": true,
+    "transparencyType": "SOLID",
+    "disableOffset": false,
     "boundingBoxes": [
       {
-        "mx": 7.5,
-        "my": -10.0,
-        "mz": 2.0,
-        "Mx": 8.5,
-        "My": 14.5,
-        "Mz": 14.0,
+        "mx": 0.0,
+        "my": 0.0,
+        "mz": 0.0,
+        "Mx": 16.0,
+        "My": 16.0,
+        "Mz": 16.0,
         "subtract": false
       }
     ],
-    "name": "Netherite Katana Block",
+    "name": "Item Stan",
     "specialInfo": [],
-    "hardness": 0.0,
+    "hardness": 1.0,
     "resistance": 10.0,
     "hasGravity": false,
     "isWaterloggable": false,
     "creativeTab": {
-      "value": "CUSTOM:Yopkeinamono"
+      "value": "CUSTOM:MagicBooks"
     },
     "destroyTool": "Not specified",
     "customDrop": {
-      "value": "CUSTOM:NetheriteKatana"
+      "value": ""
     },
     "dropAmount": 1,
     "useLootTableForDrops": false,
@@ -52,9 +52,9 @@
     "enchantPowerBonus": 0.0,
     "plantsGrowOn": false,
     "canRedstoneConnect": false,
-    "lightOpacity": 0,
+    "lightOpacity": 15,
     "material": {
-      "value": "IRON"
+      "value": "ROCK"
     },
     "tickRate": 0,
     "tickRandomly": false,
@@ -65,14 +65,10 @@
     },
     "colorOnMap": "DEFAULT",
     "creativePickItem": {
-      "value": "CUSTOM:NetheriteKatana"
+      "value": ""
     },
     "offsetType": "NONE",
     "aiPathNodeType": "DEFAULT",
-    "beaconColorModifier": {
-      "value": -16777216,
-      "falpha": 0.0
-    },
     "flammability": 0,
     "fireSpreadSpeed": 0,
     "isLadder": false,
@@ -83,7 +79,7 @@
     "isNotColidable": false,
     "isCustomSoundType": false,
     "soundOnStep": {
-      "value": "METAL"
+      "value": "STONE"
     },
     "breakSound": {
       "value": ""
@@ -100,19 +96,21 @@
     "stepSound": {
       "value": ""
     },
-    "luminance": 5,
+    "luminance": 0,
     "unbreakable": false,
     "breakHarvestLevel": 1,
     "isBonemealable": false,
-    "hasInventory": false,
-    "guiBoundTo": "<NONE>",
-    "openGUIOnRightClick": false,
-    "inventorySize": 9,
-    "inventoryStackSize": 64,
+    "hasInventory": true,
+    "guiBoundTo": "ItemStandGui",
+    "openGUIOnRightClick": true,
+    "inventorySize": 1,
+    "inventoryStackSize": 1,
     "inventoryDropWhenDestroyed": true,
     "inventoryComparatorPower": true,
     "inventoryOutSlotIDs": [],
-    "inventoryInSlotIDs": [],
+    "inventoryInSlotIDs": [
+      0
+    ],
     "hasEnergyStorage": false,
     "energyInitial": 0,
     "energyCapacity": 400000,

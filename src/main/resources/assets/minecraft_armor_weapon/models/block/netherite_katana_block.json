@@ -1,9 +1,0 @@
-{
-  "parent": "minecraft_armor_weapon:custom/netherite_katanablock",
-  "textures": {
-    "all": "minecraft_armor_weapon:blocks/netherite_katana",
-    "particle": "minecraft_armor_weapon:blocks/aa",
-    "5": "minecraft_armor_weapon:blocks/netherite_katana"
-  },
-  "render_type": "cutout"
-}

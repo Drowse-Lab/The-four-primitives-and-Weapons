@@ -585,22 +585,6 @@
       }
     },
     {
-      "name": "NetheriteKatanaBlock",
-      "type": "block",
-      "sortid": 42,
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "netherite_katana_block",
-      "metadata": {
-        "files": [
-          "src/main/resources/assets/minecraft_armor_weapon/blockstates/netherite_katana_block.json",
-          "src/main/java/minecraftarmorweapon/block/NetheriteKatanaBlockBlock.java",
-          "src/main/resources/assets/minecraft_armor_weapon/models/block/netherite_katana_block.json",
-          "src/main/resources/assets/minecraft_armor_weapon/models/item/netherite_katana_block.json"
-        ]
-      }
-    },
-    {
       "name": "StoneKatana",
       "type": "tool",
       "sortid": 44,
@@ -1121,19 +1105,6 @@
             "name": "entity",
             "type": "entity"
           }
-        ]
-      }
-    },
-    {
-      "name": "N",
-      "type": "keybind",
-      "sortid": 85,
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "n",
-      "metadata": {
-        "files": [
-          "src/main/java/minecraftarmorweapon/network/NMessage.java"
         ]
       }
     },
@@ -5059,29 +5030,6 @@
       }
     },
     {
-      "name": "WaordRpgBookGive",
-      "type": "procedure",
-      "sortid": 345,
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "waord_rpg_book_give",
-      "metadata": {
-        "files": [
-          "src/main/java/minecraftarmorweapon/procedures/WaordRpgBookGiveProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "world",
-            "type": "world"
-          }
-        ]
-      }
-    },
-    {
       "name": "WordsparnRpgBookGive",
       "type": "procedure",
       "sortid": 346,
@@ -5096,6 +5044,10 @@
           {
             "name": "entity",
             "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
           }
         ]
       }
@@ -5188,6 +5140,18 @@
             "type": "entity"
           },
           {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
             "name": "world",
             "type": "world"
           }
@@ -5270,29 +5234,6 @@
       "metadata": {
         "files": [
           "src/main/java/minecraftarmorweapon/potion/GuardMobEffect.java"
-        ]
-      }
-    },
-    {
-      "name": "Kizutuku",
-      "type": "procedure",
-      "sortid": 361,
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "kizutuku",
-      "metadata": {
-        "files": [
-          "src/main/java/minecraftarmorweapon/procedures/KizutukuProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "sourceentity",
-            "type": "entity"
-          }
         ]
       }
     },
@@ -8823,6 +8764,109 @@
           "src/main/resources/assets/minecraft_armor_weapon/models/item/pumpkin_head_helmet.json"
         ]
       }
+    },
+    {
+      "name": "TukaenaRightclicked",
+      "type": "procedure",
+      "sortid": 578,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "tukaena_rightclicked",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/TukaenaRightclickedProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Tukaena",
+      "type": "item",
+      "sortid": 579,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "tukaena",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/minecraft_armor_weapon/models/item/tukaena.json",
+          "src/main/java/minecraftarmorweapon/item/TukaenaItem.java"
+        ]
+      }
+    },
+    {
+      "name": "Yellowstainedglasspaneguard",
+      "type": "function",
+      "sortid": 580,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "yellowstainedglasspaneguard",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/minecraft_armor_weapon/functions/yellowstainedglasspaneguard.mcfunction"
+        ]
+      }
+    },
+    {
+      "name": "Lightgraystainedglasspaneguard",
+      "type": "function",
+      "sortid": 581,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "lightgraystainedglasspaneguard",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/minecraft_armor_weapon/functions/lightgraystainedglasspaneguard.mcfunction"
+        ]
+      }
+    },
+    {
+      "name": "Blackstainedglasspeanguard",
+      "type": "function",
+      "sortid": 582,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "blackstainedglasspeanguard",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/minecraft_armor_weapon/functions/blackstainedglasspeanguard.mcfunction"
+        ]
+      }
+    },
+    {
+      "name": "ItemStan",
+      "type": "block",
+      "sortid": 583,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "item_stan",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/minecraft_armor_weapon/models/item/item_stan.json",
+          "src/main/resources/assets/minecraft_armor_weapon/models/block/item_stan.json",
+          "src/main/java/minecraftarmorweapon/block/ItemStanBlock.java",
+          "src/main/resources/assets/minecraft_armor_weapon/blockstates/item_stan.json",
+          "src/main/java/minecraftarmorweapon/block/entity/ItemStanBlockEntity.java"
+        ]
+      }
+    },
+    {
+      "name": "ItemStandGui",
+      "type": "gui",
+      "sortid": 584,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "item_stand_gui",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/world/inventory/ItemStandGuiMenu.java",
+          "src/main/java/minecraftarmorweapon/client/gui/ItemStandGuiScreen.java"
+        ]
+      }
     }
   ],
   "variable_elements": [
@@ -9052,19 +9096,19 @@
       "itemGroup.tabmagic_books": "Magic Books",
       "itemGroup.tabyopkeinamono": "建築とかに",
       "effect.minecraft_armor_weapon.syugeki": "aa",
-      "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_helmet": "das herz einer fee armor helmet",
+      "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
       "item.minecraft_armor_weapon.ruami_284_spawn_egg": "ruami284 Spawn Egg",
       "entity.minecraft_armor_weapon.comet": "Comet",
-      "entity.minecraft_armor_weapon.comet_kill": "Comet",
-      "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
       "item.minecraft_armor_weapon.darkness": "§5Darkness",
+      "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
+      "entity.minecraft_armor_weapon.comet_kill": "Comet",
       "block.minecraft_armor_weapon.stone_katana_block": "Netherite Katana Block",
       "item.minecraft_armor_weapon.blackhole_spawn_egg": "Blackhole Spawn Egg",
       "entity.minecraft_armor_weapon.blackhole": "Blackhole",
       "advancements.magical_swordsman_achievements.descr": "§eGet Magisches feen katana",
-      "effect.minecraft_armor_weapon.suityuu": "suityuu",
       "entity.minecraft_armor_weapon.ruami_284": "ruami284",
+      "effect.minecraft_armor_weapon.suityuu": "suityuu",
       "advancements.you_have_become_a_vampire.descr": "You have become a vampire.",
       "effect.minecraft_armor_weapon.bakuhatu": "explosion",
       "effect.minecraft_armor_weapon.aaaa": "bunnsinn",
@@ -9084,8 +9128,8 @@
       "block.minecraft_armor_weapon.stone_bricks_trap_door": "Stone Bricks Trap Door",
       "item.minecraft_armor_weapon.stone_katana": "§7Stone Katana",
       "item.minecraft_armor_weapon.dragon_black_armor_helmet": "§8Dragon black helmet",
-      "item.minecraft_armor_weapon.kaminari_kurikaraken_sword": "Kaminari Kurikaraken Sword",
       "item.minecraft_armor_weapon.kurikarakensword": "§5倶利伽羅剣",
+      "item.minecraft_armor_weapon.kaminari_kurikaraken_sword": "Kaminari Kurikaraken Sword",
       "item.minecraft_armor_weapon.scythe": "Scythe",
       "item.minecraft_armor_weapon.wind_step": "§2Windstep",
       "item.minecraft_armor_weapon.a": "A",
@@ -9234,7 +9278,6 @@
       "item.minecraft_armor_weapon.nigu_shield": "Nigu Shield",
       "effect.minecraft_armor_weapon.youwakaran": "youwakaran",
       "effect.minecraft_armor_weapon.attack_bow": "bow attack",
-      "block.minecraft_armor_weapon.netherite_katana_block": "Netherite Katana Block",
       "block.minecraft_armor_weapon.wither_skeleton_spawner": "Wither Skeleton Spawner",
       "gui.minecraft_armor_weapon.rpg_book_gui.button_bogged_outer": "Bogged Outer",
       "effect.minecraft_armor_weapon.black_hole_effect": "blackhole",
@@ -9252,6 +9295,7 @@
       "gamerule.rpgBookGive.description": "Give RPG Book when respawning or at initial spawn or",
       "effect.minecraft_armor_weapon.tokubetu": "a",
       "effect.minecraft_armor_weapon.player_score_id": "player_score_id",
+      "block.minecraft_armor_weapon.item_stan": "Item Stan",
       "item.minecraft_armor_weapon.magic_mcrystal": "Magic Mcrystal",
       "block.minecraft_armor_weapon.cross": "Cross",
       "item.minecraft_armor_weapon.bogged_outer_boots": "Bogged Outer Boots",
@@ -9273,7 +9317,6 @@
       "item.minecraft_armor_weapon.warden_armor_leggings": "§3warden leggings",
       "item.minecraft_armor_weapon.magisches_feen_katana": "§dMagisches Feen Katana",
       "item.minecraft_armor_weapon.bluepurge_tyokutou": "§9Bluepurge",
-      "key.minecraft_armor_weapon.n": "N",
       "block.minecraft_armor_weapon.kurikaraken_block": "Gomanoriken Block",
       "item.minecraft_armor_weapon.wither_katana": "§8Wither Katana",
       "effect.minecraft_armor_weapon.devour_blood": "devour blood",
@@ -9303,7 +9346,8 @@
       "item.minecraft_armor_weapon.warden_armor_chestplate": "§3warden chestplate",
       "entity.minecraft_armor_weapon.otiruyo": "Otiruyo",
       "gui.minecraft_armor_weapon.rpg_book_gui_2.button_bogged_outer": "Bogged Outer",
-      "effect.minecraft_armor_weapon.tp_attack": "tp"
+      "effect.minecraft_armor_weapon.tp_attack": "tp",
+      "item.minecraft_armor_weapon.tukaena": "Tukaena"
     },
     "ja_jp": {
       "item.minecraft_armor_weapon.decoration_pot_with_arrows": "Decoration Pot With Arrows",
@@ -9312,19 +9356,19 @@
       "itemGroup.tabmagic_books": "Magic Books",
       "itemGroup.tabyopkeinamono": "建築とかに",
       "effect.minecraft_armor_weapon.syugeki": "aa",
-      "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_helmet": "das herz einer fee armor helmet",
+      "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
       "item.minecraft_armor_weapon.ruami_284_spawn_egg": "ruami284 Spawn Egg",
       "entity.minecraft_armor_weapon.comet": "Comet",
-      "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
-      "item.minecraft_armor_weapon.darkness": "§5Darkness",
       "entity.minecraft_armor_weapon.comet_kill": "Comet",
+      "item.minecraft_armor_weapon.darkness": "§5Darkness",
+      "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
       "block.minecraft_armor_weapon.stone_katana_block": "Netherite Katana Block",
       "item.minecraft_armor_weapon.blackhole_spawn_egg": "Blackhole Spawn Egg",
       "entity.minecraft_armor_weapon.blackhole": "Blackhole",
       "advancements.magical_swordsman_achievements.descr": "Magisches feen katanaを得る",
-      "effect.minecraft_armor_weapon.suityuu": "suityuu",
       "entity.minecraft_armor_weapon.ruami_284": "ruami284",
+      "effect.minecraft_armor_weapon.suityuu": "suityuu",
       "advancements.you_have_become_a_vampire.descr": "吸血鬼になったよ",
       "effect.minecraft_armor_weapon.bakuhatu": "explosion",
       "effect.minecraft_armor_weapon.aaaa": "bunnsinn",
@@ -9344,8 +9388,8 @@
       "block.minecraft_armor_weapon.stone_bricks_trap_door": "Stone Bricks Trap Door",
       "item.minecraft_armor_weapon.dragon_black_armor_helmet": "§8Dragon black helmet",
       "item.minecraft_armor_weapon.stone_katana": "§7石の刀",
-      "item.minecraft_armor_weapon.kurikarakensword": "§5倶利伽羅剣",
       "item.minecraft_armor_weapon.kaminari_kurikaraken_sword": "Kaminari Kurikaraken Sword",
+      "item.minecraft_armor_weapon.kurikarakensword": "§5倶利伽羅剣",
       "item.minecraft_armor_weapon.wind_step": "§2Windstep",
       "item.minecraft_armor_weapon.scythe": "Scythe",
       "item.minecraft_armor_weapon.a": "A",
@@ -9494,7 +9538,6 @@
       "item.minecraft_armor_weapon.nigu_shield": "二グ盾",
       "effect.minecraft_armor_weapon.youwakaran": "youwakaran",
       "effect.minecraft_armor_weapon.attack_bow": "bow attack",
-      "block.minecraft_armor_weapon.netherite_katana_block": "Netherite Katana Block",
       "block.minecraft_armor_weapon.wither_skeleton_spawner": "Wither Skeleton Spawner",
       "gui.minecraft_armor_weapon.rpg_book_gui.button_bogged_outer": "Bogged Outer",
       "effect.minecraft_armor_weapon.black_hole_effect": "blackhole",
@@ -9512,6 +9555,7 @@
       "gamerule.rpgBookGive.description": "リスポーンしたときや初期スポーンの時にRPG Bookを与えるか",
       "effect.minecraft_armor_weapon.tokubetu": "a",
       "effect.minecraft_armor_weapon.player_score_id": "player_score_id",
+      "block.minecraft_armor_weapon.item_stan": "Item Stan",
       "item.minecraft_armor_weapon.magic_mcrystal": "Magic Mcrystal",
       "block.minecraft_armor_weapon.cross": "十字架",
       "item.minecraft_armor_weapon.bogged_outer_boots": "Bogged Outer Boots",
@@ -9533,7 +9577,6 @@
       "item.minecraft_armor_weapon.warden_armor_leggings": "warden leggings",
       "item.minecraft_armor_weapon.magisches_feen_katana": "§dMagisches Feen Katana",
       "item.minecraft_armor_weapon.bluepurge_tyokutou": "§9Bluepurge",
-      "key.minecraft_armor_weapon.n": "N",
       "block.minecraft_armor_weapon.kurikaraken_block": "kurikaraken Block",
       "item.minecraft_armor_weapon.wither_katana": "§8Wither Katana",
       "effect.minecraft_armor_weapon.devour_blood": "devour blood",
@@ -9563,7 +9606,8 @@
       "item.minecraft_armor_weapon.warden_armor_chestplate": "warden chestplate",
       "entity.minecraft_armor_weapon.otiruyo": "Otiruyo",
       "gui.minecraft_armor_weapon.rpg_book_gui_2.button_bogged_outer": "Bogged Outer",
-      "effect.minecraft_armor_weapon.tp_attack": "tp"
+      "effect.minecraft_armor_weapon.tp_attack": "tp",
+      "item.minecraft_armor_weapon.tukaena": "Tukaena"
     }
   },
   "foldersRoot": {

@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "minecraft_armor_weapon:blocks/bluepurgeair",
+    "up": "minecraft_armor_weapon:blocks/bluepurgeair",
+    "north": "minecraft_armor_weapon:blocks/bluepurgeair",
+    "east": "minecraft_armor_weapon:blocks/bluepurgeair",
+    "south": "minecraft_armor_weapon:blocks/bluepurgeair",
+    "west": "minecraft_armor_weapon:blocks/bluepurgeair",
+    "particle": "minecraft_armor_weapon:blocks/bluepurgeair"
+  },
+  "render_type": "solid"
+}

@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "minecraft_armor_weapon:block/item_stan"
+    },
+    "facing=east": {
+      "model": "minecraft_armor_weapon:block/item_stan",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "minecraft_armor_weapon:block/item_stan",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "minecraft_armor_weapon:block/item_stan",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "minecraft_armor_weapon:block/item_stan",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "minecraft_armor_weapon:block/item_stan",
+      "x": 90
+    }
+  }
+}
