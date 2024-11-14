@@ -19,3 +19,6 @@
 # ・詳細なページを持つ本（textures/font/book_area128やbook_area256.pngをいじれば自分だけのものも作れるよ。）
 
 /give @p written_book{title:"",author:"",pages:['{"text":"\\uE102","color":white}']}
+
+#・出血ぽいパーティクル
+/particle item redstone ~ ~1 ~ 0.5 0.5 0.5 0.3
