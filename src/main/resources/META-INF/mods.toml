@@ -22,6 +22,12 @@ authors="0526ngs"
 
 
 [[dependencies.minecraft_armor_weapon]]
+    modId="use_compiled_mods"
+    mandatory=false
+    versionRange="[0,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.minecraft_armor_weapon]]
     modId="curios_api"
     mandatory=false
     versionRange="[0,)"

@@ -1,3 +1,54 @@
+def compileModsDir = 'compile-mods-1.19.2'
+    task addnewfoldersmods(type: DefaultTask){
+    	ant.mkdir(dir: 'compile-mods-1.19.2/');
+    }
+    repositories {
+    	flatDir {
+    	name "compile-mods" 
+    	dir file(compileModsDir)
+    	}
+    }
+          
+    dependencies {
+    	for (compileModJar in fileTree(dir: compileModsDir, include: '*.jar')) {
+    	def basename = compileModJar.name.substring(0, compileModJar.name.length() - ".jar".length()) 
+    	def versionSep = basename.lastIndexOf('-') 
+    	assert versionSep != -1 
+    	def artifactId = basename.substring(0, versionSep) 
+    	def version = basename.substring(versionSep + 1)
+    	implementation fg.deobf("compile-mods:$artifactId:$version")}
+    }
+    	minecraft {
+    		mappings channel: 'official', version: '1.19.2'
+    			accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    		runs {
+    			client {
+    				workingDirectory project.file('run')
+    				property 'forge.logging.markers', 'REGISTRIES'
+    				property 'forge.logging.console.level', 'debug'
+    				property 'mixin.env.remapRefMap', 'true'
+    				property 'mixin.env.refMapRemappingFile', "${buildDir}/build/createSrgToMcp/output.srg"
+    				mods {
+    					examplemod {
+    						source sourceSets.main
+    					}
+    				}
+    			}
+    			server {
+    				workingDirectory project.file('run')
+    				property 'forge.logging.markers', 'REGISTRIES'
+    				property 'forge.logging.console.level', 'debug'
+    				property 'mixin.env.remapRefMap', 'true'
+    				property 'mixin.env.refMapRemappingFile', "${buildDir}/build/createSrgToMcp/output.srg"
+    				mods {
+    					examplemod {
+    						source sourceSets.main
+                    }
+                }
+    		}
+    	}
+    }
+
 repositories {
 maven {
   url = "https://maven.theillusivec4.top/"
