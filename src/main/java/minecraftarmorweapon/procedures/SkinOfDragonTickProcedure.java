@@ -3,7 +3,7 @@ package minecraftarmorweapon.procedures;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.TickEvent;
 
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.Vec2;
@@ -11,7 +11,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerLevel;
@@ -34,8 +33,10 @@ import java.util.Optional;
 @Mod.EventBusSubscriber
 public class SkinOfDragonTickProcedure {
 	@SubscribeEvent
-	public static void onEntityTick(LivingEvent.LivingTickEvent event) {
-		execute(event, event.getEntity().level, event.getEntity().getX(), event.getEntity().getY(), event.getEntity().getZ(), event.getEntity());
+	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+		if (event.phase == TickEvent.Phase.END) {
+			execute(event, event.player.level, event.player.getX(), event.player.getY(), event.player.getZ(), event.player);
+		}
 	}
 
 	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
@@ -45,21 +46,6 @@ public class SkinOfDragonTickProcedure {
 	private static void execute(@Nullable Event event, LevelAccessor world, double x, double y, double z, Entity entity) {
 		if (entity == null)
 			return;
-		if (entity instanceof ArmorStand) {
-			if (entity.getPersistentData().getBoolean("minecraft_armor_weapon_item_stand_amor_stand")) {
-				if (!((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.LUNA.get())) {
-					if (!entity.level.isClientSide())
-						entity.discard();
-					{
-						Entity _ent = entity;
-						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4,
-									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "kill @s");
-						}
-					}
-				}
-			}
-		}
 		if (entity instanceof Player) {
 			{
 				Entity _ent = entity;
@@ -170,6 +156,9 @@ public class SkinOfDragonTickProcedure {
 					}
 				}
 			}
+			if (world instanceof ServerLevel _level)
+				_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
+						"execute as @e[type=minecraft:armor_stand, tag=minecraft_armor_weapon_item_stand_amor_stand] if entity @s[nbt=!{HandItems:[{id:\"minecraft_armor_weapon:luna\"}]}] run kill @s");
 			if (world instanceof ServerLevel _level)
 				_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
 						"execute at @e[type=item,nbt={Item:{id:\"minecraft:nether_star\"}}] if entity @e[type=item,nbt={Item:{id:\"minecraft:bone\",Count:16b}},distance=..1.5] if entity @e[type=item,nbt={Item:{id:\"minecraft:iron_block\",Count:64b}},distance=..1.5] run function minecraft_armor_weapon:hardentity_function");
