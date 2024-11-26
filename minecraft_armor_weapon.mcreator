@@ -8896,6 +8896,53 @@
           "src/main/resources/data/minecraft_armor_weapon/functions/sword_stand_luna.mcfunction"
         ]
       }
+    },
+    {
+      "name": "AlchemyCraftBlockBlockAdded",
+      "type": "procedure",
+      "sortid": 586,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "alchemy_craft_block_block_added",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/AlchemyCraftBlockBlockAddedProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AlchemyCraftBlock",
+      "type": "block",
+      "sortid": 587,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "alchemy_craft_block",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/minecraft_armor_weapon/blockstates/alchemy_craft_block.json",
+          "src/main/java/minecraftarmorweapon/block/AlchemyCraftBlockBlock.java",
+          "src/main/resources/assets/minecraft_armor_weapon/models/block/alchemy_craft_block.json",
+          "src/main/resources/assets/minecraft_armor_weapon/models/item/alchemy_craft_block.json"
+        ]
+      }
     }
   ],
   "variable_elements": [
@@ -9337,6 +9384,7 @@
       "effect.minecraft_armor_weapon.zokuseizanngeki": "zannfgeki",
       "item.minecraft_armor_weapon.rpg_book": "RPG Book",
       "effect.minecraft_armor_weapon.tameteru": "minecraft_armor_weapon:test_bow_tameteru",
+      "block.minecraft_armor_weapon.alchemy_craft_block": "Alchemy Craft Block",
       "effect.minecraft_armor_weapon.aa": "n0okku",
       "item.minecraft_armor_weapon.dragon_green_armor_chestplate": "§2Dragon green chestplate",
       "item.minecraft_armor_weapon.dragon_black_armor_leggings": "§8Dragon black leggings",
@@ -9597,6 +9645,7 @@
       "effect.minecraft_armor_weapon.zokuseizanngeki": "zannfgeki",
       "item.minecraft_armor_weapon.rpg_book": "RPG Book",
       "effect.minecraft_armor_weapon.tameteru": "minecraft_armor_weapon:test_bow_tameteru",
+      "block.minecraft_armor_weapon.alchemy_craft_block": "Alchemy Craft Block",
       "effect.minecraft_armor_weapon.aa": "n0okku",
       "item.minecraft_armor_weapon.dragon_green_armor_chestplate": "§2Dragon green chestplate",
       "item.minecraft_armor_weapon.dragon_black_armor_leggings": "§8Dragon black leggings",

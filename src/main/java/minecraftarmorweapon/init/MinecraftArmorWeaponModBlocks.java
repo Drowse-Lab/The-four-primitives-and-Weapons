@@ -43,4 +43,5 @@ public class MinecraftArmorWeaponModBlocks {
 	public static final RegistryObject<Block> WITHER_SKELETON_SPAWNER = REGISTRY.register("wither_skeleton_spawner", () -> new WitherSkeletonSpawnerBlock());
 	public static final RegistryObject<Block> CUSTOM_CRAFTER_CRAFTING = REGISTRY.register("custom_crafter_crafting", () -> new CustomCrafterCraftingBlock());
 	public static final RegistryObject<Block> ITEM_STAN = REGISTRY.register("item_stan", () -> new ItemStanBlock());
+	public static final RegistryObject<Block> ALCHEMY_CRAFT_BLOCK = REGISTRY.register("alchemy_craft_block", () -> new AlchemyCraftBlockBlock());
 }

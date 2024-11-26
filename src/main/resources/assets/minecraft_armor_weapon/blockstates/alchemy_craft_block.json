@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "minecraft_armor_weapon:block/alchemy_craft_block"
+    }
+  }
+}
