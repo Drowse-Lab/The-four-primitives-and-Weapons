@@ -12,7 +12,7 @@
 
 /summon villager ~ ~ ~ {Passengers:[{id:"minecraft:armor_stand",CustomNameVisible:1b,Invulnerable:1b,Small:1b,Invisible:1b,CustomName:'{"text":"\\uE003"}'}],CustomName:'{"text":"村人A"}'}
 
-#・暗転（/title @p time 5 50 5 (左のコマンドと併せて使えると良いかも。)）
+#・暗転　　/title @p time 5 50 5 (左のコマンドと併せて使えると良いかも。)
 
 /title @p title {"text":"\uE001"}
 
