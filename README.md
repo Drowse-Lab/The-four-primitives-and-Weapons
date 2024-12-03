@@ -1,6 +1,6 @@
-このリポジトリは数人の学生によって作られています。
-そのため全体的にクオリティが低いです。
-改善点あったら教えていただけるとありがたいです。
+このリポジトリは数人の学生によって作られています。  
+そのため全体的にクオリティが低いです。  
+改善点あったら教えていただけるとありがたいです。  
 ![Customized Card](https://github-readme-stats.vercel.app/api/pin?username=hrmcngs&repo=The-four-primitives-and-Weapons&title_color=fff&icon_color=f9f9f9&text_color=9f9f9f&bg_color=151515)
 
 ![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=hrmcngs&show_icons=true&theme=dark)
