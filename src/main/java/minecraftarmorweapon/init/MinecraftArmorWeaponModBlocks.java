@@ -24,6 +24,7 @@ import minecraftarmorweapon.block.ItemStanBlock;
 import minecraftarmorweapon.block.CustomSmithingTableBlock;
 import minecraftarmorweapon.block.CustomCrafterCraftingBlock;
 import minecraftarmorweapon.block.CrossBlock;
+import minecraftarmorweapon.block.AlchemyCraftBlockBlock;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
