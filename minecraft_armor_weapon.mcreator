@@ -2034,20 +2034,6 @@
       }
     },
     {
-      "name": "MagicWand",
-      "type": "item",
-      "sortid": 162,
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "magic_wand",
-      "metadata": {
-        "files": [
-          "src/main/resources/assets/minecraft_armor_weapon/models/item/magic_wand.json",
-          "src/main/java/minecraftarmorweapon/item/MagicWandItem.java"
-        ]
-      }
-    },
-    {
       "name": "Strayouterarmorhat",
       "type": "armor",
       "sortid": 163,
@@ -8943,6 +8929,34 @@
           "src/main/resources/assets/minecraft_armor_weapon/models/item/alchemy_craft_block.json"
         ]
       }
+    },
+    {
+      "name": "Magicwand",
+      "type": "tool",
+      "sortid": 588,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "magicwand",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/minecraft_armor_weapon/models/item/magicwand.json",
+          "src/main/java/minecraftarmorweapon/item/MagicwandItem.java"
+        ]
+      }
+    },
+    {
+      "name": "Tick",
+      "type": "procedure",
+      "sortid": 589,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "tick",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/TickProcedure.java"
+        ],
+        "dependencies": []
+      }
     }
   ],
   "variable_elements": [
@@ -9217,6 +9231,7 @@
       "item.minecraft_armor_weapon.bogged_outer_chestplate": "Bogged Outer Chestplate",
       "item.minecraft_armor_weapon.dragon_green_armor_boots": "§2Dragon green boots",
       "item.minecraft_armor_weapon.rivers_of_blood": "§4§lRivers of Blood",
+      "item.minecraft_armor_weapon.magicwand": "Magicwand",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_boots": "das herz einer fee armor boots",
       "entity.minecraft_armor_weapon.killotiru": "Otiruyo",
       "effect.minecraft_armor_weapon.kitterukitteru": "subetekirisuteru",
@@ -9336,7 +9351,6 @@
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_leggings": "das herz einer fee armor leggings",
       "item.minecraft_armor_weapon.dragon_red_armor_boots": "§4Dragon red boots",
       "item.minecraft_armor_weapon.bubbleshot": "§9Bubbleshot",
-      "item.minecraft_armor_weapon.magic_wand": "Magic Wand",
       "effect.minecraft_armor_weapon.tunderbolteffrct": "tunderboltattack",
       "item.minecraft_armor_weapon.netherite_katana": "§8Netherite Katana",
       "block.minecraft_armor_weapon.stone_katana_block_1": "stone Katana Block",
@@ -9478,6 +9492,7 @@
       "effect.minecraft_armor_weapon.long_range_weapon_cut": "遠距離武器斬る",
       "item.minecraft_armor_weapon.dragon_green_armor_boots": "§2Dragon green boots",
       "item.minecraft_armor_weapon.rivers_of_blood": "§4§lRivers of Blood",
+      "item.minecraft_armor_weapon.magicwand": "Magicwand",
       "entity.minecraft_armor_weapon.killotiru": "Otiruyo",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_boots": "das herz einer fee armor boots",
       "effect.minecraft_armor_weapon.kitterukitteru": "subetekirisuteru",
@@ -9597,7 +9612,6 @@
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_leggings": "das herz einer fee armor leggings",
       "item.minecraft_armor_weapon.dragon_red_armor_boots": "§4Dragon red boots",
       "item.minecraft_armor_weapon.bubbleshot": "§9Bubbleshot",
-      "item.minecraft_armor_weapon.magic_wand": "Magic Wand",
       "effect.minecraft_armor_weapon.tunderbolteffrct": "tunderboltattack",
       "item.minecraft_armor_weapon.netherite_katana": "§8Netherite Katana",
       "block.minecraft_armor_weapon.stone_katana_block_1": "Netherite Katana Block",

@@ -2,7 +2,9 @@
 package minecraftarmorweapon.item;
 
 import net.minecraft.world.level.Level;
-import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.entity.player.Player;
@@ -13,30 +15,39 @@ import minecraftarmorweapon.procedures.MagicWandYoukuritukusitatokiProcedure;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
-public class MagicWandItem extends Item {
-	public MagicWandItem() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS).stacksTo(1).rarity(Rarity.RARE));
-	}
+public class MagicwandItem extends SwordItem {
+	public MagicwandItem() {
+		super(new Tier() {
+			public int getUses() {
+				return 0;
+			}
 
-	@Override
-	public boolean hasCraftingRemainingItem() {
-		return true;
-	}
+			public float getSpeed() {
+				return 4f;
+			}
 
-	@Override
-	public ItemStack getCraftingRemainingItem(ItemStack itemstack) {
-		return new ItemStack(this);
+			public float getAttackDamageBonus() {
+				return -2f;
+			}
+
+			public int getLevel() {
+				return 1;
+			}
+
+			public int getEnchantmentValue() {
+				return 2;
+			}
+
+			public Ingredient getRepairIngredient() {
+				return Ingredient.of();
+			}
+		}, 3, -2.4f, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS));
 	}
 
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
 		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		ItemStack itemstack = ar.getObject();
-		double x = entity.getX();
-		double y = entity.getY();
-		double z = entity.getZ();
-
-		MagicWandYoukuritukusitatokiProcedure.execute(world, x, y, z, entity);
+		MagicWandYoukuritukusitatokiProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
 		return ar;
 	}
 }

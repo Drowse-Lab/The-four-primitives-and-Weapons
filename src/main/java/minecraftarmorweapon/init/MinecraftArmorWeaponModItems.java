@@ -55,8 +55,8 @@ import minecraftarmorweapon.item.MyTestIronKatanaItem;
 import minecraftarmorweapon.item.MotoWitherKatanaItem;
 import minecraftarmorweapon.item.MotaseruItem;
 import minecraftarmorweapon.item.MagischesFeenKatanaItem;
+import minecraftarmorweapon.item.MagicwandItem;
 import minecraftarmorweapon.item.MagicalKatanaItem;
-import minecraftarmorweapon.item.MagicWandItem;
 import minecraftarmorweapon.item.MagicMcrystalItem;
 import minecraftarmorweapon.item.MacheteItem;
 import minecraftarmorweapon.item.LunaItem;
@@ -141,7 +141,6 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> STRAY_OUTER_ARMOR_HELMET = REGISTRY.register("stray_outer_armor_helmet", () -> new StrayOuterArmorItem.Helmet());
 	public static final RegistryObject<Item> STRAY_OUTER_ARMOR_CHESTPLATE = REGISTRY.register("stray_outer_armor_chestplate", () -> new StrayOuterArmorItem.Chestplate());
 	public static final RegistryObject<Item> STRAY_OUTER_ARMOR_LEGGINGS = REGISTRY.register("stray_outer_armor_leggings", () -> new StrayOuterArmorItem.Leggings());
-	public static final RegistryObject<Item> MAGIC_WAND = REGISTRY.register("magic_wand", () -> new MagicWandItem());
 	public static final RegistryObject<Item> STRAYOUTERARMORHAT_HELMET = REGISTRY.register("strayouterarmorhat_helmet", () -> new StrayouterarmorhatItem.Helmet());
 	public static final RegistryObject<Item> MAGIC_MCRYSTAL = REGISTRY.register("magic_mcrystal", () -> new MagicMcrystalItem());
 	public static final RegistryObject<Item> MAGICAL_KATANA = REGISTRY.register("magical_katana", () -> new MagicalKatanaItem());
@@ -257,6 +256,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> TUKAENA = REGISTRY.register("tukaena", () -> new TukaenaItem());
 	public static final RegistryObject<Item> ITEM_STAN = block(MinecraftArmorWeaponModBlocks.ITEM_STAN, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
 	public static final RegistryObject<Item> ALCHEMY_CRAFT_BLOCK = block(MinecraftArmorWeaponModBlocks.ALCHEMY_CRAFT_BLOCK, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
+	public static final RegistryObject<Item> MAGICWAND = REGISTRY.register("magicwand", () -> new MagicwandItem());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, CreativeModeTab tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));
