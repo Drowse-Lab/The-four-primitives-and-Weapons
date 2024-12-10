@@ -28,6 +28,7 @@ import minecraftarmorweapon.entity.HrmcngsEntity;
 import minecraftarmorweapon.entity.CometKillEntity;
 import minecraftarmorweapon.entity.CometEntity;
 import minecraftarmorweapon.entity.BlackholeEntity;
+import minecraftarmorweapon.entity.AlchemyCraftBlockEntityEntity;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
@@ -64,6 +65,11 @@ public class MinecraftArmorWeaponModEntities {
 			EntityType.Builder.<CometKillEntity>of(CometKillEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(0).setUpdateInterval(3).setCustomClientFactory(CometKillEntity::new).fireImmune().sized(0.6f, 1.8f));
 	public static final RegistryObject<EntityType<MeteorArrowEntity>> METEOR_ARROW = register("meteor_arrow", EntityType.Builder.<MeteorArrowEntity>of(MeteorArrowEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true)
 			.setTrackingRange(0).setUpdateInterval(3).setCustomClientFactory(MeteorArrowEntity::new).fireImmune().sized(0.5f, 0.5f));
+	public static final RegistryObject<EntityType<AlchemyCraftBlockEntityEntity>> ALCHEMY_CRAFT_BLOCK_ENTITY = register("alchemy_craft_block_entity",
+			EntityType.Builder.<AlchemyCraftBlockEntityEntity>of(AlchemyCraftBlockEntityEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3)
+					.setCustomClientFactory(AlchemyCraftBlockEntityEntity::new)
+
+					.sized(0.1f, 0.1f));
 
 	private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryname, EntityType.Builder<T> entityTypeBuilder) {
 		return REGISTRY.register(registryname, () -> (EntityType<T>) entityTypeBuilder.build(registryname));
@@ -81,6 +87,7 @@ public class MinecraftArmorWeaponModEntities {
 			CometEntity.init();
 			CometKillEntity.init();
 			MeteorArrowEntity.init();
+			AlchemyCraftBlockEntityEntity.init();
 		});
 	}
 
@@ -95,5 +102,6 @@ public class MinecraftArmorWeaponModEntities {
 		event.put(COMET.get(), CometEntity.createAttributes().build());
 		event.put(COMET_KILL.get(), CometKillEntity.createAttributes().build());
 		event.put(METEOR_ARROW.get(), MeteorArrowEntity.createAttributes().build());
+		event.put(ALCHEMY_CRAFT_BLOCK_ENTITY.get(), AlchemyCraftBlockEntityEntity.createAttributes().build());
 	}
 }

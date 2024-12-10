@@ -21,6 +21,7 @@ import minecraftarmorweapon.client.renderer.HrmcngsRenderer;
 import minecraftarmorweapon.client.renderer.CometRenderer;
 import minecraftarmorweapon.client.renderer.CometKillRenderer;
 import minecraftarmorweapon.client.renderer.BlackholeRenderer;
+import minecraftarmorweapon.client.renderer.AlchemyCraftBlockEntityRenderer;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class MinecraftArmorWeaponModEntityRenderers {
@@ -38,5 +39,6 @@ public class MinecraftArmorWeaponModEntityRenderers {
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.COMET.get(), CometRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.COMET_KILL.get(), CometKillRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.METEOR_ARROW.get(), MeteorArrowRenderer::new);
+		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.ALCHEMY_CRAFT_BLOCK_ENTITY.get(), AlchemyCraftBlockEntityRenderer::new);
 	}
 }

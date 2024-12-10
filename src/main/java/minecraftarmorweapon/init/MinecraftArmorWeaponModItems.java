@@ -255,7 +255,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> PUMPKIN_HEAD_HELMET = REGISTRY.register("pumpkin_head_helmet", () -> new PumpkinHeadItem.Helmet());
 	public static final RegistryObject<Item> TUKAENA = REGISTRY.register("tukaena", () -> new TukaenaItem());
 	public static final RegistryObject<Item> ITEM_STAN = block(MinecraftArmorWeaponModBlocks.ITEM_STAN, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
-	public static final RegistryObject<Item> ALCHEMY_CRAFT_BLOCK = block(MinecraftArmorWeaponModBlocks.ALCHEMY_CRAFT_BLOCK, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
+	public static final RegistryObject<Item> ALCHEMY_CRAFT_BLOCK = block(MinecraftArmorWeaponModBlocks.ALCHEMY_CRAFT_BLOCK, null);
 	public static final RegistryObject<Item> MAGICWAND = REGISTRY.register("magicwand", () -> new MagicwandItem());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, CreativeModeTab tab) {

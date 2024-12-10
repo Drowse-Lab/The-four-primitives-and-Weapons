@@ -8957,6 +8957,78 @@
         ],
         "dependencies": []
       }
+    },
+    {
+      "name": "AlchemyCraftBlockEntity",
+      "type": "livingentity",
+      "sortid": 590,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "alchemy_craft_block_entity",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/entity/AlchemyCraftBlockEntityEntity.java",
+          "src/main/java/minecraftarmorweapon/client/renderer/AlchemyCraftBlockEntityRenderer.java"
+        ]
+      }
+    },
+    {
+      "name": "AlchemyCraftBlockEntityOnEntityTickUpdate",
+      "type": "procedure",
+      "sortid": 591,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "alchemy_craft_block_entity_on_entity_tick_update",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/AlchemyCraftBlockEntityOnEntityTickUpdateProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AlchemyCraftBlockEntityRightClickedOnEntity",
+      "type": "procedure",
+      "sortid": 592,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "alchemy_craft_block_entity_right_clicked_on_entity",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/AlchemyCraftBlockEntityRightClickedOnEntityProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "sourceentity",
+            "type": "entity"
+          }
+        ]
+      }
     }
   ],
   "variable_elements": [
@@ -9362,6 +9434,7 @@
       "item.minecraft_armor_weapon.oninomen_helmet": "oni\u0027s mask",
       "item.minecraft_armor_weapon.halloween_2023_10_31_sickle": "§6Sickle",
       "item.minecraft_armor_weapon.ninjatou": "ninjato",
+      "entity.minecraft_armor_weapon.alchemy_craft_block_entity": "Alchemy Craft Block Entity",
       "effect.minecraft_armor_weapon.test_bow_kill_effect": "test bow",
       "gamerule.questTimeDuration": "Quest Time Duration",
       "advancements.you_have_become_a_vampire.title": "You have become a vampire.",
@@ -9623,6 +9696,7 @@
       "item.minecraft_armor_weapon.oninomen_helmet": "鬼の面",
       "item.minecraft_armor_weapon.halloween_2023_10_31_sickle": "§6Sickle",
       "item.minecraft_armor_weapon.ninjatou": "忍者刀",
+      "entity.minecraft_armor_weapon.alchemy_craft_block_entity": "Alchemy Craft Block Entity",
       "effect.minecraft_armor_weapon.test_bow_kill_effect": "test bow",
       "gamerule.questTimeDuration": "Quest Time Duration",
       "advancements.you_have_become_a_vampire.title": "You have become a vampire.",

@@ -40,7 +40,7 @@
     "hasGravity": false,
     "isWaterloggable": false,
     "creativeTab": {
-      "value": "CUSTOM:MagicBooks"
+      "value": "No creative tab entry"
     },
     "destroyTool": "axe",
     "customDrop": {
