@@ -181,7 +181,7 @@ public class SkinOfDragonTickProcedure {
 		}
 		if (world instanceof ServerLevel _level)
 			_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
-					"execute as @e[type=minecraft:armor_stand,tag=minecraft_armor_weapon_alchemy_craft_block_mahouzinn] if entity @e[type=minecraft:armor_stand,tag=minecraft_armor_weapon_alchemy_craft_block_mahouzinn] run tp @s[type=minecraft:armor_stand,tag=minecraft_armor_weapon_alchemy_craft_block_mahouzinn] ~ ~ ~ ~-.5 ~");
+					"execute as @e[type=minecraft:armor_stand,tag=minecraft_armor_weapon_alchemy_craft_block_mahouzinn] if entity @s[type=minecraft:armor_stand,tag=minecraft_armor_weapon_alchemy_craft_block_mahouzinn] run tp @s[type=minecraft:armor_stand,tag=minecraft_armor_weapon_alchemy_craft_block_mahouzinn] ~ ~ ~ ~-.5 ~");
 		if (world instanceof ServerLevel _level)
 			_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
 					"execute at @e[tag=minecraft_armor_weapon_alchemy_craft_block_mahouzinn] run function minecraft_armor_weapon:alchemymod1");
