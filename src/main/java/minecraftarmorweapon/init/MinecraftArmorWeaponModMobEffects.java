@@ -72,6 +72,7 @@ import minecraftarmorweapon.potion.AttackBowMobEffect;
 import minecraftarmorweapon.potion.Arrow1MobEffect;
 import minecraftarmorweapon.potion.ArmorstandtobasueffectkillMobEffect;
 import minecraftarmorweapon.potion.ArmorStandTobasuEffectMobEffect;
+import minecraftarmorweapon.potion.AlchemyCraftBlockEffectMobEffect;
 import minecraftarmorweapon.potion.AaaaMobEffect;
 import minecraftarmorweapon.potion.AaMobEffect;
 
@@ -143,4 +144,5 @@ public class MinecraftArmorWeaponModMobEffects {
 	public static final RegistryObject<MobEffect> ONAZITAKASA_ARROW = REGISTRY.register("onazitakasa_arrow", () -> new OnazitakasaArrowMobEffect());
 	public static final RegistryObject<MobEffect> TEST_BOW_KILL_EFFECT = REGISTRY.register("test_bow_kill_effect", () -> new TestBowKillEffectMobEffect());
 	public static final RegistryObject<MobEffect> BAKUHATU = REGISTRY.register("bakuhatu", () -> new BakuhatuMobEffect());
+	public static final RegistryObject<MobEffect> ALCHEMY_CRAFT_BLOCK_EFFECT = REGISTRY.register("alchemy_craft_block_effect", () -> new AlchemyCraftBlockEffectMobEffect());
 }

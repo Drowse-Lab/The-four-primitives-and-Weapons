@@ -10,7 +10,6 @@ import net.minecraft.world.entity.Entity;
 import minecraftarmorweapon.entity.OtiruyoEntity;
 import minecraftarmorweapon.entity.KillotiruEntity;
 import minecraftarmorweapon.entity.BlackholeEntity;
-import minecraftarmorweapon.entity.AlchemyCraftBlockEntityEntity;
 
 import javax.annotation.Nullable;
 
@@ -41,11 +40,6 @@ public class MukoukaGuardProcedure {
 			}
 		}
 		if (entity instanceof OtiruyoEntity) {
-			if (event != null && event.isCancelable()) {
-				event.setCanceled(true);
-			}
-		}
-		if (entity instanceof AlchemyCraftBlockEntityEntity) {
 			if (event != null && event.isCancelable()) {
 				event.setCanceled(true);
 			}

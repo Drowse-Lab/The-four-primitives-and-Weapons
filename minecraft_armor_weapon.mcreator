@@ -9025,6 +9025,42 @@
           }
         ]
       }
+    },
+    {
+      "name": "AlchemyCraftBlockEffectOnEffectActiveTick",
+      "type": "procedure",
+      "sortid": 593,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "alchemy_craft_block_effect_on_effect_active_tick",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/AlchemyCraftBlockEffectOnEffectActiveTickProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AlchemyCraftBlockEffect",
+      "type": "potioneffect",
+      "sortid": 594,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "alchemy_craft_block_effect",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/potion/AlchemyCraftBlockEffectMobEffect.java"
+        ]
+      }
     }
   ],
   "variable_elements": [
@@ -9254,19 +9290,19 @@
       "itemGroup.tabmagic_books": "Magic Books",
       "itemGroup.tabyopkeinamono": "建築とかに",
       "effect.minecraft_armor_weapon.syugeki": "aa",
-      "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_helmet": "das herz einer fee armor helmet",
+      "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
       "item.minecraft_armor_weapon.ruami_284_spawn_egg": "ruami284 Spawn Egg",
       "entity.minecraft_armor_weapon.comet": "Comet",
-      "entity.minecraft_armor_weapon.comet_kill": "Comet",
-      "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
       "item.minecraft_armor_weapon.darkness": "§5Darkness",
+      "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
+      "entity.minecraft_armor_weapon.comet_kill": "Comet",
       "block.minecraft_armor_weapon.stone_katana_block": "Netherite Katana Block",
       "item.minecraft_armor_weapon.blackhole_spawn_egg": "Blackhole Spawn Egg",
       "entity.minecraft_armor_weapon.blackhole": "Blackhole",
       "advancements.magical_swordsman_achievements.descr": "§eGet Magisches feen katana",
-      "effect.minecraft_armor_weapon.suityuu": "suityuu",
       "entity.minecraft_armor_weapon.ruami_284": "ruami284",
+      "effect.minecraft_armor_weapon.suityuu": "suityuu",
       "advancements.you_have_become_a_vampire.descr": "You have become a vampire.",
       "effect.minecraft_armor_weapon.bakuhatu": "explosion",
       "effect.minecraft_armor_weapon.aaaa": "bunnsinn",
@@ -9286,8 +9322,8 @@
       "block.minecraft_armor_weapon.stone_bricks_trap_door": "Stone Bricks Trap Door",
       "item.minecraft_armor_weapon.stone_katana": "§7Stone Katana",
       "item.minecraft_armor_weapon.dragon_black_armor_helmet": "§8Dragon black helmet",
-      "item.minecraft_armor_weapon.kaminari_kurikaraken_sword": "Kaminari Kurikaraken Sword",
       "item.minecraft_armor_weapon.kurikarakensword": "§5倶利伽羅剣",
+      "item.minecraft_armor_weapon.kaminari_kurikaraken_sword": "Kaminari Kurikaraken Sword",
       "item.minecraft_armor_weapon.scythe": "Scythe",
       "item.minecraft_armor_weapon.wind_step": "§2Windstep",
       "item.minecraft_armor_weapon.a": "A",
@@ -9298,8 +9334,9 @@
       "effect.minecraft_armor_weapon.long_range_weapon_cut": "遠距離武器斬る",
       "item.minecraft_armor_weapon.bogged_outer_chestplate": "Bogged Outer Chestplate",
       "item.minecraft_armor_weapon.dragon_green_armor_boots": "§2Dragon green boots",
-      "item.minecraft_armor_weapon.magicwand": "Magicwand",
       "item.minecraft_armor_weapon.rivers_of_blood": "§4§lRivers of Blood",
+      "item.minecraft_armor_weapon.magicwand": "Magicwand",
+      "effect.minecraft_armor_weapon.alchemy_craft_block_effect": "Alchemy Craft Block Effect",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_boots": "das herz einer fee armor boots",
       "entity.minecraft_armor_weapon.killotiru": "Otiruyo",
       "effect.minecraft_armor_weapon.kitterukitteru": "subetekirisuteru",
@@ -9516,19 +9553,19 @@
       "itemGroup.tabmagic_books": "Magic Books",
       "itemGroup.tabyopkeinamono": "建築とかに",
       "effect.minecraft_armor_weapon.syugeki": "aa",
-      "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_helmet": "das herz einer fee armor helmet",
+      "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
       "item.minecraft_armor_weapon.ruami_284_spawn_egg": "ruami284 Spawn Egg",
       "entity.minecraft_armor_weapon.comet": "Comet",
-      "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
-      "item.minecraft_armor_weapon.darkness": "§5Darkness",
       "entity.minecraft_armor_weapon.comet_kill": "Comet",
+      "item.minecraft_armor_weapon.darkness": "§5Darkness",
+      "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
       "block.minecraft_armor_weapon.stone_katana_block": "Netherite Katana Block",
       "item.minecraft_armor_weapon.blackhole_spawn_egg": "Blackhole Spawn Egg",
       "entity.minecraft_armor_weapon.blackhole": "Blackhole",
       "advancements.magical_swordsman_achievements.descr": "Magisches feen katanaを得る",
-      "effect.minecraft_armor_weapon.suityuu": "suityuu",
       "entity.minecraft_armor_weapon.ruami_284": "ruami284",
+      "effect.minecraft_armor_weapon.suityuu": "suityuu",
       "advancements.you_have_become_a_vampire.descr": "吸血鬼になったよ",
       "effect.minecraft_armor_weapon.bakuhatu": "explosion",
       "effect.minecraft_armor_weapon.aaaa": "bunnsinn",
@@ -9548,8 +9585,8 @@
       "block.minecraft_armor_weapon.stone_bricks_trap_door": "Stone Bricks Trap Door",
       "item.minecraft_armor_weapon.dragon_black_armor_helmet": "§8Dragon black helmet",
       "item.minecraft_armor_weapon.stone_katana": "§7石の刀",
-      "item.minecraft_armor_weapon.kurikarakensword": "§5倶利伽羅剣",
       "item.minecraft_armor_weapon.kaminari_kurikaraken_sword": "Kaminari Kurikaraken Sword",
+      "item.minecraft_armor_weapon.kurikarakensword": "§5倶利伽羅剣",
       "item.minecraft_armor_weapon.wind_step": "§2Windstep",
       "item.minecraft_armor_weapon.scythe": "Scythe",
       "item.minecraft_armor_weapon.a": "A",
@@ -9560,8 +9597,9 @@
       "item.minecraft_armor_weapon.bogged_outer_chestplate": "Bogged Outer Chestplate",
       "effect.minecraft_armor_weapon.long_range_weapon_cut": "遠距離武器斬る",
       "item.minecraft_armor_weapon.dragon_green_armor_boots": "§2Dragon green boots",
-      "item.minecraft_armor_weapon.magicwand": "Magicwand",
       "item.minecraft_armor_weapon.rivers_of_blood": "§4§lRivers of Blood",
+      "item.minecraft_armor_weapon.magicwand": "Magicwand",
+      "effect.minecraft_armor_weapon.alchemy_craft_block_effect": "Alchemy Craft Block Effect",
       "entity.minecraft_armor_weapon.killotiru": "Otiruyo",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_boots": "das herz einer fee armor boots",
       "effect.minecraft_armor_weapon.kitterukitteru": "subetekirisuteru",
