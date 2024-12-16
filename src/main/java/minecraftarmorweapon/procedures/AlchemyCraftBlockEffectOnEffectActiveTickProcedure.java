@@ -22,6 +22,13 @@ public class AlchemyCraftBlockEffectOnEffectActiveTickProcedure {
 							_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "tp @s ~ ~ ~ ~-.5 ~");
 				}
 			}
+			{
+				Entity _ent = entity;
+				if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+					_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4,
+							_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "function minecraft_armor_weapon:alchemymod1");
+				}
+			}
 			if (!((world.getBlockState(new BlockPos(entity.getX(), entity.getY() - 0.5, entity.getZ()))).getBlock() == MinecraftArmorWeaponModBlocks.ALCHEMY_CRAFT_BLOCK.get())) {
 				if (!entity.level.isClientSide())
 					entity.discard();
