@@ -9,7 +9,7 @@
 dorago Armorのtextureはここからコピーしました  
 [![Link Check](https://github.com/janosh/awesome-normalizing-flows/actions/workflows/link-check.yml/badge.svg)](https://github.com/GitPois1x/DragonLoot/tree/1.20/src/main/resources/assets/dragonloot/textures)
 ***
-# my mod link
+## my mod link
 [![Link Check](https://github.com/hrmcngs/The-four-primitives-and-Weapons/blob/0afbf5c653e9fd2ea29179ea99e93ef791a0462c/src/main/resources/logo.png)](https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons/files)
 
 https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons
