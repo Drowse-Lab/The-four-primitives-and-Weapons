@@ -5,7 +5,8 @@
 
 ![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=hrmcngs&show_icons=true&theme=dark)
 ***
-## dorago Armorのtextureはここからダウンロードしました
+## 参考リンク
+dorago Armorのtextureはここからコピーしました
 [![Link Check](https://github.com/janosh/awesome-normalizing-flows/actions/workflows/link-check.yml/badge.svg)](https://github.com/GitPois1x/DragonLoot/tree/1.20/src/main/resources/assets/dragonloot/textures)
 ***
 # my mod link
