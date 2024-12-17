@@ -1,8 +1,12 @@
 package minecraftarmorweapon.procedures;
 
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.commands.CommandSourceStack;
@@ -10,8 +14,12 @@ import net.minecraft.commands.CommandSource;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModBlocks;
 
+import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Comparator;
+
 public class AlchemyCraftBlockEffectOnEffectActiveTickProcedure {
-	public static void execute(LevelAccessor world, Entity entity) {
+	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
 		if (entity == null)
 			return;
 		if (entity instanceof ArmorStand) {
@@ -32,6 +40,21 @@ public class AlchemyCraftBlockEffectOnEffectActiveTickProcedure {
 			if (!((world.getBlockState(new BlockPos(entity.getX(), entity.getY() - 0.5, entity.getZ()))).getBlock() == MinecraftArmorWeaponModBlocks.ALCHEMY_CRAFT_BLOCK.get())) {
 				if (!entity.level.isClientSide())
 					entity.discard();
+			}
+			{
+				final Vec3 _center = new Vec3(x, y, z);
+				List<Entity> _entfound = world.getEntitiesOfClass(Entity.class, new AABB(_center, _center).inflate(1 / 2d), e -> true).stream().sorted(Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_center)))
+						.collect(Collectors.toList());
+				for (Entity entityiterator : _entfound) {
+					if (entityiterator instanceof ItemEntity) {
+						{
+							Entity _ent = entityiterator;
+							_ent.teleportTo(x, y, z);
+							if (_ent instanceof ServerPlayer _serverPlayer)
+								_serverPlayer.connection.teleport(x, y, z, _ent.getYRot(), _ent.getXRot());
+						}
+					}
+				}
 			}
 		}
 	}
