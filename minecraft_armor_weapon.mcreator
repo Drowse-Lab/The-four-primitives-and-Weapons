@@ -9073,6 +9073,80 @@
           "src/main/java/minecraftarmorweapon/potion/AlchemyCraftBlockEffectMobEffect.java"
         ]
       }
+    },
+    {
+      "name": "NannkasouNightVisionEffectStartedapplied",
+      "type": "procedure",
+      "sortid": 595,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "nannkasou_night_vision_effect_startedapplied",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/NannkasouNightVisionEffectStartedappliedProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NannkasouNightVisionEffectExpires",
+      "type": "procedure",
+      "sortid": 596,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "nannkasou_night_vision_effect_expires",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/NannkasouNightVisionEffectExpiresProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NannkasouNightVisionOnEffectActiveTick",
+      "type": "procedure",
+      "sortid": 597,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "nannkasou_night_vision_on_effect_active_tick",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/NannkasouNightVisionOnEffectActiveTickProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NannkasouNightVision",
+      "type": "potioneffect",
+      "sortid": 598,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "nannkasou_night_vision",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/potion/NannkasouNightVisionMobEffect.java"
+        ]
+      }
     }
   ],
   "variable_elements": [
@@ -9523,6 +9597,7 @@
       "gamerule.rpgBookGive": "RPG book give",
       "item.minecraft_armor_weapon.kabuseru": "kabuseru",
       "item.minecraft_armor_weapon.loki_decoydasu": "Loki Decoydasu",
+      "effect.minecraft_armor_weapon.nannkasou_night_vision": "night vision sword",
       "item.minecraft_armor_weapon.warden_armor_leggings": "§3warden leggings",
       "item.minecraft_armor_weapon.magisches_feen_katana": "§dMagisches Feen Katana",
       "item.minecraft_armor_weapon.bluepurge_tyokutou": "§9Bluepurge",
@@ -9786,6 +9861,7 @@
       "gamerule.rpgBookGive": "RPG book give",
       "item.minecraft_armor_weapon.kabuseru": "kabuseru",
       "item.minecraft_armor_weapon.loki_decoydasu": "Loki Decoydasu",
+      "effect.minecraft_armor_weapon.nannkasou_night_vision": "night vision sword",
       "item.minecraft_armor_weapon.warden_armor_leggings": "warden leggings",
       "item.minecraft_armor_weapon.magisches_feen_katana": "§dMagisches Feen Katana",
       "item.minecraft_armor_weapon.bluepurge_tyokutou": "§9Bluepurge",

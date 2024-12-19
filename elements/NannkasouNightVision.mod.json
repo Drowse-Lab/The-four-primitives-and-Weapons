@@ -1,0 +1,26 @@
+{
+  "_fv": 43,
+  "_type": "potioneffect",
+  "definition": {
+    "effectName": "night vision sword",
+    "icon": "attack_in_guard.png",
+    "color": {
+      "value": -1,
+      "falpha": 0.0
+    },
+    "isInstant": false,
+    "isBad": false,
+    "isBenefitical": false,
+    "renderStatusInInventory": false,
+    "renderStatusInHUD": false,
+    "onStarted": {
+      "name": "NannkasouNightVisionEffectStartedapplied"
+    },
+    "onActiveTick": {
+      "name": "NannkasouNightVisionOnEffectActiveTick"
+    },
+    "onExpired": {
+      "name": "NannkasouNightVisionEffectExpires"
+    }
+  }
+}

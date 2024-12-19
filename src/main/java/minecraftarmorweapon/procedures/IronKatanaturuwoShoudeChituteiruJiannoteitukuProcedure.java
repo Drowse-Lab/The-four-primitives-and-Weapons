@@ -276,6 +276,8 @@ public class IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure {
 			}
 		}
 		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.LUNA.get()) {
+			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.NANNKASOU_NIGHT_VISION.get(), 1, 255, true, false));
 			if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.DEMONIZED.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
 					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.ARROW_1.get(), 2, 1, true, false));
