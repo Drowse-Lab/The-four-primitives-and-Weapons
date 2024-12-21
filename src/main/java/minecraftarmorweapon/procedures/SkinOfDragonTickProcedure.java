@@ -168,9 +168,6 @@ public class SkinOfDragonTickProcedure {
 			if (world instanceof ServerLevel _level)
 				_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
 						"execute at @e[type=item,nbt={Item:{id:\"minecraft:nether_star\"}}] if entity @e[type=item,nbt={Item:{id:\"minecraft_armor_weapon:stray_bone\",Count:16b}},distance=..1.5] if entity @e[type=item,nbt={Item:{id:\"minecraft:iron_block\",Count:64b}},distance=..1.5] run function minecraft_armor_weapon:hardentity_function_stray");
-			if (world instanceof ServerLevel _level)
-				_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
-						"execute at @e[type=item,nbt={Item:{id:\"minecraft:nether_star\"}}] if entity @e[type=item,nbt={Item:{id:\"minecraft_armor_weapon:stray_bone\",Count:16b}},distance=..1.5] if entity @e[type=item,nbt={Item:{id:\"minecraft:iron_block\",Count:64b}},distance=..1.5] run function minecraft_armor_weapon:hardentity_function_stray");
 			if (!(entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.TUNDERBOLTEFFRCT.get()) : false)
 					&& (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getOrCreateTag().getDouble("CustomModelData") == 1
 					&& ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KURIKARAKEN.get()
@@ -178,7 +175,13 @@ public class SkinOfDragonTickProcedure {
 							|| (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KURIKARAKENUTIGATANA.get())) {
 				(entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getOrCreateTag().putDouble("CustomModelData", 0);
 			}
+			if (world instanceof ServerLevel _level)
+				_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
+						"execute as @e[type=minecraft:armor_stand, tag=minecraft_armor_weapon_item_stand_amor_stand] if entity @s[nbt=!{HandItems:[{id:\"minecraft_armor_weapon:luna\"}]}] run kill @s");
 		}
+		if (world instanceof ServerLevel _level)
+			_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
+					"execute at @e[type=item,nbt={Item:{id:\"minecraft_armor_weapon:iron_katana\"}}] if entity @e[type=item,nbt={Item:{id:\"minecraft:beacon\",Count:16b}},distance=..0.5] if entity @e[type=item,nbt={Item:{id:\"minecraft:iron_block\",Count:64b}},distance=..0.5] if block ~ ~-1 ~ minecraft_armor_weapon:alchemy_craft_block run function minecraft_armor_weapon:sword_stand_luna");
 		if (world instanceof ServerLevel _level)
 			_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
 					"execute as @e[type=minecraft:armor_stand, tag=minecraft_armor_weapon_alchemy_craft_block_mahouzinn] run effect give @s minecraft_armor_weapon:alchemy_craft_block_effect 1 1 true");

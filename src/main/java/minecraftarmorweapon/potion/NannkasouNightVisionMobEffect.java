@@ -28,7 +28,7 @@ public class NannkasouNightVisionMobEffect extends MobEffect {
 
 	@Override
 	public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
-		NannkasouNightVisionEffectStartedappliedProcedure.execute(entity);
+		NannkasouNightVisionEffectStartedappliedProcedure.execute(entity.level, entity);
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public class NannkasouNightVisionMobEffect extends MobEffect {
 	@Override
 	public void removeAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
 		super.removeAttributeModifiers(entity, attributeMap, amplifier);
-		NannkasouNightVisionEffectExpiresProcedure.execute(entity.level, entity);
+		NannkasouNightVisionEffectExpiresProcedure.execute(entity);
 	}
 
 	@Override

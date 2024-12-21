@@ -10,6 +10,6 @@ public class NannkasouNightVisionOnEffectActiveTickProcedure {
 		if (entity == null)
 			return;
 		if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
-			_entity.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 200, 255, false, true));
+			_entity.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 250, 255, true, false));
 	}
 }
