@@ -1,8 +1,11 @@
 package minecraftarmorweapon.procedures;
 
+import net.minecraftforge.registries.ForgeRegistries;
+
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
@@ -10,7 +13,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.commands.CommandSourceStack;
@@ -58,14 +63,24 @@ public class LunaenteiteigaaitemuwoZhentutaShiProcedure {
 					Entity _ent = entity;
 					if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 						_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4,
-								_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "particle minecraft:enchanted_hit ^ ^ ^1 0.5 0.5 0.5 .0 20 force @p");
+								_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "particle minecraft:enchanted_hit ~ ~1 ~ 0.5 0.5 0.5 .0 20 force @p");
 					}
 				}
 				{
 					Entity _ent = entity;
 					if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 						_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4,
-								_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "particle minecraft:end_rod ^ ^ ^ 1 1 1 .0 5 force @p");
+								_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "particle minecraft:end_rod ~ ~1 ~ 1 1 1 .0 5 force @p");
+					}
+				}
+				if (world instanceof Level _level) {
+					if (!_level.isClientSide()) {
+						_level.playSound(null,
+								new BlockPos(x - r * Math.cos(Math.toRadians(beta)) * Math.sin(Math.toRadians(alpha)), (y + 1) - r * Math.sin(Math.toRadians(beta)), z + r * Math.cos(Math.toRadians(beta)) * Math.cos(Math.toRadians(alpha))),
+								ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("block.beacon.activate")), SoundSource.PLAYERS, 2, 2);
+					} else {
+						_level.playLocalSound((x - r * Math.cos(Math.toRadians(beta)) * Math.sin(Math.toRadians(alpha))), ((y + 1) - r * Math.sin(Math.toRadians(beta))), (z + r * Math.cos(Math.toRadians(beta)) * Math.cos(Math.toRadians(alpha))),
+								ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("block.beacon.activate")), SoundSource.PLAYERS, 2, 2, false);
 					}
 				}
 				for (int index0 = 0; index0 < 100; index0++) {
@@ -96,7 +111,7 @@ public class LunaenteiteigaaitemuwoZhentutaShiProcedure {
 													}
 												}
 											} else {
-												entityiterator.hurt(DamageSource.GENERIC, 5);
+												entityiterator.hurt(DamageSource.GENERIC, 1);
 											}
 										}
 									}
@@ -106,7 +121,7 @@ public class LunaenteiteigaaitemuwoZhentutaShiProcedure {
 					}
 					if (world instanceof ServerLevel _level)
 						_level.sendParticles(ParticleTypes.END_ROD, (x - r * Math.cos(Math.toRadians(beta)) * Math.sin(Math.toRadians(alpha))), ((y + 1) - r * Math.sin(Math.toRadians(beta))),
-								(z + r * Math.cos(Math.toRadians(beta)) * Math.cos(Math.toRadians(alpha))), 2, 0.1, 0.1, 0.1, 0);
+								(z + r * Math.cos(Math.toRadians(beta)) * Math.cos(Math.toRadians(alpha))), 1, 0.1, 0.1, 0.1, 0);
 					if (world
 							.getBlockState(new BlockPos(x - r * Math.cos(Math.toRadians(beta)) * Math.sin(Math.toRadians(alpha)), (y + 2) - r * Math.sin(Math.toRadians(beta)), z + r * Math.cos(Math.toRadians(beta)) * Math.cos(Math.toRadians(alpha))))
 							.canOcclude()) {
