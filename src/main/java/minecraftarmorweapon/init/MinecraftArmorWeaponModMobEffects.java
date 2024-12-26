@@ -40,7 +40,6 @@ import minecraftarmorweapon.potion.OtiruyooMobEffect;
 import minecraftarmorweapon.potion.OtiroMobEffect;
 import minecraftarmorweapon.potion.OnazitakasaArrowMobEffect;
 import minecraftarmorweapon.potion.NgsMobEffect;
-import minecraftarmorweapon.potion.NannkasouNightVisionMobEffect;
 import minecraftarmorweapon.potion.NagiharaiMobEffect;
 import minecraftarmorweapon.potion.Nagiharai2MobEffect;
 import minecraftarmorweapon.potion.LongRangeWeaponCutMobEffect;
@@ -146,5 +145,4 @@ public class MinecraftArmorWeaponModMobEffects {
 	public static final RegistryObject<MobEffect> TEST_BOW_KILL_EFFECT = REGISTRY.register("test_bow_kill_effect", () -> new TestBowKillEffectMobEffect());
 	public static final RegistryObject<MobEffect> BAKUHATU = REGISTRY.register("bakuhatu", () -> new BakuhatuMobEffect());
 	public static final RegistryObject<MobEffect> ALCHEMY_CRAFT_BLOCK_EFFECT = REGISTRY.register("alchemy_craft_block_effect", () -> new AlchemyCraftBlockEffectMobEffect());
-	public static final RegistryObject<MobEffect> NANNKASOU_NIGHT_VISION = REGISTRY.register("nannkasou_night_vision", () -> new NannkasouNightVisionMobEffect());
 }
