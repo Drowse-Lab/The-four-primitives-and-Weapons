@@ -3,6 +3,7 @@ package minecraftarmorweapon.procedures;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
@@ -322,10 +323,12 @@ public class TyokutouProcedure {
 															if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 																_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 150, 2, true, false));
 														}
-														if (entityiterator instanceof LivingEntity _livEnt ? _livEnt.getMobType() == MobType.UNDEAD : false) {
-															entityiterator.hurt(DamageSource.GENERIC, 10);
+														if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0
+																&& (entityiterator instanceof LivingEntity _livEnt ? _livEnt.getMobType() == MobType.UNDEAD : false)) {
+															entityiterator.hurt(DamageSource.GENERIC, (float) (((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue()
+																	+ EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) * 2.5));
 														} else {
-															entityiterator.hurt(DamageSource.GENERIC, 5);
+															entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
 														}
 													}
 												}
@@ -401,10 +404,12 @@ public class TyokutouProcedure {
 															if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 																_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 150, 2, true, false));
 														}
-														if (entityiterator instanceof LivingEntity _livEnt ? _livEnt.getMobType() == MobType.UNDEAD : false) {
-															entityiterator.hurt(DamageSource.GENERIC, 10);
+														if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0
+																&& (entityiterator instanceof LivingEntity _livEnt ? _livEnt.getMobType() == MobType.UNDEAD : false)) {
+															entityiterator.hurt(DamageSource.GENERIC, (float) (((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue()
+																	+ EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) * 2.5));
 														} else {
-															entityiterator.hurt(DamageSource.GENERIC, 5);
+															entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
 														}
 													}
 												}
@@ -612,7 +617,7 @@ public class TyokutouProcedure {
 														}
 													}
 												} else {
-													entityiterator.hurt(DamageSource.GENERIC, 6);
+													entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
 												}
 											}
 										}
@@ -665,7 +670,7 @@ public class TyokutouProcedure {
 														}
 													}
 												} else {
-													entityiterator.hurt(DamageSource.GENERIC, 6);
+													entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
 												}
 											}
 										}
@@ -759,7 +764,7 @@ public class TyokutouProcedure {
 													}
 												}
 											} else {
-												entityiterator.hurt(DamageSource.GENERIC, 5);
+												entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
 											}
 										}
 									}
@@ -801,7 +806,7 @@ public class TyokutouProcedure {
 												}
 											}
 										} else {
-											entityiterator.hurt(DamageSource.GENERIC, 5);
+											entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
 										}
 									}
 								}

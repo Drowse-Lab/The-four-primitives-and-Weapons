@@ -5,6 +5,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
@@ -209,7 +210,12 @@ public class Nagiharai2posiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 									}
 									if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KURIKARAKEN.get()
 											&& (entityiterator instanceof LivingEntity _livEnt ? _livEnt.getMobType() == MobType.UNDEAD : false)) {
-										entityiterator.hurt(DamageSource.GENERIC, 10);
+										if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
+											entityiterator.hurt(DamageSource.GENERIC,
+													(float) (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) * 2.5));
+										}
+									} else {
+										entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
 									}
 									if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get()
 											|| (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KATANA_NIGU_HUMERUS.get()
@@ -266,9 +272,7 @@ public class Nagiharai2posiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 												entityiterator.discard();
 										}
 									}
-									entityiterator.hurt(DamageSource.GENERIC, 10);
 								}
-								dis = Math.abs(xknockback) + Math.abs(yknockback) + Math.abs(zknockback);
 							}
 						}
 					}
@@ -339,7 +343,12 @@ public class Nagiharai2posiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 									}
 									if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KURIKARAKEN.get()
 											&& (entityiterator instanceof LivingEntity _livEnt ? _livEnt.getMobType() == MobType.UNDEAD : false)) {
-										entityiterator.hurt(DamageSource.GENERIC, 10);
+										if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
+											entityiterator.hurt(DamageSource.GENERIC,
+													(float) (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) * 2.5));
+										}
+									} else {
+										entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
 									}
 									if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get()
 											|| (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KATANA_NIGU_HUMERUS.get()
@@ -396,9 +405,7 @@ public class Nagiharai2posiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 												entityiterator.discard();
 										}
 									}
-									entityiterator.hurt(DamageSource.GENERIC, 10);
 								}
-								dis = Math.abs(xknockback) + Math.abs(yknockback) + Math.abs(zknockback);
 							}
 						}
 					}
@@ -469,7 +476,12 @@ public class Nagiharai2posiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 									}
 									if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KURIKARAKEN.get()
 											&& (entityiterator instanceof LivingEntity _livEnt ? _livEnt.getMobType() == MobType.UNDEAD : false)) {
-										entityiterator.hurt(DamageSource.GENERIC, 10);
+										if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
+											entityiterator.hurt(DamageSource.GENERIC,
+													(float) (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) * 2.5));
+										}
+									} else {
+										entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
 									}
 									if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get()
 											|| (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KATANA_NIGU_HUMERUS.get()
@@ -526,9 +538,7 @@ public class Nagiharai2posiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 												entityiterator.discard();
 										}
 									}
-									entityiterator.hurt(DamageSource.GENERIC, 10);
 								}
-								dis = Math.abs(xknockback) + Math.abs(yknockback) + Math.abs(zknockback);
 							}
 						}
 					}

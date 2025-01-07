@@ -119,7 +119,7 @@ public class SyugekiOnEffectActiveTickProcedure {
 											}
 										}
 									} else {
-										entityiterator.hurt(DamageSource.GENERIC, 10);
+										entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 									}
 								}
 							}
@@ -156,7 +156,7 @@ public class SyugekiOnEffectActiveTickProcedure {
 											}
 										}
 									} else {
-										entityiterator.hurt(DamageSource.GENERIC, 10);
+										entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 									}
 								}
 							}
@@ -227,7 +227,7 @@ public class SyugekiOnEffectActiveTickProcedure {
 											}
 										}
 									} else {
-										entityiterator.hurt(DamageSource.GENERIC, 10);
+										entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 									}
 								}
 							}
@@ -260,7 +260,7 @@ public class SyugekiOnEffectActiveTickProcedure {
 											}
 										}
 									} else {
-										entityiterator.hurt(DamageSource.GENERIC, 10);
+										entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 									}
 								}
 							}
@@ -293,7 +293,7 @@ public class SyugekiOnEffectActiveTickProcedure {
 											}
 										}
 									} else {
-										entityiterator.hurt(DamageSource.GENERIC, 10);
+										entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 									}
 								}
 							}
@@ -370,7 +370,7 @@ public class SyugekiOnEffectActiveTickProcedure {
 											}
 										}
 									} else {
-										entityiterator.hurt(DamageSource.GENERIC, 10);
+										entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 										if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WITHER_KATANA.get()) {
 											if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 												_entity.addEffect(new MobEffectInstance(MobEffects.WITHER, 120, 2));
@@ -407,7 +407,7 @@ public class SyugekiOnEffectActiveTickProcedure {
 											}
 										}
 									} else {
-										entityiterator.hurt(DamageSource.GENERIC, 10);
+										entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 										if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WITHER_KATANA.get()) {
 											if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 												_entity.addEffect(new MobEffectInstance(MobEffects.WITHER, 120, 2));
@@ -444,7 +444,7 @@ public class SyugekiOnEffectActiveTickProcedure {
 											}
 										}
 									} else {
-										entityiterator.hurt(DamageSource.GENERIC, 10);
+										entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 										if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WITHER_KATANA.get()) {
 											if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 												_entity.addEffect(new MobEffectInstance(MobEffects.WITHER, 120, 2));

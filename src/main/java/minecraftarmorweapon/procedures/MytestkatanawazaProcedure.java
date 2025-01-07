@@ -105,7 +105,7 @@ public class MytestkatanawazaProcedure {
 													}
 												}
 											} else {
-												entityiterator.hurt(DamageSource.GENERIC, 5);
+												entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
 											}
 										}
 									}
@@ -141,7 +141,7 @@ public class MytestkatanawazaProcedure {
 													}
 												}
 											} else {
-												entityiterator.hurt(DamageSource.GENERIC, 5);
+												entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
 											}
 										}
 									}

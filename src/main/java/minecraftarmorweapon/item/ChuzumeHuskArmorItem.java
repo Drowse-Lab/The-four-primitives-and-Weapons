@@ -67,6 +67,7 @@ public abstract class ChuzumeHuskArmorItem extends ArmorItem {
 				return 0f;
 			}
 
+
 			@Override
 			public float getKnockbackResistance() {
 				return 0f;
