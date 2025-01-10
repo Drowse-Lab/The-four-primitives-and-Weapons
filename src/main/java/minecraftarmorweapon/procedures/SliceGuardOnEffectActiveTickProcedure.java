@@ -16,6 +16,7 @@ import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.commands.CommandSourceStack;
@@ -285,5 +286,25 @@ public class SliceGuardOnEffectActiveTickProcedure {
 				}
 			}
 		}
+		if (entity instanceof LivingEntity _entity)
+			_entity.removeEffect(MobEffects.WITHER);
+		if (entity instanceof LivingEntity _entity)
+			_entity.removeEffect(MobEffects.BLINDNESS);
+		if (entity instanceof LivingEntity _entity)
+			_entity.removeEffect(MobEffects.HUNGER);
+		if (entity instanceof LivingEntity _entity)
+			_entity.removeEffect(MobEffects.LEVITATION);
+		if (entity instanceof LivingEntity _entity)
+			_entity.removeEffect(MobEffects.DIG_SLOWDOWN);
+		if (entity instanceof LivingEntity _entity)
+			_entity.removeEffect(MobEffects.CONFUSION);
+		if (entity instanceof LivingEntity _entity)
+			_entity.removeEffect(MobEffects.POISON);
+		if (entity instanceof LivingEntity _entity)
+			_entity.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+		if (entity instanceof LivingEntity _entity)
+			_entity.removeEffect(MobEffects.HARM);
+		if (entity instanceof LivingEntity _entity)
+			_entity.removeEffect(MobEffects.WEAKNESS);
 	}
 }

@@ -1,6 +1,9 @@
 
 package minecraftarmorweapon.item;
 
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
+
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.Tier;
@@ -27,7 +30,7 @@ public class OldKatanaItem extends SwordItem {
 			}
 
 			public float getAttackDamageBonus() {
-				return 2f;
+				return 6f;
 			}
 
 			public int getLevel() {
@@ -56,5 +59,11 @@ public class OldKatanaItem extends SwordItem {
 		super.inventoryTick(itemstack, world, entity, slot, selected);
 		if (selected)
 			IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
+	}
+
+	@Override
+	@OnlyIn(Dist.CLIENT)
+	public boolean isFoil(ItemStack itemstack) {
+		return true;
 	}
 }
