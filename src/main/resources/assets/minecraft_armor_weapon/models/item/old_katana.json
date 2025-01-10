@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft_armor_weapon:custom/oldkatana",
+  "textures": {
+    "1": "minecraft_armor_weapon:blocks/oldkatana",
+    "particle": "minecraft_armor_weapon:items/oldkatana"
+  }
+}

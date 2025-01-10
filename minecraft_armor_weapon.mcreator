@@ -9073,6 +9073,91 @@
           "src/main/java/minecraftarmorweapon/potion/AlchemyCraftBlockEffectMobEffect.java"
         ]
       }
+    },
+    {
+      "name": "OldKatana",
+      "type": "tool",
+      "sortid": 595,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "old_katana",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/minecraft_armor_weapon/models/item/old_katana.json",
+          "src/main/java/minecraftarmorweapon/item/OldKatanaItem.java"
+        ]
+      }
+    },
+    {
+      "name": "SliceGuardEffectStartedapplied",
+      "type": "procedure",
+      "sortid": 596,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "slice_guard_effect_startedapplied",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/SliceGuardEffectStartedappliedProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SliceGuard",
+      "type": "potioneffect",
+      "sortid": 597,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "slice_guard",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/potion/SliceGuardMobEffect.java"
+        ]
+      }
+    },
+    {
+      "name": "SliceGuardOnEffectActiveTick",
+      "type": "procedure",
+      "sortid": 598,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "slice_guard_on_effect_active_tick",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/SliceGuardOnEffectActiveTickProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      }
     }
   ],
   "variable_elements": [
@@ -9491,6 +9576,7 @@
       "effect.minecraft_armor_weapon.black_hole_effect": "blackhole",
       "gui.minecraft_armor_weapon.rpg_book_gui_2.button_magic_swordsman": "magic swordsman",
       "effect.minecraft_armor_weapon.kaiten": "kaitenn",
+      "effect.minecraft_armor_weapon.slice_guard": "Slice Guard",
       "item.minecraft_armor_weapon.arrow_head": "Arrow Head",
       "item.minecraft_armor_weapon.illusioner_armor_chestplate": "Illusioner Armor Chestplate",
       "gui.minecraft_armor_weapon.rpg_book_gui.button_ninja": "ninja",
@@ -9506,6 +9592,7 @@
       "block.minecraft_armor_weapon.item_stan": "Item Stan",
       "item.minecraft_armor_weapon.magic_mcrystal": "Magic Mcrystal",
       "block.minecraft_armor_weapon.cross": "Cross",
+      "item.minecraft_armor_weapon.old_katana": "Old Katana",
       "item.minecraft_armor_weapon.bogged_outer_boots": "Bogged Outer Boots",
       "item.minecraft_armor_weapon.luna": "§eLuna",
       "advancements.kurikaraken_progress.descr": "Get an kurikaraken",
@@ -9754,6 +9841,7 @@
       "effect.minecraft_armor_weapon.black_hole_effect": "blackhole",
       "gui.minecraft_armor_weapon.rpg_book_gui_2.button_magic_swordsman": "magic swordsman",
       "effect.minecraft_armor_weapon.kaiten": "kaitenn",
+      "effect.minecraft_armor_weapon.slice_guard": "Slice Guard",
       "item.minecraft_armor_weapon.arrow_head": "Arrow Head",
       "item.minecraft_armor_weapon.illusioner_armor_chestplate": "Illusioner Armor Chestplate",
       "gui.minecraft_armor_weapon.rpg_book_gui.button_ninja": "忍者",
@@ -9769,6 +9857,7 @@
       "block.minecraft_armor_weapon.item_stan": "Item Stan",
       "item.minecraft_armor_weapon.magic_mcrystal": "Magic Mcrystal",
       "block.minecraft_armor_weapon.cross": "十字架",
+      "item.minecraft_armor_weapon.old_katana": "Old Katana",
       "item.minecraft_armor_weapon.bogged_outer_boots": "Bogged Outer Boots",
       "item.minecraft_armor_weapon.luna": "§eLuna",
       "advancements.kurikaraken_progress.descr": "倶利伽羅剣を得る",

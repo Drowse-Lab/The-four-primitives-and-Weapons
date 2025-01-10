@@ -34,6 +34,7 @@ import minecraftarmorweapon.potion.SwordOfNightReloadMobEffect;
 import minecraftarmorweapon.potion.SwordOfNightEffectMobEffect;
 import minecraftarmorweapon.potion.SuityuuMobEffect;
 import minecraftarmorweapon.potion.StormEffectMobEffect;
+import minecraftarmorweapon.potion.SliceGuardMobEffect;
 import minecraftarmorweapon.potion.PlayerScoreIdMobEffect;
 import minecraftarmorweapon.potion.OtitaMobEffect;
 import minecraftarmorweapon.potion.OtiruyooMobEffect;
@@ -145,4 +146,5 @@ public class MinecraftArmorWeaponModMobEffects {
 	public static final RegistryObject<MobEffect> TEST_BOW_KILL_EFFECT = REGISTRY.register("test_bow_kill_effect", () -> new TestBowKillEffectMobEffect());
 	public static final RegistryObject<MobEffect> BAKUHATU = REGISTRY.register("bakuhatu", () -> new BakuhatuMobEffect());
 	public static final RegistryObject<MobEffect> ALCHEMY_CRAFT_BLOCK_EFFECT = REGISTRY.register("alchemy_craft_block_effect", () -> new AlchemyCraftBlockEffectMobEffect());
+	public static final RegistryObject<MobEffect> SLICE_GUARD = REGISTRY.register("slice_guard", () -> new SliceGuardMobEffect());
 }

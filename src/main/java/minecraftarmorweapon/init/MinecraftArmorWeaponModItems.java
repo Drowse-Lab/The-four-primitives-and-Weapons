@@ -47,6 +47,7 @@ import minecraftarmorweapon.item.PumpkinHeadItem;
 import minecraftarmorweapon.item.PrototypeKatanaItem;
 import minecraftarmorweapon.item.PillagerArmorItem;
 import minecraftarmorweapon.item.OninomenItem;
+import minecraftarmorweapon.item.OldKatanaItem;
 import minecraftarmorweapon.item.NinjatouItem;
 import minecraftarmorweapon.item.NiguShieldItem;
 import minecraftarmorweapon.item.NetheriteKatanaItem;
@@ -257,6 +258,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> ITEM_STAN = block(MinecraftArmorWeaponModBlocks.ITEM_STAN, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
 	public static final RegistryObject<Item> ALCHEMY_CRAFT_BLOCK = block(MinecraftArmorWeaponModBlocks.ALCHEMY_CRAFT_BLOCK, null);
 	public static final RegistryObject<Item> MAGICWAND = REGISTRY.register("magicwand", () -> new MagicwandItem());
+	public static final RegistryObject<Item> OLD_KATANA = REGISTRY.register("old_katana", () -> new OldKatanaItem());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, CreativeModeTab tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));
