@@ -116,7 +116,7 @@ public class LargeWeaponsProcedure {
 													}
 												}
 											} else {
-												entityiterator.hurt(DamageSource.GENERIC, 5);
+												entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 											}
 										}
 									}
@@ -151,7 +151,7 @@ public class LargeWeaponsProcedure {
 													}
 												}
 											} else {
-												entityiterator.hurt(DamageSource.GENERIC, 5);
+												entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 											}
 										}
 									}
@@ -229,7 +229,7 @@ public class LargeWeaponsProcedure {
 														}
 													}
 												} else {
-													entityiterator.hurt(DamageSource.GENERIC, 5);
+													entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 												}
 											}
 										}
@@ -265,7 +265,7 @@ public class LargeWeaponsProcedure {
 														}
 													}
 												} else {
-													entityiterator.hurt(DamageSource.GENERIC, 5);
+													entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 												}
 											}
 										}

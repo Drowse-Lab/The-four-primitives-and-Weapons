@@ -105,7 +105,7 @@ public class MytestkatanawazaProcedure {
 													}
 												}
 											} else {
-												entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
+												entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 											}
 										}
 									}
@@ -141,7 +141,7 @@ public class MytestkatanawazaProcedure {
 													}
 												}
 											} else {
-												entityiterator.hurt(DamageSource.GENERIC, ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).getDamageValue());
+												entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 											}
 										}
 									}
@@ -184,7 +184,7 @@ public class MytestkatanawazaProcedure {
 												}
 											}
 										} else {
-											entityiterator.hurt(DamageSource.GENERIC, 5);
+											entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 										}
 										dis = Math.abs(xknockback) + Math.abs(yknockback) + Math.abs(zknockback);
 									}
@@ -219,7 +219,7 @@ public class MytestkatanawazaProcedure {
 												}
 											}
 										} else {
-											entityiterator.hurt(DamageSource.GENERIC, 5);
+											entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 										}
 										dis = Math.abs(xknockback) + Math.abs(yknockback) + Math.abs(zknockback);
 									}
