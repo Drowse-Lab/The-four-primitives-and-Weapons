@@ -99,13 +99,8 @@ public class Kill1Procedure {
 								_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "kill @s");
 					}
 				}
-				{
-					Entity _ent = entity;
-					if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-						_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4,
-								_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "data merge entity @s (Health:0)");
-					}
-				}
+				if (entity instanceof LivingEntity _entity)
+					_entity.setHealth(0);
 			}
 		}
 		if (!world.isClientSide()) {

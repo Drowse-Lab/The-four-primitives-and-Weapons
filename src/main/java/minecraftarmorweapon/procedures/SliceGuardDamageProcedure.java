@@ -49,7 +49,7 @@ public class SliceGuardDamageProcedure {
 					if (sourceentity instanceof LivingEntity _entity)
 						_entity.setHealth(0);
 				} else {
-					sourceentity.hurt(DamageSource.GENERIC, 1);
+					sourceentity.hurt(DamageSource.GENERIC, (float) (((LivingEntity) sourceentity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() / 2));
 				}
 			}
 		}
