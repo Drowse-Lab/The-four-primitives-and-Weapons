@@ -19,6 +19,7 @@ import minecraftarmorweapon.block.RoseBlock;
 import minecraftarmorweapon.block.MotoWitherKatanaBlockBlock;
 import minecraftarmorweapon.block.MotoWitherKatanaBlock1Block;
 import minecraftarmorweapon.block.MakiwaridaiBlock;
+import minecraftarmorweapon.block.MagicPotBlock;
 import minecraftarmorweapon.block.KurikarakenBlockBlock;
 import minecraftarmorweapon.block.ItemStanBlock;
 import minecraftarmorweapon.block.CustomSmithingTableBlock;
@@ -45,4 +46,5 @@ public class MinecraftArmorWeaponModBlocks {
 	public static final RegistryObject<Block> CUSTOM_CRAFTER_CRAFTING = REGISTRY.register("custom_crafter_crafting", () -> new CustomCrafterCraftingBlock());
 	public static final RegistryObject<Block> ITEM_STAN = REGISTRY.register("item_stan", () -> new ItemStanBlock());
 	public static final RegistryObject<Block> ALCHEMY_CRAFT_BLOCK = REGISTRY.register("alchemy_craft_block", () -> new AlchemyCraftBlockBlock());
+	public static final RegistryObject<Block> MAGIC_POT = REGISTRY.register("magic_pot", () -> new MagicPotBlock());
 }

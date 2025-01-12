@@ -1,6 +1,7 @@
 package minecraftarmorweapon.procedures;
 
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.LevelAccessor;
@@ -9,6 +10,7 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.CommandSource;
@@ -45,6 +47,10 @@ public class AlchemyCraftBlockEffectOnEffectActiveTickProcedure {
 				}
 			}
 			if (!((world.getBlockState(new BlockPos(entity.getX(), entity.getY() - 0.5, entity.getZ()))).getBlock() == MinecraftArmorWeaponModBlocks.ALCHEMY_CRAFT_BLOCK.get())) {
+				if (world instanceof ServerLevel _level)
+					_level.getServer().getCommands().performPrefixedCommand(
+							new CommandSourceStack(CommandSource.NULL, new Vec3((entity.getX()), (entity.getY() - 0.5), (entity.getZ())), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
+							"fill ~-4 ~ ~-4 ~4 ~1 ~4 air");
 				if (!entity.level.isClientSide())
 					entity.discard();
 			}

@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft_armor_weapon:custom/pothouno",
+  "textures": {
+    "all": "minecraft_armor_weapon:blocks/bluepurgeair",
+    "particle": "minecraft_armor_weapon:blocks/bluepurgeair",
+    "0": "minecraft_armor_weapon:blocks/potmahounohead"
+  },
+  "render_type": "solid"
+}

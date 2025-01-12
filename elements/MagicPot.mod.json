@@ -2,14 +2,14 @@
   "_fv": 43,
   "_type": "block",
   "definition": {
-    "texture": "stone_bricks_talap_dor",
-    "textureTop": "dai",
-    "textureLeft": "stone_bricks_talap_dor",
-    "textureFront": "stone_bricks_talap_dor",
-    "textureRight": "stone_bricks_talap_dor",
-    "textureBack": "stone_bricks_talap_dor",
-    "renderType": 10,
-    "customModelName": "Normal",
+    "texture": "bluepurgeair",
+    "textureTop": "",
+    "textureLeft": "",
+    "textureFront": "",
+    "textureRight": "",
+    "textureBack": "",
+    "renderType": 2,
+    "customModelName": "pothouno:default",
     "rotationMode": 0,
     "enablePitch": false,
     "emissiveRendering": false,
@@ -18,33 +18,42 @@
     "particleTexture": "",
     "tintType": "No tint",
     "isItemTinted": false,
-    "hasTransparency": false,
+    "hasTransparency": true,
     "connectedSides": false,
     "transparencyType": "SOLID",
     "disableOffset": false,
     "boundingBoxes": [
       {
-        "mx": 0.0,
+        "mx": 4.0,
         "my": 0.0,
-        "mz": 0.0,
-        "Mx": 16.0,
-        "My": 16.0,
-        "Mz": 16.0,
+        "mz": 4.0,
+        "Mx": 12.0,
+        "My": 8.0,
+        "Mz": 12.0,
+        "subtract": false
+      },
+      {
+        "mx": 3.5,
+        "my": -0.5,
+        "mz": 3.5,
+        "Mx": 12.5,
+        "My": 8.5,
+        "Mz": 12.5,
         "subtract": false
       }
     ],
-    "name": "Alchemy Craft Block",
+    "name": "Magic Pot",
     "specialInfo": [],
     "hardness": 1.0,
     "resistance": 10.0,
     "hasGravity": false,
-    "isWaterloggable": false,
+    "isWaterloggable": true,
     "creativeTab": {
-      "value": "No creative tab entry"
+      "value": "CUSTOM:MagicBooks"
     },
-    "destroyTool": "axe",
+    "destroyTool": "Not specified",
     "customDrop": {
-      "value": "CUSTOM:MagicPot"
+      "value": ""
     },
     "dropAmount": 1,
     "useLootTableForDrops": false,
@@ -52,9 +61,9 @@
     "enchantPowerBonus": 0.0,
     "plantsGrowOn": false,
     "canRedstoneConnect": false,
-    "lightOpacity": 15,
+    "lightOpacity": 0,
     "material": {
-      "value": "WOOD"
+      "value": "CLAY"
     },
     "tickRate": 0,
     "tickRandomly": false,
@@ -79,7 +88,7 @@
     "isNotColidable": false,
     "isCustomSoundType": false,
     "soundOnStep": {
-      "value": "WOOD"
+      "value": "STONE"
     },
     "breakSound": {
       "value": ""
@@ -118,7 +127,7 @@
     "fluidCapacity": 8000,
     "fluidRestrictions": [],
     "onBlockAdded": {
-      "name": "AlchemyCraftBlockBlockAdded"
+      "name": "MagicPotBlockAdded"
     },
     "spawnWorldTypes": [],
     "restrictionBiomes": [],

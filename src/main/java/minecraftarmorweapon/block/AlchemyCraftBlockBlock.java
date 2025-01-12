@@ -14,6 +14,8 @@ import net.minecraft.core.BlockPos;
 
 import minecraftarmorweapon.procedures.AlchemyCraftBlockBlockAddedProcedure;
 
+import minecraftarmorweapon.init.MinecraftArmorWeaponModBlocks;
+
 import java.util.List;
 import java.util.Collections;
 
@@ -32,7 +34,7 @@ public class AlchemyCraftBlockBlock extends Block {
 		List<ItemStack> dropsOriginal = super.getDrops(state, builder);
 		if (!dropsOriginal.isEmpty())
 			return dropsOriginal;
-		return Collections.singletonList(new ItemStack(this, 1));
+		return Collections.singletonList(new ItemStack(MinecraftArmorWeaponModBlocks.MAGIC_POT.get()));
 	}
 
 	@Override

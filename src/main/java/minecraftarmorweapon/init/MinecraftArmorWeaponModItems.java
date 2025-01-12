@@ -259,6 +259,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> ALCHEMY_CRAFT_BLOCK = block(MinecraftArmorWeaponModBlocks.ALCHEMY_CRAFT_BLOCK, null);
 	public static final RegistryObject<Item> MAGICWAND = REGISTRY.register("magicwand", () -> new MagicwandItem());
 	public static final RegistryObject<Item> OLD_KATANA = REGISTRY.register("old_katana", () -> new OldKatanaItem());
+	public static final RegistryObject<Item> MAGIC_POT = block(MinecraftArmorWeaponModBlocks.MAGIC_POT, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, CreativeModeTab tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));
