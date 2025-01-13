@@ -2,14 +2,14 @@
   "_fv": 43,
   "_type": "block",
   "definition": {
-    "texture": "bluepurgeair",
+    "texture": "potmahounohead",
     "textureTop": "",
     "textureLeft": "",
     "textureFront": "",
     "textureRight": "",
     "textureBack": "",
     "renderType": 2,
-    "customModelName": "pothouno:default",
+    "customModelName": "magicpot:default",
     "rotationMode": 0,
     "enablePitch": false,
     "emissiveRendering": false,
@@ -21,20 +21,11 @@
     "hasTransparency": true,
     "connectedSides": false,
     "transparencyType": "SOLID",
-    "disableOffset": false,
+    "disableOffset": true,
     "boundingBoxes": [
       {
-        "mx": 4.0,
-        "my": 0.0,
-        "mz": 4.0,
-        "Mx": 12.0,
-        "My": 8.0,
-        "Mz": 12.0,
-        "subtract": false
-      },
-      {
         "mx": 3.5,
-        "my": -0.5,
+        "my": 0.0,
         "mz": 3.5,
         "Mx": 12.5,
         "My": 8.5,
@@ -47,7 +38,7 @@
     "hardness": 1.0,
     "resistance": 10.0,
     "hasGravity": false,
-    "isWaterloggable": true,
+    "isWaterloggable": false,
     "creativeTab": {
       "value": "CUSTOM:MagicBooks"
     },

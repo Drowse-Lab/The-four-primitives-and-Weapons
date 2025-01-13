@@ -1,8 +1,8 @@
 {
-  "parent": "minecraft_armor_weapon:custom/pothouno",
+  "parent": "minecraft_armor_weapon:custom/magicpot",
   "textures": {
-    "all": "minecraft_armor_weapon:blocks/bluepurgeair",
-    "particle": "minecraft_armor_weapon:blocks/bluepurgeair",
+    "all": "minecraft_armor_weapon:blocks/potmahounohead",
+    "particle": "minecraft_armor_weapon:blocks/potmahounohead",
     "0": "minecraft_armor_weapon:blocks/potmahounohead"
   },
   "render_type": "solid"
