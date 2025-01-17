@@ -10,7 +10,7 @@ credits="nemui"
 displayURL="https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons"
 updateJSONURL="https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons/files/all?page=1&pageSize=20"
 logoFile="logo.png"
-authors="0526ngs"
+authors="reisame"
 
 [[dependencies.minecraft_armor_weapon]]
     modId="minecraft"

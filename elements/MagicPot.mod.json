@@ -15,8 +15,8 @@
     "emissiveRendering": false,
     "displayFluidOverlay": false,
     "itemTexture": "",
-    "particleTexture": "",
-    "tintType": "No tint",
+    "particleTexture": "aa",
+    "tintType": "Grass",
     "isItemTinted": false,
     "hasTransparency": true,
     "connectedSides": false,
@@ -54,7 +54,7 @@
     "canRedstoneConnect": false,
     "lightOpacity": 0,
     "material": {
-      "value": "CLAY"
+      "value": "GLASS"
     },
     "tickRate": 0,
     "tickRandomly": false,

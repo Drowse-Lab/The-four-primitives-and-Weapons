@@ -9232,6 +9232,44 @@
           "src/main/resources/assets/minecraft_armor_weapon/models/block/magic_pot.json"
         ]
       }
+    },
+    {
+      "name": "EffectBloodTpEffectStartedapplied",
+      "type": "procedure",
+      "sortid": 602,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "effect_blood_tp_effect_startedapplied",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/EffectBloodTpEffectStartedappliedProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EffectBloodTpEffectExpires",
+      "type": "procedure",
+      "sortid": 603,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "effect_blood_tp_effect_expires",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/EffectBloodTpEffectExpiresProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ]
+      }
     }
   ],
   "variable_elements": [
@@ -10084,7 +10122,7 @@
     "modid": "minecraft_armor_weapon",
     "modName": "minecraft armor weapon",
     "version": "1.0.0",
-    "author": "0526ngs",
+    "author": "reisame",
     "websiteURL": "https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons",
     "license": "Academic Free License v3.0",
     "disableForgeVersionCheck": true,

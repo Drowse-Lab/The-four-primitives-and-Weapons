@@ -7,6 +7,10 @@ package minecraftarmorweapon.init;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.api.distmarker.Dist;
 
 import net.minecraft.world.level.block.Block;
 
@@ -47,4 +51,12 @@ public class MinecraftArmorWeaponModBlocks {
 	public static final RegistryObject<Block> ITEM_STAN = REGISTRY.register("item_stan", () -> new ItemStanBlock());
 	public static final RegistryObject<Block> ALCHEMY_CRAFT_BLOCK = REGISTRY.register("alchemy_craft_block", () -> new AlchemyCraftBlockBlock());
 	public static final RegistryObject<Block> MAGIC_POT = REGISTRY.register("magic_pot", () -> new MagicPotBlock());
+
+	@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+	public static class ClientSideHandler {
+		@SubscribeEvent
+		public static void blockColorLoad(RegisterColorHandlersEvent.Block event) {
+			MagicPotBlock.blockColorLoad(event);
+		}
+	}
 }

@@ -86,7 +86,7 @@ public class BloodTpposiyonXiaoGuogaQieretaShiProcedure {
 										if (entityiterator instanceof LivingEntity) {
 											if (entity instanceof LivingEntity _entity)
 												_entity.setHealth((float) ((entity instanceof LivingEntity _livEnt ? _livEnt.getHealth() : -1) + 1));
-											entityiterator.hurt(DamageSource.GENERIC, 10);
+											entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
 										}
 									}
 								}

@@ -12,6 +12,12 @@
     "isBad": false,
     "isBenefitical": false,
     "renderStatusInInventory": false,
-    "renderStatusInHUD": false
+    "renderStatusInHUD": false,
+    "onStarted": {
+      "name": "EffectBloodTpEffectStartedapplied"
+    },
+    "onExpired": {
+      "name": "EffectBloodTpEffectExpires"
+    }
   }
 }
