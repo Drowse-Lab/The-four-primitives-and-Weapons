@@ -12,7 +12,7 @@
 ですがコマンドを使用していないため正常に遊べると思われます
 
 ～Mod・データパックについて～
-Modは私が作成したminecraft armor weaponというmodを導入してください「https://onl.la/6CYtJhQ」。
+Modは私が作成したthe-four-primitives-and-weaponsというmodを導入してください「https://onl.la/6CYtJhQ」。
 
 ～動画・配信について～
 動画・配信はウェルカムです。
