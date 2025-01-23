@@ -10127,7 +10127,7 @@
     "license": "Academic Free License v3.0",
     "disableForgeVersionCheck": true,
     "serverSideOnly": false,
-    "updateURL": "https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons/files/all?page\u003d1\u0026pageSize\u003d20",
+    "updateURL": "https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons",
     "modPicture": "katanairon3d2024-1.3",
     "requiredMods": [],
     "dependencies": [],
