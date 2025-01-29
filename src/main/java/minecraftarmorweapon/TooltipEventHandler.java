@@ -5,6 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraft.client.gui.screens.Screen; // ← 追加
 
 @Mod.EventBusSubscriber
 public class TooltipEventHandler {
@@ -16,9 +17,9 @@ public class TooltipEventHandler {
             Player player = (Player) event.getEntity();
             System.out.println("[DEBUG] Player detected: " + player.getName().getString());
             System.out.println("[DEBUG] isCreative: " + player.isCreative());
-            System.out.println("[DEBUG] isShiftKeyDown: " + player.isShiftKeyDown());
+            System.out.println("[DEBUG] Screen.hasShiftDown: " + Screen.hasShiftDown()); // ← 変更
     
-            if (player.isCreative() && player.isShiftKeyDown()) {
+            if (player.isCreative() && Screen.hasShiftDown()) { // ← 修正
                 System.out.println("[DEBUG] Player is in creative mode and pressing Shift.");
     
                 if (event.getItemStack().hasTag()) {
