@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber
 public class TooltipEventHandler {
-    private static final boolean DEBUG_MODE = true; // デバッグON/OFF
+    private static final boolean DEBUG_MODE = true; 
 
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
