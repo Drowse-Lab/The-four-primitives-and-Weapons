@@ -13,88 +13,52 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber
 public class TooltipEventHandler {
-    private static final boolean DEBUG_MODE = true; // デバッグON/OFF
-
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
-        if (DEBUG_MODE) System.out.println("[DEBUG] Tooltip event triggered!");
-
-        if (event.getEntity() == null || !(event.getEntity() instanceof Player)) {
-            if (DEBUG_MODE) System.out.println("[DEBUG] Entity is not a player.");
-            return;
-        }
-
+        // プレイヤー以外は処理しない
+        if (!(event.getEntity() instanceof Player)) return;
         Player player = (Player) event.getEntity();
-        if (DEBUG_MODE) System.out.println("[DEBUG] Player detected: " + player.getName().getString());
 
-        if (!player.getLevel().isClientSide || !player.isCreative()) {
-            if (DEBUG_MODE) System.out.println("[DEBUG] Player is not in creative mode.");
-            return;
-        }
-
-        if (!Screen.hasShiftDown()) {
-            if (DEBUG_MODE) System.out.println("[DEBUG] Shift key not pressed.");
-            return;
-        }
-
-        Minecraft mc = Minecraft.getInstance();
-        if (!mc.options.advancedItemTooltips) {
-            if (DEBUG_MODE) System.out.println("[DEBUG] Advanced tooltips (F3+H) are disabled.");
-            return;
-        }
-
-        if (DEBUG_MODE) System.out.println("[DEBUG] Advanced tooltips enabled. Displaying NBT data.");
+        // クリエイティブモードかつ Shift が押されている & F3+H の詳細ツールチップが有効
+        if (!player.getLevel().isClientSide || !player.isCreative() || !Screen.hasShiftDown()) return;
+        if (!Minecraft.getInstance().options.advancedItemTooltips) return;
 
         CompoundTag tag = event.getItemStack().getTag();
         if (tag != null) {
-            if (DEBUG_MODE) System.out.println("[DEBUG] Item has NBT data: " + tag);
-
-            StringBuilder nbtString = new StringBuilder("§7" + event.getItemStack().getItem().toString() + "{");
-
+            event.getToolTip().add(Component.literal("§c{"));
+            int index = 0;
             for (String key : tag.getAllKeys()) {
                 Tag value = tag.get(key);
-                nbtString.append(formatNBT(key, value)).append(",");
+                event.getToolTip().add(Component.literal("  " + formatNBT(key, value) + (index++ < tag.getAllKeys().size() - 1 ? "," : "")));
             }
-
-            if (nbtString.charAt(nbtString.length() - 1) == ',') {
-                nbtString.setLength(nbtString.length() - 1);
-            }
-
-            nbtString.append("}");
-            event.getToolTip().add(Component.literal(nbtString.toString()));
-        } else {
-            if (DEBUG_MODE) System.out.println("[DEBUG] Item has no NBT data.");
+            event.getToolTip().add(Component.literal("§c}"));
         }
     }
 
     private static String formatNBT(String key, Tag value) {
-        StringBuilder formatted = new StringBuilder("§e" + key + "§r:");
+        StringBuilder formatted = new StringBuilder("§c\"" + key + "\"§r: ");
         if (value instanceof CompoundTag) {
-            formatted.append("{");
+            formatted.append("§c{");
             CompoundTag compound = (CompoundTag) value;
+            int index = 0;
             for (String subKey : compound.getAllKeys()) {
-                formatted.append(formatNBT(subKey, compound.get(subKey))).append(",");
+                formatted.append("\n    ").append(formatNBT(subKey, compound.get(subKey))).append(index++ < compound.getAllKeys().size() - 1 ? "," : "");
             }
-            if (formatted.charAt(formatted.length() - 1) == ',') {
-                formatted.setLength(formatted.length() - 1);
-            }
-            formatted.append("}");
+            formatted.append("\n  §c}");
         } else if (value instanceof ListTag) {
-            formatted.append("[");
+            formatted.append("§c[");
             ListTag list = (ListTag) value;
+            int index = 0;
             for (Tag item : list) {
-                formatted.append(formatNBT("", item)).append(",");
+                formatted.append("\n    ").append(formatNBT("", item)).append(index++ < list.size() - 1 ? "," : "");
             }
-            if (formatted.charAt(formatted.length() - 1) == ',') {
-                formatted.setLength(formatted.length() - 1);
-            }
-            formatted.append("]");
+            formatted.append("\n  §c]");
         } else {
             String valueString = value.getAsString();
             if (valueString.matches("-?\\d+(\\.\\d+)?")) {
                 formatted.append("§9").append(valueString).append("§r");
             } else {
-                formatted.append("§e").append(valueString).append("§r");
+                formatted.append("§e\"").append(valueString).append("\"§r");
             }
         }
         return formatted.toString();
