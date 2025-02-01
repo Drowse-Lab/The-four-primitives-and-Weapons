@@ -54,6 +54,7 @@ import minecraftarmorweapon.potion.KaminariyadeMobEffect;
 import minecraftarmorweapon.potion.KaitenMobEffect;
 import minecraftarmorweapon.potion.HardentityMobEffect;
 import minecraftarmorweapon.potion.GyetonzangekiMobEffect;
+import minecraftarmorweapon.potion.GuwaazangekiMobEffect;
 import minecraftarmorweapon.potion.GuardMobEffect;
 import minecraftarmorweapon.potion.FireballeffectMobEffect;
 import minecraftarmorweapon.potion.EffectMagicMobEffect;
@@ -147,4 +148,5 @@ public class MinecraftArmorWeaponModMobEffects {
 	public static final RegistryObject<MobEffect> BAKUHATU = REGISTRY.register("bakuhatu", () -> new BakuhatuMobEffect());
 	public static final RegistryObject<MobEffect> ALCHEMY_CRAFT_BLOCK_EFFECT = REGISTRY.register("alchemy_craft_block_effect", () -> new AlchemyCraftBlockEffectMobEffect());
 	public static final RegistryObject<MobEffect> SLICE_GUARD = REGISTRY.register("slice_guard", () -> new SliceGuardMobEffect());
+	public static final RegistryObject<MobEffect> GUWAAZANGEKI = REGISTRY.register("guwaazangeki", () -> new GuwaazangekiMobEffect());
 }
