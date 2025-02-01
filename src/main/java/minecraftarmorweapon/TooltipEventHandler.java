@@ -18,7 +18,7 @@ public class TooltipEventHandler {
         if (!(event.getEntity() instanceof Player)) return;
         Player player = (Player) event.getEntity();
 
-        // クリエイティブ + Shift 押してる + 詳細表示がON じゃないと何もしない
+        
         if (!player.getLevel().isClientSide || !player.isCreative() || !Screen.hasShiftDown()) return;
         if (!Minecraft.getInstance().options.advancedItemTooltips) return;
 
@@ -30,7 +30,7 @@ public class TooltipEventHandler {
             for (String key : tag.getAllKeys()) {
                 Tag value = tag.get(key);
 
-                // display がない場合はスキップ
+            
                 if (key.equals("display")) continue;
 
                 if (key.equals("Enchantments") && value instanceof ListTag) {
@@ -75,9 +75,9 @@ public class TooltipEventHandler {
         } else {
             String valueString = value.getAsString();
             if (valueString.matches("-?\\d+(\\.\\d+)?")) {
-                colorValue = "§9" + valueString + "§r"; // 数値を青
+                colorValue = "§9" + valueString + "§r";
             } else {
-                colorValue = "§e\"" + valueString + "\"§r"; // 文字列を黄色
+                colorValue = "§e\"" + valueString + "\"§r";
             }
         }
 
