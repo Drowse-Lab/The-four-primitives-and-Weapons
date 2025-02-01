@@ -15,11 +15,10 @@ import net.minecraftforge.fml.common.Mod;
 public class TooltipEventHandler {
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
-        // プレイヤー以外は処理しない
         if (!(event.getEntity() instanceof Player)) return;
         Player player = (Player) event.getEntity();
 
-        // クリエイティブモードかつ Shift が押されている & F3+H の詳細ツールチップが有効
+        // クリエイティブ + Shift 押してる + 詳細表示がON じゃないと何もしない
         if (!player.getLevel().isClientSide || !player.isCreative() || !Screen.hasShiftDown()) return;
         if (!Minecraft.getInstance().options.advancedItemTooltips) return;
 
@@ -27,40 +26,61 @@ public class TooltipEventHandler {
         if (tag != null) {
             event.getToolTip().add(Component.literal("§c{"));
             int index = 0;
+
             for (String key : tag.getAllKeys()) {
                 Tag value = tag.get(key);
-                event.getToolTip().add(Component.literal("  " + formatNBT(key, value) + (index++ < tag.getAllKeys().size() - 1 ? "," : "")));
+
+                // display がない場合はスキップ
+                if (key.equals("display")) continue;
+
+                if (key.equals("Enchantments") && value instanceof ListTag) {
+                    event.getToolTip().add(Component.literal("  §c\"Enchantments\": ["));
+
+                    ListTag enchantments = (ListTag) value;
+                    for (int i = 0; i < enchantments.size(); i++) {
+                        CompoundTag enchant = enchantments.getCompound(i);
+                        String enchantName = enchant.getString("id");
+                        int level = enchant.getInt("lvl");
+
+                        event.getToolTip().add(Component.literal(
+                            "    §c{ §c\"id\": §e\"" + enchantName + "\"§r, " +
+                            "§c\"lvl\": §9" + level + "§c }"
+                        ));
+
+                        if (i < enchantments.size() - 1) {
+                            event.getToolTip().add(Component.literal(","));
+                        }
+                    }
+                    event.getToolTip().add(Component.literal("  §c]"));
+                } else {
+                    event.getToolTip().add(formatNBT(key, value));
+                }
+
+                if (++index < tag.getAllKeys().size()) {
+                    event.getToolTip().add(Component.literal(","));
+                }
             }
             event.getToolTip().add(Component.literal("§c}"));
         }
     }
 
-    private static String formatNBT(String key, Tag value) {
-        StringBuilder formatted = new StringBuilder("§c\"" + key + "\"§r: ");
+    private static Component formatNBT(String key, Tag value) {
+        String colorKey = "§c\"" + key + "\"§r: ";
+        String colorValue;
+
         if (value instanceof CompoundTag) {
-            formatted.append("§c{");
-            CompoundTag compound = (CompoundTag) value;
-            int index = 0;
-            for (String subKey : compound.getAllKeys()) {
-                formatted.append("\n    ").append(formatNBT(subKey, compound.get(subKey))).append(index++ < compound.getAllKeys().size() - 1 ? "," : "");
-            }
-            formatted.append("\n  §c}");
+            colorValue = "§c{ ... }";
         } else if (value instanceof ListTag) {
-            formatted.append("§c[");
-            ListTag list = (ListTag) value;
-            int index = 0;
-            for (Tag item : list) {
-                formatted.append("\n    ").append(formatNBT("", item)).append(index++ < list.size() - 1 ? "," : "");
-            }
-            formatted.append("\n  §c]");
+            colorValue = "§c[ ... ]";
         } else {
             String valueString = value.getAsString();
             if (valueString.matches("-?\\d+(\\.\\d+)?")) {
-                formatted.append("§9").append(valueString).append("§r");
+                colorValue = "§9" + valueString + "§r"; // 数値を青
             } else {
-                formatted.append("§e\"").append(valueString).append("\"§r");
+                colorValue = "§e\"" + valueString + "\"§r"; // 文字列を黄色
             }
         }
-        return formatted.toString();
+
+        return Component.literal(colorKey + colorValue);
     }
 }
