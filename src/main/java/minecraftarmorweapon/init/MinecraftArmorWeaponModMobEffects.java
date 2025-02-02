@@ -58,6 +58,7 @@ import minecraftarmorweapon.potion.GyetonzangekiMobEffect;
 import minecraftarmorweapon.potion.GuwaazangekiMobEffect;
 import minecraftarmorweapon.potion.GuardMobEffect;
 import minecraftarmorweapon.potion.FireballeffectMobEffect;
+import minecraftarmorweapon.potion.EnmazangekiMobEffect;
 import minecraftarmorweapon.potion.EffectMagicMobEffect;
 import minecraftarmorweapon.potion.EffectBloodTpMobEffect;
 import minecraftarmorweapon.potion.DevourBloodMobEffect;
@@ -153,4 +154,5 @@ public class MinecraftArmorWeaponModMobEffects {
 	public static final RegistryObject<MobEffect> GUWAAZANGEKI = REGISTRY.register("guwaazangeki", () -> new GuwaazangekiMobEffect());
 	public static final RegistryObject<MobEffect> ARMORSTANDTOBASUENMAEFFECTKILL = REGISTRY.register("armorstandtobasuenmaeffectkill", () -> new ArmorstandtobasuenmaeffectkillMobEffect());
 	public static final RegistryObject<MobEffect> KILLOFF = REGISTRY.register("killoff", () -> new KilloffMobEffect());
+	public static final RegistryObject<MobEffect> ENMAZANGEKI = REGISTRY.register("enmazangeki", () -> new EnmazangekiMobEffect());
 }
