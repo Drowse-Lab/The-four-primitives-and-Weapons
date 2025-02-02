@@ -46,7 +46,7 @@ public class GuwaazangekiEffectStartedappliedProcedure {
 		r = 1;
 		alpha = entity.getYRot();
 		beta = entity.getXRot();
-		for (int index0 = 0; index0 < 100; index0++) {
+		for (int index0 = 0; index0 < 1048576; index0++) {
 			if (world instanceof ServerLevel _level)
 				_level.getServer().getCommands()
 						.performPrefixedCommand(new CommandSourceStack(CommandSource.NULL,

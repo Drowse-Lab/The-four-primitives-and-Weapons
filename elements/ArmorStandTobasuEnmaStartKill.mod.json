@@ -1,0 +1,9 @@
+{
+  "_fv": 43,
+  "_type": "function",
+  "definition": {
+    "code": "# Enter the function code here\n# say [start]\n#########################################################\n# ①の処理\n#########################################################\nsummon minecraft:armor_stand ~ ~1 ~ {Tags:[minecraft_armor_weapon_armor_stand_tobasu_enma_enmamain_AS2,minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_INI],NoGravity:1b,Small:1b,Invisible:1b,Invulnerable:1b,NoBasePlate:1b}\nexecute anchored eyes as @e[tag=minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_INI,limit=1,sort=nearest] run tp @s ^ ^ ^ ~ ~\nexecute anchored eyes as @e[tag=minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_INI,limit=1,sort=nearest] run effect give @s minecraft_armor_weapon:armorstandtobasuenmaeffectkill 2 1 true\n#########################################################\nscoreboard players set @e[tag=AS2_INI,limit=1,sort=nearest] minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_D 80\ntag @e[tag=minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_INI,limit=1,sort=nearest] remove minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_INI\n#########################################################\n",
+    "name": "armor_stand_tobasu_enma_start_kill",
+    "namespace": "mod"
+  }
+}

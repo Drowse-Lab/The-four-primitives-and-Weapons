@@ -9368,6 +9368,183 @@
           "src/main/java/minecraftarmorweapon/potion/GuwaazangekiMobEffect.java"
         ]
       }
+    },
+    {
+      "name": "ArmorStandTobasuEnmaMain",
+      "type": "function",
+      "sortid": 609,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "armor_stand_tobasu_enma_main",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/minecraft_armor_weapon/functions/armor_stand_tobasu_enma_main.mcfunction"
+        ]
+      },
+      "path": "~/enmazangeki"
+    },
+    {
+      "name": "ArmorStandTobasuEnmaTick",
+      "type": "function",
+      "sortid": 611,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "armor_stand_tobasu_enma_tick",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/minecraft_armor_weapon/functions/armor_stand_tobasu_enma_tick.mcfunction"
+        ]
+      },
+      "path": "~/enmazangeki"
+    },
+    {
+      "name": "ArmorStandTobasuEnmaTickKill",
+      "type": "function",
+      "sortid": 612,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "armor_stand_tobasu_enma_tick_kill",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/minecraft_armor_weapon/functions/armor_stand_tobasu_enma_tick_kill.mcfunction"
+        ]
+      },
+      "path": "~/enmazangeki"
+    },
+    {
+      "name": "ArmorStandTobasuEnmaStartKill",
+      "type": "function",
+      "sortid": 613,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "armor_stand_tobasu_enma_start_kill",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/minecraft_armor_weapon/functions/armor_stand_tobasu_enma_start_kill.mcfunction"
+        ]
+      },
+      "path": "~/enmazangeki"
+    },
+    {
+      "name": "ArmorstandtobasuenmaeffectkillEffectExpires",
+      "type": "procedure",
+      "sortid": 614,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "armorstandtobasuenmaeffectkill_effect_expires",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/ArmorstandtobasuenmaeffectkillEffectExpiresProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ]
+      },
+      "path": "~/enmazangeki"
+    },
+    {
+      "name": "ArmorstandtobasuenmaeffectkillOnEffectActiveTick",
+      "type": "procedure",
+      "sortid": 615,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "armorstandtobasuenmaeffectkill_on_effect_active_tick",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/ArmorstandtobasuenmaeffectkillOnEffectActiveTickProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      },
+      "path": "~/enmazangeki"
+    },
+    {
+      "name": "Armorstandtobasuenmaeffectkill",
+      "type": "potioneffect",
+      "sortid": 616,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "armorstandtobasuenmaeffectkill",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/potion/ArmorstandtobasuenmaeffectkillMobEffect.java"
+        ]
+      },
+      "path": "~/enmazangeki"
+    },
+    {
+      "name": "KilloffEffectStartedapplied",
+      "type": "procedure",
+      "sortid": 617,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "killoff_effect_startedapplied",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/KilloffEffectStartedappliedProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ]
+      }
+    },
+    {
+      "name": "KilloffEffectExpires",
+      "type": "procedure",
+      "sortid": 618,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "killoff_effect_expires",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/KilloffEffectExpiresProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Killoff",
+      "type": "potioneffect",
+      "sortid": 619,
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "killoff",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/potion/KilloffMobEffect.java"
+        ]
+      }
     }
   ],
   "variable_elements": [
@@ -9645,6 +9822,7 @@
       "effect.minecraft_armor_weapon.alchemy_craft_block_effect": "Alchemy Craft Block Effect",
       "item.minecraft_armor_weapon.magicwand": "Magicwand",
       "item.minecraft_armor_weapon.rivers_of_blood": "§4§lRivers of Blood",
+      "effect.minecraft_armor_weapon.killoff": "killoff",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_boots": "das herz einer fee armor boots",
       "entity.minecraft_armor_weapon.killotiru": "Otiruyo",
       "effect.minecraft_armor_weapon.kitterukitteru": "subetekirisuteru",
@@ -9736,6 +9914,7 @@
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_chestplate": "das herz einer fee armor chestplate",
       "effect.minecraft_armor_weapon.storm_effect": "stormeffect",
       "item.minecraft_armor_weapon.aaa": "Aaa",
+      "effect.minecraft_armor_weapon.armorstandtobasuenmaeffectkill": "Armorstandtobasuenmaeffectkill",
       "item.minecraft_armor_weapon.prototype_katana": "§8§l§oPrototype Katana",
       "item.minecraft_armor_weapon.thunderbolt": "§eThunderbolt",
       "advancements.kurikaraken_progress.title": "This\u0027s not a sword, this\u0027s a katana!",
@@ -9913,6 +10092,7 @@
       "effect.minecraft_armor_weapon.alchemy_craft_block_effect": "Alchemy Craft Block Effect",
       "item.minecraft_armor_weapon.magicwand": "Magicwand",
       "item.minecraft_armor_weapon.rivers_of_blood": "§4§lRivers of Blood",
+      "effect.minecraft_armor_weapon.killoff": "killoff",
       "entity.minecraft_armor_weapon.killotiru": "Otiruyo",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_boots": "das herz einer fee armor boots",
       "effect.minecraft_armor_weapon.kitterukitteru": "subetekirisuteru",
@@ -10004,6 +10184,7 @@
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_chestplate": "das herz einer fee armor chestplate",
       "effect.minecraft_armor_weapon.storm_effect": "stormeffect",
       "item.minecraft_armor_weapon.aaa": "Aaa",
+      "effect.minecraft_armor_weapon.armorstandtobasuenmaeffectkill": "Armorstandtobasuenmaeffectkill",
       "item.minecraft_armor_weapon.prototype_katana": "§8§l§oPrototype Katana",
       "item.minecraft_armor_weapon.thunderbolt": "§eThunderbolt",
       "advancements.kurikaraken_progress.title": "剣ちゃうやん刀やんけ",
@@ -10216,6 +10397,10 @@
       },
       {
         "name": "bow",
+        "children": []
+      },
+      {
+        "name": "enmazangeki",
         "children": []
       }
     ]

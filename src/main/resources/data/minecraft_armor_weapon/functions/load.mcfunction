@@ -8,8 +8,17 @@ scoreboard objectives add minecraft_armor_weapon_armor_stand_tobasu_main_AS2_X1 
 scoreboard objectives add minecraft_armor_weapon_armor_stand_tobasu_main_AS2_Y1 dummy
 scoreboard objectives add minecraft_armor_weapon_armor_stand_tobasu_main_AS2_Z1 dummy
 scoreboard objectives add minecraft_armor_weapon_armor_stand_tobasu_main_AS2_R minecraft.used:minecraft.carrot_on_a_stick
-#########################################################
 
+#########################################################
+#enmazangeki
+scoreboard objectives add minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_D dummy
+scoreboard objectives add minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_X0 dummy
+scoreboard objectives add minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_Y0 dummy
+scoreboard objectives add minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_Z0 dummy
+scoreboard objectives add minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_X1 dummy
+scoreboard objectives add minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_Y1 dummy
+scoreboard objectives add minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_Z1 dummy
+scoreboard objectives add minecraft_armor_weapon_armor_stand_tobasu_enma_main_AS2_R minecraft.used:minecraft.carrot_on_a_stick
 #スコアボード作成
 scoreboard objectives add Motion_Power dummy
 scoreboard objectives add Motion_Speed dummy

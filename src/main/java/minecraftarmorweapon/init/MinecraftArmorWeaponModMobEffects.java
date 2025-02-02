@@ -48,6 +48,7 @@ import minecraftarmorweapon.potion.LokidecoyeffectMobEffect;
 import minecraftarmorweapon.potion.KurutimenasiMobEffect;
 import minecraftarmorweapon.potion.KougekiMobEffect;
 import minecraftarmorweapon.potion.KitterukitteruMobEffect;
+import minecraftarmorweapon.potion.KilloffMobEffect;
 import minecraftarmorweapon.potion.KillEffectTrueOrFalseMobEffect;
 import minecraftarmorweapon.potion.KarikarisiterunemaidomaidoMobEffect;
 import minecraftarmorweapon.potion.KaminariyadeMobEffect;
@@ -72,6 +73,7 @@ import minecraftarmorweapon.potion.BakuhatuMobEffect;
 import minecraftarmorweapon.potion.AttackInGuardMobEffect;
 import minecraftarmorweapon.potion.AttackBowMobEffect;
 import minecraftarmorweapon.potion.Arrow1MobEffect;
+import minecraftarmorweapon.potion.ArmorstandtobasuenmaeffectkillMobEffect;
 import minecraftarmorweapon.potion.ArmorstandtobasueffectkillMobEffect;
 import minecraftarmorweapon.potion.ArmorStandTobasuEffectMobEffect;
 import minecraftarmorweapon.potion.AlchemyCraftBlockEffectMobEffect;
@@ -149,4 +151,6 @@ public class MinecraftArmorWeaponModMobEffects {
 	public static final RegistryObject<MobEffect> ALCHEMY_CRAFT_BLOCK_EFFECT = REGISTRY.register("alchemy_craft_block_effect", () -> new AlchemyCraftBlockEffectMobEffect());
 	public static final RegistryObject<MobEffect> SLICE_GUARD = REGISTRY.register("slice_guard", () -> new SliceGuardMobEffect());
 	public static final RegistryObject<MobEffect> GUWAAZANGEKI = REGISTRY.register("guwaazangeki", () -> new GuwaazangekiMobEffect());
+	public static final RegistryObject<MobEffect> ARMORSTANDTOBASUENMAEFFECTKILL = REGISTRY.register("armorstandtobasuenmaeffectkill", () -> new ArmorstandtobasuenmaeffectkillMobEffect());
+	public static final RegistryObject<MobEffect> KILLOFF = REGISTRY.register("killoff", () -> new KilloffMobEffect());
 }

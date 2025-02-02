@@ -32,6 +32,10 @@ public class IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure {
 		double a = 0;
 		double r = 0;
 		double b = 0;
+		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.ENMA.get()) {
+			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.KILLOFF.get(), 2, 1, true, false));
+		}
 		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.OLD_KATANA.get()) {
 			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SLICE_GUARD.get(), 2, 1, true, false));
