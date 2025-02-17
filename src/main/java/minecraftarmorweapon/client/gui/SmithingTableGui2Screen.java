@@ -6,9 +6,10 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.world.inventory.SmithingTableGui2Menu;
+
+import net.minecraft.client.Minecraft;
 
 import java.util.HashMap;
 

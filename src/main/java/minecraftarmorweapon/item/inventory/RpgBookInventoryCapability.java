@@ -15,9 +15,10 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Direction;
-import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
+
+import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.client.gui.RpgBookGuiScreen;
 

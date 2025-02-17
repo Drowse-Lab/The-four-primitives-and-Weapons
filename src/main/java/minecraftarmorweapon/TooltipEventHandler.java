@@ -3,26 +3,25 @@ package minecraftarmorweapon.event;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style; // ← 修正
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraft.world.item.ItemStack;
-// import net.minecraft.network.chat.ChatFormatting;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.common.MinecraftForge;
 
 import java.util.List;
 import java.util.ArrayList;
 
 @Mod.EventBusSubscriber
 public class TooltipEventHandler {
-    private static final int MAX_LINES_BEFORE_SCROLL = 5; // 一度に表示する最大行数
-    private static int scrollIndex = 0; // スクロール位置
+    private static final int MAX_LINES_BEFORE_SCROLL = 5;
+    private static int scrollIndex = 0;
 
     public TooltipEventHandler() {
         System.out.println("TooltipEventHandler Registered!");
@@ -35,30 +34,29 @@ public class TooltipEventHandler {
 
         // Shiftを押しているときだけ表示
         if (Minecraft.getInstance().player != null && Screen.hasShiftDown()) {
-            // F3 + H（詳細ツールチップ表示）が有効な場合のみ
             if (stack.hasTag() && Minecraft.getInstance().options.advancedItemTooltips) {
                 CompoundTag tag = stack.getTag();
                 if (tag != null) {
-                    event.getToolTip().add(Component.literal("NBT Data:").withStyle(ChatFormatting.GRAY));
+                    event.getToolTip().add(Component.literal("NBT Data:").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAAA))));
 
-                    // NBTデータを行単位で取得
                     List<String> formattedNBT = formatNBT(tag, 0);
-
-                    // スクロール可能か判定
                     int maxScroll = Math.max(0, formattedNBT.size() - MAX_LINES_BEFORE_SCROLL);
 
-                    // スクロール位置を制限
                     scrollIndex = Math.min(scrollIndex, maxScroll);
                     scrollIndex = Math.max(scrollIndex, 0);
 
-                    // スクロール時のインジケーター
                     if (formattedNBT.size() > MAX_LINES_BEFORE_SCROLL) {
-                        event.getToolTip().add(Component.literal("(Scroll: Mouse Wheel)").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
+                        event.getToolTip().add(
+                            Component.literal("(Scroll: Mouse Wheel)").setStyle(
+                                Style.EMPTY.withColor(TextColor.fromRgb(0x555555)).withItalic(true)
+                            )
+                        );
                     }
 
-                    // 現在のスクロール位置に応じて表示
                     for (int i = scrollIndex; i < Math.min(scrollIndex + MAX_LINES_BEFORE_SCROLL, formattedNBT.size()); i++) {
-                        event.getToolTip().add(Component.literal(formattedNBT.get(i)).withStyle(ChatFormatting.DARK_GRAY));
+                        event.getToolTip().add(
+                            Component.literal(formattedNBT.get(i)).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x555555)))
+                        );
                     }
                 }
             }
@@ -103,7 +101,6 @@ public class TooltipEventHandler {
         }
     }
 
-    // スクロールイベントを処理するクラス
     public static class TooltipScrollHandler {
         public TooltipScrollHandler() {
             System.out.println("TooltipScrollHandler Registered!");
@@ -112,12 +109,12 @@ public class TooltipEventHandler {
 
         @SubscribeEvent
         public static void onScroll(InputEvent.MouseScrollingEvent event) {
-            System.out.println("MouseScrolled event detected! Scroll Delta: " + event.getScrollDelta()); // 確認ログ
+            System.out.println("MouseScrolled event detected! Scroll Delta: " + event.getScrollDelta());
 
             if (Screen.hasShiftDown()) {
                 double scrollDelta = event.getScrollDelta();
                 adjustScrollIndex(scrollDelta > 0 ? -1 : 1);
-                System.out.println("Scroll Index Updated: " + scrollIndex); // 確認ログ
+                System.out.println("Scroll Index Updated: " + scrollIndex);
 
                 event.setCanceled(true);
             }

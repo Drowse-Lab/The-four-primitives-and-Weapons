@@ -14,13 +14,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.procedures.SwordOfNightYoukuritukusitatokiProcedure;
 import minecraftarmorweapon.procedures.SwordOfNightMakeItemGlowProcedure;
 import minecraftarmorweapon.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
+
+import net.minecraft.client.Minecraft;
 
 public class SwordOfNightItem extends SwordItem {
 	public SwordOfNightItem() {

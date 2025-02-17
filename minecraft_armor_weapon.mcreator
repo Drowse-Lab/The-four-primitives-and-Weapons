@@ -9289,7 +9289,7 @@
       "name": "TooltipEventHandler",
       "type": "code",
       "sortid": 605,
-      "compiles": false,
+      "compiles": true,
       "locked_code": true,
       "registry_name": "tooltip_event_handler",
       "metadata": {

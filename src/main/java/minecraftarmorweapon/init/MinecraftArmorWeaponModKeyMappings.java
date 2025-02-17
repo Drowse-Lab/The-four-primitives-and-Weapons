@@ -12,10 +12,11 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.api.distmarker.Dist;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
 
 import minecraftarmorweapon.network.RMessage;
+
+import minecraftarmorweapon.event.Minecraft;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 

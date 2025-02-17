@@ -13,9 +13,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.procedures.KuwakuwagemuNeiniobareiwoBiaoShiProcedure;
+
+import net.minecraft.client.Minecraft;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.platform.GlStateManager;

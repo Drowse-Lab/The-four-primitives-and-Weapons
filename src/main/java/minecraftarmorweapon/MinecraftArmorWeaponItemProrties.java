@@ -1,8 +1,7 @@
 package minecraftarmorweapon;
 
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.renderer.item.ItemProperties;
 

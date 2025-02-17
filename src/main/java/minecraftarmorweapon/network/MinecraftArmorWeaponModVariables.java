@@ -28,7 +28,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Direction;
-import net.minecraft.client.Minecraft;
+
+import minecraftarmorweapon.event.Minecraft;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
