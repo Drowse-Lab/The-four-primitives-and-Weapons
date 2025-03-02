@@ -1,3 +1,7 @@
+
+/*
+ *    MCreator note: This file will be REGENERATED on each build.
+ */
 package minecraftarmorweapon.init;
 
 import org.lwjgl.glfw.GLFW;
@@ -8,12 +12,14 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.api.distmarker.Dist;
 
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.KeyMapping;
 
 import minecraftarmorweapon.network.RMessage;
+
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = {Dist.CLIENT})
 public class MinecraftArmorWeaponModKeyMappings {
 	public static final KeyMapping R = new KeyMapping("key.minecraft_armor_weapon.r", GLFW.GLFW_KEY_R, "key.categories.misc") {
 		private boolean isDownOld = false;
@@ -23,9 +29,7 @@ public class MinecraftArmorWeaponModKeyMappings {
 			super.setDown(isDown);
 			if (isDownOld != isDown && isDown) {
 				MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new RMessage(0, 0));
-				if (Minecraft.getInstance().player != null) { // Nullチェック追加
-					RMessage.pressAction(Minecraft.getInstance().player, 0, 0);
-				}
+				RMessage.pressAction(Minecraft.getInstance().player, 0, 0);
 			}
 			isDownOld = isDown;
 		}
@@ -36,7 +40,7 @@ public class MinecraftArmorWeaponModKeyMappings {
 		event.register(R);
 	}
 
-	@Mod.EventBusSubscriber(value = Dist.CLIENT) // 修正
+	@Mod.EventBusSubscriber({Dist.CLIENT})
 	public static class KeyEventListener {
 		@SubscribeEvent
 		public static void onClientTick(TickEvent.ClientTickEvent event) {
