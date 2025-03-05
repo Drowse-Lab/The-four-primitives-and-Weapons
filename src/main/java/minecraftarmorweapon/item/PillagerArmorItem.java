@@ -20,12 +20,11 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.procedures.PillagerArmorbutunoMeiteitukunoibentoProcedure;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
-
-import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.client.model.Modelpillager_Converted;
 import minecraftarmorweapon.client.model.Modelbanner_Converted;

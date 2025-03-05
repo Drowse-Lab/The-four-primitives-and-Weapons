@@ -8,12 +8,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.world.inventory.RpgBookGuiMenu;
 
 import minecraftarmorweapon.network.RpgBookGuiButtonMessage;
-
-import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 

@@ -23,6 +23,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.CommandSource;
+import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.network.MinecraftArmorWeaponModVariables;
 
@@ -30,8 +31,6 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModMobEffects;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEntities;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
-
-import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.entity.CometKillEntity;
 import minecraftarmorweapon.entity.CometEntity;
