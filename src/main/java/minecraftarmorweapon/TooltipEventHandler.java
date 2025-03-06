@@ -18,7 +18,7 @@ import net.minecraftforge.common.MinecraftForge;
 import java.util.List;
 import java.util.ArrayList;
 
-@Mod.EventBusSubscriber
+@Mod.EventBusSubscriber(modid = "minecraft_armor_weapon")
 public class TooltipEventHandler {
     private static final int MAX_LINES_BEFORE_SCROLL = 5;
     private static int scrollIndex = 0;
