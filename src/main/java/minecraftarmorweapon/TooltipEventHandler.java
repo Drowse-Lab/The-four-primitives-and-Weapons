@@ -3,7 +3,7 @@ package minecraftarmorweapon.event;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style; // ← 修正
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
