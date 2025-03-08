@@ -57,30 +57,33 @@ public class DetailedTooltipHandler {
 
         if (formattedNBT.size() > MAX_LINES_BEFORE_SCROLL) {
             tooltip.add(Component.literal("(Scroll: Mouse Wheel)").setStyle(
-                Style.EMPTY.withColor(TextColor.fromRgb(0x555555)).withItalic(true)
-            ));
+                    Style.EMPTY.withColor(TextColor.fromRgb(0x555555)).withItalic(true)));
         }
 
         for (int i = scrollIndex; i < Math.min(scrollIndex + MAX_LINES_BEFORE_SCROLL, formattedNBT.size()); i++) {
-            tooltip.add(Component.literal(formattedNBT.get(i)).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x555555))));
+            tooltip.add(Component.literal(formattedNBT.get(i))
+                    .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x555555))));
         }
     }
 
     private static void addItemDetails(List<Component> tooltip, ItemStack stack) {
         tooltip.add(Component.literal("Item Details:").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAAA))));
-        tooltip.add(Component.literal(stack.getItem().getDescriptionId()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x555555))));
+        tooltip.add(Component.literal(stack.getItem().getDescriptionId())
+                .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x555555))));
     }
 
     private static void addEnchantmentDetails(List<Component> tooltip, ItemStack stack) {
         tooltip.add(Component.literal("Enchantments:").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAAA))));
         stack.getEnchantmentTags().forEach(enchantmentTag -> {
-            tooltip.add(Component.literal(enchantmentTag.toString()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x555555))));
+            tooltip.add(Component.literal(enchantmentTag.toString())
+                    .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x555555))));
         });
     }
 
     private static void addAttackPowerDetails(List<Component> tooltip, ItemStack stack) {
         tooltip.add(Component.literal("Attack Power:").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAAA))));
-        tooltip.add(Component.literal(String.valueOf(stack.getDamage())).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x555555))));
+        tooltip.add(Component.literal(String.valueOf(stack.getDamageValue()))
+                .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x555555))));
     }
 
     private static List<String> formatNBT(Tag tag, int indentLevel) {
@@ -143,7 +146,8 @@ public class DetailedTooltipHandler {
 
     public static void adjustScrollIndex(int delta) {
         scrollIndex += delta;
-        if (scrollIndex < 0) scrollIndex = 0;
+        if (scrollIndex < 0)
+            scrollIndex = 0;
     }
 
     public static int getScrollIndex() {
