@@ -14,10 +14,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
-
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 import minecraftarmorweapon.procedures.ZokuseiritokutyuwazaProcedure;
 import minecraftarmorweapon.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
-
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.ChatFormatting;
 public class OldKatanaItem extends SwordItem {
 	public OldKatanaItem() {
 		super(new Tier() {
@@ -47,6 +51,18 @@ public class OldKatanaItem extends SwordItem {
 		}, 3, -1.4f, new Item.Properties().tab(null));
 	}
 
+	@Override
+	public MutableComponent getDisplayName(ItemStack stack) {
+		return Component.literal("old sword")
+			.setStyle(Style.EMPTY
+			.withFont(new ResourceLocation("minecraft", "illageralt"))
+			.withColor(TextColor.fromLegacyFormat(ChatFormatting.GREEN))
+			.withItalic(false));
+	}
+	
+	
+	
+	
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
 		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);

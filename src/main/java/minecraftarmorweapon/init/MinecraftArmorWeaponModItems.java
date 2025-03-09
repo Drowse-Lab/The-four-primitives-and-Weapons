@@ -84,7 +84,6 @@ import minecraftarmorweapon.item.Halloween20231031SickleItem;
 import minecraftarmorweapon.item.GoldKatanaItem;
 import minecraftarmorweapon.item.FireworksBlackItem;
 import minecraftarmorweapon.item.FireballItem;
-import minecraftarmorweapon.item.EnmaItem;
 import minecraftarmorweapon.item.DragonRedArmorItem;
 import minecraftarmorweapon.item.DragonGreenArmorItem;
 import minecraftarmorweapon.item.DragonBlueArmorItem;
@@ -261,7 +260,6 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> MAGICWAND = REGISTRY.register("magicwand", () -> new MagicwandItem());
 	public static final RegistryObject<Item> OLD_KATANA = REGISTRY.register("old_katana", () -> new OldKatanaItem());
 	public static final RegistryObject<Item> MAGIC_POT = block(MinecraftArmorWeaponModBlocks.MAGIC_POT, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
-	public static final RegistryObject<Item> ENMA = REGISTRY.register("enma", () -> new EnmaItem());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, CreativeModeTab tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));

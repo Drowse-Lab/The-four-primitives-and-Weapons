@@ -9078,8 +9078,8 @@
       "name": "OldKatana",
       "type": "tool",
       "sortid": 595,
-      "compiles": true,
-      "locked_code": false,
+      "compiles": false,
+      "locked_code": true,
       "registry_name": "old_katana",
       "metadata": {
         "files": [
@@ -9268,20 +9268,6 @@
             "name": "entity",
             "type": "entity"
           }
-        ]
-      }
-    },
-    {
-      "name": "Enma",
-      "type": "tool",
-      "sortid": 604,
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "enma",
-      "metadata": {
-        "files": [
-          "src/main/resources/assets/minecraft_armor_weapon/models/item/enma.json",
-          "src/main/java/minecraftarmorweapon/item/EnmaItem.java"
         ]
       }
     },
@@ -9593,20 +9579,6 @@
           "src/main/resources/data/minecraft_armor_weapon/functions/armor_stand_tobasuyo_enma_start_kill.mcfunction"
         ]
       }
-    },
-    {
-      "name": "YellowStainedGlassPaneGuardProcedure",
-      "type": "procedure",
-      "sortid": 624,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "yellow_stained_glass_pane_guard_procedure",
-      "metadata": {
-        "files": [
-          "src/main/java/minecraftarmorweapon/procedures/YellowStainedGlassPaneGuardProcedureProcedure.java"
-        ],
-        "dependencies": []
-      }
     }
   ],
   "variable_elements": [
@@ -9916,7 +9888,6 @@
       "item.minecraft_armor_weapon.dragon_armor_boots": "§5Dragon boots",
       "item.minecraft_armor_weapon.gold_katana": "§6Gold Katana",
       "effect.minecraft_armor_weapon.effect_magic": "magic",
-      "item.minecraft_armor_weapon.enma": "§0Enma",
       "effect.minecraft_armor_weapon.kaminariyade": "kaminari",
       "attribute.minecraft_armor_weapon.mana": "Mana",
       "item.minecraft_armor_weapon.otiruyo_spawn_egg": "Otiruyo Spawn Egg",
@@ -10047,7 +10018,7 @@
       "block.minecraft_armor_weapon.item_stan": "Item Stan",
       "item.minecraft_armor_weapon.magic_mcrystal": "Magic Mcrystal",
       "block.minecraft_armor_weapon.cross": "Cross",
-      "item.minecraft_armor_weapon.old_katana": "Old Katana",
+      "item.minecraft_armor_weapon.old_katana": "old katana",
       "item.minecraft_armor_weapon.bogged_outer_boots": "Bogged Outer Boots",
       "item.minecraft_armor_weapon.luna": "§eLuna",
       "advancements.kurikaraken_progress.descr": "Get an kurikaraken",
@@ -10107,13 +10078,13 @@
       "itemGroup.tabmagic_books": "Magic Books",
       "itemGroup.tabyopkeinamono": "建築とかに",
       "effect.minecraft_armor_weapon.syugeki": "aa",
-      "item.minecraft_armor_weapon.das_herz_einer_fee_armor_helmet": "das herz einer fee armor helmet",
       "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
+      "item.minecraft_armor_weapon.das_herz_einer_fee_armor_helmet": "das herz einer fee armor helmet",
       "item.minecraft_armor_weapon.ruami_284_spawn_egg": "ruami284 Spawn Egg",
       "entity.minecraft_armor_weapon.comet": "Comet",
-      "entity.minecraft_armor_weapon.comet_kill": "Comet",
-      "item.minecraft_armor_weapon.darkness": "§5Darkness",
       "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
+      "item.minecraft_armor_weapon.darkness": "§5Darkness",
+      "entity.minecraft_armor_weapon.comet_kill": "Comet",
       "block.minecraft_armor_weapon.stone_katana_block": "Netherite Katana Block",
       "item.minecraft_armor_weapon.blackhole_spawn_egg": "Blackhole Spawn Egg",
       "entity.minecraft_armor_weapon.blackhole": "Blackhole",
@@ -10140,8 +10111,8 @@
       "block.minecraft_armor_weapon.stone_bricks_trap_door": "Stone Bricks Trap Door",
       "item.minecraft_armor_weapon.dragon_black_armor_helmet": "§8Dragon black helmet",
       "item.minecraft_armor_weapon.stone_katana": "§7石の刀",
-      "item.minecraft_armor_weapon.kaminari_kurikaraken_sword": "Kaminari Kurikaraken Sword",
       "item.minecraft_armor_weapon.kurikarakensword": "§5倶利伽羅剣",
+      "item.minecraft_armor_weapon.kaminari_kurikaraken_sword": "Kaminari Kurikaraken Sword",
       "item.minecraft_armor_weapon.wind_step": "§2Windstep",
       "item.minecraft_armor_weapon.scythe": "Scythe",
       "item.minecraft_armor_weapon.a": "A",
@@ -10153,9 +10124,9 @@
       "item.minecraft_armor_weapon.bogged_outer_chestplate": "Bogged Outer Chestplate",
       "effect.minecraft_armor_weapon.long_range_weapon_cut": "遠距離武器斬る",
       "item.minecraft_armor_weapon.dragon_green_armor_boots": "§2Dragon green boots",
-      "item.minecraft_armor_weapon.rivers_of_blood": "§4§lRivers of Blood",
-      "item.minecraft_armor_weapon.magicwand": "Magicwand",
       "effect.minecraft_armor_weapon.alchemy_craft_block_effect": "Alchemy Craft Block Effect",
+      "item.minecraft_armor_weapon.magicwand": "Magicwand",
+      "item.minecraft_armor_weapon.rivers_of_blood": "§4§lRivers of Blood",
       "effect.minecraft_armor_weapon.killoff": "killoff",
       "entity.minecraft_armor_weapon.killotiru": "Otiruyo",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_boots": "das herz einer fee armor boots",
@@ -10187,7 +10158,6 @@
       "item.minecraft_armor_weapon.gold_katana": "§6金の刀",
       "item.minecraft_armor_weapon.dragon_armor_boots": "§5Dragon boots",
       "effect.minecraft_armor_weapon.effect_magic": "magic",
-      "item.minecraft_armor_weapon.enma": "§0Enma",
       "effect.minecraft_armor_weapon.kaminariyade": "kaminari",
       "attribute.minecraft_armor_weapon.mana": "Mana",
       "item.minecraft_armor_weapon.a_2": "Asupe",
