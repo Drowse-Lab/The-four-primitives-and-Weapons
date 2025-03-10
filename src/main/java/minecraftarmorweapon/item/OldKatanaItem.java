@@ -7,6 +7,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
@@ -15,13 +16,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import minecraftarmorweapon.procedures.ZokuseiritokutyuwazaProcedure;
 import minecraftarmorweapon.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.ChatFormatting;
+import java.util.List;
+import org.jetbrains.annotations.Nullable;
+
 public class OldKatanaItem extends SwordItem {
 	public OldKatanaItem() {
 		super(new Tier() {
@@ -50,18 +52,14 @@ public class OldKatanaItem extends SwordItem {
 			}
 		}, 3, -1.4f, new Item.Properties().tab(null));
 	}
-
-	@Override
-	public MutableComponent getDisplayName(ItemStack stack) {
-		return Component.literal("old sword")
-			.setStyle(Style.EMPTY
-			.withFont(new ResourceLocation("minecraft", "illageralt"))
-			.withColor(TextColor.fromLegacyFormat(ChatFormatting.GREEN))
-			.withItalic(false));
-	}
-	
-	
-	
+    @Override
+    public Component getName(ItemStack stack) {
+        return Component.literal("Old Sword")
+            .setStyle(Style.EMPTY
+            .withFont(new ResourceLocation("minecraft", "illageralt")) // フォント指定
+            .withColor(TextColor.parseColor("#55FF55")) // 緑色 (#55FF55)
+            .withItalic(false)); // イタリックを無効化
+    }
 	
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
