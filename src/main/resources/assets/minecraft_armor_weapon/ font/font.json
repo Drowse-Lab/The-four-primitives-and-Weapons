@@ -2,7 +2,14 @@
   "providers": [
     {
       "type": "ttf",
-      "file": "minecraft_armor_weapon:font/yourfont.ttf",
+      "file": "minecraft_armor_weapon:font/yourfont1.ttf",
+      "shift": [0, 1],
+      "size": 11,
+      "oversample": 1.0
+    },
+    {
+      "type": "ttf",
+      "file": "minecraft_armor_weapon:font/yourfont2.ttf",
       "shift": [0, 1],
       "size": 11,
       "oversample": 1.0
