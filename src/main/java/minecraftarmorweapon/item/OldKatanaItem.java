@@ -57,7 +57,7 @@ public class OldKatanaItem extends SwordItem {
         return Component.literal("Old Sword")
             .setStyle(Style.EMPTY
             .withFont(new ResourceLocation("minecraft", "illageralt")) // フォント指定
-            .withColor(TextColor.parseColor("#5477b3")) // 緑色 (#55FF55)
+            .withColor(TextColor.parseColor("#5477b3")) // 淡い青色 (#5477b3)
             .withItalic(false)); // イタリックを無効化
     }
 	
