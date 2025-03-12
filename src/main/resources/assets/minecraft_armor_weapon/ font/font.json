@@ -16,7 +16,7 @@
     },
     {
       "type": "ttf",
-      "file": "minecraft_armor_weapon:font/.ttf",
+      "file": "minecraft_armor_weapon:font/cottoncandy.ttf",
       "shift": [0, 1],
       "size": 11,
       "oversample": 1.0
