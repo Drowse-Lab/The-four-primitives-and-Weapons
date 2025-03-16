@@ -19,6 +19,7 @@ import net.minecraft.world.entity.Entity;
 import minecraftarmorweapon.entity.TestBowEntity;
 import minecraftarmorweapon.entity.SkeltonMobEntity;
 import minecraftarmorweapon.entity.Ruami284Entity;
+import minecraftarmorweapon.entity.Reisame284Entity;
 import minecraftarmorweapon.entity.OtiruyoEntity;
 import minecraftarmorweapon.entity.MeteorArrowEntity;
 import minecraftarmorweapon.entity.LokiDecoydasuEntity;
@@ -70,6 +71,10 @@ public class MinecraftArmorWeaponModEntities {
 					.setCustomClientFactory(AlchemyCraftBlockEntityEntity::new)
 
 					.sized(0.1f, 0.1f));
+	public static final RegistryObject<EntityType<Reisame284Entity>> REISAME_284 = register("reisame_284",
+			EntityType.Builder.<Reisame284Entity>of(Reisame284Entity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(Reisame284Entity::new)
+
+					.sized(0.6f, 1.8f));
 
 	private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryname, EntityType.Builder<T> entityTypeBuilder) {
 		return REGISTRY.register(registryname, () -> (EntityType<T>) entityTypeBuilder.build(registryname));
@@ -88,6 +93,7 @@ public class MinecraftArmorWeaponModEntities {
 			CometKillEntity.init();
 			MeteorArrowEntity.init();
 			AlchemyCraftBlockEntityEntity.init();
+			Reisame284Entity.init();
 		});
 	}
 
@@ -103,5 +109,6 @@ public class MinecraftArmorWeaponModEntities {
 		event.put(COMET_KILL.get(), CometKillEntity.createAttributes().build());
 		event.put(METEOR_ARROW.get(), MeteorArrowEntity.createAttributes().build());
 		event.put(ALCHEMY_CRAFT_BLOCK_ENTITY.get(), AlchemyCraftBlockEntityEntity.createAttributes().build());
+		event.put(REISAME_284.get(), Reisame284Entity.createAttributes().build());
 	}
 }

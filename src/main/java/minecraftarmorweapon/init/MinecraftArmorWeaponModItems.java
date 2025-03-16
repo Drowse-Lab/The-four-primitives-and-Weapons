@@ -260,6 +260,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> MAGICWAND = REGISTRY.register("magicwand", () -> new MagicwandItem());
 	public static final RegistryObject<Item> OLD_KATANA = REGISTRY.register("old_katana", () -> new OldKatanaItem());
 	public static final RegistryObject<Item> MAGIC_POT = block(MinecraftArmorWeaponModBlocks.MAGIC_POT, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
+	public static final RegistryObject<Item> REISAME_284_SPAWN_EGG = REGISTRY.register("reisame_284_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.REISAME_284, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, CreativeModeTab tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));
