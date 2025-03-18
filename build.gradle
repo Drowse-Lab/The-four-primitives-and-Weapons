@@ -11,8 +11,8 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 
 version = '1.0'
-group = 'com.yourname.modid'
-archivesBaseName = 'modid'
+group = 'com.hrmcngs.minecraft_armor_weapon'
+archivesBaseName = 'minecraft_armor_weapon'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
