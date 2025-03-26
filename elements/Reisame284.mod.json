@@ -2,16 +2,16 @@
   "_fv": 43,
   "_type": "livingentity",
   "definition": {
-    "mobName": "Reisame",
+    "mobName": "Reisame 2 8 4",
     "mobLabel": "",
-    "mobModelName": "Modelplayer_slim__Converted",
+    "mobModelName": "Modelplayer_slim",
     "mobModelTexture": "43640277d3e29bd7.png",
     "mobModelGlowTexture": "",
     "solidBoundingBox": {
       "fixedValue": false
     },
-    "modelWidth": 0.6,
-    "modelHeight": 1.8,
+    "modelWidth": 0.9,
+    "modelHeight": 0.9,
     "modelShadowSize": 0.5,
     "mountedYOffset": 0.0,
     "hasSpawnEgg": true,
@@ -39,15 +39,15 @@
       "value": ""
     },
     "equipmentBody": {
-      "value": "CUSTOM:ChuzumeHuskArmor.body"
+      "value": ""
     },
     "equipmentLeggings": {
-      "value": "CUSTOM:ChuzumeHuskArmor.legs"
+      "value": ""
     },
     "equipmentBoots": {
-      "value": "CUSTOM:ChuzumeHuskArmor.boots"
+      "value": ""
     },
-    "mobBehaviourType": "Creature",
+    "mobBehaviourType": "Mob",
     "mobCreatureType": "UNDEFINED",
     "attackStrength": 3,
     "attackKnockback": 0.0,
@@ -82,16 +82,16 @@
     "immuneToWither": false,
     "immuneToDragonBreath": false,
     "mobDrop": {
-      "value": "CUSTOM:OldKatana"
+      "value": ""
     },
     "livingSound": {
       "value": ""
     },
     "hurtSound": {
-      "value": "entity.player.hurt"
+      "value": "entity.generic.hurt"
     },
     "deathSound": {
-      "value": "entity.player.death"
+      "value": "entity.generic.death"
     },
     "stepSound": {
       "value": ""
@@ -109,12 +109,12 @@
     "rangedItemType": "Default item",
     "rangedAttackInterval": 20,
     "rangedAttackRadius": 10.0,
-    "spawnThisMob": false,
-    "doesDespawnWhenIdle": false,
-    "spawningProbability": 1,
+    "spawnThisMob": true,
+    "doesDespawnWhenIdle": true,
+    "spawningProbability": 20,
     "mobSpawningType": "monster",
-    "minNumberOfMobsPerGroup": 1,
-    "maxNumberOfMobsPerGroup": 1,
+    "minNumberOfMobsPerGroup": 4,
+    "maxNumberOfMobsPerGroup": 4,
     "restrictionBiomes": [],
     "spawnInDungeons": false
   }

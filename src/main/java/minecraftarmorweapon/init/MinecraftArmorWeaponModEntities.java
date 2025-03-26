@@ -74,7 +74,7 @@ public class MinecraftArmorWeaponModEntities {
 	public static final RegistryObject<EntityType<Reisame284Entity>> REISAME_284 = register("reisame_284",
 			EntityType.Builder.<Reisame284Entity>of(Reisame284Entity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(Reisame284Entity::new)
 
-					.sized(0.6f, 1.8f));
+					.sized(0.9f, 0.9f));
 
 	private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryname, EntityType.Builder<T> entityTypeBuilder) {
 		return REGISTRY.register(registryname, () -> (EntityType<T>) entityTypeBuilder.build(registryname));
