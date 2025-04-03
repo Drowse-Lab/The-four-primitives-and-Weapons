@@ -755,7 +755,7 @@ public class ZokuseiritokutyuwazaProcedure {
 				entity.getPersistentData().putDouble("yaw", (entity.getYRot()));
 				entity.getPersistentData().putDouble("distance", 3);
 				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
-					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SYUGEKINANOZEE.get(), 30, 1, true, false));
+					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SYUGEKINANOZEE.get(), 1, 1, true, false));
 				if (entity instanceof Player _player)
 					_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 50);
 			}
@@ -1107,7 +1107,7 @@ public class ZokuseiritokutyuwazaProcedure {
 				entity.getPersistentData().putDouble("yaw", (entity.getYRot()));
 				entity.getPersistentData().putDouble("distance", 3);
 				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
-					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SYUGEKINANOZEE.get(), 30, 1, true, false));
+					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SYUGEKINANOZEE.get(), 1, 1, true, false));
 				if (entity instanceof Player _player)
 					_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 50);
 			}

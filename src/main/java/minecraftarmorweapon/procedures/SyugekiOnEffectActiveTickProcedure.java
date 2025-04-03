@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Comparator;
 
 public class SyugekiOnEffectActiveTickProcedure {
-	public static void execute(LevelAccessor world, Entity entity) {
+	public static void execute(LevelAccessor world, double y, Entity entity) {
 		if (entity == null)
 			return;
 		double Zknockback = 0;
@@ -64,10 +64,10 @@ public class SyugekiOnEffectActiveTickProcedure {
 			loop = Math.toRadians(entity.getYRot());
 			XRadius2 = 3;
 			ZRadius2 = 3;
-			Y_pos = entity.getX() + 1;
-			for (int index0 = 0; index0 < 36; index0++) {
+			Y_pos = y + 1;
+			for (int index0 = 0; index0 < 72; index0++) {
 				X = entity.getX() + Math.cos(loop) * XRadius2;
-				Y = Y_pos + 1;
+				Y = Y_pos;
 				Z = entity.getZ() + Math.sin(loop) * ZRadius2;
 				if (world instanceof ServerLevel _level)
 					_level.sendParticles(ParticleTypes.SWEEP_ATTACK, X, Y, Z, 3, 0.1, 0.1, 0.1, 0);
@@ -138,10 +138,10 @@ public class SyugekiOnEffectActiveTickProcedure {
 			loop = Math.toRadians(entity.getYRot());
 			XRadius2 = 3;
 			ZRadius2 = 3;
-			Y_pos = entity.getX() + 1;
+			Y_pos = y + 1;
 			for (int index1 = 0; index1 < 36; index1++) {
 				X = entity.getX() + Math.cos(loop) * XRadius2;
-				Y = Y_pos + 1;
+				Y = Y_pos;
 				Z = entity.getZ() + Math.sin(loop) * ZRadius2;
 				if (world instanceof ServerLevel _level)
 					_level.sendParticles(ParticleTypes.SWEEP_ATTACK, X, Y, Z, 3, 0.1, 0.1, 0.1, 0);
@@ -215,7 +215,7 @@ public class SyugekiOnEffectActiveTickProcedure {
 			Y_pos = entity.getX() + 1;
 			for (int index2 = 0; index2 < 36; index2++) {
 				X = entity.getX() + Math.cos(loop) * XRadius2;
-				Y = Y_pos + 1;
+				Y = Y_pos;
 				Z = entity.getZ() + Math.sin(loop) * ZRadius2;
 				if (world instanceof ServerLevel _level)
 					_level.sendParticles(ParticleTypes.SWEEP_ATTACK, X, Y, Z, 3, 0.1, 0.1, 0.1, 0);

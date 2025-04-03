@@ -3,6 +3,7 @@ package minecraftarmorweapon.potion;
 
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -24,8 +25,8 @@ public class SyugekiMobEffect extends MobEffect {
 	}
 
 	@Override
-	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		SyugekiOnEffectActiveTickProcedure.execute(entity.level, entity);
+	public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
+		SyugekiOnEffectActiveTickProcedure.execute(entity.level, entity.getY(), entity);
 	}
 
 	@Override

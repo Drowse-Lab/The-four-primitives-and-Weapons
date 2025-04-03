@@ -13,7 +13,7 @@
     "isBenefitical": false,
     "renderStatusInInventory": false,
     "renderStatusInHUD": false,
-    "onActiveTick": {
+    "onStarted": {
       "name": "SyugekiOnEffectActiveTick"
     }
   }
