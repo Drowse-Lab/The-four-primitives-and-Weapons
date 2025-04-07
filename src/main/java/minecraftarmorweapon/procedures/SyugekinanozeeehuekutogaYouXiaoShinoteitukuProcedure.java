@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Comparator;
 
 public class SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure {
-	public static void execute(LevelAccessor world, Entity entity) {
+	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
 		if (entity == null)
 			return;
 		double loop = 0;
@@ -47,12 +47,12 @@ public class SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure {
 		loop = Math.toRadians(entity.getYRot());
 		XRadius2 = 3;
 		ZRadius2 = 3;
-		Y_pos = entity.getX() + 1;
+		Y_pos = y + 1;
 		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.RIVERS_OF_BLOOD.get()) {
-			X = entity.getX() + Math.cos(loop) * XRadius2;
-			Y = Y_pos;
-			Z = entity.getZ() + Math.sin(loop) * ZRadius2;
 			for (int index0 = 0; index0 < 36; index0++) {
+				X = entity.getX() + Math.cos(loop) * XRadius2;
+				Y = Y_pos;
+				Z = entity.getZ() + Math.sin(loop) * ZRadius2;
 				if (world instanceof ServerLevel _level)
 					_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(X, Y, Z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
 							"particle item redstone ~ ~0.5 ~ 0.3 0.1 0.3 0.1 100 force");
@@ -132,10 +132,10 @@ public class SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure {
 			}
 		} else if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get()
 				|| (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.OLD_KATANA.get()) {
-			X = entity.getX() + Math.cos(loop) * XRadius2;
-			Y = Y_pos;
-			Z = entity.getZ() + Math.sin(loop) * ZRadius2;
 			for (int index1 = 0; index1 < 36; index1++) {
+				X = x + Math.cos(loop) * XRadius2;
+				Y = Y_pos;
+				Z = z + Math.sin(loop) * ZRadius2;
 				if (world instanceof ServerLevel _level)
 					_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(X, Y, Z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
 							"particle minecraft:item netherite_ingot ~ ~1 ~ 0.5 0.5 0.5 .0 20 force @p");
@@ -307,10 +307,10 @@ public class SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure {
 				Y_pos = Y_pos - 0.0555555555555556;
 			}
 		} else {
-			X = entity.getX() + Math.cos(loop) * XRadius2;
-			Y = Y_pos;
-			Z = entity.getZ() + Math.sin(loop) * ZRadius2;
 			for (int index2 = 0; index2 < 36; index2++) {
+				X = x + Math.cos(loop) * XRadius2;
+				Y = Y_pos;
+				Z = z + Math.sin(loop) * ZRadius2;
 				if (world instanceof ServerLevel _level)
 					_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(X, Y, Z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
 							"particle minecraft:item netherite_ingot ~ ~1 ~ 0.5 0.5 0.5 .0 20 force @p");

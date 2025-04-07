@@ -8,7 +8,7 @@
       "value": -1,
       "falpha": 0.0
     },
-    "isInstant": false,
+    "isInstant": true,
     "isBad": false,
     "isBenefitical": false,
     "renderStatusInInventory": false,

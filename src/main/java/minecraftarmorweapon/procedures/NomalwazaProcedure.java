@@ -258,13 +258,7 @@ public class NomalwazaProcedure {
 						}
 					}
 				}
-				entity.getPersistentData().putDouble("X", x);
-				entity.getPersistentData().putDouble("Z", z);
-				entity.getPersistentData().putDouble("Ypos", y);
-				entity.getPersistentData().putDouble("yaw", (entity.getYRot()));
-				entity.getPersistentData().putDouble("distance", 3);
-				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
-					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SYUGEKI.get(), 30, 1, true, false));
+				SyugekiOnEffectActiveTickProcedure.execute(world, y, entity);
 				if (entity instanceof Player _player)
 					_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 50);
 			}
@@ -656,13 +650,7 @@ public class NomalwazaProcedure {
 						}
 					}
 				}
-				entity.getPersistentData().putDouble("X", x);
-				entity.getPersistentData().putDouble("Z", z);
-				entity.getPersistentData().putDouble("Ypos", y);
-				entity.getPersistentData().putDouble("yaw", (entity.getYRot()));
-				entity.getPersistentData().putDouble("distance", 3);
-				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
-					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SYUGEKI.get(), 30, 1, true, false));
+				SyugekiOnEffectActiveTickProcedure.execute(world, y, entity);
 				if (entity instanceof Player _player)
 					_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 50);
 			}
@@ -859,13 +847,7 @@ public class NomalwazaProcedure {
 						}
 					}
 				}
-				entity.getPersistentData().putDouble("X", x);
-				entity.getPersistentData().putDouble("Z", z);
-				entity.getPersistentData().putDouble("Ypos", y);
-				entity.getPersistentData().putDouble("yaw", (entity.getYRot()));
-				entity.getPersistentData().putDouble("distance", 3);
-				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
-					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SYUGEKI.get(), 30, 1, true, false));
+				SyugekiOnEffectActiveTickProcedure.execute(world, y, entity);
 				if (entity instanceof Player _player)
 					_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 50);
 			}

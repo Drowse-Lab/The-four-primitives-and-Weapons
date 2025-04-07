@@ -3,8 +3,8 @@ package minecraftarmorweapon.potion;
 
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
-import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffect;
@@ -25,7 +25,12 @@ public class SyugekiMobEffect extends MobEffect {
 	}
 
 	@Override
-	public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
+	public boolean isInstantenous() {
+		return true;
+	}
+
+	@Override
+	public void applyInstantenousEffect(Entity source, Entity indirectSource, LivingEntity entity, int amplifier, double health) {
 		SyugekiOnEffectActiveTickProcedure.execute(entity.level, entity.getY(), entity);
 	}
 

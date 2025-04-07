@@ -212,7 +212,7 @@ public class SyugekiOnEffectActiveTickProcedure {
 			loop = Math.toRadians(entity.getYRot());
 			XRadius2 = 3;
 			ZRadius2 = 3;
-			Y_pos = entity.getX() + 1;
+			Y_pos = y + 1;
 			for (int index2 = 0; index2 < 36; index2++) {
 				X = entity.getX() + Math.cos(loop) * XRadius2;
 				Y = Y_pos;

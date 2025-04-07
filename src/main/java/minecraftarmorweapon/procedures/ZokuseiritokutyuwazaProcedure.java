@@ -371,15 +371,9 @@ public class ZokuseiritokutyuwazaProcedure {
 						}
 					}
 				}
-				entity.getPersistentData().putDouble("X", x);
-				entity.getPersistentData().putDouble("Z", z);
-				entity.getPersistentData().putDouble("Ypos", y);
-				entity.getPersistentData().putDouble("yaw", (entity.getYRot()));
-				entity.getPersistentData().putDouble("distance", 3);
-				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
-					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SYUGEKINANOZEE.get(), 30, 1, true, false));
 				if (entity instanceof Player _player)
 					_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 50);
+				SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure.execute(world, x, y, z, entity);
 			}
 			if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 6) {
 				if (entity instanceof LivingEntity _entity)
@@ -749,13 +743,7 @@ public class ZokuseiritokutyuwazaProcedure {
 						}
 					}
 				}
-				entity.getPersistentData().putDouble("X", x);
-				entity.getPersistentData().putDouble("Z", z);
-				entity.getPersistentData().putDouble("Ypos", y);
-				entity.getPersistentData().putDouble("yaw", (entity.getYRot()));
-				entity.getPersistentData().putDouble("distance", 3);
-				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
-					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SYUGEKINANOZEE.get(), 1, 1, true, false));
+				SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure.execute(world, x, y, z, entity);
 				if (entity instanceof Player _player)
 					_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 50);
 			}
@@ -1101,13 +1089,7 @@ public class ZokuseiritokutyuwazaProcedure {
 						}
 					}
 				}
-				entity.getPersistentData().putDouble("X", x);
-				entity.getPersistentData().putDouble("Z", z);
-				entity.getPersistentData().putDouble("Ypos", y);
-				entity.getPersistentData().putDouble("yaw", (entity.getYRot()));
-				entity.getPersistentData().putDouble("distance", 3);
-				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
-					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SYUGEKINANOZEE.get(), 1, 1, true, false));
+				SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure.execute(world, x, y, z, entity);
 				if (entity instanceof Player _player)
 					_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 50);
 			}
