@@ -1,17 +1,16 @@
 ---
-name: the-four-primitives-and-weapons
+name: custom nama
 about: Links about me
-title: the-four-primitives-and-weapons
+title: custom title
 labels: ''
-assignees: hrmcngs
+assignees: 
 
 ---
 
-Here is the download link for my mod
-https://legacy.curseforge.com/minecraft/mc-mods/minecraft_armor_weapon/files
+Here is the download link for my mod  
 
-My Twitter (X) link
-https://twitter.com/0526ngs
+My Twitter (X) link  
 
-hatenablog
-https://ngs0526.hatenablog.com
+My instagram link
+
+web  
