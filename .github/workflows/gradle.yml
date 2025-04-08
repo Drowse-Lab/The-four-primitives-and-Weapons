@@ -1,4 +1,4 @@
-      name: Java CI with Gradle
+name: Java CI with Gradle
 
 on:
   push:
@@ -13,7 +13,9 @@ jobs:
       contents: read
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -26,8 +28,17 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
 
+    - name: Start Build
+      run: echo "🚀 Starting the build process..."
+
     - name: Build with Gradle Wrapper
       run: ./gradlew build
+
+    - name: Build in Progress
+      run: echo "🏗️ Build in progress, please wait..."
+
+    - name: Build Completed
+      run: echo "✅ Build completed successfully!"
 
   dependency-submission:
     runs-on: ubuntu-latest
@@ -35,7 +46,9 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
