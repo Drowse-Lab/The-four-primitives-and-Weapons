@@ -1,6 +1,8 @@
 ## Based on GitHub's Eclipse .gitignore
 
 run/
+!run/**/*.nbt
+!run/**/*.mcfunction
 .nbt
 .gradle/
 build/
@@ -46,7 +48,6 @@ local.properties
 .DS_Store
 logs/sever
 logs/function
-
 
 minecraft_armor_weapon
 minecraft_armor_weapon
