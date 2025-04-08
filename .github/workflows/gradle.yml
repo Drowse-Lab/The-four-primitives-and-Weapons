@@ -1,4 +1,4 @@
-name: Java CI with Gradle
+name: Epic Java CI Adventure with Gradle
 
 on:
   push:
@@ -13,31 +13,31 @@ jobs:
       contents: read
 
     steps:
-    - name: Checkout code
+    - name: 🏁 Checkout the Codebase
       uses: actions/checkout@v4
 
-    - name: Set up JDK 17
+    - name: ☕ Set up Java 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Setup Gradle
+    - name: 🛠️ Setup Gradle
       uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
 
-    - name: Grant execute permission for gradlew
+    - name: 🔧 Grant Execute Permission for Gradlew
       run: chmod +x ./gradlew
 
-    - name: Start Build
+    - name: 🚀 Let the Adventure Begin! Starting the Build...
       run: echo "🚀 Let the adventure begin! Starting the build process..."
 
-    - name: Build with Gradle Wrapper
+    - name: ⚒️ Build the Fortress with Gradle Wrapper
       run: ./gradlew build -x test -Dorg.gradle.daemon=false
 
-    - name: Build in Progress
+    - name: 🏗️ Building the Fortress, Please Wait...
       run: echo "🏗️ Building the fortress, please wait..."
 
-    - name: Build Completed
+    - name: 🎉 The Build is Complete! Your Code is Now Battle-Ready!
       run: echo "🎉 The build is complete! Your code is now battle-ready!"
 
   dependency-submission:
@@ -46,14 +46,14 @@ jobs:
       contents: write
 
     steps:
-    - name: Checkout code
+    - name: 🏁 Checkout the Codebase
       uses: actions/checkout@v4
 
-    - name: Set up JDK 17
+    - name: ☕ Set up Java 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Generate and submit dependency graph
+    - name: 📊 Generate and Submit Dependency Graph
       uses: gradle/actions/dependency-submission@417ae3ccd767c252f5661f1ace9f835f9654f2b5
