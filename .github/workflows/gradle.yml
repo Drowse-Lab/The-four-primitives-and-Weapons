@@ -128,6 +128,7 @@
     - #name: Generate and submit dependency graph
       #uses: gradle/actions/dependency-submission@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
 # 
+
 name: Multi-Build Workflow
 
 on:
@@ -152,24 +153,24 @@ jobs:
         distribution: 'temurin'
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
+      uses: gradle/actions/setup-gradle@v3
 
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
 
     - name: Build Mod with Gradle Wrapper
-      run: ./gradlew build
+      run: ./gradlew build -x test --daemon --incremental
 
   bad-apple-display:
     name: Display Bad Apple
     runs-on: ubuntu-latest
-    needs: mod-build # 実行順序を指定。mod-build終了後に実行。
+    needs: mod-build # mod-build終了後に実行
 
     steps:
+    - name: Download Bad Apple Animation
+      run: curl -O https://raw.githubusercontent.com/skanehira/badapple.vim/master/resources/badapple.txt
+
     - name: Display Bad Apple Animation
       run: |
-        # badapple.txtをダウンロード
-        curl -O https://raw.githubusercontent.com/skanehira/badapple.vim/master/resources/badapple.txt
-
-        # アニメーションを表示
-        awk '/^\$+$/ { system("sleep 0.1; clear") } { print }' badapple.txt
+        # アニメーションを高速化
+        awk '/^\$+$/ { frame++; if (frame % 3 == 0) { system("sleep 0.05; clear") } } { print }' badapple.txt
