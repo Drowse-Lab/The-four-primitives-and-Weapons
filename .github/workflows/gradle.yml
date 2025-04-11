@@ -183,3 +183,16 @@ jobs:
     - name: Display Bad Apple Animation
       run: |
         awk '/^\$+$/ { system("sleep 0.05; clear") } { print }' play.txt
+
+  display-text:
+    name: Display Static Text
+    runs-on: ubuntu-latest
+    needs: mod-build # Runs after the mod-build job
+
+    steps:
+    - name: Download Static Text File
+      run: curl -O https://raw.githubusercontent.com/Chion82/ASCII_bad_apple/master/play.txt
+
+    - name: Display Text Content
+      run: |
+        cat play.txt | head -n 50 # Display the first 50 lines as a static preview
