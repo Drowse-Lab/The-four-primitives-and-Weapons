@@ -2,7 +2,7 @@
   "_fv": 43,
   "_type": "potioneffect",
   "definition": {
-    "effectName": "遠距離武器斬る",
+    "effectName": "long_range_weapon_cut",
     "icon": "aaaaa.png",
     "color": {
       "value": -1,

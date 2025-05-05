@@ -9619,6 +9619,19 @@
           "src/main/resources/data/minecraft_armor_weapon/forge/biome_modifier/reisame_284_biome_modifier.json"
         ]
       }
+    },
+    {
+      "name": "FeynTooltipEvent",
+      "type": "code",
+      "sortid": 626,
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "feyn_tooltip_event",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/FeynTooltipEvent.java"
+        ]
+      }
     }
   ],
   "variable_elements": [
@@ -9842,8 +9855,8 @@
   "sound_elements": [],
   "language_map": {
     "en_us": {
-      "item.minecraft_armor_weapon.decoration_pot_with_arrows": "Decoration Pot With Arrows",
       "effect.minecraft_armor_weapon.guard": "guard",
+      "item.minecraft_armor_weapon.decoration_pot_with_arrows": "Decoration Pot With Arrows",
       "item.minecraft_armor_weapon.harvest_moon_2023929": "Harvest Moon 2023 9/29",
       "itemGroup.tabmagic_books": "Magic Books",
       "itemGroup.tabyopkeinamono": "建築とかに",
@@ -9876,12 +9889,13 @@
       "item.minecraft_armor_weapon.machete": "Machete",
       "item.minecraft_armor_weapon.sword_of_night": "§6Sword of Night",
       "effect.minecraft_armor_weapon.sword_of_night_tameeee": "tameteruyo",
+      "tooltip.minecraft_armor_weapon.feyn.cursed": "cursed",
       "item.minecraft_armor_weapon.storm": "§8Storm",
       "item.minecraft_armor_weapon.kaminari_kurikaraken_utigatana": "Kaminari Kurikaraken Utigatana",
       "block.minecraft_armor_weapon.stone_bricks_trap_door": "Stone Bricks Trap Door",
       "item.minecraft_armor_weapon.stone_katana": "§7Stone Katana",
       "item.minecraft_armor_weapon.dragon_black_armor_helmet": "§8Dragon black helmet",
-      "item.minecraft_armor_weapon.kurikarakensword": "§5倶利伽羅剣",
+      "item.minecraft_armor_weapon.kurikarakensword": "§5kurikaraken",
       "item.minecraft_armor_weapon.kaminari_kurikaraken_sword": "Kaminari Kurikaraken Sword",
       "item.minecraft_armor_weapon.scythe": "Scythe",
       "item.minecraft_armor_weapon.wind_step": "§2Windstep",
@@ -9891,7 +9905,7 @@
       "item.minecraft_armor_weapon.bluepurge_utigatana": "§9Bluepurge",
       "effect.minecraft_armor_weapon.sword_of_night_effect": "sword of night",
       "block.minecraft_armor_weapon.magic_pot": "Magic Pot",
-      "effect.minecraft_armor_weapon.long_range_weapon_cut": "遠距離武器斬る",
+      "effect.minecraft_armor_weapon.long_range_weapon_cut": "long_range_weapon_cut",
       "item.minecraft_armor_weapon.bogged_outer_chestplate": "Bogged Outer Chestplate",
       "item.minecraft_armor_weapon.dragon_green_armor_boots": "§2Dragon green boots",
       "item.minecraft_armor_weapon.rivers_of_blood": "§4§lRivers of Blood",
@@ -9904,6 +9918,7 @@
       "block.minecraft_armor_weapon.moto_wither_katana_block_1": "Moto Wither Katana Block",
       "effect.minecraft_armor_weapon.kill_effect_true_or_false": "kill effect true of false",
       "item.minecraft_armor_weapon.imitation": "Book of Transmutation",
+      "tooltip.minecraft_armor_weapon.feyn.sigiled": "sigiled",
       "item.minecraft_armor_weapon.dragon_armor_chestplate": "§5Dragon chestplate",
       "item.minecraft_armor_weapon.bogged_outer_leggings": "Bogged Outer Leggings",
       "item.minecraft_armor_weapon.hammer": "Hammer",
@@ -9921,6 +9936,7 @@
       "item.minecraft_armor_weapon.replica_sword_of_light": "§6Replica Sword Of Light",
       "advancements.dark_magic_swordsman_achievements.title": "§5You\u0027ve become a dark magic swordsman.",
       "item.minecraft_armor_weapon.chuzume_husk_armor_leggings": "§gchuzume husk leggings",
+      "tooltip.minecraft_armor_weapon.feyn.sancted": "sancted",
       "effect.minecraft_armor_weapon.wind_step_effect": "BubbleshoteEffect",
       "effect.minecraft_armor_weapon.attack_in_guard": "Attack in Guard",
       "item.minecraft_armor_weapon.chuzume_husk_armor_chestplate": "§gchuzume husk chestplate",
@@ -10148,6 +10164,7 @@
       "item.minecraft_armor_weapon.machete": "鉈",
       "effect.minecraft_armor_weapon.sword_of_night_tameeee": "tameteruyo",
       "item.minecraft_armor_weapon.sword_of_night": "§6Sword of Night",
+      "tooltip.minecraft_armor_weapon.feyn.cursed": "妖",
       "item.minecraft_armor_weapon.storm": "§8Storm",
       "item.minecraft_armor_weapon.kaminari_kurikaraken_utigatana": "Kaminari Kurikaraken Utigatana",
       "block.minecraft_armor_weapon.stone_bricks_trap_door": "Stone Bricks Trap Door",
@@ -10176,6 +10193,7 @@
       "block.minecraft_armor_weapon.moto_wither_katana_block_1": "Moto Wither Katana Block",
       "effect.minecraft_armor_weapon.kill_effect_true_or_false": "kill effect true of false",
       "item.minecraft_armor_weapon.imitation": "Book of Transmutation",
+      "tooltip.minecraft_armor_weapon.feyn.sigiled": "封",
       "item.minecraft_armor_weapon.dragon_armor_chestplate": "§5Dragon chestplate",
       "item.minecraft_armor_weapon.bogged_outer_leggings": "Bogged Outer Leggings",
       "item.minecraft_armor_weapon.hammer": "Hammer",
@@ -10193,6 +10211,7 @@
       "item.minecraft_armor_weapon.replica_sword_of_light": "§6Replica Sword of Light",
       "advancements.dark_magic_swordsman_achievements.title": "§5君は闇の魔法剣士になってしまった",
       "item.minecraft_armor_weapon.chuzume_husk_armor_leggings": "§gchuzume husk leggings",
+      "tooltip.minecraft_armor_weapon.feyn.sancted": "聖",
       "effect.minecraft_armor_weapon.wind_step_effect": "BubbleshoteEffect",
       "effect.minecraft_armor_weapon.attack_in_guard": "Attack in Guard",
       "item.minecraft_armor_weapon.chuzume_husk_armor_chestplate": "§gchuzume husk chestplate",
