@@ -8,7 +8,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraft.nbt.CompoundTag; // インポート追加
+import net.minecraft.nbt.CompoundTag;
 
 import net.minecraftforge.client.event.RenderTooltipEvent;
 
@@ -17,7 +17,7 @@ public class FeynTooltipEvent {
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
-        // PoseStack poseStack = event.getPoseStack(); // 削除またはコメントアウト
+        // PoseStack poseStack = event.getPoseStack(); // テキトウに残しておこう
 
         if (stack.hasTag() && stack.getTag().contains("Feyn")) {
             String feyn = stack.getTag().getString("Feyn");
