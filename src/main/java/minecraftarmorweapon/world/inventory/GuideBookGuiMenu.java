@@ -6,17 +6,19 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class GuideBookGuiMenu extends AbstractContainerMenu {
-    private final ItemStack itemStack;
+    private final String guideBookData;
 
     public GuideBookGuiMenu(int id, Inventory playerInventory, FriendlyByteBuf data) {
-        super(null, id); // 必要なメニュータイプを設定
-        this.itemStack = data.readItem(); // アイテムデータを読み取る
+        super(null, id); // 必要に応じてメニュータイプを設定
+        this.guideBookData = data.readUtf(); // JSONデータを受け取る
+    }
+
+    public String getGuideBookData() {
+        return guideBookData;
     }
 
     @Override
     public boolean stillValid(Player player) {
-        return true; // GUIが開いている間、常に有効
+        return true; // GUIを開いている間有効
     }
-
-    // 必要に応じてGUIの要素やデータ処理を追加
 }
