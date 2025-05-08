@@ -1,4 +1,3 @@
-
 name: Multi-Build Workflow
 
 on:
@@ -6,7 +5,7 @@ on:
     branches: [ "1.19.2" ]
   pull_request:
     branches: [ "1.19.2" ]
-  workflow_dispatch: # 手動トリガー追加
+  workflow_dispatch: # 手動トリガー
 
 jobs:
   mod-build:
@@ -14,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      security-events: write # ← CodeQL用に必要
 
     steps:
     - name: Checkout Repository
@@ -24,6 +24,12 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: java-kotlin
+        build-mode: manual
 
     - name: Cache Gradle
       uses: actions/cache@v3
@@ -39,13 +45,16 @@ jobs:
     - name: Grant Execution Permission for Gradlew
       run: chmod +x ./gradlew
 
-    - name: Build Mod with Gradle Wrapper
+    - name: Build Mod with Gradle Wrapper (no tests)
       run: ./gradlew build -x test --daemon --incremental
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
 
   bad-apple-display:
     name: Display Bad Apple
     runs-on: ubuntu-latest
-    needs: mod-build # Runs after the mod-build job
+    needs: mod-build
 
     steps:
     - name: Download Bad Apple Animation
@@ -53,7 +62,7 @@ jobs:
 
     - name: Debug Animation Display
       run: |
-        head -n 20 play.txt # 最初の20行を確認
+        head -n 20 play.txt
 
     - name: Display Bad Apple Animation
       run: |
