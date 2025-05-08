@@ -33,27 +33,31 @@ public class FeynEffectHandler {
             }
         }
     }
-    // 体力を消費して耐久を回復
-    @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        Player player = event.player;
-    
-        if (player == null || player.level.isClientSide) return; // サーバー側のみ
-    
-        ItemStack item = player.getMainHandItem();
-        if (item != null && item.isDamageableItem() && item.hasTag()) {
-            CompoundTag tag = item.getTag();
-            if ("cursed".equals(tag.getString("Feyn"))) {
-                int currentDamage = item.getDamageValue();
-                int maxDamage = item.getMaxDamage();
-    
-                if (currentDamage >= maxDamage - 1 && player.getHealth() > 2.0F) {
-                    player.hurt(DamageSource.MAGIC, 2.0F); // 体力を消費
-                    item.setDamageValue(maxDamage - 5);    // 耐久を回復
-                }
+    // 満腹度を消費して耐久を回復
+ @SubscribeEvent
+public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+    Player player = event.player;
+
+    if (player == null || player.level.isClientSide) return; // サーバー側のみ
+
+    ItemStack item = player.getMainHandItem();
+    if (item != null && item.isDamageableItem() && item.hasTag()) {
+        CompoundTag tag = item.getTag();
+        if ("cursed".equals(tag.getString("Feyn"))) {
+            int currentDamage = item.getDamageValue();
+            int maxDamage = item.getMaxDamage();
+
+            // 空腹ゲージを取得
+            int foodLevel = player.getFoodData().getFoodLevel();
+
+            // 条件を空腹ゲージが2以上であることに変更
+            if (currentDamage >= maxDamage - 1 && foodLevel > 2) {
+                player.getFoodData().setFoodLevel(foodLevel - 2); // 空腹ゲージを消費
+                item.setDamageValue(maxDamage - 5);              // 耐久を回復
             }
         }
     }
+}
     
 }
 
