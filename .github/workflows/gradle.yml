@@ -26,7 +26,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3 # v2 → v3 に更新
+      uses: github/codeql-action/init@v3
       with:
         languages: java-kotlin
         build-mode: manual
@@ -48,24 +48,7 @@ jobs:
       run: chmod +x ./gradlew
 
     - name: Build Mod with Gradle Wrapper (no tests)
-      run: ./gradlew build -x test --daemon --incremental --warning-mode all # 詳細な警告モードを追加
+      run: ./gradlew build -x test --daemon --parallel --configure-on-demand --warning-mode all
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3 # v2 → v3 に更新
-
-  bad-apple-display:
-    name: Display Bad Apple
-    runs-on: ubuntu-latest
-    needs: mod-build
-
-    steps:
-    - name: Download Bad Apple Animation
-      run: curl -O https://raw.githubusercontent.com/Chion82/ASCII_bad_apple/master/play.txt
-
-    - name: Debug Animation Display
-      run: |
-        head -n 20 play.txt
-
-    - name: Display Bad Apple Animation
-      run: |
-        awk '/^\$+$/ { system("sleep 0.05; clear") } { print }' play.txt
+      uses: github/codeql-action/analyze@v3
