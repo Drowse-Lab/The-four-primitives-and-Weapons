@@ -26,7 +26,7 @@ jobs:
         distribution: 'temurin'
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3 # v2 → v3 に更新
       with:
         languages: java-kotlin
         build-mode: manual
@@ -34,7 +34,9 @@ jobs:
     - name: Cache Gradle
       uses: actions/cache@v3
       with:
-        path: ~/.gradle/caches
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
@@ -46,10 +48,10 @@ jobs:
       run: chmod +x ./gradlew
 
     - name: Build Mod with Gradle Wrapper (no tests)
-      run: ./gradlew build -x test --daemon --incremental
+      run: ./gradlew build -x test --daemon --incremental --warning-mode all # 詳細な警告モードを追加
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3 # v2 → v3 に更新
 
   bad-apple-display:
     name: Display Bad Apple
