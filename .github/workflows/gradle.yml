@@ -54,6 +54,6 @@ jobs:
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
-        category: "security" # CodeQL解析のカテゴリを指定
+        category: "security"
         upload-database: true
         wait-for-processing: true
