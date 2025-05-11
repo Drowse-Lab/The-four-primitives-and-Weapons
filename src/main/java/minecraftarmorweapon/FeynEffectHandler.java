@@ -20,46 +20,32 @@ public class FeynEffectHandler {
 
         if (player == null || player.level.isClientSide) return;
 
-        // 最大体力の AttributeModifier を作成
-        AttributeModifier healthModifier = new AttributeModifier(
-            HEALTH_MODIFIER_UUID,
-            "Cursed Health Down",
-            -4.0,
-            AttributeModifier.Operation.ADDITION
-        );
-
-        // 攻撃力の AttributeModifier を作成
-        AttributeModifier attackModifier = new AttributeModifier(
-            ATTACK_MODIFIER_UUID,
-            "Cursed Attack Up",
-            6.0,
-            AttributeModifier.Operation.ADDITION
-        );
-
         // 最大体力の変更
-        if (!player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).getModifiers().contains(healthModifier)) {
-            player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH)
-                  .addTransientModifier(healthModifier);
+        if (hasModifier(player, net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID)) {
+            removeModifier(player, net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID);
+        } else {
+            applyModifier(player, net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID, "Cursed Health Down", -4.0);
         }
 
         // 攻撃力の変更
-        if (!player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getModifiers().contains(attackModifier)) {
-            player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
-                  .addTransientModifier(attackModifier);
+        if (hasModifier(player, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID)) {
+            removeModifier(player, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID);
+        } else {
+            applyModifier(player, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID, "Cursed Attack Up", 6.0);
         }
     }
 
-    private static void removeModifiers(Player player) {
-        // 最大体力の効果を削除
-        if (player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).getModifiers().stream()
-                  .anyMatch(modifier -> modifier.getId().equals(HEALTH_MODIFIER_UUID))) {
-            player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).removeModifier(HEALTH_MODIFIER_UUID);
-        }
+    private static boolean hasModifier(Player player, net.minecraft.world.entity.ai.attributes.Attribute attribute, UUID modifierUUID) {
+        return player.getAttribute(attribute).getModifiers().stream()
+                .anyMatch(modifier -> modifier.getId().equals(modifierUUID));
+    }
 
-        // 攻撃力の効果を削除
-        if (player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getModifiers().stream()
-                  .anyMatch(modifier -> modifier.getId().equals(ATTACK_MODIFIER_UUID))) {
-            player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).removeModifier(ATTACK_MODIFIER_UUID);
-        }
+    private static void applyModifier(Player player, net.minecraft.world.entity.ai.attributes.Attribute attribute, UUID modifierUUID, String name, double amount) {
+        AttributeModifier modifier = new AttributeModifier(modifierUUID, name, amount, AttributeModifier.Operation.ADDITION);
+        player.getAttribute(attribute).addTransientModifier(modifier);
+    }
+
+    private static void removeModifier(Player player, net.minecraft.world.entity.ai.attributes.Attribute attribute, UUID modifierUUID) {
+        player.getAttribute(attribute).removeModifier(modifierUUID);
     }
 }
