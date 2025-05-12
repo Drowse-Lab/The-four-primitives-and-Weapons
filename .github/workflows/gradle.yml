@@ -97,6 +97,8 @@ jobs:
     name: Display Bad Apple
     runs-on: ubuntu-latest
     needs: mod-build # Runs after the mod-build job
+    permissions:
+      contents: read
 
     steps:
     - name: Download Bad Apple Animation
