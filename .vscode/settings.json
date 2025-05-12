@@ -1,4 +1,7 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.import.gradle.java.home": "C:\\Program Files\\Java\\jdk-17", // ここはJDK 17の実際のインストールパスに変更
+    "java.import.gradle.arguments": "--stacktrace --info",
+    "java.import.gradle.enabled": true
 }
