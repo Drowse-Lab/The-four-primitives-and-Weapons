@@ -2,10 +2,10 @@ name: Multi-Build Workflow
 
 on:
   push:
-    branches: [ "main", "1.19.2" ] # 必要に応じて他のブランチも追加
+    branches: [ "main", "1.19.2" ]
   pull_request:
     branches: [ "main", "1.19.2" ]
-  workflow_dispatch: # 手動トリガー
+  workflow_dispatch:
 
 jobs:
   mod-build:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      security-events: write # CodeQL用に必要
+      security-events: write
 
     steps:
     - name: Checkout Repository
@@ -49,7 +49,8 @@ jobs:
       run: chmod +x ./gradlew
 
     - name: Build Mod with Gradle Wrapper (no tests)
-      run: ./gradlew build -x test --daemon --parallel --configure-on-demand --warning-mode all --stacktrace --info
+      run: |
+        ./gradlew clean build -x test --daemon --parallel --configure-on-demand --warning-mode all --stacktrace --info
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
@@ -57,3 +58,5 @@ jobs:
         category: "security"
         upload-database: true
         wait-for-processing: true
+        sarif-category: "security-extended"
+        sarif-include-diagnostics: true
