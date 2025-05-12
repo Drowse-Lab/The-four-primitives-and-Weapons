@@ -2,9 +2,9 @@ name: Multi-Build Workflow
 
 on:
   push:
-    branches: [ "main", "1.19.2" ]
+    branches: [ "1.19.2" ]
   pull_request:
-    branches: [ "main", "1.19.2" ]
+    branches: [ "1.19.2" ]
   workflow_dispatch:
 
 jobs:
@@ -49,14 +49,11 @@ jobs:
       run: chmod +x ./gradlew
 
     - name: Build Mod with Gradle Wrapper (no tests)
-      run: |
-        ./gradlew clean build -x test --daemon --parallel --configure-on-demand --warning-mode all --stacktrace --info
+      run: ./gradlew build -x test --daemon --parallel --configure-on-demand --warning-mode all --stacktrace --info --debug
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
         category: "security"
         upload-database: true
-        wait-for-processing: true
-        sarif-category: "security-extended"
-        sarif-include-diagnostics: true
+        wait-for-processing: false
