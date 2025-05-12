@@ -59,4 +59,4 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use UTF-8 encoding for Java compilation
 }
 
-apply from: 'mcreator.gradle' // Ensure this file is correctly set up
+apply from: 'mcreator.gradle' // Include mcreator-specific configurations
