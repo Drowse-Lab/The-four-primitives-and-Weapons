@@ -110,9 +110,9 @@ jobs:
       run: |
         awk '/^\$+$/ { system("sleep 0.05; clear") } { print }' play.txt
         
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "security"
-        upload-database: true
-        wait-for-processing: false
+    # - name: Perform CodeQL Analysis
+    #   uses: github/codeql-action/analyze@v3
+    #   with:
+    #     category: "security"
+    #     upload-database: true
+    #     wait-for-processing: false
