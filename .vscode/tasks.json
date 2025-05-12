@@ -1,17 +1,38 @@
-{
+
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
+{
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "echo",
+            "label": "Build Project",
             "type": "shell",
-            "command": "echo Hello",
-            "problemMatcher": [],
+            "command": "./gradlew build",
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "problemMatcher": ["$java"]
+        },
+        {
+            "label": "Run Client",
+            "type": "shell",
+            "command": "./gradlew runClient",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Server",
+            "type": "shell",
+            "command": "./gradlew runServer",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": []
         }
     ]
 }
