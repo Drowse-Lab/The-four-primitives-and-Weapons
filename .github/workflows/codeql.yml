@@ -32,7 +32,8 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
-        languages: java,mcfunction
+        # languages: java,mcfunction
+        languages: java
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
