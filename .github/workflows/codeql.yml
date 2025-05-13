@@ -27,7 +27,7 @@ jobs:
 
     strategy:
       matrix:
-        language: [ java ] # mcfunction を削除
+        language: [ java ] # mcfunction removed, focusing on Java
 
     steps:
     - name: Checkout repository
@@ -37,6 +37,11 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
+
+    - name: Build Code (if applicable)
+      run: |
+        mkdir -p build
+        javac -d build $(find . -name "*.java")
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
