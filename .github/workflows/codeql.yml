@@ -25,6 +25,10 @@ jobs:
     permissions:
       security-events: write
 
+    strategy:
+      matrix:
+        language: [ java ] # mcfunction を削除
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -32,8 +36,7 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
-        # languages: java,mcfunction
-        languages: java
+        languages: ${{ matrix.language }}
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
