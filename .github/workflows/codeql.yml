@@ -9,39 +9,39 @@
 # the `language` matrix defined below to confirm you have the correct set of
 # supported CodeQL languages.
 #
-name: "CodeQL Analysis"
+# name: "CodeQL Analysis"
 
-on:
-  push:
-    branches: [ "1.19.2" ]
-  pull_request:
-    branches: [ "1.19.2" ]
-  schedule:
-    - cron: '44 18 * * 0'
+# on:
+#   push:
+#     branches: [ "1.19.2" ]
+#   pull_request:
+#     branches: [ "1.19.2" ]
+#   schedule:
+#     - cron: '44 18 * * 0'
 
-jobs:
-  analyze:
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
+# jobs:
+#   analyze:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       security-events: write
 
-    strategy:
-      matrix:
-        language: [ java ] # mcfunction removed, focusing on Java
+#     strategy:
+#       matrix:
+#         language: [ java ] # mcfunction removed, focusing on Java
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+#     steps:
+#     - name: Checkout repository
+#       uses: actions/checkout@v4
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
+#     - name: Initialize CodeQL
+#       uses: github/codeql-action/init@v3
+#       with:
+#         languages: ${{ matrix.language }}
 
-    - name: Build Code (if applicable)
-      run: |
-        mkdir -p build
-        javac -d build $(find . -name "*.java")
+#     - name: Build Code (if applicable)
+#       run: |
+#         mkdir -p build
+#         javac -d build $(find . -name "*.java")
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+#     - name: Perform CodeQL Analysis
+#       uses: github/codeql-action/analyze@v3
