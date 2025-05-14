@@ -18,6 +18,9 @@
 
 name: Deploy Java project to Azure Function App
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: ["1.19.2"]
