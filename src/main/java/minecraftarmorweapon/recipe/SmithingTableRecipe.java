@@ -4,9 +4,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.Container;
+import minecraftarmorweapon.init.ModRecipes;
 
 public class SmithingTableRecipe implements Recipe<Container> {
     private final ResourceLocation id;
@@ -41,15 +43,23 @@ public class SmithingTableRecipe implements Recipe<Container> {
         return result;
     }
 
+    public Ingredient getInput() {
+        return input;
+    }
+
+    public Ingredient getAddition() {
+        return addition;
+    }
+
     @Override
     public ResourceLocation getId() {
         return id;
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
-        return ModRecipes.SMITHING_RECIPE_SERIALIZER;
-    }
+public RecipeSerializer<?> getSerializer() {
+    return ModRecipes.SMITHING_RECIPE_SERIALIZER.get(); // .get() を追加
+}
 
     @Override
     public RecipeType<?> getType() {
