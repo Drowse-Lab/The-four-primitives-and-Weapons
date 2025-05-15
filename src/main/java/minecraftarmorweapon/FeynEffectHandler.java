@@ -28,24 +28,27 @@ public class FeynEffectHandler {
         boolean hasCursedItem = hasCursedFeyn(player.getMainHandItem()) || hasCursedFeyn(player.getOffhandItem());
 
         if (hasCursedItem) {
-            // 最大体力：-4
-            if (!hasModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID)) {
+            // 最大体力を常に「元の値 −4」にする
+            AttributeInstance healthAttr = player.getAttribute(Attributes.MAX_HEALTH);
+            if (healthAttr != null) {
+                removeModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID);
                 applyModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID, "Cursed Health Down", -4.0);
             }
-            // 攻撃力：+6
+
+            // 攻撃力 +6（重複を防ぐ）
             if (!hasModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID)) {
                 applyModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID, "Cursed Attack Up", 6.0);
             }
         } else {
-            // 持ってなければ解除
+            // 効果の除去
             removeModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID);
             removeModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID);
         }
 
-        // クライアント同期
+        // クライアントへ同期
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.connection.send(new ClientboundUpdateAttributesPacket(
-                    player.getId(), player.getAttributes().getSyncableAttributes()
+                player.getId(), player.getAttributes().getSyncableAttributes()
             ));
         }
     }
