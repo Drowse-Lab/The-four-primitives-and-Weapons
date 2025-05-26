@@ -19,7 +19,7 @@ https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons
 ![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=Renkon65&show_icons=true&theme=dark)
 ![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=aya526dev&show_icons=true&theme=gotham)
 
-## [chuzume](https://github.com/Chuzume)さんのを使った
+## [chuzume](https://github.com/Chuzume)さんのを参考にしたり
 ### replica sword of light
 https://youtu.be/nA6a7O3jBJo?si=NzeW23jMIkDXOmv3
 ### sword of night
