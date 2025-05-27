@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 
 import minecraftarmorweapon.entity.NiseGenEiKenEntity;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEntities;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 
 public class NiseGenEiKenSpawnProcedure {
     public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
@@ -26,9 +27,9 @@ public class NiseGenEiKenSpawnProcedure {
             double spawnY = entity.getY() + 1.2;
             double spawnZ = entity.getZ() + offsetZ;
             swordEntity.moveTo(spawnX, spawnY, spawnZ, (float)yaw, entity.getXRot());
-            // 刀剣アイテムを持たせる（仮：ダイヤ剣、半透明テクスチャは後で）
-            ItemStack sword = new ItemStack(Items.DIAMOND_SWORD);
-            sword.enchant(Enchantments.KNOCKBACK, 1); // _kill_エンチャントの代用
+            // 刀剣アイテムを持たせる（半透明テクスチャのカスタム剣）
+            ItemStack sword = new ItemStack(MinecraftArmorWeaponModItems.NISE_GEN_EI_KEN_SWORD.get());
+            sword.enchant(Enchantments.KILL, 1); // _kill_エンチャント
             swordEntity.setItemSlot(EquipmentSlot.MAINHAND, sword);
             // 水の影響を受けない
             swordEntity.setNoGravity(true);

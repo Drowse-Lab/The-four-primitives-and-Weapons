@@ -53,10 +53,42 @@ public class NiseGenEiKenEntity extends PathfinderMob {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
+    private int lifeTicks = 40; // 約2秒で消滅（20tick=1秒）
+    private Vec3 moveDirection = null;
+
+    public void setMoveDirection(Vec3 dir) {
+        this.moveDirection = dir.normalize();
+    }
+
     @Override
     public void baseTick() {
         super.baseTick();
-        // TODO: 移動・衝突・消滅処理
+        if (moveDirection != null) {
+            this.setDeltaMovement(moveDirection.scale(0.7)); // 速度調整
+            this.moveRelative(0.7f, moveDirection);
+        }
+        // 水の影響を受けない
+        this.setNoGravity(true);
+        // 寿命
+        if (--lifeTicks <= 0) {
+            this.discard();
+        }
+        // 衝突判定
+        for (Entity entity : this.level.getEntities(this, this.getBoundingBox().inflate(0.2))) {
+            if (entity != this && entity instanceof LivingEntity living && !(entity instanceof Player)) {
+                // ダメージ処理
+                float damage = 8.0f;
+                ItemStack sword = this.getItemBySlot(EquipmentSlot.MAINHAND);
+                if (sword != null && sword.isEnchanted()) {
+                    // _kill_エンチャントのレベルを参照（仮: KILLエンチャントが存在する場合）
+                    int killLevel = sword.getEnchantmentLevel(Enchantments.KILL);
+                    if (killLevel > 0) damage += killLevel * 4;
+                }
+                living.hurt(DamageSource.mobAttack(this), damage);
+                this.discard();
+                break;
+            }
+        }
     }
 
     @Override
