@@ -33,8 +33,18 @@ public class FeynEffectHandlerClient {
             if ("sancted".equals(tag.getString("Feyn"))) {
                 LivingEntity target = event.getEntity();
                 if (target.getMobType() == MobType.UNDEAD) {
-                    event.setAmount(event.getAmount() + 4.0F); // 追加ダメージ（調整可能）
+                    event.setAmount(event.getAmount() + 4.0F); // 追加ダメージ
                 }
+            }
+        }
+        if (weapon.hasTag()) {
+            CompoundTag tag = weapon.getTag();
+            if ("cursed".equals(tag.getString("Feyn"))) {
+                LivingEntity target = event.getEntity();
+                event.setAmount(event.getAmount() + 4.0F); // 追加ダメージ
+                // if (target.getMobType() == MobType.) {
+                //     event.setAmount(event.getAmount() + 4.0F);
+                // }
             }
         }
     }
