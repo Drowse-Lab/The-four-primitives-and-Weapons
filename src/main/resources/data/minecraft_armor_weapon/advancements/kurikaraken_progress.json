@@ -22,6 +22,12 @@
           {
             "items": [
               "minecraft_armor_weapon:kurikaraken"
+             ], 
+            "items": [
+              "minecraft_armor_weapon:kurikarakensword"
+            ],
+            "items": [
+              "minecraft_armor_weapon:kurikarakenutigatana"
             ],
             "count": {
               "min": 1,
