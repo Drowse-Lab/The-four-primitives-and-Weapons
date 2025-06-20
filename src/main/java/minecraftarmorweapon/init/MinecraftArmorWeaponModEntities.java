@@ -1,3 +1,4 @@
+
 /*
  *    MCreator note: This file will be REGENERATED on each build.
  */
@@ -29,7 +30,6 @@ import minecraftarmorweapon.entity.CometKillEntity;
 import minecraftarmorweapon.entity.CometEntity;
 import minecraftarmorweapon.entity.BlackholeEntity;
 import minecraftarmorweapon.entity.AlchemyCraftBlockEntityEntity;
-import minecraftarmorweapon.entity.NiseGenEiKenEntity;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
@@ -75,13 +75,6 @@ public class MinecraftArmorWeaponModEntities {
 			EntityType.Builder.<Reisame284Entity>of(Reisame284Entity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(Reisame284Entity::new)
 
 					.sized(0.9f, 0.9f));
-	public static final RegistryObject<EntityType<NiseGenEiKenEntity>> NISE_GEN_EI_KEN = register("nise_gen_ei_ken",
-	EntityType.Builder.<NiseGenEiKenEntity>of(NiseGenEiKenEntity::new, MobCategory.MISC)
-		.setCustomClientFactory(NiseGenEiKenEntity::new)
-		.setShouldReceiveVelocityUpdates(true)
-		.setTrackingRange(64)
-		.setUpdateInterval(1)
-		.sized(0.5f, 0.5f));
 
 	private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryname, EntityType.Builder<T> entityTypeBuilder) {
 		return REGISTRY.register(registryname, () -> (EntityType<T>) entityTypeBuilder.build(registryname));
@@ -101,7 +94,6 @@ public class MinecraftArmorWeaponModEntities {
 			MeteorArrowEntity.init();
 			AlchemyCraftBlockEntityEntity.init();
 			Reisame284Entity.init();
-			NiseGenEiKenEntity.init();
 		});
 	}
 
@@ -118,6 +110,5 @@ public class MinecraftArmorWeaponModEntities {
 		event.put(METEOR_ARROW.get(), MeteorArrowEntity.createAttributes().build());
 		event.put(ALCHEMY_CRAFT_BLOCK_ENTITY.get(), AlchemyCraftBlockEntityEntity.createAttributes().build());
 		event.put(REISAME_284.get(), Reisame284Entity.createAttributes().build());
-		event.put(NISE_GEN_EI_KEN.get(), NiseGenEiKenEntity.createAttributes().build());
 	}
 }

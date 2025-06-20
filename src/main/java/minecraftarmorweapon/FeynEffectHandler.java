@@ -1,13 +1,13 @@
 package minecraftarmorweapon;
 
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -27,62 +27,44 @@ public class FeynEffectHandler {
 
         boolean hasCursedItem = hasCursedFeyn(player.getMainHandItem()) || hasCursedFeyn(player.getOffhandItem());
 
-        // if (hasCursedItem) {
-        //     // 最大体力を常に「元の値 −4」にする
-        //     AttributeInstance healthAttr = player.getAttribute(Attributes.MAX_HEALTH);
-        //     if (healthAttr != null) {
-        //         removeModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID);
-        //         applyModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID, "Cursed Health Down", -4.0);
-        //     }
+        AttributeInstance healthAttr = player.getAttribute(Attributes.MAX_HEALTH);
+        AttributeInstance attackAttr = player.getAttribute(Attributes.ATTACK_DAMAGE);
 
-        //     // 攻撃力 +6（重複を防ぐ）
-        //     if (!hasModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID)) {
-        //         applyModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID, "Cursed Attack Up", 6.0);
-        //     }
-        // } else {
-        //     // 効果の除去
-        //     removeModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID);
-        //     removeModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID);
-        // }
+        if (hasCursedItem) {
+            if (healthAttr != null) {
+                removeModifier(healthAttr, HEALTH_MODIFIER_UUID);
+                AttributeModifier healthMod = new AttributeModifier(
+                        HEALTH_MODIFIER_UUID, "Cursed Health Down", -3.0, AttributeModifier.Operation.ADDITION);
+                healthAttr.addPermanentModifier(healthMod);
+            }
 
-        // クライアントへ同期
+            if (attackAttr != null) {
+                removeModifier(attackAttr, ATTACK_MODIFIER_UUID);
+                AttributeModifier attackMod = new AttributeModifier(
+                        ATTACK_MODIFIER_UUID, "Cursed Attack Boost", 6.0, AttributeModifier.Operation.ADDITION);
+                attackAttr.addPermanentModifier(attackMod);
+            }
+        } else {
+            if (healthAttr != null) removeModifier(healthAttr, HEALTH_MODIFIER_UUID);
+            if (attackAttr != null) removeModifier(attackAttr, ATTACK_MODIFIER_UUID);
+        }
+
+        // クライアントと同期
         if (player instanceof ServerPlayer serverPlayer) {
             serverPlayer.connection.send(new ClientboundUpdateAttributesPacket(
-                player.getId(), player.getAttributes().getSyncableAttributes()
+                    player.getId(), player.getAttributes().getSyncableAttributes()
             ));
         }
     }
 
-    // NBTが "Feyn":"cursed" であるか確認
     private static boolean hasCursedFeyn(ItemStack stack) {
-        return stack.hasTag() && "cursed".equals(stack.getTag().getString("Feyn"));
+        if (stack == null || !stack.hasTag()) return false;
+        CompoundTag tag = stack.getTag();
+        return "cursed".equals(tag.getString("Feyn"));
     }
 
-    // UUIDによってmodifierを持っているか確認
-    private static boolean hasModifier(Player player, Attribute attribute, UUID uuid) {
-        AttributeInstance instance = player.getAttribute(attribute);
-        return instance != null && instance.getModifier(uuid) != null;
-    }
-
-    // modifier を追加
-    private static void applyModifier(Player player, Attribute attribute, UUID uuid, String name, double value) {
-        AttributeInstance instance = player.getAttribute(attribute);
-        if (instance == null) return;
-
-        if (instance.getModifier(uuid) == null) {
-            AttributeModifier modifier = new AttributeModifier(uuid, name, value, AttributeModifier.Operation.ADDITION);
-            instance.addPermanentModifier(modifier);
-        }
-    }
-
-    // modifier を削除
-    private static void removeModifier(Player player, Attribute attribute, UUID uuid) {
-        AttributeInstance instance = player.getAttribute(attribute);
-        if (instance == null) return;
-
-        AttributeModifier modifier = instance.getModifier(uuid);
-        if (modifier != null) {
-            instance.removeModifier(modifier);
-        }
+    private static void removeModifier(AttributeInstance attr, UUID uuid) {
+        AttributeModifier mod = attr.getModifier(uuid);
+        if (mod != null) attr.removeModifier(mod);
     }
 }
