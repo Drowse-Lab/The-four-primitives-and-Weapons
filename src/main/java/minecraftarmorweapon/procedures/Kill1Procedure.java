@@ -67,10 +67,12 @@ public class Kill1Procedure {
 		if (!world.isClientSide()) {
 			if (sourceentity instanceof ServerPlayer _plr17 && _plr17.level instanceof ServerLevel
 					&& _plr17.getAdvancements().getOrStartProgress(_plr17.server.getAdvancements().getAdvancement(new ResourceLocation("minecraft_armor_weapon:you_have_become_a_vampire"))).isDone()) {
-				if (sourceentity instanceof LivingEntity _entity)
-					_entity.setHealth((float) ((sourceentity instanceof LivingEntity _livEnt ? _livEnt.getHealth() : -1) + 1));
-				if (sourceentity instanceof Player _player)
-					_player.getFoodData().setFoodLevel((int) ((sourceentity instanceof Player _plr ? _plr.getFoodData().getFoodLevel() : 0) + 1));
+				if ((sourceentity instanceof LivingEntity _livEnt ? _livEnt.getMaxHealth() : -1) >= (sourceentity instanceof Player _plr ? _plr.getFoodData().getFoodLevel() : 0)) {
+					if (sourceentity instanceof LivingEntity _entity)
+						_entity.setHealth((float) ((sourceentity instanceof LivingEntity _livEnt ? _livEnt.getHealth() : -1) + 1));
+					if (sourceentity instanceof Player _player)
+						_player.getFoodData().setFoodLevel((int) ((sourceentity instanceof Player _plr ? _plr.getFoodData().getFoodLevel() : 0) + 1));
+				}
 			}
 		}
 		if (!world.isClientSide()) {
