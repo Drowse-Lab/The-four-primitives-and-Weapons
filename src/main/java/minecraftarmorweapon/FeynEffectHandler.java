@@ -28,13 +28,15 @@ public class FeynEffectHandler {
         boolean hasCursedItem = hasCursedFeyn(player.getMainHandItem()) || hasCursedFeyn(player.getOffhandItem());
 
         if (hasCursedItem) {
-            // 最大体力：-3
+            // 最大体力：-30%
             if (!hasModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID)) {
-                applyModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID, "Cursed Health Down", -3.0);
+                double maxHealth = player.getAttributeBaseValue(Attributes.MAX_HEALTH);
+                applyModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID, "Cursed Health Down", -maxHealth * 0.2);
             }
-            // 攻撃力：+6
+            // 攻撃力：+14%
             if (!hasModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID)) {
-                applyModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID, "Cursed Attack Up", 6.0);
+                double attackDamage = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
+                applyModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID, "Cursed Attack Up", attackDamage * 0.14);
             }
         } else {
             // 持ってなければ解除
