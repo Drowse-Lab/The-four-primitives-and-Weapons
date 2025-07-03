@@ -26,6 +26,7 @@ import minecraftarmorweapon.entity.LokiDecoydasuEntity;
 import minecraftarmorweapon.entity.KillotiruEntity;
 import minecraftarmorweapon.entity.KatanaTobuEntity;
 import minecraftarmorweapon.entity.HrmcngsEntity;
+import minecraftarmorweapon.entity.FlyingAttackerEntity;
 import minecraftarmorweapon.entity.CometKillEntity;
 import minecraftarmorweapon.entity.CometEntity;
 import minecraftarmorweapon.entity.BlackholeEntity;
@@ -75,6 +76,10 @@ public class MinecraftArmorWeaponModEntities {
 			EntityType.Builder.<Reisame284Entity>of(Reisame284Entity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(Reisame284Entity::new)
 
 					.sized(0.9f, 0.9f));
+	public static final RegistryObject<EntityType<FlyingAttackerEntity>> FLYING_ATTACKER = register("flying_attacker",
+			EntityType.Builder.<FlyingAttackerEntity>of(FlyingAttackerEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(FlyingAttackerEntity::new)
+
+					.sized(0.6f, 1.8f));
 
 	private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryname, EntityType.Builder<T> entityTypeBuilder) {
 		return REGISTRY.register(registryname, () -> (EntityType<T>) entityTypeBuilder.build(registryname));
@@ -94,6 +99,7 @@ public class MinecraftArmorWeaponModEntities {
 			MeteorArrowEntity.init();
 			AlchemyCraftBlockEntityEntity.init();
 			Reisame284Entity.init();
+			FlyingAttackerEntity.init();
 		});
 	}
 
@@ -110,5 +116,6 @@ public class MinecraftArmorWeaponModEntities {
 		event.put(METEOR_ARROW.get(), MeteorArrowEntity.createAttributes().build());
 		event.put(ALCHEMY_CRAFT_BLOCK_ENTITY.get(), AlchemyCraftBlockEntityEntity.createAttributes().build());
 		event.put(REISAME_284.get(), Reisame284Entity.createAttributes().build());
+		event.put(FLYING_ATTACKER.get(), FlyingAttackerEntity.createAttributes().build());
 	}
 }

@@ -32,6 +32,7 @@ import minecraftarmorweapon.potion.SyugekiMobEffect;
 import minecraftarmorweapon.potion.SwordOfNightTameeeeMobEffect;
 import minecraftarmorweapon.potion.SwordOfNightReloadMobEffect;
 import minecraftarmorweapon.potion.SwordOfNightEffectMobEffect;
+import minecraftarmorweapon.potion.SummonTriggerEffectMobEffect;
 import minecraftarmorweapon.potion.SuityuuMobEffect;
 import minecraftarmorweapon.potion.StormEffectMobEffect;
 import minecraftarmorweapon.potion.SliceGuardMobEffect;
@@ -155,4 +156,5 @@ public class MinecraftArmorWeaponModMobEffects {
 	public static final RegistryObject<MobEffect> ARMORSTANDTOBASUENMAEFFECTKILL = REGISTRY.register("armorstandtobasuenmaeffectkill", () -> new ArmorstandtobasuenmaeffectkillMobEffect());
 	public static final RegistryObject<MobEffect> KILLOFF = REGISTRY.register("killoff", () -> new KilloffMobEffect());
 	public static final RegistryObject<MobEffect> ENMAZANGEKI = REGISTRY.register("enmazangeki", () -> new EnmazangekiMobEffect());
+	public static final RegistryObject<MobEffect> SUMMON_TRIGGER_EFFECT = REGISTRY.register("summon_trigger_effect", () -> new SummonTriggerEffectMobEffect());
 }

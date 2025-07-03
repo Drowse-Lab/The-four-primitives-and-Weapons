@@ -19,6 +19,7 @@ import minecraftarmorweapon.client.renderer.MeteorArrowRenderer;
 import minecraftarmorweapon.client.renderer.KillotiruRenderer;
 import minecraftarmorweapon.client.renderer.KatanaTobuRenderer;
 import minecraftarmorweapon.client.renderer.HrmcngsRenderer;
+import minecraftarmorweapon.client.renderer.FlyingAttackerRenderer;
 import minecraftarmorweapon.client.renderer.CometRenderer;
 import minecraftarmorweapon.client.renderer.CometKillRenderer;
 import minecraftarmorweapon.client.renderer.BlackholeRenderer;
@@ -42,5 +43,6 @@ public class MinecraftArmorWeaponModEntityRenderers {
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.METEOR_ARROW.get(), MeteorArrowRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.ALCHEMY_CRAFT_BLOCK_ENTITY.get(), AlchemyCraftBlockEntityRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.REISAME_284.get(), Reisame284Renderer::new);
+		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), FlyingAttackerRenderer::new);
 	}
 }
