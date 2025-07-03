@@ -34,18 +34,5 @@ public class FeynTooltipEvent {
             }
         }
     }
-//背景を透過
-    // @SubscribeEvent
-    // public static void onTooltipColor(RenderTooltipEvent.Color event) {
-    //     ItemStack stack = event.getItemStack();
-    //     if (stack != null && stack.hasTag()) {
-    //         CompoundTag tag = stack.getTag(); // 正しいインポートを確認
-    //         if (tag.contains("Feyn") && "sancted".equals(tag.getString("Feyn"))) {
-    //             // 色をカスタマイズ（RGB値）
-    //             event.setBackground(0xFFAAAA); // 明るいピンク背景
-    //             event.setBorderStart(0xFFD700); // ゴールド枠線（始まり）
-    //             event.setBorderEnd(0xFF8C00);   // ゴールド枠線（終わり）
-    //         }
-    //     }
-    // }
+
 }
