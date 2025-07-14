@@ -2,7 +2,7 @@
   "mappings": {
     "default": {
       "map": {
-        "1": "goldenkatana3d"
+        "0": "goldenkatana3d"
       },
       "name": "default"
     }
