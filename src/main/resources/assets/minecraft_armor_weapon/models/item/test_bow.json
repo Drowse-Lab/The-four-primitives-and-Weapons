@@ -42,7 +42,7 @@
         {
             "predicate": {
                 "pulling": 1,
-                "pull": 1
+                "pull": 0.9
             },
             "model": "minecraft_armor_weapon:item/test_bow_arrow_2"
         }
