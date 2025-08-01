@@ -38,6 +38,7 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 
 public class FlyingAttackerEntity extends Monster {
     private LivingEntity owner;
+    private LivingEntity designatedTarget;
 
     public FlyingAttackerEntity(PlayMessages.SpawnEntity packet, Level world) {
         this(MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world);
@@ -59,6 +60,17 @@ public class FlyingAttackerEntity extends Monster {
         this.owner = owner;
     }
 
+    public LivingEntity getDesignatedTarget() {
+        return this.designatedTarget;
+    }
+
+    public void setDesignatedTarget(LivingEntity target) {
+        this.designatedTarget = target;
+        if (target != null) {
+            this.setTarget(target);
+        }
+    }
+
     @Override
     public Packet<?> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
@@ -68,12 +80,19 @@ public class FlyingAttackerEntity extends Monster {
     protected void registerGoals() {
         super.registerGoals();
 
-        // 攻撃目標（召喚者以外）
+        // 指定されたターゲットを優先的に攻撃
         this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(
             this,
             LivingEntity.class,
             true,
-            entity -> entity != this.getOwner()
+            entity -> {
+                // 指定されたターゲットがいる場合は、そのターゲットのみを攻撃
+                if (this.designatedTarget != null && this.designatedTarget.isAlive()) {
+                    return entity == this.designatedTarget;
+                }
+                // 指定されたターゲットがいない場合は、召喚者以外を攻撃
+                return entity != this.getOwner() && entity.isAlive();
+            }
         ));
 
         // 攻撃行動を追加（近接攻撃）
@@ -114,6 +133,14 @@ public class FlyingAttackerEntity extends Monster {
     public void aiStep() {
         super.aiStep();
         this.setNoGravity(true);
+
+        // 指定されたターゲットが死んだり、離れすぎた場合は消滅
+        if (this.designatedTarget != null) {
+            if (!this.designatedTarget.isAlive() || this.distanceToSqr(this.designatedTarget) > 256.0D) {
+                this.discard();
+                return;
+            }
+        }
 
         if (this.tickCount % 20 < 10) {
             this.setDeltaMovement(this.getDeltaMovement().add(0, 0.01, 0));
