@@ -53,10 +53,10 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 		
 		@Override
 		public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, FlyingAttackerEntity entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
-			ItemStack mainHandItem = entity.getMainHandItem();
+			// 常に鉄の剣を表示
+			ItemStack swordItem = new ItemStack(net.minecraft.world.item.Items.IRON_SWORD);
 			
-			if (!mainHandItem.isEmpty()) {
-				poseStack.pushPose();
+			poseStack.pushPose();
 				
 				// エンティティの中央に配置
 				poseStack.translate(0.0D, 0.5D, -0.5D);
@@ -68,19 +68,18 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 				// サイズ調整
 				poseStack.scale(1.5F, 1.5F, 1.5F);
 				
-				// アイテムをレンダリング
-				Minecraft.getInstance().getItemRenderer().renderStatic(
-					mainHandItem,
-					ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND,
-					packedLight,
-					net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
-					poseStack,
-					buffer,
-					entity.getId()
-				);
-				
-				poseStack.popPose();
-			}
+			// アイテムをレンダリング
+			Minecraft.getInstance().getItemRenderer().renderStatic(
+				swordItem,
+				ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND,
+				packedLight,
+				net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
+				poseStack,
+				buffer,
+				entity.getId()
+			);
+			
+			poseStack.popPose();
 		}
 	}
 }
