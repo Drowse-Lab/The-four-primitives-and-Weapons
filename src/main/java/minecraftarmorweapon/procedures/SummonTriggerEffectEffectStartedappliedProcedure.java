@@ -16,58 +16,141 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.ClipContext;
 
 import minecraftarmorweapon.entity.FlyingAttackerEntity;
+import minecraftarmorweapon.entity.KatanaTobuEntity;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEntities;
+
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.resources.ResourceLocation;
 
 public class SummonTriggerEffectEffectStartedappliedProcedure {
 	public static void execute(Entity entity) {
 		if (entity == null || !(entity.level instanceof ServerLevel)) return;
 		ServerLevel world = (ServerLevel) entity.level;
 
-		FlyingAttackerEntity mob = new FlyingAttackerEntity(
-			MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world
-		);
-
-		mob.moveTo(entity.getX(), entity.getY() + 2, entity.getZ(), entity.getYRot(), 0);
-		mob.setInvisible(true);
-		// アイテムは持たせない（レンダラーで直接描画するため）
-		// mob.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_SWORD));
-		mob.setNoGravity(true);
-		
-		// 召喚者を設定
+		// 召喚者の利き手のアイテムを確認
 		if (entity instanceof LivingEntity) {
 			LivingEntity livingEntity = (LivingEntity) entity;
-			mob.setOwner(livingEntity);
-			mob.setOwnerUUID(entity.getUUID());
+			ItemStack mainHandItem = livingEntity.getItemInHand(InteractionHand.MAIN_HAND);
 			
-			// ターゲットの優先順位：
-			// 1. 既に敵対しているターゲット
-			// 2. 視線の先のエンティティ
-			LivingEntity target = null;
-			
-			// まず、エンティティが既に敵対しているターゲットを確認
-			if (livingEntity instanceof Mob) {
-				Mob mobEntity = (Mob) livingEntity;
-				target = mobEntity.getTarget();
+			// アイテムを持っていない場合は何もしない
+			if (mainHandItem.isEmpty()) {
+				return;
 			}
 			
-			// ターゲットがいない場合、視線の先のエンティティを確認
-			if (target == null) {
-				if (entity instanceof Player) {
-					Player player = (Player) entity;
-					target = getPlayerLookingAt(player, 32.0D);
-				} else if (livingEntity instanceof Mob) {
-					// モブの場合も視線の先を確認
-					target = getMobLookingAt(livingEntity, 32.0D);
+			// アイテムが剣か発射体かチェック
+			if (mainHandItem.getItem() instanceof SwordItem) {
+				// 剣の場合はFlyingAttackerを召喚
+				FlyingAttackerEntity mob = new FlyingAttackerEntity(
+					MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world
+				);
+
+				mob.moveTo(entity.getX(), entity.getY() + 2, entity.getZ(), entity.getYRot(), 0);
+				mob.setInvisible(true);
+				mob.setDisplayItem(mainHandItem);
+				mob.setNoGravity(true);
+				
+				// 召喚者を設定
+				mob.setOwner(livingEntity);
+				mob.setOwnerUUID(entity.getUUID());
+				
+				// ターゲットの設定
+				LivingEntity target = findTarget(entity, livingEntity);
+				if (target != null && target != livingEntity && target.isAlive()) {
+					mob.setTargetUUID(target.getUUID());
+				}
+				
+				world.addFreshEntity(mob);
+			} else if (isProjectileItem(mainHandItem)) {
+				// 矢や発射体アイテムの場合は、敵がいるときのみ召喚
+				// ターゲットの検索
+				LivingEntity target = findTarget(entity, livingEntity);
+				
+				// ターゲットが存在する場合のみ召喚
+				if (target != null && target != livingEntity && target.isAlive()) {
+					// 矢を放つFlyingAttackerを召喚（矢射撃モード）
+					FlyingAttackerEntity arrowShooter = new FlyingAttackerEntity(
+						MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world
+					);
+
+					arrowShooter.moveTo(entity.getX(), entity.getY() + 2, entity.getZ(), entity.getYRot(), 0);
+					arrowShooter.setInvisible(true);
+					arrowShooter.setNoGravity(true);
+					
+					// 召喚者を設定
+					arrowShooter.setOwner(livingEntity);
+					arrowShooter.setOwnerUUID(entity.getUUID());
+					
+					// 矢を表示用にセット
+					arrowShooter.setDisplayItem(mainHandItem);
+					
+					// 射撃モードフラグを設定
+					arrowShooter.getPersistentData().putBoolean("ArrowShootMode", true);
+					arrowShooter.getPersistentData().putString("ArrowType", mainHandItem.getItem().toString());
+					
+					// ターゲットを設定
+					arrowShooter.setTargetUUID(target.getUUID());
+					
+					world.addFreshEntity(arrowShooter);
 				}
 			}
 			
-			// ターゲットが見つかった場合、UUIDを設定
-			if (target != null && target != livingEntity && target.isAlive()) {
-				mob.setTargetUUID(target.getUUID());
+			return;
+		}
+	}
+	
+	// アイテムが発射体かどうかチェック
+	private static boolean isProjectileItem(ItemStack stack) {
+		// トライデント
+		if (stack.getItem() instanceof TridentItem) {
+			return true;
+		}
+		
+		// バニラの矢
+		if (stack.getItem() == Items.ARROW || 
+			stack.getItem() == Items.SPECTRAL_ARROW || 
+			stack.getItem() == Items.TIPPED_ARROW) {
+			return true;
+		}
+		
+		// カスタム矢アイテムのチェック（アイテム名に"arrow"が含まれるもの）
+		String itemName = stack.getItem().toString().toLowerCase();
+		if (itemName.contains("arrow") || itemName.contains("bolt")) {
+			return true;
+		}
+		
+		// 発射体タグのチェック
+		if (stack.is(ItemTags.ARROWS)) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	// ターゲット検索ロジックを共通化
+	private static LivingEntity findTarget(Entity entity, LivingEntity livingEntity) {
+		LivingEntity target = null;
+		
+		// まず、エンティティが既に敵対しているターゲットを確認
+		if (livingEntity instanceof Mob) {
+			Mob mobEntity = (Mob) livingEntity;
+			target = mobEntity.getTarget();
+		}
+		
+		// ターゲットがいない場合、視線の先のエンティティを確認
+		if (target == null) {
+			if (entity instanceof Player) {
+				Player player = (Player) entity;
+				target = getPlayerLookingAt(player, 32.0D);
+			} else if (livingEntity instanceof Mob) {
+				// モブの場合も視線の先を確認
+				target = getMobLookingAt(livingEntity, 32.0D);
 			}
 		}
-
-		world.addFreshEntity(mob);
+		
+		return target;
 	}
 	
 	// プレイヤーが見ているLivingEntityを取得

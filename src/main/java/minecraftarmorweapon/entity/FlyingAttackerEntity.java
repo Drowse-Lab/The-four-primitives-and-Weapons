@@ -25,7 +25,16 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.SpectralArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEntities;
+import minecraftarmorweapon.entity.KatanaTobuEntity;
 //package minecraftarmorweapon.entity.ai;
 
 import net.minecraft.world.entity.Mob;
@@ -38,6 +47,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.nbt.CompoundTag;
 import java.util.UUID;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
@@ -45,11 +57,14 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 public class FlyingAttackerEntity extends Monster {
+    private static final EntityDataAccessor<ItemStack> DATA_DISPLAY_ITEM = SynchedEntityData.defineId(FlyingAttackerEntity.class, EntityDataSerializers.ITEM_STACK);
+    
     private LivingEntity owner;
     private UUID ownerUUID;
     private UUID targetUUID;
     private int projectileCheckCooldown = 0;
     private LivingEntity lastAttacker = null;
+    private int arrowShootCooldown = 0;
 
     public FlyingAttackerEntity(PlayMessages.SpawnEntity packet, Level world) {
         this(MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world);
@@ -61,6 +76,12 @@ public class FlyingAttackerEntity extends Monster {
         xpReward = 0;
         setNoAi(false);
         setPersistenceRequired();
+    }
+    
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(DATA_DISPLAY_ITEM, ItemStack.EMPTY);
     }
 
     public LivingEntity getOwner() {
@@ -88,6 +109,14 @@ public class FlyingAttackerEntity extends Monster {
 
     public void setTargetUUID(UUID uuid) {
         this.targetUUID = uuid;
+    }
+    
+    public void setDisplayItem(ItemStack item) {
+        this.entityData.set(DATA_DISPLAY_ITEM, item.copy());
+    }
+    
+    public ItemStack getDisplayItem() {
+        return this.entityData.get(DATA_DISPLAY_ITEM);
     }
 
     public LivingEntity getTargetEntity() {
@@ -167,17 +196,26 @@ public class FlyingAttackerEntity extends Monster {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        // 完全無敵 - すべてのダメージを無効化
+        // /killコマンドとvoidダメージは受ける
+        if (source.isCreativePlayer() || source == DamageSource.OUT_OF_WORLD || source.isBypassInvul()) {
+            return super.hurt(source, amount);
+        }
+        // その他のダメージは無効化
         return false;
     }
     
     @Override
     public boolean isInvulnerable() {
-        return true;
+        return false;
     }
     
     @Override
     public boolean isInvulnerableTo(DamageSource source) {
+        // /killコマンドとvoidダメージは受ける
+        if (source.isCreativePlayer() || source == DamageSource.OUT_OF_WORLD || source.isBypassInvul()) {
+            return false;
+        }
+        // その他のダメージは無効化
         return true;
     }
 
@@ -195,6 +233,24 @@ public class FlyingAttackerEntity extends Monster {
     public void aiStep() {
         super.aiStep();
         this.setNoGravity(true);
+        
+        // 矢射撃モードのチェック
+        if (this.getPersistentData().getBoolean("ArrowShootMode") && !this.level.isClientSide) {
+            if (arrowShootCooldown > 0) {
+                arrowShootCooldown--;
+            }
+            
+            // ターゲットが存在し、クールダウンが0の場合
+            LivingEntity target = this.getTarget();
+            if (target == null && this.targetUUID != null) {
+                target = this.getTargetEntity();
+            }
+            
+            if (target != null && target.isAlive() && arrowShootCooldown == 0 && this.distanceToSqr(target) < 256.0D) {
+                shootArrowAt(target);
+                arrowShootCooldown = 20; // 1秒のクールダウン
+            }
+        }
         
         // 召喚者の最後の攻撃者をチェック
         if (this.owner != null) {
@@ -288,6 +344,43 @@ public class FlyingAttackerEntity extends Monster {
             }
         }
     }
+    
+    private void shootArrowAt(LivingEntity target) {
+        // 表示用アイテム（矢）を取得
+        ItemStack arrowItem = this.getDisplayItem();
+        
+        // 矢の生成
+        AbstractArrow arrow;
+        
+        if (arrowItem.getItem() == Items.SPECTRAL_ARROW) {
+            arrow = new SpectralArrow(this.level, this);
+        } else if (arrowItem.getItem() == Items.ARROW || arrowItem.getItem() == Items.TIPPED_ARROW) {
+            arrow = new Arrow(this.level, this);
+            if (arrowItem.getItem() == Items.TIPPED_ARROW) {
+                ((Arrow)arrow).setEffectsFromItem(arrowItem);
+            }
+        } else {
+            // カスタム矢の場合はKatanaTobuEntityを使用
+            KatanaTobuEntity customArrow = new KatanaTobuEntity(MinecraftArmorWeaponModEntities.KATANA_TOBU.get(), this, this.level);
+            arrow = customArrow;
+        }
+
+        // 射撃方向の計算
+        double dx = target.getX() - this.getX();
+        double dy = target.getY() + target.getEyeHeight() / 2 - (this.getY() + this.getEyeHeight());
+        double dz = target.getZ() - this.getZ();
+        double distance = Math.sqrt(dx * dx + dz * dz);
+
+        arrow.shoot(dx, dy + distance * 0.2, dz, 1.6F, 1.0F);
+        arrow.setBaseDamage(5.0);
+        arrow.setPierceLevel((byte)1);
+
+        // サウンド再生
+        this.level.playSound(null, this.getX(), this.getY(), this.getZ(), 
+            SoundEvents.SKELETON_SHOOT, SoundSource.HOSTILE, 1.0F, 1.0F / (this.random.nextFloat() * 0.4F + 0.8F));
+
+        this.level.addFreshEntity(arrow);
+    }
 
     public static void init() {}
 
@@ -310,6 +403,10 @@ public class FlyingAttackerEntity extends Monster {
         if (this.targetUUID != null) {
             compound.putUUID("TargetUUID", this.targetUUID);
         }
+        ItemStack displayItem = this.getDisplayItem();
+        if (!displayItem.isEmpty()) {
+            compound.put("DisplayItem", displayItem.save(new CompoundTag()));
+        }
     }
 
     @Override
@@ -320,6 +417,9 @@ public class FlyingAttackerEntity extends Monster {
         }
         if (compound.hasUUID("TargetUUID")) {
             this.targetUUID = compound.getUUID("TargetUUID");
+        }
+        if (compound.contains("DisplayItem")) {
+            this.setDisplayItem(ItemStack.of(compound.getCompound("DisplayItem")));
         }
     }
 }

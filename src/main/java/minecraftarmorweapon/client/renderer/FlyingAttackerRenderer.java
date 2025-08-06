@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.world.item.ItemStack;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 
 import minecraftarmorweapon.entity.FlyingAttackerEntity;
 
@@ -27,6 +28,7 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 		super(context, new HumanoidModel(context.bakeLayer(ModelLayers.PLAYER)), 0.5f);
 		this.model = this.getModel();
 		this.addLayer(new HumanoidArmorLayer(this, new HumanoidModel(context.bakeLayer(ModelLayers.PLAYER_INNER_ARMOR)), new HumanoidModel(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR))));
+		// デフォルトのItemInHandLayerは追加しない（親クラスで追加されるため）
 		// カスタムアイテムレイヤーを追加
 		this.addLayer(new CenteredItemInHandLayer(this));
 	}
@@ -53,8 +55,13 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 		
 		@Override
 		public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, FlyingAttackerEntity entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
-			// 常に鉄の剣を表示
-			ItemStack swordItem = new ItemStack(net.minecraft.world.item.Items.IRON_SWORD);
+			// エンティティの表示用アイテムを取得
+			ItemStack heldItem = entity.getDisplayItem();
+			
+			// アイテムを持っていない場合は何も表示しない
+			if (heldItem.isEmpty()) {
+				return;
+			}
 			
 			poseStack.pushPose();
 				
@@ -70,7 +77,7 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 				
 			// アイテムをレンダリング
 			Minecraft.getInstance().getItemRenderer().renderStatic(
-				swordItem,
+				heldItem,
 				ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND,
 				packedLight,
 				net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
