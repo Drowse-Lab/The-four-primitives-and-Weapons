@@ -30,6 +30,7 @@ import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.SwordItem;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -55,6 +56,8 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.phys.Vec3;
 import java.util.List;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.EntityHitResult;
 
 public class FlyingAttackerEntity extends Monster {
     private static final EntityDataAccessor<ItemStack> DATA_DISPLAY_ITEM = SynchedEntityData.defineId(FlyingAttackerEntity.class, EntityDataSerializers.ITEM_STACK);
@@ -65,6 +68,7 @@ public class FlyingAttackerEntity extends Monster {
     private int projectileCheckCooldown = 0;
     private LivingEntity lastAttacker = null;
     private int arrowShootCooldown = 0;
+    private int attackCooldown = 0;
 
     public FlyingAttackerEntity(PlayMessages.SpawnEntity packet, Level world) {
         this(MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world);
@@ -188,6 +192,42 @@ public class FlyingAttackerEntity extends Monster {
     public boolean removeWhenFarAway(double distanceToClosestPlayer) {
         return false;
     }
+    
+    @Override
+    public boolean fireImmune() {
+        return true;
+    }
+    
+    @Override
+    public boolean canBeCollidedWith() {
+        return false; // 他のエンティティとの衝突を無効化
+    }
+    
+    @Override
+    public boolean isPushable() {
+        return false; // プッシュされない
+    }
+    
+    @Override
+    protected void pushEntities() {
+        // 他のエンティティを押さない
+    }
+    
+    @Override
+    public boolean isPickable() {
+        return false; // ピッキング（選択）不可にして発射体の判定から除外
+    }
+    
+    @Override
+    protected boolean canRide(Entity entity) {
+        return false;
+    }
+    
+    @Override
+    public boolean skipAttackInteraction(Entity entity) {
+        // すべての攻撃を無視（発射体含む）
+        return true;
+    }
 
     @Override
     public double getMyRidingOffset() {
@@ -200,6 +240,26 @@ public class FlyingAttackerEntity extends Monster {
         if (source.isCreativePlayer() || source == DamageSource.OUT_OF_WORLD || source.isBypassInvul()) {
             return super.hurt(source, amount);
         }
+        
+        // 火や溶岩ダメージを完全に無効化
+        if (source == DamageSource.IN_FIRE || source == DamageSource.ON_FIRE || source == DamageSource.LAVA || source == DamageSource.HOT_FLOOR) {
+            return false;
+        }
+        
+        // 近接攻撃（剣など）は受ける
+        if (source.getEntity() != null && source.getDirectEntity() == source.getEntity()) {
+            // 召喚者からのダメージは無効
+            if (source.getEntity() == this.owner) {
+                return false;
+            }
+            return super.hurt(source, amount);
+        }
+        
+        // 発射体ダメージは無効化
+        if (source.isProjectile()) {
+            return false;
+        }
+        
         // その他のダメージは無効化
         return false;
     }
@@ -215,6 +275,26 @@ public class FlyingAttackerEntity extends Monster {
         if (source.isCreativePlayer() || source == DamageSource.OUT_OF_WORLD || source.isBypassInvul()) {
             return false;
         }
+        
+        // 火や溶岩ダメージに対して完全に無敵
+        if (source == DamageSource.IN_FIRE || source == DamageSource.ON_FIRE || source == DamageSource.LAVA || source == DamageSource.HOT_FLOOR) {
+            return true;
+        }
+        
+        // 近接攻撃（剣など）は受ける
+        if (source.getEntity() != null && source.getDirectEntity() == source.getEntity()) {
+            // 召喚者からのダメージは無敵
+            if (source.getEntity() == this.owner) {
+                return true;
+            }
+            return false;
+        }
+        
+        // 発射体ダメージには無敵
+        if (source.isProjectile()) {
+            return true;
+        }
+        
         // その他のダメージは無効化
         return true;
     }
@@ -234,16 +314,84 @@ public class FlyingAttackerEntity extends Monster {
         super.aiStep();
         this.setNoGravity(true);
         
+        // 火に対する免疫を保証
+        this.clearFire();
+        
+        // マグマや溶岩から自動的に上昇
+        if (this.isInLava()) {
+            this.setDeltaMovement(this.getDeltaMovement().add(0, 0.08, 0));
+        }
+        
+        // 近くの発射体を検出して通過させる
+        makeProjectilesPassThrough();
+        
+        // 攻撃クールダウンの処理
+        if (attackCooldown > 0) {
+            attackCooldown--;
+        }
+        
+        // 剣モードの近接攻撃処理
+        if (!this.getPersistentData().getBoolean("ArrowShootMode") && !this.level.isClientSide) {
+            LivingEntity target = this.getTarget();
+            if (target == null && this.targetUUID != null) {
+                target = this.getTargetEntity();
+            }
+            
+            if (target != null && target.isAlive() && attackCooldown == 0) {
+                double distanceSq = this.distanceToSqr(target);
+                
+                // 近接攻撃範囲内（3ブロック以内）
+                if (distanceSq < 9.0D) {
+                    performMeleeAttack(target);
+                    attackCooldown = 20; // 1秒のクールダウン
+                } else if (distanceSq < 256.0D) {
+                    // ターゲットに向かって移動
+                    this.getLookControl().setLookAt(target);
+                    Vec3 toTarget = new Vec3(
+                        target.getX() - this.getX(),
+                        target.getY() - this.getY(),
+                        target.getZ() - this.getZ()
+                    ).normalize().scale(0.3);
+                    this.setDeltaMovement(this.getDeltaMovement().add(toTarget));
+                }
+            }
+        }
+        
         // 矢射撃モードのチェック
         if (this.getPersistentData().getBoolean("ArrowShootMode") && !this.level.isClientSide) {
             if (arrowShootCooldown > 0) {
                 arrowShootCooldown--;
             }
             
-            // ターゲットが存在し、クールダウンが0の場合
+            // ターゲットの検索
             LivingEntity target = this.getTarget();
             if (target == null && this.targetUUID != null) {
                 target = this.getTargetEntity();
+            }
+            
+            // ターゲットがいない場合は、召喚者の敵を探す
+            if (target == null && this.owner != null) {
+                // 召喚者の最後の攻撃者を優先
+                if (this.owner.getLastHurtByMob() != null && this.owner.getLastHurtByMob().isAlive()) {
+                    target = this.owner.getLastHurtByMob();
+                    this.setTarget(target);
+                    this.targetUUID = target.getUUID();
+                } else {
+                    // 周囲の敵を検索
+                    List<LivingEntity> nearbyEntities = this.level.getEntitiesOfClass(
+                        LivingEntity.class, 
+                        this.getBoundingBox().inflate(16.0D),
+                        e -> e != this && e != this.owner && e.isAlive() && 
+                             !(e instanceof FlyingAttackerEntity) &&
+                             (e instanceof Monster || (this.owner instanceof Player && e instanceof Player && e != this.owner))
+                    );
+                    
+                    if (!nearbyEntities.isEmpty()) {
+                        target = nearbyEntities.get(0);
+                        this.setTarget(target);
+                        this.targetUUID = target.getUUID();
+                    }
+                }
             }
             
             if (target != null && target.isAlive() && arrowShootCooldown == 0 && this.distanceToSqr(target) < 256.0D) {
@@ -280,11 +428,19 @@ public class FlyingAttackerEntity extends Monster {
             this.projectileCheckCooldown--;
         }
 
-        if (this.tickCount % 20 < 10) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0, 0.01, 0));
-        } else {
-            this.setDeltaMovement(this.getDeltaMovement().add(0, -0.01, 0));
+        // 溶岩内にいない場合のみ通常の浮遊動作
+        if (!this.isInLava()) {
+            if (this.tickCount % 20 < 10) {
+                this.setDeltaMovement(this.getDeltaMovement().add(0, 0.01, 0));
+            } else {
+                this.setDeltaMovement(this.getDeltaMovement().add(0, -0.01, 0));
+            }
         }
+    }
+    
+    private void makeProjectilesPassThrough() {
+        // このメソッドは不要になったため空実装
+        // canBeHitByProjectile()とisPickable()で処理される
     }
     
     private void checkAndDefendProjectiles() {
@@ -345,11 +501,51 @@ public class FlyingAttackerEntity extends Monster {
         }
     }
     
+    private void performMeleeAttack(LivingEntity target) {
+        // 表示用アイテムから攻撃力を計算
+        ItemStack displayItem = this.getDisplayItem();
+        float baseDamage = 5.0F; // デフォルトダメージ
+        
+        if (!displayItem.isEmpty() && displayItem.getItem() instanceof SwordItem) {
+            SwordItem sword = (SwordItem) displayItem.getItem();
+            baseDamage = sword.getDamage() + 4.0F; // 剣のダメージ + ベースダメージ
+        }
+        
+        // ダメージを与える
+        DamageSource damageSource = DamageSource.mobAttack(this);
+        if (this.owner != null) {
+            // 召喚者の攻撃として扱う
+            damageSource = DamageSource.mobAttack(this.owner instanceof Mob ? (Mob)this.owner : this);
+        }
+        
+        boolean hit = target.hurt(damageSource, baseDamage);
+        
+        if (hit) {
+            // ノックバック
+            double knockbackX = target.getX() - this.getX();
+            double knockbackZ = target.getZ() - this.getZ();
+            double knockbackStrength = Math.sqrt(knockbackX * knockbackX + knockbackZ * knockbackZ);
+            if (knockbackStrength > 0) {
+                target.setDeltaMovement(
+                    target.getDeltaMovement().add(
+                        knockbackX / knockbackStrength * 0.5,
+                        0.2,
+                        knockbackZ / knockbackStrength * 0.5
+                    )
+                );
+            }
+            
+            // 攻撃エフェクト
+            this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+                SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0F, 1.0F);
+        }
+    }
+    
     private void shootArrowAt(LivingEntity target) {
         // 表示用アイテム（矢）を取得
         ItemStack arrowItem = this.getDisplayItem();
         
-        // 矢の生成
+        // 矢の生成（発射者はFlyingAttackerEntity自身）
         AbstractArrow arrow;
         
         if (arrowItem.getItem() == Items.SPECTRAL_ARROW) {
@@ -361,10 +557,14 @@ public class FlyingAttackerEntity extends Monster {
             }
         } else {
             // カスタム矢の場合はKatanaTobuEntityを使用
-            KatanaTobuEntity customArrow = new KatanaTobuEntity(MinecraftArmorWeaponModEntities.KATANA_TOBU.get(), this, this.level);
+            KatanaTobuEntity customArrow = new KatanaTobuEntity(MinecraftArmorWeaponModEntities.KATANA_TOBU.get(), 
+                this, this.level);
             arrow = customArrow;
         }
 
+        // 矢の位置をFlyingAttackerEntityの位置に設定
+        arrow.setPos(this.getX(), this.getY() + this.getEyeHeight() - 0.1, this.getZ());
+        
         // 射撃方向の計算
         double dx = target.getX() - this.getX();
         double dy = target.getY() + target.getEyeHeight() / 2 - (this.getY() + this.getEyeHeight());
@@ -374,6 +574,11 @@ public class FlyingAttackerEntity extends Monster {
         arrow.shoot(dx, dy + distance * 0.2, dz, 1.6F, 1.0F);
         arrow.setBaseDamage(5.0);
         arrow.setPierceLevel((byte)1);
+        
+        // 矢の所有者を召喚者に設定（ダメージの帰属のため）
+        if (this.owner != null) {
+            arrow.setOwner(this.owner);
+        }
 
         // サウンド再生
         this.level.playSound(null, this.getX(), this.getY(), this.getZ(), 

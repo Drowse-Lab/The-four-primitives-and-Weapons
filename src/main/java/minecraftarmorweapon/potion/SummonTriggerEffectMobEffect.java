@@ -11,6 +11,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 
 import minecraftarmorweapon.procedures.SummonTriggerEffectEffectStartedappliedProcedure;
+import minecraftarmorweapon.procedures.SummonTriggerEffectEffectExpiresProcedure;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -29,10 +30,20 @@ public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap
 	SummonTriggerEffectEffectStartedappliedProcedure.execute(entity);
 }
 
+@Override
+public void applyEffectTick(LivingEntity entity, int amplifier) {
+	// addAttributeModifiersで実行されるため、ここでは何もしない
+}
+
+@Override
+public void removeAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
+	super.removeAttributeModifiers(entity, attributeMap, amplifier);
+	SummonTriggerEffectEffectExpiresProcedure.execute(entity);
+}
 
 	@Override
 	public boolean isDurationEffectTick(int duration, int amplifier) {
-		return true;
+		return false; // 毎tickの処理は不要
 	}
 
 	@Override

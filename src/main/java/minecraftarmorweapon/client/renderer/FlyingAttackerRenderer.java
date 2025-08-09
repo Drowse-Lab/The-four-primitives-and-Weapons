@@ -18,6 +18,11 @@ import net.minecraft.world.item.ItemStack;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.Items;
 
 import minecraftarmorweapon.entity.FlyingAttackerEntity;
 
@@ -64,8 +69,20 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 			}
 			
 			poseStack.pushPose();
+			
+			// アイテムの種類によって位置と回転を調整
+			if (isProjectileItem(heldItem)) {
+				// 矢やトライデントなどの発射体の場合
+				poseStack.translate(0.0D, 0.7D, 0.0D);
 				
-				// エンティティの中央に配置
+				// 水平に浮いている状態で表示
+				poseStack.mulPose(Vector3f.YP.rotationDegrees(ageInTicks * 3)); // ゆっくり回転
+				poseStack.mulPose(Vector3f.XP.rotationDegrees(0.0F));
+				
+				// サイズ調整
+				poseStack.scale(2.0F, 2.0F, 2.0F);
+			} else if (heldItem.getItem() instanceof SwordItem) {
+				// 剣の場合
 				poseStack.translate(0.0D, 0.5D, -0.5D);
 				
 				// 剣を前方に向ける
@@ -74,6 +91,12 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 				
 				// サイズ調整
 				poseStack.scale(1.5F, 1.5F, 1.5F);
+			} else {
+				// その他のアイテムの場合
+				poseStack.translate(0.0D, 0.5D, 0.0D);
+				poseStack.mulPose(Vector3f.YP.rotationDegrees(ageInTicks * 3));
+				poseStack.scale(1.5F, 1.5F, 1.5F);
+			}
 				
 			// アイテムをレンダリング
 			Minecraft.getInstance().getItemRenderer().renderStatic(
@@ -87,6 +110,28 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 			);
 			
 			poseStack.popPose();
+		}
+		
+		private boolean isProjectileItem(ItemStack stack) {
+			// 矢類
+			if (stack.getItem() == Items.ARROW || 
+				stack.getItem() == Items.SPECTRAL_ARROW || 
+				stack.getItem() == Items.TIPPED_ARROW) {
+				return true;
+			}
+			
+			// トライデント
+			if (stack.getItem() instanceof TridentItem) {
+				return true;
+			}
+			
+			// カスタム矢（アイテム名に"arrow"が含まれる）
+			String itemName = stack.getItem().toString().toLowerCase();
+			if (itemName.contains("arrow") || itemName.contains("bolt")) {
+				return true;
+			}
+			
+			return false;
 		}
 	}
 }

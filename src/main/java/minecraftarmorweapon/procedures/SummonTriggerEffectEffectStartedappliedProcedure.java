@@ -22,13 +22,47 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModEntities;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.Items;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.resources.ResourceLocation;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.List;
+import java.util.ArrayList;
 
 public class SummonTriggerEffectEffectStartedappliedProcedure {
+	// エンティティごとにスポーン済みのFlyingAttackerを追跡
+	private static final Map<UUID, List<UUID>> spawnedEntitiesMap = new HashMap<>();
+	
+	// 外部からアクセスできるようにメソッドを追加
+	public static List<UUID> getSpawnedEntities(UUID entityUUID) {
+		return spawnedEntitiesMap.get(entityUUID);
+	}
+	
+	public static void clearSpawnedEntities(UUID entityUUID) {
+		spawnedEntitiesMap.remove(entityUUID);
+	}
+	
 	public static void execute(Entity entity) {
 		if (entity == null || !(entity.level instanceof ServerLevel)) return;
 		ServerLevel world = (ServerLevel) entity.level;
+		
+		// すでにこのエンティティがFlyingAttackerをスポーン済みかチェック
+		UUID entityUUID = entity.getUUID();
+		if (spawnedEntitiesMap.containsKey(entityUUID)) {
+			// スポーン済みのエンティティが生きているかチェック
+			List<UUID> spawnedList = spawnedEntitiesMap.get(entityUUID);
+			for (UUID spawnedUUID : spawnedList) {
+				Entity spawnedEntity = ((ServerLevel) entity.level).getEntity(spawnedUUID);
+				if (spawnedEntity != null && spawnedEntity.isAlive()) {
+					// まだ生きているFlyingAttackerがいる場合は新規スポーンしない
+					return;
+				}
+			}
+			// 全て死んでいる場合はリストをクリア
+			spawnedEntitiesMap.remove(entityUUID);
+		}
 
 		// 召喚者の利き手のアイテムを確認
 		if (entity instanceof LivingEntity) {
@@ -63,38 +97,54 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 				}
 				
 				world.addFreshEntity(mob);
+				
+				// スポーン済みリストに追加
+				List<UUID> spawnedList = spawnedEntitiesMap.getOrDefault(entityUUID, new ArrayList<>());
+				spawnedList.add(mob.getUUID());
+				spawnedEntitiesMap.put(entityUUID, spawnedList);
 			} else if (isProjectileItem(mainHandItem)) {
-				// 矢や発射体アイテムの場合は、敵がいるときのみ召喚
+				// 矢や発射体アイテムの場合
+				// デバッグ用ログ
+				System.out.println("Projectile item detected: " + mainHandItem.getItem());
+				
+				// 矢を放つFlyingAttackerを召喚（矢射撃モード）
+				FlyingAttackerEntity arrowShooter = new FlyingAttackerEntity(
+					MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world
+				);
+
+				arrowShooter.moveTo(entity.getX(), entity.getY() + 2, entity.getZ(), entity.getYRot(), 0);
+				arrowShooter.setInvisible(true);
+				arrowShooter.setNoGravity(true);
+				
+				// 召喚者を設定
+				arrowShooter.setOwner(livingEntity);
+				arrowShooter.setOwnerUUID(entity.getUUID());
+				
+				// 矢を表示用にセット
+				arrowShooter.setDisplayItem(mainHandItem);
+				
+				// 射撃モードフラグを設定
+				arrowShooter.getPersistentData().putBoolean("ArrowShootMode", true);
+				arrowShooter.getPersistentData().putString("ArrowType", mainHandItem.getItem().toString());
+				
 				// ターゲットの検索
 				LivingEntity target = findTarget(entity, livingEntity);
 				
-				// ターゲットが存在する場合のみ召喚
-				if (target != null && target != livingEntity && target.isAlive()) {
-					// 矢を放つFlyingAttackerを召喚（矢射撃モード）
-					FlyingAttackerEntity arrowShooter = new FlyingAttackerEntity(
-						MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world
-					);
-
-					arrowShooter.moveTo(entity.getX(), entity.getY() + 2, entity.getZ(), entity.getYRot(), 0);
-					arrowShooter.setInvisible(true);
-					arrowShooter.setNoGravity(true);
-					
-					// 召喚者を設定
-					arrowShooter.setOwner(livingEntity);
-					arrowShooter.setOwnerUUID(entity.getUUID());
-					
-					// 矢を表示用にセット
-					arrowShooter.setDisplayItem(mainHandItem);
-					
-					// 射撃モードフラグを設定
-					arrowShooter.getPersistentData().putBoolean("ArrowShootMode", true);
-					arrowShooter.getPersistentData().putString("ArrowType", mainHandItem.getItem().toString());
-					
+				// デバッグ用ログ
+				if (target == null) {
+					System.out.println("No target found for projectile - will wait for target");
+				} else {
+					System.out.println("Target found: " + target.getClass().getSimpleName() + " at " + target.position());
 					// ターゲットを設定
 					arrowShooter.setTargetUUID(target.getUUID());
-					
-					world.addFreshEntity(arrowShooter);
 				}
+				
+				world.addFreshEntity(arrowShooter);
+				
+				// スポーン済みリストに追加
+				List<UUID> spawnedList = spawnedEntitiesMap.getOrDefault(entityUUID, new ArrayList<>());
+				spawnedList.add(arrowShooter.getUUID());
+				spawnedEntitiesMap.put(entityUUID, spawnedList);
 			}
 			
 			return;
@@ -103,8 +153,12 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 	
 	// アイテムが発射体かどうかチェック
 	private static boolean isProjectileItem(ItemStack stack) {
+		// デバッグ：アイテム名を表示
+		System.out.println("Checking if item is projectile: " + stack.getItem());
+		
 		// トライデント
 		if (stack.getItem() instanceof TridentItem) {
+			System.out.println("Item is a trident");
 			return true;
 		}
 		
@@ -112,20 +166,24 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 		if (stack.getItem() == Items.ARROW || 
 			stack.getItem() == Items.SPECTRAL_ARROW || 
 			stack.getItem() == Items.TIPPED_ARROW) {
+			System.out.println("Item is a vanilla arrow");
 			return true;
 		}
 		
 		// カスタム矢アイテムのチェック（アイテム名に"arrow"が含まれるもの）
 		String itemName = stack.getItem().toString().toLowerCase();
 		if (itemName.contains("arrow") || itemName.contains("bolt")) {
+			System.out.println("Item name contains 'arrow' or 'bolt': " + itemName);
 			return true;
 		}
 		
 		// 発射体タグのチェック
 		if (stack.is(ItemTags.ARROWS)) {
+			System.out.println("Item has ARROWS tag");
 			return true;
 		}
 		
+		System.out.println("Item is NOT a projectile");
 		return false;
 	}
 	
