@@ -30,6 +30,10 @@ public class HardentityehuekutogaYouXiaoShinoteitukuProcedure {
 	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
 		if (entity == null)
 			return;
+		// Additional safety checks
+		if (!entity.isAlive() || entity.isRemoved()) {
+			return;
+		}
 		if (entity instanceof WitherSkeleton || entity instanceof Stray || entity instanceof Skeleton) {
 			if (!((entity instanceof LivingEntity _entGetArmor ? _entGetArmor.getItemBySlot(EquipmentSlot.HEAD) : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.DAS_HERZ_EINER_FEE_ARMOR_HELMET.get())) {
 				{
@@ -41,8 +45,12 @@ public class HardentityehuekutogaYouXiaoShinoteitukuProcedure {
 						_living.setItemSlot(EquipmentSlot.HEAD, new ItemStack(MinecraftArmorWeaponModItems.DAS_HERZ_EINER_FEE_ARMOR_HELMET.get()));
 					}
 				}
-				((entity instanceof LivingEntity _entGetArmor ? _entGetArmor.getItemBySlot(EquipmentSlot.HEAD) : ItemStack.EMPTY)).enchant(Enchantments.ALL_DAMAGE_PROTECTION,
-						entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()).getAmplifier() : 0);
+				try {
+					((entity instanceof LivingEntity _entGetArmor ? _entGetArmor.getItemBySlot(EquipmentSlot.HEAD) : ItemStack.EMPTY)).enchant(Enchantments.ALL_DAMAGE_PROTECTION,
+							entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()).getAmplifier() : 0);
+				} catch (Exception e) {
+					// Handle enchantment exceptions
+				}
 			}
 			if (!((entity instanceof LivingEntity _entGetArmor ? _entGetArmor.getItemBySlot(EquipmentSlot.CHEST) : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.DAS_HERZ_EINER_FEE_ARMOR_CHESTPLATE.get())) {
 				{
@@ -54,8 +62,12 @@ public class HardentityehuekutogaYouXiaoShinoteitukuProcedure {
 						_living.setItemSlot(EquipmentSlot.CHEST, new ItemStack(MinecraftArmorWeaponModItems.DAS_HERZ_EINER_FEE_ARMOR_CHESTPLATE.get()));
 					}
 				}
-				((entity instanceof LivingEntity _entGetArmor ? _entGetArmor.getItemBySlot(EquipmentSlot.CHEST) : ItemStack.EMPTY)).enchant(Enchantments.ALL_DAMAGE_PROTECTION,
-						entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()).getAmplifier() : 0);
+				try {
+					((entity instanceof LivingEntity _entGetArmor ? _entGetArmor.getItemBySlot(EquipmentSlot.CHEST) : ItemStack.EMPTY)).enchant(Enchantments.ALL_DAMAGE_PROTECTION,
+							entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()).getAmplifier() : 0);
+				} catch (Exception e) {
+					// Handle enchantment exceptions
+				}
 			}
 			if (!((entity instanceof LivingEntity _entGetArmor ? _entGetArmor.getItemBySlot(EquipmentSlot.LEGS) : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.DAS_HERZ_EINER_FEE_ARMOR_LEGGINGS.get())) {
 				{
@@ -67,8 +79,12 @@ public class HardentityehuekutogaYouXiaoShinoteitukuProcedure {
 						_living.setItemSlot(EquipmentSlot.LEGS, new ItemStack(MinecraftArmorWeaponModItems.DAS_HERZ_EINER_FEE_ARMOR_LEGGINGS.get()));
 					}
 				}
-				((entity instanceof LivingEntity _entGetArmor ? _entGetArmor.getItemBySlot(EquipmentSlot.LEGS) : ItemStack.EMPTY)).enchant(Enchantments.ALL_DAMAGE_PROTECTION,
-						entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()).getAmplifier() : 0);
+				try {
+					((entity instanceof LivingEntity _entGetArmor ? _entGetArmor.getItemBySlot(EquipmentSlot.LEGS) : ItemStack.EMPTY)).enchant(Enchantments.ALL_DAMAGE_PROTECTION,
+							entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()).getAmplifier() : 0);
+				} catch (Exception e) {
+					// Handle enchantment exceptions
+				}
 			}
 			if (!((entity instanceof LivingEntity _entGetArmor ? _entGetArmor.getItemBySlot(EquipmentSlot.FEET) : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.DAS_HERZ_EINER_FEE_ARMOR_BOOTS.get())) {
 				{
@@ -80,52 +96,58 @@ public class HardentityehuekutogaYouXiaoShinoteitukuProcedure {
 						_living.setItemSlot(EquipmentSlot.FEET, new ItemStack(MinecraftArmorWeaponModItems.DAS_HERZ_EINER_FEE_ARMOR_BOOTS.get()));
 					}
 				}
-				((entity instanceof LivingEntity _entGetArmor ? _entGetArmor.getItemBySlot(EquipmentSlot.FEET) : ItemStack.EMPTY)).enchant(Enchantments.ALL_DAMAGE_PROTECTION,
-						entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()).getAmplifier() : 0);
+				try {
+					((entity instanceof LivingEntity _entGetArmor ? _entGetArmor.getItemBySlot(EquipmentSlot.FEET) : ItemStack.EMPTY)).enchant(Enchantments.ALL_DAMAGE_PROTECTION,
+							entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.HARDENTITY.get()).getAmplifier() : 0);
+				} catch (Exception e) {
+					// Handle enchantment exceptions
+				}
 			}
-			if (!(new Object() {
-				public boolean checkGamemode(Entity _ent) {
-					if (_ent instanceof ServerPlayer _serverPlayer) {
-						return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-					} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
-						return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
-								&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
-					}
-					return false;
-				}
-			}.checkGamemode(((Entity) world.getEntitiesOfClass(Player.class, AABB.ofSize(new Vec3(x, y, z), 64, 64, 64), e -> true).stream().sorted(new Object() {
-				Comparator<Entity> compareDistOf(double _x, double _y, double _z) {
-					return Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_x, _y, _z));
-				}
-			}.compareDistOf(x, y, z)).findFirst().orElse(null)))) && !(new Object() {
-				public boolean checkGamemode(Entity _ent) {
-					if (_ent instanceof ServerPlayer _serverPlayer) {
-						return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.SPECTATOR;
-					} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
-						return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
-								&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.SPECTATOR;
-					}
-					return false;
-				}
-			}.checkGamemode(((Entity) world.getEntitiesOfClass(Player.class, AABB.ofSize(new Vec3(x, y, z), 64, 64, 64), e -> true).stream().sorted(new Object() {
-				Comparator<Entity> compareDistOf(double _x, double _y, double _z) {
-					return Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_x, _y, _z));
-				}
-			}.compareDistOf(x, y, z)).findFirst().orElse(null))))) {
-				if (!world.getEntitiesOfClass(Player.class, AABB.ofSize(new Vec3(x, y, z), 64, 64, 64), e -> true).isEmpty()) {
-					if (entity instanceof Mob _entity && ((Entity) world.getEntitiesOfClass(Player.class, AABB.ofSize(new Vec3(x, y, z), 64, 64, 64), e -> true).stream().sorted(new Object() {
-						Comparator<Entity> compareDistOf(double _x, double _y, double _z) {
-							return Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_x, _y, _z));
+			// Find nearest player with proper null checks
+			Player nearestPlayer = null;
+			try {
+				nearestPlayer = world.getEntitiesOfClass(Player.class, AABB.ofSize(new Vec3(x, y, z), 64, 64, 64), e -> true).stream()
+					.sorted(Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(x, y, z)))
+					.findFirst().orElse(null);
+			} catch (Exception e) {
+				// Handle any exceptions during player search
+			}
+			
+			boolean isCreativeOrSpectator = false;
+			if (nearestPlayer != null) {
+				if (nearestPlayer instanceof ServerPlayer _serverPlayer) {
+					GameType gameType = _serverPlayer.gameMode.getGameModeForPlayer();
+					isCreativeOrSpectator = (gameType == GameType.CREATIVE || gameType == GameType.SPECTATOR);
+				} else if (nearestPlayer.level.isClientSide()) {
+					try {
+						var connection = Minecraft.getInstance().getConnection();
+						if (connection != null) {
+							var playerInfo = connection.getPlayerInfo(nearestPlayer.getGameProfile().getId());
+							if (playerInfo != null) {
+								GameType gameType = playerInfo.getGameMode();
+								isCreativeOrSpectator = (gameType == GameType.CREATIVE || gameType == GameType.SPECTATOR);
+							}
 						}
-					}.compareDistOf(x, y, z)).findFirst().orElse(null)) instanceof LivingEntity _ent)
-						_entity.setTarget(_ent);
+					} catch (Exception e) {
+						// Handle any exceptions during client-side check
+					}
+				}
+			}
+			
+			if (!isCreativeOrSpectator) {
+				if (nearestPlayer != null && entity instanceof Mob _mobEntity) {
+					try {
+						_mobEntity.setTarget(nearestPlayer);
+					} catch (Exception e) {
+						// Handle any exceptions during target setting
+					}
 					if (!world.getEntitiesOfClass(Player.class, AABB.ofSize(new Vec3(x, y, z), 10, 10, 10), e -> true).isEmpty()) {
-						if (!((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WITHER_KATANA.get())) {
-							if (entity instanceof LivingEntity _entity) {
-								ItemStack _setstack = new ItemStack(MinecraftArmorWeaponModItems.WITHER_KATANA.get());
-								_setstack.setCount(1);
-								_entity.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
-								if (_entity instanceof Player _player)
+					if (!((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WITHER_KATANA.get())) {
+						if (entity instanceof LivingEntity _livingEntity1) {
+							ItemStack _setstack = new ItemStack(MinecraftArmorWeaponModItems.WITHER_KATANA.get());
+							_setstack.setCount(1);
+							_livingEntity1.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
+							if (_livingEntity1 instanceof Player _player)
 									_player.getInventory().setChanged();
 							}
 							((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).enchant(Enchantments.SHARPNESS,
@@ -133,11 +155,11 @@ public class HardentityehuekutogaYouXiaoShinoteitukuProcedure {
 						}
 					} else {
 						if (!((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == Items.BOW)) {
-							if (entity instanceof LivingEntity _entity) {
+							if (entity instanceof LivingEntity _livingEntity) {
 								ItemStack _setstack = new ItemStack(Items.BOW);
 								_setstack.setCount(1);
-								_entity.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
-								if (_entity instanceof Player _player)
+								_livingEntity.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
+								if (_livingEntity instanceof Player _player)
 									_player.getInventory().setChanged();
 							}
 							(entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getOrCreateTag().putBoolean("Unbreakable", true);
@@ -151,20 +173,31 @@ public class HardentityehuekutogaYouXiaoShinoteitukuProcedure {
 					}
 				}
 			}
-			if (!world.getEntitiesOfClass(SnowGolem.class, AABB.ofSize(new Vec3(x, y, z), 64, 64, 64), e -> true).isEmpty()) {
-				if (entity instanceof Mob _entity && ((Entity) world.getEntitiesOfClass(SnowGolem.class, AABB.ofSize(new Vec3(x, y, z), 64, 64, 64), e -> true).stream().sorted(new Object() {
-					Comparator<Entity> compareDistOf(double _x, double _y, double _z) {
-						return Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_x, _y, _z));
+			// Handle Snow Golem targeting with null checks
+			SnowGolem nearestSnowGolem = null;
+			try {
+				nearestSnowGolem = world.getEntitiesOfClass(SnowGolem.class, AABB.ofSize(new Vec3(x, y, z), 64, 64, 64), e -> true).stream()
+					.sorted(Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(x, y, z)))
+					.findFirst().orElse(null);
+			} catch (Exception e) {
+				// Handle any exceptions during snow golem search
+			}
+			
+			if (nearestSnowGolem != null) {
+				if (entity instanceof Mob _mobEntity2) {
+					try {
+						_mobEntity2.setTarget(nearestSnowGolem);
+					} catch (Exception e) {
+						// Handle any exceptions during target setting
 					}
-				}.compareDistOf(x, y, z)).findFirst().orElse(null)) instanceof LivingEntity _ent)
-					_entity.setTarget(_ent);
+				}
 				if (!world.getEntitiesOfClass(SnowGolem.class, AABB.ofSize(new Vec3(x, y, z), 10, 10, 10), e -> true).isEmpty()) {
 					if (!((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WITHER_KATANA.get())) {
-						if (entity instanceof LivingEntity _entity) {
+						if (entity instanceof LivingEntity _livingEntity3) {
 							ItemStack _setstack = new ItemStack(MinecraftArmorWeaponModItems.WITHER_KATANA.get());
 							_setstack.setCount(1);
-							_entity.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
-							if (_entity instanceof Player _player)
+							_livingEntity3.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
+							if (_livingEntity3 instanceof Player _player)
 								_player.getInventory().setChanged();
 						}
 						((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).enchant(Enchantments.SHARPNESS,
@@ -172,11 +205,11 @@ public class HardentityehuekutogaYouXiaoShinoteitukuProcedure {
 					}
 				} else {
 					if (!((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == Items.BOW)) {
-						if (entity instanceof LivingEntity _entity) {
+						if (entity instanceof LivingEntity _livingEntity2) {
 							ItemStack _setstack = new ItemStack(Items.BOW);
 							_setstack.setCount(1);
-							_entity.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
-							if (_entity instanceof Player _player)
+							_livingEntity2.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
+							if (_livingEntity2 instanceof Player _player)
 								_player.getInventory().setChanged();
 						}
 						(entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getOrCreateTag().putBoolean("Unbreakable", true);
@@ -189,20 +222,31 @@ public class HardentityehuekutogaYouXiaoShinoteitukuProcedure {
 					}
 				}
 			}
-			if (!world.getEntitiesOfClass(IronGolem.class, AABB.ofSize(new Vec3(x, y, z), 64, 64, 64), e -> true).isEmpty()) {
-				if (entity instanceof Mob _entity && ((Entity) world.getEntitiesOfClass(IronGolem.class, AABB.ofSize(new Vec3(x, y, z), 64, 64, 64), e -> true).stream().sorted(new Object() {
-					Comparator<Entity> compareDistOf(double _x, double _y, double _z) {
-						return Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_x, _y, _z));
+			// Handle Iron Golem targeting with null checks
+			IronGolem nearestIronGolem = null;
+			try {
+				nearestIronGolem = world.getEntitiesOfClass(IronGolem.class, AABB.ofSize(new Vec3(x, y, z), 64, 64, 64), e -> true).stream()
+					.sorted(Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(x, y, z)))
+					.findFirst().orElse(null);
+			} catch (Exception e) {
+				// Handle any exceptions during iron golem search
+			}
+			
+			if (nearestIronGolem != null) {
+				if (entity instanceof Mob _mobEntity3) {
+					try {
+						_mobEntity3.setTarget(nearestIronGolem);
+					} catch (Exception e) {
+						// Handle any exceptions during target setting
 					}
-				}.compareDistOf(x, y, z)).findFirst().orElse(null)) instanceof LivingEntity _ent)
-					_entity.setTarget(_ent);
+				}
 				if (!world.getEntitiesOfClass(IronGolem.class, AABB.ofSize(new Vec3(x, y, z), 10, 10, 10), e -> true).isEmpty()) {
 					if (!((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WITHER_KATANA.get())) {
-						if (entity instanceof LivingEntity _entity) {
+						if (entity instanceof LivingEntity _livingEntity3) {
 							ItemStack _setstack = new ItemStack(MinecraftArmorWeaponModItems.WITHER_KATANA.get());
 							_setstack.setCount(1);
-							_entity.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
-							if (_entity instanceof Player _player)
+							_livingEntity3.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
+							if (_livingEntity3 instanceof Player _player)
 								_player.getInventory().setChanged();
 						}
 						((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)).enchant(Enchantments.SHARPNESS,
@@ -210,11 +254,11 @@ public class HardentityehuekutogaYouXiaoShinoteitukuProcedure {
 					}
 				} else {
 					if (!((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == Items.BOW)) {
-						if (entity instanceof LivingEntity _entity) {
+						if (entity instanceof LivingEntity _livingEntity4) {
 							ItemStack _setstack = new ItemStack(Items.BOW);
 							_setstack.setCount(1);
-							_entity.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
-							if (_entity instanceof Player _player)
+							_livingEntity4.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
+							if (_livingEntity4 instanceof Player _player)
 								_player.getInventory().setChanged();
 						}
 						(entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getOrCreateTag().putBoolean("Unbreakable", true);

@@ -81,7 +81,15 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 					MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world
 				);
 
-				mob.moveTo(entity.getX(), entity.getY() + 2, entity.getZ(), entity.getYRot(), 0);
+				// 召喚者の周りのランダムな位置に配置
+				double angle = world.random.nextFloat() * Math.PI * 2;
+				double distance = 2.0 + world.random.nextFloat() * 2.0;
+				mob.moveTo(
+					entity.getX() + Math.cos(angle) * distance, 
+					entity.getY() + 2, 
+					entity.getZ() + Math.sin(angle) * distance, 
+					entity.getYRot(), 0
+				);
 				mob.setInvisible(true);
 				mob.setDisplayItem(mainHandItem);
 				mob.setNoGravity(true);
@@ -112,7 +120,15 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 					MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world
 				);
 
-				arrowShooter.moveTo(entity.getX(), entity.getY() + 2, entity.getZ(), entity.getYRot(), 0);
+				// 召喚者の周りのランダムな位置に配置
+				double angleArrow = world.random.nextFloat() * Math.PI * 2;
+				double distanceArrow = 2.0 + world.random.nextFloat() * 2.0;
+				arrowShooter.moveTo(
+					entity.getX() + Math.cos(angleArrow) * distanceArrow, 
+					entity.getY() + 2, 
+					entity.getZ() + Math.sin(angleArrow) * distanceArrow, 
+					entity.getYRot(), 0
+				);
 				arrowShooter.setInvisible(true);
 				arrowShooter.setNoGravity(true);
 				
