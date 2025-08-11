@@ -580,12 +580,8 @@ public class FlyingAttackerEntity extends Monster {
         
         // 剣モードの時のみ飛び道具の検知と防御
         if (!this.getPersistentData().getBoolean("ArrowShootMode")) {
-            if (this.projectileCheckCooldown <= 0) {
-                checkAndDefendProjectiles();
-                this.projectileCheckCooldown = 2; // 2tick毎にチェック
-            } else {
-                this.projectileCheckCooldown--;
-            }
+            // 毎tickチェックして、より確実に発射体を検出
+            checkAndDefendProjectiles();
         }
 
         // 溶岩内にいない場合のみ通常の浮遊動作（召喚者がいない場合のみ）
@@ -625,8 +621,8 @@ public class FlyingAttackerEntity extends Monster {
     private void checkAndDefendProjectiles() {
         if (this.owner == null || this.deflectCooldown > 0) return;
         
-        // 半径15ブロック以内の飛び道具を検知（検出範囲を拡大）
-        double detectionRange = 15.0D;
+        // 半径20ブロック以内の飛び道具を検知（検出範囲を拡大）
+        double detectionRange = 20.0D;
         List<Entity> nearbyEntities = this.level.getEntities(this, 
             this.getBoundingBox().inflate(detectionRange));
         
@@ -764,8 +760,8 @@ public class FlyingAttackerEntity extends Monster {
         Vec3 toOwner = ownerPos.subtract(projectilePos);
         double distanceToOwner = toOwner.length();
         
-        // 召喚者から15ブロック以内の飛び道具のみ検出
-        if (distanceToOwner > 15.0D) {
+        // 召喚者から20ブロック以内の飛び道具のみ検出
+        if (distanceToOwner > 20.0D) {
             return false;
         }
         
@@ -774,14 +770,18 @@ public class FlyingAttackerEntity extends Monster {
         Vec3 normalizedToOwner = toOwner.normalize();
         double dot = normalizedMotion.dot(normalizedToOwner);
         
-        // より広い角度で検出（0.3 = 約72度以内）
-        // 召喚者に近い飛び道具はさらに条件を緩める
+        // より広い角度で検出
+        // 召喚者に非常に近い飛び道具（3ブロック以内）は必ず脅威として扱う
+        if (distanceToOwner < 3.0D) {
+            return true; // 3ブロック以内なら無条件で脅威
+        }
+        
         // スプラッシュポーションはより広い角度で検出（弧を描いて飛ぶため）
         double angleThreshold;
         if (projectile instanceof ThrownPotion) {
-            angleThreshold = distanceToOwner < 5.0D ? -0.2 : 0.0; // より緩い判定
+            angleThreshold = distanceToOwner < 8.0D ? -0.5 : -0.2; // 非常に緩い判定
         } else {
-            angleThreshold = distanceToOwner < 5.0D ? 0.1 : 0.3;
+            angleThreshold = distanceToOwner < 8.0D ? -0.1 : 0.2; // 矢も近距離では緩い判定
         }
         
         if (projectile instanceof ThrownPotion) {
@@ -792,14 +792,21 @@ public class FlyingAttackerEntity extends Monster {
     }
     
     private void deflectProjectile(Entity projectile) {
-        // 飛び道具に向かって瞬間移動
+        // 飛び道具と召喚者の間に瞬間移動
         Vec3 projectilePos = projectile.position();
-        Vec3 toProjectile = projectilePos.subtract(this.position());
         
-        // 飛び道具の近くに移動
-        if (toProjectile.length() > 2.0D) {
-            Vec3 movePos = this.position().add(toProjectile.normalize().scale(toProjectile.length() - 1.0D));
-            this.teleportTo(movePos.x, movePos.y, movePos.z);
+        if (this.owner != null) {
+            // 召喚者と発射体の間の位置を計算
+            Vec3 ownerPos = this.owner.position();
+            Vec3 interceptPos = ownerPos.add(projectilePos.subtract(ownerPos).normalize().scale(2.0));
+            this.teleportTo(interceptPos.x, interceptPos.y + 1.0, interceptPos.z);
+        } else {
+            // 飛び道具の近くに移動
+            Vec3 toProjectile = projectilePos.subtract(this.position());
+            if (toProjectile.length() > 2.0D) {
+                Vec3 movePos = this.position().add(toProjectile.normalize().scale(toProjectile.length() - 1.0D));
+                this.teleportTo(movePos.x, movePos.y, movePos.z);
+            }
         }
         
         // 飛び道具の方向を反転
@@ -888,14 +895,21 @@ public class FlyingAttackerEntity extends Monster {
     }
     
     private void destroyPotion(ThrownPotion potion) {
-        // ポーションに向かって瞬間移動
+        // ポーションと召喚者の間に瞬間移動
         Vec3 potionPos = potion.position();
-        Vec3 toPotion = potionPos.subtract(this.position());
         
-        // ポーションの近くに移動
-        if (toPotion.length() > 2.0D) {
-            Vec3 movePos = this.position().add(toPotion.normalize().scale(toPotion.length() - 1.0D));
-            this.teleportTo(movePos.x, movePos.y, movePos.z);
+        if (this.owner != null) {
+            // 召喚者とポーションの間の位置を計算
+            Vec3 ownerPos = this.owner.position();
+            Vec3 interceptPos = ownerPos.add(potionPos.subtract(ownerPos).normalize().scale(2.0));
+            this.teleportTo(interceptPos.x, interceptPos.y + 1.0, interceptPos.z);
+        } else {
+            // ポーションの近くに移動
+            Vec3 toPotion = potionPos.subtract(this.position());
+            if (toPotion.length() > 2.0D) {
+                Vec3 movePos = this.position().add(toPotion.normalize().scale(toPotion.length() - 1.0D));
+                this.teleportTo(movePos.x, movePos.y, movePos.z);
+            }
         }
         
         // エフェクトとサウンド
