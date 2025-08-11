@@ -51,17 +51,23 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.nbt.CompoundTag;
 import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
+import net.minecraft.world.entity.projectile.ThrownPotion;
+import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.entity.projectile.Fireball;
 import net.minecraft.world.phys.Vec3;
 import java.util.List;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.EntityHitResult;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 
 public class FlyingAttackerEntity extends Monster {
     private static final EntityDataAccessor<ItemStack> DATA_DISPLAY_ITEM = SynchedEntityData.defineId(FlyingAttackerEntity.class, EntityDataSerializers.ITEM_STACK);
@@ -73,7 +79,8 @@ public class FlyingAttackerEntity extends Monster {
     private LivingEntity lastAttacker = null;
     private int arrowShootCooldown = 0;
     private int attackCooldown = 0;
-    private boolean hasDeflectedProjectile = false; // 発射体を弾いたかどうか
+    private int deflectCooldown = 0; // 発射体を弾いた後のクールダウン（0.5秒 = 10tick）
+    private Set<Integer> deflectedProjectiles = new HashSet<>(); // 既に弾いた発射体のIDを記録
 
     public FlyingAttackerEntity(PlayMessages.SpawnEntity packet, Level world) {
         this(MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world);
@@ -85,6 +92,8 @@ public class FlyingAttackerEntity extends Monster {
         xpReward = 0;
         setNoAi(false);
         setPersistenceRequired();
+        // バウンディングボックスのサイズを設定（幅0.6, 高さ1.8）
+        this.refreshDimensions();
     }
     
     @Override
@@ -147,7 +156,7 @@ public class FlyingAttackerEntity extends Monster {
     protected void registerGoals() {
         super.registerGoals();
 
-        // 攻撃者を最優先でターゲットに
+        // プレイヤーが攻撃したエンティティを最優先でターゲットに
         this.targetSelector.addGoal(0, new NearestAttackableTargetGoal<>(
             this,
             LivingEntity.class,
@@ -157,7 +166,11 @@ public class FlyingAttackerEntity extends Monster {
                 if (entity instanceof FlyingAttackerEntity) {
                     return false;
                 }
-                // 召喚者を攻撃した者を最優先
+                // プレイヤーが最後に攻撃したエンティティを最優先
+                if (this.owner != null && this.owner.getLastHurtMob() == entity) {
+                    return entity.isAlive();
+                }
+                // 次に、プレイヤーを攻撃した者を優先
                 if (this.owner != null && this.owner.getLastHurtByMob() == entity) {
                     return entity.isAlive();
                 }
@@ -213,6 +226,13 @@ public class FlyingAttackerEntity extends Monster {
         if (entity instanceof FlyingAttackerEntity) {
             return false;
         }
+        
+        // LivingEntityの場合はカスタム攻撃処理を使用
+        if (entity instanceof LivingEntity) {
+            performMeleeAttack((LivingEntity) entity);
+            return true;
+        }
+        
         return super.doHurtTarget(entity);
     }
     
@@ -233,7 +253,8 @@ public class FlyingAttackerEntity extends Monster {
     
     @Override
     public boolean canBeCollidedWith() {
-        return false; // 他のエンティティとの衝突を無効化
+        // スペクテイターモードの時のみtrue（選択可能）、それ以外はfalse
+        return false;
     }
     
     @Override
@@ -248,7 +269,8 @@ public class FlyingAttackerEntity extends Monster {
     
     @Override
     public boolean isPickable() {
-        return false; // ピッキング（選択）不可にして発射体の判定から除外
+        // スペクテイターモードでの選択を可能にする
+        return true;
     }
     
     @Override
@@ -363,40 +385,71 @@ public class FlyingAttackerEntity extends Monster {
             this.setDeltaMovement(this.getDeltaMovement().add(0, 0.08, 0));
         }
         
+        // ownerがnullの場合、ownerUUIDから復元を試みる
+        if (this.owner == null && this.ownerUUID != null && this.level instanceof ServerLevel) {
+            Entity entity = ((ServerLevel) this.level).getEntity(this.ownerUUID);
+            if (entity instanceof LivingEntity) {
+                this.owner = (LivingEntity) entity;
+            }
+        }
+        
+        // ブロックにめり込んでいる場合の処理
+        if (this.level.getBlockState(this.blockPosition()).getMaterial().isSolid() ||
+            this.level.getBlockState(this.blockPosition().above()).getMaterial().isSolid()) {
+            // 空いている方向を探して移動
+            for (int i = 1; i <= 3; i++) {
+                if (!this.level.getBlockState(this.blockPosition().above(i)).getMaterial().isSolid()) {
+                    this.setPos(this.getX(), this.blockPosition().getY() + i, this.getZ());
+                    break;
+                }
+            }
+        }
+        
         // 召喚者の近くに留まる処理
         if (this.owner != null && this.owner.isAlive()) {
             double distanceToOwner = this.distanceToSqr(this.owner);
             
-            // 召喚者から離れすぎている場合（10ブロック以上）
-            if (distanceToOwner > 100.0D) {
+            // 召喚者から離れすぎている場合（15ブロック以上）
+            if (distanceToOwner > 225.0D) {
                 // 召喚者の近くにテレポート
                 this.teleportToOwner();
-            } else if (distanceToOwner > 25.0D) {
-                // 召喚者に向かって移動（5-10ブロックの範囲）
+            } else if (distanceToOwner > 64.0D) {
+                // 召喚者に向かって移動（8ブロック以上離れた場合）
                 Vec3 toOwner = new Vec3(
                     this.owner.getX() - this.getX(),
-                    this.owner.getY() + 2.0 - this.getY(), // 召喚者の頭上に
+                    this.owner.getY() + 2.0 - this.getY(), 
                     this.owner.getZ() - this.getZ()
-                ).normalize().scale(0.2);
+                ).normalize().scale(0.3);
                 this.setDeltaMovement(this.getDeltaMovement().add(toOwner));
             }
             
-            // 召喚者の周りを円形に浮遊
-            double angle = (this.tickCount * 0.05) % (2 * Math.PI);
-            double radius = 3.0;
-            double targetX = this.owner.getX() + Math.cos(angle) * radius;
-            double targetY = this.owner.getY() + 2.5; // 召喚者の頭上2.5ブロック
-            double targetZ = this.owner.getZ() + Math.sin(angle) * radius;
+            // ターゲットがいる場合は、そちらに向かって移動
+            if (this.getTarget() != null && this.getTarget().isAlive()) {
+                // ターゲットの方を向く
+                this.lookAt(EntityAnchorArgument.Anchor.EYES, this.getTarget().getEyePosition());
+            } else {
+                // ターゲットがいない場合は召喚者が向いている方向を向く
+                this.setYRot(this.owner.getYRot());
+                this.setXRot(this.owner.getXRot());
+                this.setYHeadRot(this.owner.getYHeadRot());
+            }
             
-            // 目標位置への穏やかな移動
-            Vec3 toTarget = new Vec3(
-                targetX - this.getX(),
-                targetY - this.getY(),
-                targetZ - this.getZ()
-            ).scale(0.05);
-            
-            // 攻撃対象がいない場合のみ円形移動
-            if (this.getTarget() == null) {
+            // ターゲットがいない場合のみ、ゆるやかに召喚者の周りを浮遊
+            // 頻繁な回転を避けるため、動きを大幅に減らす
+            if (this.tickCount % 20 == 0 && this.getTarget() == null) { // 1秒に1回だけ位置を更新、かつターゲットがいない時
+                double angle = this.random.nextFloat() * Math.PI * 2;
+                double radius = 2.0 + this.random.nextFloat() * 2.0;
+                double targetX = this.owner.getX() + Math.cos(angle) * radius;
+                double targetY = this.owner.getY() + 2.0; // 召喚者の頭上2ブロック
+                double targetZ = this.owner.getZ() + Math.sin(angle) * radius;
+                
+                // 目標位置への穏やかな移動
+                Vec3 toTarget = new Vec3(
+                    targetX - this.getX(),
+                    targetY - this.getY(),
+                    targetZ - this.getZ()
+                ).scale(0.05);
+                
                 this.setDeltaMovement(this.getDeltaMovement().multiply(0.8, 0.8, 0.8).add(toTarget));
             }
         }
@@ -409,28 +462,44 @@ public class FlyingAttackerEntity extends Monster {
             attackCooldown--;
         }
         
+        // 発射体弾きクールダウンの処理
+        if (deflectCooldown > 0) {
+            deflectCooldown--;
+        }
+        
         // 剣モードの近接攻撃処理
         if (!this.getPersistentData().getBoolean("ArrowShootMode") && !this.level.isClientSide) {
             LivingEntity target = this.getTarget();
             if (target == null && this.targetUUID != null) {
                 target = this.getTargetEntity();
+                if (target != null) {
+                    this.setTarget(target);  // ターゲットを再設定
+                }
             }
             
             if (target != null && target.isAlive() && attackCooldown == 0) {
                 double distanceSq = this.distanceToSqr(target);
                 
-                // 近接攻撃範囲内（3ブロック以内）
-                if (distanceSq < 9.0D) {
-                    performMeleeAttack(target);
-                    attackCooldown = 20; // 1秒のクールダウン
-                } else if (distanceSq < 256.0D) {
-                    // ターゲットに向かって移動
+                // 近接攻撃範囲内（4ブロック以内に拡大）
+                if (distanceSq < 16.0D) {
+                    System.out.println("DEBUG: Attempting melee attack on " + target.getClass().getSimpleName());
+                    // 攻撃前にターゲットの方を向く
+                    this.lookAt(EntityAnchorArgument.Anchor.EYES, target.getEyePosition());
+                    this.doHurtTarget(target);  // performMeleeAttackの代わりにdoHurtTargetを使用
+                    attackCooldown = 15; // 0.75秒のクールダウンに短縮
+                } else if (distanceSq < 400.0D) {  // 追跡範囲を20ブロックに拡大
+                    // ターゲットに向かって高速移動
                     this.getLookControl().setLookAt(target);
+                    this.lookAt(EntityAnchorArgument.Anchor.EYES, target.getEyePosition());
+                    
+                    // プレイヤーが攻撃したエンティティの場合は移動速度を上げる
+                    double speed = (this.owner != null && this.owner.getLastHurtMob() == target) ? 0.5 : 0.3;
+                    
                     Vec3 toTarget = new Vec3(
                         target.getX() - this.getX(),
-                        target.getY() - this.getY(),
+                        target.getY() + target.getBbHeight() * 0.5 - this.getY(),
                         target.getZ() - this.getZ()
-                    ).normalize().scale(0.3);
+                    ).normalize().scale(speed);
                     this.setDeltaMovement(this.getDeltaMovement().add(toTarget));
                 }
             }
@@ -479,14 +548,24 @@ public class FlyingAttackerEntity extends Monster {
             }
         }
         
-        // 召喚者の最後の攻撃者をチェック
+        // 召喚者の最後の攻撃者と、召喚者が最後に攻撃したエンティティをチェック
         if (this.owner != null) {
-            LivingEntity ownerLastAttacker = this.owner.getLastHurtByMob();
-            if (ownerLastAttacker != null && ownerLastAttacker.isAlive()) {
-                this.lastAttacker = ownerLastAttacker;
-                // 召喚者を攻撃した者を優先的にターゲットに
-                this.setTarget(this.lastAttacker);
-                this.targetUUID = this.lastAttacker.getUUID();
+            // 優先度1: プレイヤーが最後に攻撃したエンティティ
+            LivingEntity ownerLastHurt = this.owner.getLastHurtMob();
+            if (ownerLastHurt != null && ownerLastHurt.isAlive() && ownerLastHurt != this) {
+                // プレイヤーが攻撃したエンティティを最優先ターゲットに
+                this.setTarget(ownerLastHurt);
+                this.targetUUID = ownerLastHurt.getUUID();
+            } 
+            // 優先度2: プレイヤーを攻撃したエンティティ
+            else {
+                LivingEntity ownerLastAttacker = this.owner.getLastHurtByMob();
+                if (ownerLastAttacker != null && ownerLastAttacker.isAlive()) {
+                    this.lastAttacker = ownerLastAttacker;
+                    // 召喚者を攻撃した者を優先的にターゲットに
+                    this.setTarget(this.lastAttacker);
+                    this.targetUUID = this.lastAttacker.getUUID();
+                }
             }
         }
 
@@ -500,7 +579,7 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // 剣モードの時のみ飛び道具の検知と防御
-        if (!this.getPersistentData().getBoolean("ArrowShootMode") && !this.hasDeflectedProjectile) {
+        if (!this.getPersistentData().getBoolean("ArrowShootMode")) {
             if (this.projectileCheckCooldown <= 0) {
                 checkAndDefendProjectiles();
                 this.projectileCheckCooldown = 2; // 2tick毎にチェック
@@ -531,6 +610,11 @@ public class FlyingAttackerEntity extends Monster {
         double targetZ = this.owner.getZ() + Math.sin(angle) * distance;
         
         this.teleportTo(targetX, targetY, targetZ);
+        
+        // 召喚者の向きに合わせる
+        this.setYRot(this.owner.getYRot());
+        this.setXRot(this.owner.getXRot());
+        this.setYHeadRot(this.owner.getYHeadRot());
     }
     
     private void makeProjectilesPassThrough() {
@@ -539,33 +623,123 @@ public class FlyingAttackerEntity extends Monster {
     }
     
     private void checkAndDefendProjectiles() {
-        if (this.owner == null || this.hasDeflectedProjectile) return;
+        if (this.owner == null || this.deflectCooldown > 0) return;
         
         // 半径15ブロック以内の飛び道具を検知（検出範囲を拡大）
         double detectionRange = 15.0D;
         List<Entity> nearbyEntities = this.level.getEntities(this, 
             this.getBoundingBox().inflate(detectionRange));
         
+        // 古い発射体のIDをクリーンアップ（既に存在しないエンティティのIDを削除）
+        deflectedProjectiles.removeIf(id -> nearbyEntities.stream().noneMatch(e -> e.getId() == id));
+        
         for (Entity entity : nearbyEntities) {
-            if (entity instanceof Projectile) {
-                Projectile projectile = (Projectile) entity;
-                
+            // 既に弾いた発射体はスキップ
+            if (deflectedProjectiles.contains(entity.getId())) {
+                continue;
+            }
+            
+            // すべての種類の発射体をチェック
+            boolean isProjectile = false;
+            
+            // 具体的な発射体タイプを先にチェック
+            if (entity instanceof ThrownPotion) {
+                isProjectile = true;
+                System.out.println("DEBUG: Found ThrownPotion at " + entity.position());
+            }
+            // トライデント
+            else if (entity instanceof ThrownTrident) {
+                isProjectile = true;
+            }
+            // ファイアボール系
+            else if (entity instanceof Fireball) {
+                isProjectile = true;
+            }
+            // AbstractArrow（矢など）
+            else if (entity instanceof AbstractArrow) {
+                isProjectile = true;
+            }
+            // ThrowableProjectile（雪玉、卵など）
+            else if (entity instanceof ThrowableProjectile) {
+                isProjectile = true;
+            }
+            // 基本的な発射体タイプ
+            else if (entity instanceof Projectile) {
+                isProjectile = true;
+            }
+            // その他の発射体（エンティティ名ベースのチェック）
+            else {
+                String entityName = entity.getClass().getSimpleName().toLowerCase();
+                if (entityName.contains("projectile") || 
+                    entityName.contains("arrow") || 
+                    entityName.contains("bolt") ||
+                    entityName.contains("fireball") ||
+                    entityName.contains("throwable") ||
+                    entityName.contains("bullet") ||
+                    entityName.contains("meteor") ||
+                    entityName.contains("potion")) {
+                    isProjectile = true;
+                }
+            }
+            
+            if (isProjectile) {
                 // 所有者に向かっている飛び道具かチェック
-                if (isProjectileThreateningOwner(projectile)) {
-                    // 飛び道具を弾く
-                    deflectProjectile(projectile);
-                    this.hasDeflectedProjectile = true; // 一度弾いたらフラグを立てる
-                    break;
+                boolean threatening = isProjectileThreateningOwner(entity);
+                if (entity instanceof ThrownPotion) {
+                    System.out.println("DEBUG: Checking if ThrownPotion is threatening: " + threatening);
+                }
+                if (threatening) {
+                    // スプラッシュポーションは斬って破壊、それ以外は弾く
+                    if (entity instanceof ThrownPotion) {
+                        System.out.println("DEBUG: Destroying ThrownPotion!");
+                        destroyPotion((ThrownPotion) entity);
+                    } else {
+                        deflectProjectile(entity);
+                    }
+                    deflectedProjectiles.add(entity.getId()); // 処理した発射体のIDを記録
+                    this.deflectCooldown = 10; // 0.5秒のクールダウン（20tick/秒なので10tick）
+                    break; // 一度に一つの発射体だけを処理
                 }
             }
         }
     }
     
-    private boolean isProjectileThreateningOwner(Projectile projectile) {
+    private boolean isProjectileThreateningOwner(Entity projectile) {
         if (this.owner == null) return false;
         
         // 自分や召喚者が撃った飛び道具は除外
-        Entity shooter = projectile.getOwner();
+        Entity shooter = null;
+        // スプラッシュポーション
+        if (projectile instanceof ThrownPotion) {
+            shooter = ((ThrownPotion) projectile).getOwner();
+            System.out.println("DEBUG: ThrownPotion shooter: " + (shooter != null ? shooter.getName().getString() : "null"));
+        }
+        // トライデント
+        else if (projectile instanceof ThrownTrident) {
+            shooter = ((ThrownTrident) projectile).getOwner();
+        }
+        // AbstractArrow（矢など）
+        else if (projectile instanceof AbstractArrow) {
+            shooter = ((AbstractArrow) projectile).getOwner();
+        }
+        // ThrowableProjectile（雪玉、卵など）
+        else if (projectile instanceof ThrowableProjectile) {
+            shooter = ((ThrowableProjectile) projectile).getOwner();
+        }
+        // 基本Projectile
+        else if (projectile instanceof Projectile) {
+            shooter = ((Projectile) projectile).getOwner();
+        } 
+        else {
+            // カスタム発射体の場合、NBTデータからOwnerをチェック
+            if (projectile.getPersistentData().contains("Owner")) {
+                UUID ownerUUID = projectile.getPersistentData().getUUID("Owner");
+                if (this.level instanceof ServerLevel) {
+                    shooter = ((ServerLevel) this.level).getEntity(ownerUUID);
+                }
+            }
+        }
+        
         if (shooter == this.owner || shooter == this) {
             return false;
         }
@@ -575,7 +749,12 @@ public class FlyingAttackerEntity extends Monster {
         Vec3 projectileMotion = projectile.getDeltaMovement();
         
         // 速度が非常に小さい場合はスキップ（停止している飛び道具）
-        if (projectileMotion.lengthSqr() < 0.01D) {
+        // スプラッシュポーションは速度が遅いので閾値を下げる
+        double motionThreshold = projectile instanceof ThrownPotion ? 0.001D : 0.01D;
+        if (projectileMotion.lengthSqr() < motionThreshold) {
+            if (projectile instanceof ThrownPotion) {
+                System.out.println("DEBUG: ThrownPotion motion too small: " + projectileMotion.lengthSqr());
+            }
             return false;
         }
         
@@ -595,14 +774,24 @@ public class FlyingAttackerEntity extends Monster {
         Vec3 normalizedToOwner = toOwner.normalize();
         double dot = normalizedMotion.dot(normalizedToOwner);
         
-        // より広い角度で検出（0.5 = 約60度以内）
-        // また、召喚者に近い飛び道具は角度条件を緩める
-        double angleThreshold = distanceToOwner < 5.0D ? 0.3 : 0.5;
+        // より広い角度で検出（0.3 = 約72度以内）
+        // 召喚者に近い飛び道具はさらに条件を緩める
+        // スプラッシュポーションはより広い角度で検出（弧を描いて飛ぶため）
+        double angleThreshold;
+        if (projectile instanceof ThrownPotion) {
+            angleThreshold = distanceToOwner < 5.0D ? -0.2 : 0.0; // より緩い判定
+        } else {
+            angleThreshold = distanceToOwner < 5.0D ? 0.1 : 0.3;
+        }
+        
+        if (projectile instanceof ThrownPotion) {
+            System.out.println("DEBUG: ThrownPotion dot product: " + dot + ", threshold: " + angleThreshold + ", distance: " + distanceToOwner);
+        }
         
         return dot > angleThreshold;
     }
     
-    private void deflectProjectile(Projectile projectile) {
+    private void deflectProjectile(Entity projectile) {
         // 飛び道具に向かって瞬間移動
         Vec3 projectilePos = projectile.position();
         Vec3 toProjectile = projectilePos.subtract(this.position());
@@ -619,10 +808,31 @@ public class FlyingAttackerEntity extends Monster {
         projectile.setDeltaMovement(deflectedMotion);
         
         // 飛び道具の所有者を変更（召喚者の攻撃にする）
-        if (projectile instanceof AbstractArrow && this.owner != null) {
-            ((AbstractArrow) projectile).setOwner(this.owner);
-        } else if (projectile instanceof ThrowableProjectile && this.owner != null) {
-            ((ThrowableProjectile) projectile).setOwner(this.owner);
+        if (this.owner != null) {
+            // スプラッシュポーション
+            if (projectile instanceof ThrownPotion) {
+                ((ThrownPotion) projectile).setOwner(this.owner);
+            }
+            // トライデント
+            else if (projectile instanceof ThrownTrident) {
+                ((ThrownTrident) projectile).setOwner(this.owner);
+            }
+            // AbstractArrow（矢など）
+            else if (projectile instanceof AbstractArrow) {
+                ((AbstractArrow) projectile).setOwner(this.owner);
+            }
+            // ThrowableProjectile（雪玉、卵など）
+            else if (projectile instanceof ThrowableProjectile) {
+                ((ThrowableProjectile) projectile).setOwner(this.owner);
+            }
+            // 基本Projectile
+            else if (projectile instanceof Projectile) {
+                ((Projectile) projectile).setOwner(this.owner);
+            }
+            // カスタム発射体
+            else {
+                projectile.getPersistentData().putUUID("Owner", this.owner.getUUID());
+            }
         }
         
         // エフェクトとサウンド
@@ -640,11 +850,84 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // 発射体の元の所有者を新しいターゲットに設定
-        Entity originalOwner = projectile.getOwner();
+        Entity originalOwner = null;
+        // スプラッシュポーション
+        if (projectile instanceof ThrownPotion) {
+            originalOwner = ((ThrownPotion) projectile).getOwner();
+        }
+        // トライデント
+        else if (projectile instanceof ThrownTrident) {
+            originalOwner = ((ThrownTrident) projectile).getOwner();
+        }
+        // AbstractArrow（矢など）
+        else if (projectile instanceof AbstractArrow) {
+            originalOwner = ((AbstractArrow) projectile).getOwner();
+        }
+        // ThrowableProjectile（雪玉、卵など）
+        else if (projectile instanceof ThrowableProjectile) {
+            originalOwner = ((ThrowableProjectile) projectile).getOwner();
+        }
+        // 基本Projectile
+        else if (projectile instanceof Projectile) {
+            originalOwner = ((Projectile) projectile).getOwner();
+        }
+        else {
+            // カスタム発射体の場合、NBTデータからOwnerを取得
+            if (projectile.getPersistentData().contains("Owner")) {
+                UUID ownerUUID = projectile.getPersistentData().getUUID("Owner");
+                if (this.level instanceof ServerLevel) {
+                    originalOwner = ((ServerLevel) this.level).getEntity(ownerUUID);
+                }
+            }
+        }
+        
         if (originalOwner instanceof LivingEntity && originalOwner != this.owner) {
             this.setTarget((LivingEntity) originalOwner);
             this.targetUUID = originalOwner.getUUID();
         }
+    }
+    
+    private void destroyPotion(ThrownPotion potion) {
+        // ポーションに向かって瞬間移動
+        Vec3 potionPos = potion.position();
+        Vec3 toPotion = potionPos.subtract(this.position());
+        
+        // ポーションの近くに移動
+        if (toPotion.length() > 2.0D) {
+            Vec3 movePos = this.position().add(toPotion.normalize().scale(toPotion.length() - 1.0D));
+            this.teleportTo(movePos.x, movePos.y, movePos.z);
+        }
+        
+        // エフェクトとサウンド
+        if (this.level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel) this.level;
+            
+            // ガラスが割れるようなパーティクルエフェクト
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.ITEM_SNOWBALL,
+                potionPos.x, potionPos.y, potionPos.z,
+                30, 0.3, 0.3, 0.3, 0.2);
+            
+            // 斬撃エフェクト
+            serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.SWEEP_ATTACK,
+                potionPos.x, potionPos.y, potionPos.z,
+                1, 0, 0, 0, 0);
+            
+            // ガラスが割れる音と剣の音
+            this.level.playSound(null, potionPos.x, potionPos.y, potionPos.z,
+                SoundEvents.GLASS_BREAK, SoundSource.HOSTILE, 0.8F, 1.0F);
+            this.level.playSound(null, potionPos.x, potionPos.y, potionPos.z,
+                SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 0.8F, 1.2F);
+        }
+        
+        // ポーションの投擲者を新しいターゲットに設定
+        Entity thrower = potion.getOwner();
+        if (thrower instanceof LivingEntity && thrower != this.owner) {
+            this.setTarget((LivingEntity) thrower);
+            this.targetUUID = thrower.getUUID();
+        }
+        
+        // ポーションを破壊（削除）
+        potion.discard();
     }
     
     private void interceptProjectile(Projectile projectile) {
@@ -702,7 +985,9 @@ public class FlyingAttackerEntity extends Monster {
             }
         }
         
+        System.out.println("DEBUG: Attempting to deal " + baseDamage + " damage");
         boolean hit = target.hurt(damageSource, baseDamage);
+        System.out.println("DEBUG: Hit successful? " + hit);
         
         if (hit) {
             // エンチャントのヒット時効果を適用（他modのエンチャントも含む）
@@ -875,7 +1160,7 @@ public class FlyingAttackerEntity extends Monster {
         if (!displayItem.isEmpty()) {
             compound.put("DisplayItem", displayItem.save(new CompoundTag()));
         }
-        compound.putBoolean("HasDeflectedProjectile", this.hasDeflectedProjectile);
+        compound.putInt("DeflectCooldown", this.deflectCooldown);
     }
 
     @Override
@@ -883,6 +1168,13 @@ public class FlyingAttackerEntity extends Monster {
         super.readAdditionalSaveData(compound);
         if (compound.hasUUID("OwnerUUID")) {
             this.ownerUUID = compound.getUUID("OwnerUUID");
+            // ワールド再参加時にownerを復元
+            if (this.level instanceof ServerLevel) {
+                Entity entity = ((ServerLevel) this.level).getEntity(this.ownerUUID);
+                if (entity instanceof LivingEntity) {
+                    this.owner = (LivingEntity) entity;
+                }
+            }
         }
         if (compound.hasUUID("TargetUUID")) {
             this.targetUUID = compound.getUUID("TargetUUID");
@@ -890,6 +1182,6 @@ public class FlyingAttackerEntity extends Monster {
         if (compound.contains("DisplayItem")) {
             this.setDisplayItem(ItemStack.of(compound.getCompound("DisplayItem")));
         }
-        this.hasDeflectedProjectile = compound.getBoolean("HasDeflectedProjectile");
+        this.deflectCooldown = compound.getInt("DeflectCooldown");
     }
 }

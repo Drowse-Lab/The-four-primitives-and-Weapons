@@ -83,11 +83,11 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 				poseStack.scale(2.0F, 2.0F, 2.0F);
 			} else if (heldItem.getItem() instanceof SwordItem) {
 				// 剣の場合
-				poseStack.translate(0.0D, 0.5D, -0.5D);
+				poseStack.translate(0.0D, 0.5D, 0.5D);  // 前方向を反転
 				
-				// 剣を前方に向ける
+				// 剣を前方に向ける（180度回転）
 				poseStack.mulPose(Vector3f.XP.rotationDegrees(90.0F));
-				poseStack.mulPose(Vector3f.ZP.rotationDegrees(45.0F));
+				poseStack.mulPose(Vector3f.ZP.rotationDegrees(-180.0F));  // 45度から-135度に変更（180度回転）
 				
 				// サイズ調整
 				poseStack.scale(1.5F, 1.5F, 1.5F);

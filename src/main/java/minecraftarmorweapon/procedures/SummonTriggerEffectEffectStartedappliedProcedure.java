@@ -45,23 +45,34 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 	}
 	
 	public static void execute(Entity entity) {
+		execute(entity, 0);
+	}
+	
+	public static void execute(Entity entity, int effectLevel) {
 		if (entity == null || !(entity.level instanceof ServerLevel)) return;
 		ServerLevel world = (ServerLevel) entity.level;
+		
+		// エフェクトレベルに基づいて召喚数を決定（レベル0なら1体、レベル1なら2体、など）
+		int spawnCount = effectLevel + 1;
 		
 		// すでにこのエンティティがFlyingAttackerをスポーン済みかチェック
 		UUID entityUUID = entity.getUUID();
 		if (spawnedEntitiesMap.containsKey(entityUUID)) {
 			// スポーン済みのエンティティが生きているかチェック
 			List<UUID> spawnedList = spawnedEntitiesMap.get(entityUUID);
+			int aliveCount = 0;
 			for (UUID spawnedUUID : spawnedList) {
 				Entity spawnedEntity = ((ServerLevel) entity.level).getEntity(spawnedUUID);
 				if (spawnedEntity != null && spawnedEntity.isAlive()) {
-					// まだ生きているFlyingAttackerがいる場合は新規スポーンしない
-					return;
+					aliveCount++;
 				}
 			}
-			// 全て死んでいる場合はリストをクリア
-			spawnedEntitiesMap.remove(entityUUID);
+			// 必要な数だけ生きている場合は新規スポーンしない
+			if (aliveCount >= spawnCount) {
+				return;
+			}
+			// 追加でスポーンが必要な場合は差分だけスポーン
+			spawnCount = spawnCount - aliveCount;
 		}
 
 		// 召喚者の利き手のアイテムを確認
@@ -74,94 +85,113 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 				return;
 			}
 			
-			// アイテムが剣か発射体かチェック
-			if (mainHandItem.getItem() instanceof SwordItem) {
-				// 剣の場合はFlyingAttackerを召喚
-				FlyingAttackerEntity mob = new FlyingAttackerEntity(
-					MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world
-				);
+			// スポーン済みリストを取得または作成
+			List<UUID> spawnedList = spawnedEntitiesMap.getOrDefault(entityUUID, new ArrayList<>());
+			
+			// 指定数だけFlyingAttackerを召喚
+			for (int i = 0; i < spawnCount; i++) {
+				// アイテムが剣か発射体かチェック
+				if (mainHandItem.getItem() instanceof SwordItem) {
+					// 剣の場合はFlyingAttackerを召喚
+					FlyingAttackerEntity mob = new FlyingAttackerEntity(
+						MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world
+					);
 
-				// 召喚者の周りのランダムな位置に配置
-				double angle = world.random.nextFloat() * Math.PI * 2;
-				double distance = 2.0 + world.random.nextFloat() * 2.0;
-				mob.moveTo(
-					entity.getX() + Math.cos(angle) * distance, 
-					entity.getY() + 2, 
-					entity.getZ() + Math.sin(angle) * distance, 
-					entity.getYRot(), 0
-				);
-				mob.setInvisible(true);
-				mob.setDisplayItem(mainHandItem);
-				mob.setNoGravity(true);
-				
-				// 召喚者を設定
-				mob.setOwner(livingEntity);
-				mob.setOwnerUUID(entity.getUUID());
-				
-				// ターゲットの設定
-				LivingEntity target = findTarget(entity, livingEntity);
-				if (target != null && target != livingEntity && target.isAlive()) {
-					mob.setTargetUUID(target.getUUID());
-				}
-				
-				world.addFreshEntity(mob);
-				
-				// スポーン済みリストに追加
-				List<UUID> spawnedList = spawnedEntitiesMap.getOrDefault(entityUUID, new ArrayList<>());
-				spawnedList.add(mob.getUUID());
-				spawnedEntitiesMap.put(entityUUID, spawnedList);
-			} else if (isProjectileItem(mainHandItem)) {
-				// 矢や発射体アイテムの場合
-				// デバッグ用ログ
-				System.out.println("Projectile item detected: " + mainHandItem.getItem());
-				
-				// 矢を放つFlyingAttackerを召喚（矢射撃モード）
-				FlyingAttackerEntity arrowShooter = new FlyingAttackerEntity(
-					MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world
-				);
+					// 召喚者の周りのランダムな位置に配置（空いている場所を探す）
+					double angle = world.random.nextFloat() * Math.PI * 2;
+					double distance = 2.0 + world.random.nextFloat() * 2.0;
+					double spawnX = entity.getX() + Math.cos(angle) * distance;
+					double spawnY = entity.getY() + 2;
+					double spawnZ = entity.getZ() + Math.sin(angle) * distance;
+					
+					// スポーン位置が安全か確認（ブロックにめり込まないように）
+					for (int yOffset = 0; yOffset <= 3; yOffset++) {
+						if (!world.getBlockState(new net.minecraft.core.BlockPos(spawnX, spawnY + yOffset, spawnZ)).getMaterial().isSolid()) {
+							spawnY = spawnY + yOffset;
+							break;
+						}
+					}
+					
+					mob.moveTo(spawnX, spawnY, spawnZ, entity.getYRot(), entity.getXRot());
+					mob.setInvisible(true);
+					mob.setDisplayItem(mainHandItem.copy());  // 明示的にコピーを渡す
+					mob.setNoGravity(true);
+					
+					// 召喚者を設定
+					mob.setOwner(livingEntity);
+					mob.setOwnerUUID(entity.getUUID());
+					
+					// ターゲットの設定
+					LivingEntity target = findTarget(entity, livingEntity);
+					if (target != null && target != livingEntity && target.isAlive()) {
+						mob.setTargetUUID(target.getUUID());
+					}
+					
+					world.addFreshEntity(mob);
+					
+					// スポーン済みリストに追加
+					spawnedList.add(mob.getUUID());
+				} else if (isProjectileItem(mainHandItem)) {
+					// 矢や発射体アイテムの場合
+					// デバッグ用ログ
+					System.out.println("Projectile item detected: " + mainHandItem.getItem());
+					
+					// 矢を放つFlyingAttackerを召喚（矢射撃モード）
+					FlyingAttackerEntity arrowShooter = new FlyingAttackerEntity(
+						MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), world
+					);
 
-				// 召喚者の周りのランダムな位置に配置
-				double angleArrow = world.random.nextFloat() * Math.PI * 2;
-				double distanceArrow = 2.0 + world.random.nextFloat() * 2.0;
-				arrowShooter.moveTo(
-					entity.getX() + Math.cos(angleArrow) * distanceArrow, 
-					entity.getY() + 2, 
-					entity.getZ() + Math.sin(angleArrow) * distanceArrow, 
-					entity.getYRot(), 0
-				);
-				arrowShooter.setInvisible(true);
-				arrowShooter.setNoGravity(true);
-				
-				// 召喚者を設定
-				arrowShooter.setOwner(livingEntity);
-				arrowShooter.setOwnerUUID(entity.getUUID());
-				
-				// 矢を表示用にセット
-				arrowShooter.setDisplayItem(mainHandItem);
-				
-				// 射撃モードフラグを設定
-				arrowShooter.getPersistentData().putBoolean("ArrowShootMode", true);
-				arrowShooter.getPersistentData().putString("ArrowType", mainHandItem.getItem().toString());
-				
-				// ターゲットの検索
-				LivingEntity target = findTarget(entity, livingEntity);
-				
-				// デバッグ用ログ
-				if (target == null) {
-					System.out.println("No target found for projectile - will wait for target");
-				} else {
-					System.out.println("Target found: " + target.getClass().getSimpleName() + " at " + target.position());
-					// ターゲットを設定
-					arrowShooter.setTargetUUID(target.getUUID());
+					// 召喚者の周りのランダムな位置に配置（空いている場所を探す）
+					double angleArrow = world.random.nextFloat() * Math.PI * 2;
+					double distanceArrow = 2.0 + world.random.nextFloat() * 2.0;
+					double spawnXArrow = entity.getX() + Math.cos(angleArrow) * distanceArrow;
+					double spawnYArrow = entity.getY() + 2;
+					double spawnZArrow = entity.getZ() + Math.sin(angleArrow) * distanceArrow;
+					
+					// スポーン位置が安全か確認（ブロックにめり込まないように）
+					for (int yOffset = 0; yOffset <= 3; yOffset++) {
+						if (!world.getBlockState(new net.minecraft.core.BlockPos(spawnXArrow, spawnYArrow + yOffset, spawnZArrow)).getMaterial().isSolid()) {
+							spawnYArrow = spawnYArrow + yOffset;
+							break;
+						}
+					}
+					
+					arrowShooter.moveTo(spawnXArrow, spawnYArrow, spawnZArrow, entity.getYRot(), entity.getXRot());
+					arrowShooter.setInvisible(true);
+					arrowShooter.setNoGravity(true);
+					
+					// 召喚者を設定
+					arrowShooter.setOwner(livingEntity);
+					arrowShooter.setOwnerUUID(entity.getUUID());
+					
+					// 矢を表示用にセット
+					arrowShooter.setDisplayItem(mainHandItem.copy());  // 明示的にコピーを渡す
+					
+					// 射撃モードフラグを設定
+					arrowShooter.getPersistentData().putBoolean("ArrowShootMode", true);
+					arrowShooter.getPersistentData().putString("ArrowType", mainHandItem.getItem().toString());
+					
+					// ターゲットの検索
+					LivingEntity target = findTarget(entity, livingEntity);
+					
+					// デバッグ用ログ
+					if (target == null) {
+						System.out.println("No target found for projectile - will wait for target");
+					} else {
+						System.out.println("Target found: " + target.getClass().getSimpleName() + " at " + target.position());
+						// ターゲットを設定
+						arrowShooter.setTargetUUID(target.getUUID());
+					}
+					
+					world.addFreshEntity(arrowShooter);
+					
+					// スポーン済みリストに追加
+					spawnedList.add(arrowShooter.getUUID());
 				}
-				
-				world.addFreshEntity(arrowShooter);
-				
-				// スポーン済みリストに追加
-				List<UUID> spawnedList = spawnedEntitiesMap.getOrDefault(entityUUID, new ArrayList<>());
-				spawnedList.add(arrowShooter.getUUID());
-				spawnedEntitiesMap.put(entityUUID, spawnedList);
 			}
+			
+			// スポーン済みマップを更新
+			spawnedEntitiesMap.put(entityUUID, spawnedList);
 			
 			return;
 		}

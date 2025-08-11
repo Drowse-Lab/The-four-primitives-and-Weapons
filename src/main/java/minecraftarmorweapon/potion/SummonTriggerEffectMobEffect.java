@@ -27,7 +27,7 @@ public class SummonTriggerEffectMobEffect extends MobEffect {
 
 @Override
 public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
-	SummonTriggerEffectEffectStartedappliedProcedure.execute(entity);
+	SummonTriggerEffectEffectStartedappliedProcedure.execute(entity, amplifier);
 }
 
 @Override
