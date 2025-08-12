@@ -666,6 +666,9 @@ public class FlyingAttackerEntity extends Monster {
             // その他の発射体（エンティティ名ベースのチェック）
             else {
                 String entityName = entity.getClass().getSimpleName().toLowerCase();
+                String fullClassName = entity.getClass().getName().toLowerCase();
+                
+                // 一般的な発射体名のチェック
                 if (entityName.contains("projectile") || 
                     entityName.contains("arrow") || 
                     entityName.contains("bolt") ||
@@ -674,6 +677,17 @@ public class FlyingAttackerEntity extends Monster {
                     entityName.contains("bullet") ||
                     entityName.contains("meteor") ||
                     entityName.contains("potion")) {
+                    isProjectile = true;
+                }
+                // TaCZ MODの銃弾チェック（クラス名にtaczやbulletが含まれる）
+                else if (fullClassName.contains("tacz") && 
+                        (fullClassName.contains("bullet") || fullClassName.contains("projectile"))) {
+                    isProjectile = true;
+                    System.out.println("DEBUG: Found TaCZ projectile: " + entity.getClass().getName());
+                }
+                // 他の銃MODの汎用チェック
+                else if (fullClassName.contains("gun") && 
+                        (fullClassName.contains("bullet") || fullClassName.contains("projectile"))) {
                     isProjectile = true;
                 }
             }
@@ -734,6 +748,11 @@ public class FlyingAttackerEntity extends Monster {
                     shooter = ((ServerLevel) this.level).getEntity(ownerUUID);
                 }
             }
+            
+            // TaCZや他の銃MODの発射体の場合、リフレクションでshooterやownerフィールドを探す
+            if (shooter == null) {
+                shooter = findShooterByReflection(projectile);
+            }
         }
         
         if (shooter == this.owner || shooter == this) {
@@ -792,16 +811,63 @@ public class FlyingAttackerEntity extends Monster {
     }
     
     private void deflectProjectile(Entity projectile) {
-        // 飛び道具と召喚者の間に瞬間移動
+        // 発射体の位置を取得（スコープ外でも使用するため）
         Vec3 projectilePos = projectile.position();
         
         if (this.owner != null) {
-            // 召喚者と発射体の間の位置を計算
-            Vec3 ownerPos = this.owner.position();
-            Vec3 interceptPos = ownerPos.add(projectilePos.subtract(ownerPos).normalize().scale(2.0));
-            this.teleportTo(interceptPos.x, interceptPos.y + 1.0, interceptPos.z);
+            // 発射体の速度を取得
+            Vec3 projectileVelocity = projectile.getDeltaMovement();
+            Vec3 ownerPos = this.owner.position().add(0, this.owner.getBbHeight() * 0.5, 0); // 召喚者の中心位置
+            
+            // 発射体の進行方向（正規化）
+            Vec3 projectileDirection = projectileVelocity.normalize();
+            
+            // 発射体から召喚者への方向ベクトル
+            Vec3 toOwner = ownerPos.subtract(projectilePos);
+            
+            // 発射体の射線上で、召喚者から2-3ブロック手前の位置を計算
+            // 射線上の最適な迎撃点を見つける
+            double interceptDistance = 3.0; // 召喚者から3ブロック手前で迎撃
+            
+            // 発射体の射線と召喚者の最短距離を計算
+            double projectionLength = toOwner.dot(projectileDirection);
+            
+            // 迎撃位置を計算（発射体の射線上）
+            Vec3 interceptPos;
+            if (projectionLength > interceptDistance) {
+                // 射線上で召喚者の手前の位置
+                interceptPos = projectilePos.add(projectileDirection.scale(projectionLength - interceptDistance));
+            } else {
+                // 発射体がすでに近い場合は、発射体の直前に移動
+                interceptPos = projectilePos.subtract(projectileDirection.scale(1.0));
+            }
+            
+            // 迎撃位置に瞬間移動
+            this.teleportTo(interceptPos.x, interceptPos.y, interceptPos.z);
+            
+            // 発射体の方を向く
+            this.lookAt(EntityAnchorArgument.Anchor.EYES, projectilePos);
+            
+            // 移動軌跡のエフェクト（瞬間移動の軌跡を表示）
+            if (this.level instanceof ServerLevel) {
+                ServerLevel serverLevel = (ServerLevel) this.level;
+                // 元の位置から迎撃位置への軌跡にパーティクルを表示
+                Vec3 startPos = this.position();
+                Vec3 particleDir = interceptPos.subtract(startPos);
+                double distance = particleDir.length();
+                if (distance > 0) {
+                    Vec3 step = particleDir.normalize().scale(0.5); // 0.5ブロック間隔
+                    int steps = (int)(distance / 0.5);
+                    for (int i = 0; i <= steps; i++) {
+                        Vec3 particlePos = startPos.add(step.scale(i));
+                        serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.SONIC_BOOM,
+                            particlePos.x, particlePos.y, particlePos.z,
+                            1, 0, 0, 0, 0);
+                    }
+                }
+            }
         } else {
-            // 飛び道具の近くに移動
+            // 召喚者がいない場合は発射体の近くに移動
             Vec3 toProjectile = projectilePos.subtract(this.position());
             if (toProjectile.length() > 2.0D) {
                 Vec3 movePos = this.position().add(toProjectile.normalize().scale(toProjectile.length() - 1.0D));
@@ -836,9 +902,11 @@ public class FlyingAttackerEntity extends Monster {
             else if (projectile instanceof Projectile) {
                 ((Projectile) projectile).setOwner(this.owner);
             }
-            // カスタム発射体
+            // カスタム発射体（TaCZの銃弾なども含む）
             else {
                 projectile.getPersistentData().putUUID("Owner", this.owner.getUUID());
+                // リフレクションで所有者を設定
+                setShooterByReflection(projectile, this.owner);
             }
         }
         
@@ -895,16 +963,43 @@ public class FlyingAttackerEntity extends Monster {
     }
     
     private void destroyPotion(ThrownPotion potion) {
-        // ポーションと召喚者の間に瞬間移動
+        // ポーションの位置を取得（スコープ外でも使用するため）
         Vec3 potionPos = potion.position();
         
         if (this.owner != null) {
-            // 召喚者とポーションの間の位置を計算
-            Vec3 ownerPos = this.owner.position();
-            Vec3 interceptPos = ownerPos.add(potionPos.subtract(ownerPos).normalize().scale(2.0));
-            this.teleportTo(interceptPos.x, interceptPos.y + 1.0, interceptPos.z);
+            // ポーションの速度を取得
+            Vec3 potionVelocity = potion.getDeltaMovement();
+            Vec3 ownerPos = this.owner.position().add(0, this.owner.getBbHeight() * 0.5, 0); // 召喚者の中心位置
+            
+            // ポーションの進行方向（正規化）
+            Vec3 potionDirection = potionVelocity.normalize();
+            
+            // ポーションから召喚者への方向ベクトル
+            Vec3 toOwner = ownerPos.subtract(potionPos);
+            
+            // ポーションの射線上で、召喚者から2-3ブロック手前の位置を計算
+            double interceptDistance = 3.0; // 召喚者から3ブロック手前で迎撃
+            
+            // ポーションの射線と召喚者の最短距離を計算
+            double projectionLength = toOwner.dot(potionDirection);
+            
+            // 迎撃位置を計算（ポーションの射線上）
+            Vec3 interceptPos;
+            if (projectionLength > interceptDistance) {
+                // 射線上で召喚者の手前の位置
+                interceptPos = potionPos.add(potionDirection.scale(projectionLength - interceptDistance));
+            } else {
+                // ポーションがすでに近い場合は、ポーションの直前に移動
+                interceptPos = potionPos.subtract(potionDirection.scale(1.0));
+            }
+            
+            // 迎撃位置に瞬間移動
+            this.teleportTo(interceptPos.x, interceptPos.y, interceptPos.z);
+            
+            // ポーションの方を向く
+            this.lookAt(EntityAnchorArgument.Anchor.EYES, potionPos);
         } else {
-            // ポーションの近くに移動
+            // 召喚者がいない場合はポーションの近くに移動
             Vec3 toPotion = potionPos.subtract(this.position());
             if (toPotion.length() > 2.0D) {
                 Vec3 movePos = this.position().add(toPotion.normalize().scale(toPotion.length() - 1.0D));
@@ -942,6 +1037,114 @@ public class FlyingAttackerEntity extends Monster {
         
         // ポーションを破壊（削除）
         potion.discard();
+    }
+    
+    // リフレクションを使って安全に所有者を設定するメソッド
+    private void setShooterByReflection(Entity projectile, Entity newOwner) {
+        try {
+            Class<?> clazz = projectile.getClass();
+            
+            // よくあるフィールド名をチェック
+            String[] possibleFieldNames = {"shooter", "owner", "thrower", "source", "livingEntityThrower"};
+            
+            for (String fieldName : possibleFieldNames) {
+                try {
+                    java.lang.reflect.Field field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    
+                    // フィールドの型をチェック
+                    Class<?> fieldType = field.getType();
+                    if (Entity.class.isAssignableFrom(fieldType) || fieldType.equals(LivingEntity.class)) {
+                        field.set(projectile, newOwner);
+                        return; // 設定できたら終了
+                    } else if (fieldType.equals(UUID.class) && newOwner != null) {
+                        field.set(projectile, newOwner.getUUID());
+                        return; // 設定できたら終了
+                    }
+                } catch (NoSuchFieldException e) {
+                    // このフィールド名は存在しない、次を試す
+                }
+            }
+            
+            // 親クラスもチェック
+            Class<?> superClass = clazz.getSuperclass();
+            if (superClass != null && !superClass.equals(Entity.class)) {
+                for (String fieldName : possibleFieldNames) {
+                    try {
+                        java.lang.reflect.Field field = superClass.getDeclaredField(fieldName);
+                        field.setAccessible(true);
+                        
+                        Class<?> fieldType = field.getType();
+                        if (Entity.class.isAssignableFrom(fieldType) || fieldType.equals(LivingEntity.class)) {
+                            field.set(projectile, newOwner);
+                            return;
+                        } else if (fieldType.equals(UUID.class) && newOwner != null) {
+                            field.set(projectile, newOwner.getUUID());
+                            return;
+                        }
+                    } catch (NoSuchFieldException e) {
+                        // このフィールド名は存在しない、次を試す
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // リフレクションが失敗しても問題ない
+        }
+    }
+    
+    // リフレクションを使って安全にshooterを探すメソッド
+    private Entity findShooterByReflection(Entity projectile) {
+        try {
+            Class<?> clazz = projectile.getClass();
+            
+            // よくあるフィールド名をチェック
+            String[] possibleFieldNames = {"shooter", "owner", "thrower", "source", "livingEntityThrower"};
+            
+            for (String fieldName : possibleFieldNames) {
+                try {
+                    java.lang.reflect.Field field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    Object value = field.get(projectile);
+                    
+                    if (value instanceof Entity) {
+                        return (Entity) value;
+                    } else if (value instanceof UUID) {
+                        // UUIDの場合はエンティティを取得
+                        if (this.level instanceof ServerLevel) {
+                            return ((ServerLevel) this.level).getEntity((UUID) value);
+                        }
+                    }
+                } catch (NoSuchFieldException e) {
+                    // このフィールド名は存在しない、次を試す
+                }
+            }
+            
+            // 親クラスもチェック
+            Class<?> superClass = clazz.getSuperclass();
+            if (superClass != null && !superClass.equals(Entity.class)) {
+                for (String fieldName : possibleFieldNames) {
+                    try {
+                        java.lang.reflect.Field field = superClass.getDeclaredField(fieldName);
+                        field.setAccessible(true);
+                        Object value = field.get(projectile);
+                        
+                        if (value instanceof Entity) {
+                            return (Entity) value;
+                        } else if (value instanceof UUID) {
+                            if (this.level instanceof ServerLevel) {
+                                return ((ServerLevel) this.level).getEntity((UUID) value);
+                            }
+                        }
+                    } catch (NoSuchFieldException e) {
+                        // このフィールド名は存在しない、次を試す
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // リフレクションが失敗しても問題ない
+        }
+        
+        return null;
     }
     
     private void interceptProjectile(Projectile projectile) {

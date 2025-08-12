@@ -1,0 +1,32 @@
+TaCZ Mod セットアップ手順
+========================
+
+1. TaCZ modのダウンロード:
+   - CurseForgeから「[TaCZ] Timeless and Classics Zero」を検索
+   - バージョン: tacz-1.19.2-1.1.4-hotfix-release.jar
+   - URL: https://www.curseforge.com/minecraft/mc-mods/timeless-and-classics-zero/files
+
+2. ファイルの配置:
+   ダウンロードしたjarファイルを以下のディレクトリに配置してください:
+   /mnt/c/Users/hrmcn/MCreatorWorkspaces/minecraft_armor_weapon/compile-mods-1.19.2/
+
+   ファイル名は以下の形式にリネームしてください:
+   tacz-1.1.4.jar
+
+3. 依存関係（オプション）:
+   以下のmodも同様にダウンロードして配置することを推奨:
+   - Player Animator mod (3rd person animationsの改善用)
+   - Cloth Config API
+
+4. テストプレイの実行:
+   すべてのファイルを配置後、以下のコマンドを実行:
+   gradlew.bat runClient
+
+5. ゲーム内でのTaCZ設定:
+   - Gun packsは .minecraft/config/tacz/custom/ または .minecraft/tacz/ に配置
+   - zipファイルのまま配置（解凍不要）
+   - うまく動作しない場合は /tacz reload または /reload コマンドを実行
+
+注意事項:
+- FlyingAttackerEntityはTaCZの弾丸を検知するためにリフレクションを使用しています
+- TaCZが導入されていない場合でも、エラーなく動作します
