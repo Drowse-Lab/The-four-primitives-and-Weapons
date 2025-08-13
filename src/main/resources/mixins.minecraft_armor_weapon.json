@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "minecraftarmorweapon.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "minecraft_armor_weapon.refmap.json",
+  "mixins": [
+    "DifficultyMixin",
+    "DifficultyCommandMixin",
+    "ServerLevelMixin",
+    "LivingEntityMixin"
+  ],
+  "client": [
+    "OptionsMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
