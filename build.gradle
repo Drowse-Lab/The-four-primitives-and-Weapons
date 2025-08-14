@@ -28,6 +28,11 @@ minecraft {
 
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+            
+            // Mixin設定
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            arg "-mixin.config=mixins.minecraft_armor_weapon.json"
 
             mods {
                 examplemod {
@@ -41,6 +46,11 @@ minecraft {
 
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+            
+            // Mixin設定
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            arg "-mixin.config=mixins.minecraft_armor_weapon.json"
 
             mods {
                 examplemod {
@@ -53,6 +63,9 @@ minecraft {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.19.2-43.2.0' // Ensure the Forge version matches your mappings
+    
+    // Mixin
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
 tasks.withType(JavaCompile).configureEach {

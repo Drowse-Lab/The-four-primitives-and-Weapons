@@ -15,6 +15,7 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.LivingEntity;
@@ -50,6 +51,7 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.nbt.CompoundTag;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.HashSet;
 import java.util.Set;
@@ -1172,8 +1174,26 @@ public class FlyingAttackerEntity extends Monster {
                 this.getPersistentData().putBoolean("minecraft_armor_weapon:killentity", true);
             }
             
-            // 剣の基本ダメージ
-            if (displayItem.getItem() instanceof SwordItem) {
+            // アイテムの攻撃ダメージ属性から基本ダメージを取得
+            // これによりカスタム武器の攻撃力も正しく取得できる
+            Collection<AttributeModifier> damageModifiers = displayItem.getAttributeModifiers(EquipmentSlot.MAINHAND)
+                .get(Attributes.ATTACK_DAMAGE);
+            
+            if (!damageModifiers.isEmpty()) {
+                // 基本値（1.0）を含めて攻撃力を計算
+                double totalDamage = 1.0; // プレイヤーの素手攻撃力
+                for (AttributeModifier modifier : damageModifiers) {
+                    if (modifier.getOperation() == AttributeModifier.Operation.ADDITION) {
+                        totalDamage += modifier.getAmount();
+                    } else if (modifier.getOperation() == AttributeModifier.Operation.MULTIPLY_BASE) {
+                        totalDamage *= (1 + modifier.getAmount());
+                    } else if (modifier.getOperation() == AttributeModifier.Operation.MULTIPLY_TOTAL) {
+                        totalDamage *= (1 + modifier.getAmount());
+                    }
+                }
+                baseDamage = (float)totalDamage + 4.0F; // FlyingAttackerのボーナスダメージ
+            } else if (displayItem.getItem() instanceof SwordItem) {
+                // フォールバック: SwordItemの場合は直接取得
                 SwordItem sword = (SwordItem) displayItem.getItem();
                 baseDamage = sword.getDamage() + 4.0F;
             }
