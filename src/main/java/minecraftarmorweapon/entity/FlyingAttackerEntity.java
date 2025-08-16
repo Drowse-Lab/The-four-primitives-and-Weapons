@@ -164,6 +164,10 @@ public class FlyingAttackerEntity extends Monster {
             LivingEntity.class,
             true,
             entity -> {
+                // nullチェック
+                if (entity == null) {
+                    return false;
+                }
                 // FlyingAttackerEntity同士は攻撃しない
                 if (entity instanceof FlyingAttackerEntity) {
                     return false;
@@ -186,16 +190,20 @@ public class FlyingAttackerEntity extends Monster {
             LivingEntity.class,
             true,
             entity -> {
+                // nullチェック
+                if (entity == null) {
+                    return false;
+                }
                 // FlyingAttackerEntity同士は攻撃しない
                 if (entity instanceof FlyingAttackerEntity) {
                     return false;
                 }
                 // UUIDで指定されたターゲットがいる場合は、そのターゲットのみを攻撃
-                if (this.targetUUID != null) {
+                if (this.targetUUID != null && entity.getUUID() != null) {
                     return entity.getUUID().equals(this.targetUUID) && entity.isAlive();
                 }
                 // 指定されたターゲットがいない場合は、召喚者以外を攻撃
-                if (this.ownerUUID != null) {
+                if (this.ownerUUID != null && entity.getUUID() != null) {
                     return !entity.getUUID().equals(this.ownerUUID) && entity.isAlive();
                 }
                 return entity != this.getOwner() && entity.isAlive();
@@ -536,10 +544,12 @@ public class FlyingAttackerEntity extends Monster {
                              (e instanceof Monster || (this.owner instanceof Player && e instanceof Player && e != this.owner))
                     );
                     
-                    if (!nearbyEntities.isEmpty()) {
+                    if (nearbyEntities != null && !nearbyEntities.isEmpty()) {
                         target = nearbyEntities.get(0);
-                        this.setTarget(target);
-                        this.targetUUID = target.getUUID();
+                        if (target != null) {
+                            this.setTarget(target);
+                            this.targetUUID = target.getUUID();
+                        }
                     }
                 }
             }
@@ -628,8 +638,13 @@ public class FlyingAttackerEntity extends Monster {
         List<Entity> nearbyEntities = this.level.getEntities(this, 
             this.getBoundingBox().inflate(detectionRange));
         
+        // nullチェックを追加
+        if (nearbyEntities == null) {
+            return;
+        }
+        
         // 古い発射体のIDをクリーンアップ（既に存在しないエンティティのIDを削除）
-        deflectedProjectiles.removeIf(id -> nearbyEntities.stream().noneMatch(e -> e.getId() == id));
+        deflectedProjectiles.removeIf(id -> nearbyEntities.stream().noneMatch(e -> e != null && e.getId() == id));
         
         for (Entity entity : nearbyEntities) {
             // 既に弾いた発射体はスキップ
@@ -1179,7 +1194,7 @@ public class FlyingAttackerEntity extends Monster {
             Collection<AttributeModifier> damageModifiers = displayItem.getAttributeModifiers(EquipmentSlot.MAINHAND)
                 .get(Attributes.ATTACK_DAMAGE);
             
-            if (!damageModifiers.isEmpty()) {
+            if (damageModifiers != null && !damageModifiers.isEmpty()) {
                 // 基本値（1.0）を含めて攻撃力を計算
                 double totalDamage = 1.0; // プレイヤーの素手攻撃力
                 for (AttributeModifier modifier : damageModifiers) {
@@ -1255,12 +1270,15 @@ public class FlyingAttackerEntity extends Monster {
                     float sweepRatio = sweepingLevel / 3.0F; // レベル1=33%, レベル2=66%, レベル3=100%
                     float sweepDamage = 1.0F + sweepRatio * baseDamage;
                     // 周囲の敵にダメージ
-                    for (LivingEntity nearbyEntity : this.level.getEntitiesOfClass(LivingEntity.class, 
-                            target.getBoundingBox().inflate(1.0D, 0.25D, 1.0D))) {
-                        if (nearbyEntity != target && nearbyEntity != this && nearbyEntity != this.owner 
-                                && !this.isAlliedTo(nearbyEntity) && this.distanceToSqr(nearbyEntity) < 9.0D) {
-                            nearbyEntity.knockback(0.4F, this.getX() - nearbyEntity.getX(), this.getZ() - nearbyEntity.getZ());
-                            nearbyEntity.hurt(damageSource, sweepDamage);
+                    List<LivingEntity> nearbyTargets = this.level.getEntitiesOfClass(LivingEntity.class, 
+                            target.getBoundingBox().inflate(1.0D, 0.25D, 1.0D));
+                    if (nearbyTargets != null) {
+                        for (LivingEntity nearbyEntity : nearbyTargets) {
+                            if (nearbyEntity != null && nearbyEntity != target && nearbyEntity != this && nearbyEntity != this.owner 
+                                    && !this.isAlliedTo(nearbyEntity) && this.distanceToSqr(nearbyEntity) < 9.0D) {
+                                nearbyEntity.knockback(0.4F, this.getX() - nearbyEntity.getX(), this.getZ() - nearbyEntity.getZ());
+                                nearbyEntity.hurt(damageSource, sweepDamage);
+                            }
                         }
                     }
                     // スイープエフェクト
