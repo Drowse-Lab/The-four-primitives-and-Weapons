@@ -21,6 +21,9 @@ https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons
 
 ## [chuzume](https://github.com/Chuzume)さんのを参考にしたり
 ### replica sword of light
-https://youtu.be/nA6a7O3jBJo?si=NzeW23jMIkDXOmv3
+https://youtu.be/nA6a7O3jBJo?si=NzeW23jMIkDXOmv3  
 ### sword of night
-https://youtu.be/i-ItAsrIK7U?si=f5FXomJLYBK7GmQ9
+https://youtu.be/i-ItAsrIK7U?si=f5FXomJLYBK7GmQ9  
+### True-Crafter
+https://github.com/Chuzume/True-Crafter-Mode  
+https://youtu.be/7oI4bwtSQUQ  
