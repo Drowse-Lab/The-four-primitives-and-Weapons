@@ -1,0 +1,177 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "item/handheld",
+	"textures": {
+		"layer0": "minecraft_armor_weapon:item/katana_sheath_empty",
+		"particle": "minecraft_armor_weapon:item/katana_sheath_empty"
+	},
+	"elements": [
+		{
+			"from": [8, 18, 9.525],
+			"to": [8.8, 19.3, 10.375],
+			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 16.4, 4.2]},
+			"faces": {
+				"north": {"uv": [5, 3, 5.75, 4.75], "texture": "#layer0"},
+				"east": {"uv": [4, 5, 4.75, 6.75], "texture": "#layer0"},
+				"south": {"uv": [5, 5, 5.75, 6.75], "texture": "#layer0"},
+				"west": {"uv": [6, 0, 6.75, 1.75], "texture": "#layer0"},
+				"up": {"uv": [8.75, 8.75, 8, 8], "texture": "#layer0"},
+				"down": {"uv": [0.75, 9, 0, 9.75], "texture": "#layer0"}
+			}
+		},
+		{
+			"from": [8, 13, 8.775],
+			"to": [8.8, 16, 9.725],
+			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 11.4, 3.45]},
+			"faces": {
+				"north": {"uv": [5, 3, 5.75, 4.75], "texture": "#layer0"},
+				"east": {"uv": [4, 5, 4.75, 6.75], "texture": "#layer0"},
+				"south": {"uv": [5, 5, 5.75, 6.75], "texture": "#layer0"},
+				"west": {"uv": [6, 0, 6.75, 1.75], "texture": "#layer0"},
+				"up": {"uv": [8.75, 8.75, 8, 8], "texture": "#layer0"},
+				"down": {"uv": [0.75, 9, 0, 9.75], "texture": "#layer0"}
+			}
+		},
+		{
+			"from": [8, 16, 9.025],
+			"to": [8.8, 17, 9.975],
+			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 14.4, 3.7]},
+			"faces": {
+				"north": {"uv": [5, 3, 5.75, 4.75], "texture": "#layer0"},
+				"east": {"uv": [4, 5, 4.75, 6.75], "texture": "#layer0"},
+				"south": {"uv": [5, 5, 5.75, 6.75], "texture": "#layer0"},
+				"west": {"uv": [6, 0, 6.75, 1.75], "texture": "#layer0"},
+				"up": {"uv": [8.75, 8.75, 8, 8], "texture": "#layer0"},
+				"down": {"uv": [0.75, 9, 0, 9.75], "texture": "#layer0"}
+			}
+		},
+		{
+			"from": [8, 8, 8.6],
+			"to": [8.8, 13, 9.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 8.4, 3.2]},
+			"faces": {
+				"north": {"uv": [5, 3, 5.75, 4.75], "texture": "#layer0"},
+				"east": {"uv": [4, 5, 4.75, 6.75], "texture": "#layer0"},
+				"south": {"uv": [5, 5, 5.75, 6.75], "texture": "#layer0"},
+				"west": {"uv": [6, 0, 6.75, 1.75], "texture": "#layer0"},
+				"up": {"uv": [8.75, 8.75, 8, 8], "texture": "#layer0"},
+				"down": {"uv": [0.75, 9, 0, 9.75], "texture": "#layer0"}
+			}
+		},
+		{
+			"from": [8, 17, 9.225],
+			"to": [8.8, 18, 10.175],
+			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 15.4, 3.9]},
+			"faces": {
+				"north": {"uv": [5, 3, 5.75, 4.75], "texture": "#layer0"},
+				"east": {"uv": [4, 5, 4.75, 6.75], "texture": "#layer0"},
+				"south": {"uv": [5, 5, 5.75, 6.75], "texture": "#layer0"},
+				"west": {"uv": [6, 0, 6.75, 1.75], "texture": "#layer0"},
+				"up": {"uv": [8.75, 8.75, 8, 8], "texture": "#layer0"},
+				"down": {"uv": [0.75, 9, 0, 9.75], "texture": "#layer0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [180, 0, 0],
+			"translation": [0, 0.75, 2],
+			"scale": [1, 1.5, 1]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [180, 0, 0],
+			"translation": [0, 0.75, 2],
+			"scale": [1, 1.5, 1]
+		},
+		"firstperson_righthand": {
+			"rotation": [125, 0, 0],
+			"translation": [-2.25, 4.75, 5.5],
+			"scale": [1, 1.2, 1]
+		},
+		"firstperson_lefthand": {
+			"rotation": [125, 0, 0],
+			"translation": [-3.5, 5, 6],
+			"scale": [1, 1.2, 1]
+		},
+		"ground": {
+			"rotation": [180, 0, 0],
+			"translation": [0, 3.5, 1],
+			"scale": [1, 1.5, 1]
+		},
+		"gui": {
+			"rotation": [-90, 138, -90],
+			"translation": [2.5, 4.5, 0],
+			"scale": [1, 1.3, 1]
+		},
+		"head": {
+			"rotation": [90, 40, 90],
+			"translation": [3, 5.75, 6.5],
+			"scale": [1, 1.5, 1]
+		},
+		"fixed": {
+			"rotation": [-90, -138, 90],
+			"translation": [-3.25, 6, 0],
+			"scale": [1.4, 1.65, 1.4]
+		}
+	},
+	"groups": [
+		{
+			"name": "saya",
+			"origin": [8, 8, 8],
+			"color": 0,
+			"children": [
+				{
+					"name": "blade_sheath",
+					"origin": [8, 8, 8],
+					"color": 0,
+					"children": [0, 1, 2, 3, 4]
+				}
+			]
+		}
+	],
+	"overrides": [
+		{
+			"predicate": {
+				"custom_model_data": 1
+			},
+			"model": "minecraft_armor_weapon:item/katana_sheath_empty_iron"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 2
+			},
+			"model": "minecraft_armor_weapon:item/katana_sheath_empty_gold"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 3
+			},
+			"model": "minecraft_armor_weapon:item/katana_sheath_empty_stone"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 4
+			},
+			"model": "minecraft_armor_weapon:item/katana_sheath_empty_netherite"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 5
+			},
+			"model": "minecraft_armor_weapon:item/katana_sheath_empty_wither"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 6
+			},
+			"model": "minecraft_armor_weapon:item/katana_sheath_empty_darkness"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 7
+			},
+			"model": "minecraft_armor_weapon:item/katana_sheath_empty_magical"
+		}
+	]
+}

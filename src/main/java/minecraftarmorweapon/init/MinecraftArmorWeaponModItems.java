@@ -37,6 +37,7 @@ import minecraftarmorweapon.item.StoneKatanaItem;
 import minecraftarmorweapon.item.SmallSwordItem;
 import minecraftarmorweapon.item.SkinOfDragonItem;
 import minecraftarmorweapon.item.ScytheItem;
+import minecraftarmorweapon.item.SayaItem;
 import minecraftarmorweapon.item.RpgBookItem;
 import minecraftarmorweapon.item.RiversOfBloodItem;
 import minecraftarmorweapon.item.ResetMaxItem;
@@ -263,6 +264,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> REISAME_284_SPAWN_EGG = REGISTRY.register("reisame_284_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.REISAME_284, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 	public static final RegistryObject<Item> FLYING_ATTACKER_SPAWN_EGG = REGISTRY.register("flying_attacker_spawn_egg",
 			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.FLYING_ATTACKER, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+	public static final RegistryObject<Item> SAYA = REGISTRY.register("saya", () -> new SayaItem());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, CreativeModeTab tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));

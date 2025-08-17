@@ -12,9 +12,17 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.monster.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.DyeableLeatherItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.ArmorMaterials;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -26,6 +34,9 @@ import minecraftarmorweapon.command.CustomDifficultyCommand;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * 安全なTrue Crafter Mode実装
@@ -46,6 +57,245 @@ public class SafeTrueCrafterAI {
         ItemStack meleeWeapon = ItemStack.EMPTY;
         ItemStack rangedWeapon = ItemStack.EMPTY;
         long lastUpdateTick = 0;
+    }
+    
+    // 革防具に色を付けるヘルパーメソッド
+    private static ItemStack createColoredLeatherArmor(ItemStack armorItem, int color) {
+        if (armorItem.getItem() instanceof DyeableLeatherItem) {
+            ((DyeableLeatherItem) armorItem.getItem()).setColor(armorItem, color);
+        }
+        return armorItem;
+    }
+    
+    // ランダムな防具を取得（MOD装備含む）
+    private static ItemStack getRandomArmor(RandomSource random, EquipmentSlot slot, int tier) {
+        List<Item> availableArmors = new ArrayList<>();
+        
+        // バニラ防具を追加
+        if (slot == EquipmentSlot.HEAD) {
+            availableArmors.addAll(Arrays.asList(
+                Items.LEATHER_HELMET, Items.GOLDEN_HELMET, 
+                Items.CHAINMAIL_HELMET, Items.IRON_HELMET,
+                Items.DIAMOND_HELMET, Items.NETHERITE_HELMET,
+                Items.TURTLE_HELMET
+            ));
+        } else if (slot == EquipmentSlot.CHEST) {
+            availableArmors.addAll(Arrays.asList(
+                Items.LEATHER_CHESTPLATE, Items.GOLDEN_CHESTPLATE,
+                Items.CHAINMAIL_CHESTPLATE, Items.IRON_CHESTPLATE,
+                Items.DIAMOND_CHESTPLATE, Items.NETHERITE_CHESTPLATE
+            ));
+        } else if (slot == EquipmentSlot.LEGS) {
+            availableArmors.addAll(Arrays.asList(
+                Items.LEATHER_LEGGINGS, Items.GOLDEN_LEGGINGS,
+                Items.CHAINMAIL_LEGGINGS, Items.IRON_LEGGINGS,
+                Items.DIAMOND_LEGGINGS, Items.NETHERITE_LEGGINGS
+            ));
+        } else if (slot == EquipmentSlot.FEET) {
+            availableArmors.addAll(Arrays.asList(
+                Items.LEATHER_BOOTS, Items.GOLDEN_BOOTS,
+                Items.CHAINMAIL_BOOTS, Items.IRON_BOOTS,
+                Items.DIAMOND_BOOTS, Items.NETHERITE_BOOTS
+            ));
+        }
+        
+        // MOD防具を検索して追加
+        for (Item item : ForgeRegistries.ITEMS) {
+            if (item instanceof ArmorItem) {
+                ArmorItem armor = (ArmorItem) item;
+                if (armor.getSlot() == slot) {
+                    // minecraft_armor_weapon MODの装備を優先的に追加
+                    var registryName = ForgeRegistries.ITEMS.getKey(item);
+                    if (registryName != null && 
+                        registryName.getNamespace().equals("minecraft_armor_weapon")) {
+                        availableArmors.add(item);
+                    }
+                    // 他のMODの装備も低確率で追加
+                    else if (registryName != null && 
+                             !registryName.getNamespace().equals("minecraft") && 
+                             random.nextFloat() < 0.3f) {
+                        availableArmors.add(item);
+                    }
+                }
+            }
+        }
+        
+        // ティアに応じてフィルタリング
+        List<Item> filteredArmors = new ArrayList<>();
+        for (Item item : availableArmors) {
+            if (item instanceof ArmorItem) {
+                ArmorItem armor = (ArmorItem) item;
+                // ティア0: 革、金、チェインメイル
+                if (tier == 0) {
+                    if (armor.getMaterial() == ArmorMaterials.LEATHER ||
+                        armor.getMaterial() == ArmorMaterials.GOLD ||
+                        armor.getMaterial() == ArmorMaterials.CHAIN ||
+                        (random.nextFloat() < 0.1f)) { // 10%で他の素材も
+                        filteredArmors.add(item);
+                    }
+                }
+                // ティア1: チェインメイル、鉄、金
+                else if (tier == 1) {
+                    if (armor.getMaterial() == ArmorMaterials.CHAIN ||
+                        armor.getMaterial() == ArmorMaterials.IRON ||
+                        armor.getMaterial() == ArmorMaterials.GOLD ||
+                        (random.nextFloat() < 0.2f)) { // 20%で他の素材も
+                        filteredArmors.add(item);
+                    }
+                }
+                // ティア2: 鉄、ダイヤ、ネザライト、MOD装備
+                else {
+                    if (armor.getMaterial() == ArmorMaterials.IRON ||
+                        armor.getMaterial() == ArmorMaterials.DIAMOND ||
+                        armor.getMaterial() == ArmorMaterials.NETHERITE) {
+                        filteredArmors.add(item);
+                    } else {
+                        // MOD装備もティア2に追加
+                        var registryName = ForgeRegistries.ITEMS.getKey(item);
+                        if (registryName != null && !registryName.getNamespace().equals("minecraft")) {
+                            filteredArmors.add(item);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // ランダムに選択
+        if (!filteredArmors.isEmpty()) {
+            Item selectedArmor = filteredArmors.get(random.nextInt(filteredArmors.size()));
+            return new ItemStack(selectedArmor);
+        }
+        
+        // デフォルト
+        return ItemStack.EMPTY;
+    }
+    
+    // ランダムな武器を取得（MOD武器含む）
+    private static ItemStack getRandomWeapon(RandomSource random, int tier, boolean preferAxe) {
+        List<Item> availableWeapons = new ArrayList<>();
+        
+        // バニラ武器を追加
+        availableWeapons.addAll(Arrays.asList(
+            Items.WOODEN_SWORD, Items.STONE_SWORD, Items.GOLDEN_SWORD,
+            Items.IRON_SWORD, Items.DIAMOND_SWORD, Items.NETHERITE_SWORD,
+            Items.WOODEN_AXE, Items.STONE_AXE, Items.GOLDEN_AXE,
+            Items.IRON_AXE, Items.DIAMOND_AXE, Items.NETHERITE_AXE,
+            Items.TRIDENT
+        ));
+        
+        // MOD武器を検索して追加
+        for (Item item : ForgeRegistries.ITEMS) {
+            if (item instanceof SwordItem || item instanceof AxeItem) {
+                // minecraft_armor_weapon MODの武器を優先的に追加
+                var registryName = ForgeRegistries.ITEMS.getKey(item);
+                if (registryName != null && 
+                    registryName.getNamespace().equals("minecraft_armor_weapon")) {
+                    availableWeapons.add(item);
+                }
+                // 他のMODの武器も低確率で追加
+                else if (registryName != null && 
+                         !registryName.getNamespace().equals("minecraft") && 
+                         random.nextFloat() < 0.2f) {
+                    availableWeapons.add(item);
+                }
+            }
+        }
+        
+        // ティアに応じてフィルタリング
+        List<Item> filteredWeapons = new ArrayList<>();
+        for (Item item : availableWeapons) {
+            boolean shouldAdd = false;
+            
+            // ティア0: 木、石、金
+            if (tier == 0) {
+                if (item == Items.WOODEN_SWORD || item == Items.WOODEN_AXE ||
+                    item == Items.STONE_SWORD || item == Items.STONE_AXE ||
+                    item == Items.GOLDEN_SWORD || item == Items.GOLDEN_AXE) {
+                    shouldAdd = true;
+                }
+            }
+            // ティア1: 石、鉄、金
+            else if (tier == 1) {
+                if (item == Items.STONE_SWORD || item == Items.STONE_AXE ||
+                    item == Items.IRON_SWORD || item == Items.IRON_AXE ||
+                    item == Items.GOLDEN_SWORD || item == Items.GOLDEN_AXE) {
+                    shouldAdd = true;
+                }
+            }
+            // ティア2: 鉄、ダイヤ、ネザライト、MOD武器
+            else {
+                if (item == Items.IRON_SWORD || item == Items.IRON_AXE ||
+                    item == Items.DIAMOND_SWORD || item == Items.DIAMOND_AXE ||
+                    item == Items.NETHERITE_SWORD || item == Items.NETHERITE_AXE ||
+                    item == Items.TRIDENT) {
+                    shouldAdd = true;
+                } else {
+                    // MOD武器もティア2に追加
+                    var registryName = ForgeRegistries.ITEMS.getKey(item);
+                    if (registryName != null && !registryName.getNamespace().equals("minecraft")) {
+                        shouldAdd = true;
+                    }
+                }
+            }
+            
+            // 斧優先の場合
+            if (shouldAdd) {
+                if (preferAxe && item instanceof AxeItem) {
+                    filteredWeapons.add(item);
+                } else if (!preferAxe && item instanceof SwordItem) {
+                    filteredWeapons.add(item);
+                } else if (random.nextFloat() < 0.3f) {
+                    filteredWeapons.add(item);
+                }
+            }
+        }
+        
+        // ランダムに選択
+        if (!filteredWeapons.isEmpty()) {
+            Item selectedWeapon = filteredWeapons.get(random.nextInt(filteredWeapons.size()));
+            return new ItemStack(selectedWeapon);
+        }
+        
+        // デフォルト
+        return new ItemStack(tier == 0 ? Items.WOODEN_SWORD : (tier == 1 ? Items.IRON_SWORD : Items.DIAMOND_SWORD));
+    }
+    
+    // ランダムな色を生成（ティアに応じた色の傾向）
+    private static int getRandomArmorColor(RandomSource random, int tier) {
+        if (tier == 0) {
+            // 通常: 茶色・グレー系
+            int[] colors = {
+                0x8B4513, // サドルブラウン
+                0x696969, // ディムグレー
+                0x654321, // ダークブラウン
+                0x808080, // グレー
+                0x5C4033, // ダークチョコレート
+                0x704214  // セピア
+            };
+            return colors[random.nextInt(colors.length)];
+        } else if (tier == 1) {
+            // 精鋭: 赤・青系
+            int[] colors = {
+                0x8B0000, // ダークレッド
+                0x4B0082, // インディゴ
+                0x191970, // ミッドナイトブルー
+                0x800020, // バーガンディ
+                0x483D8B, // ダークスレートブルー
+                0x2F4F4F  // ダークスレートグレー
+            };
+            return colors[random.nextInt(colors.length)];
+        } else {
+            // チャンピオン: 黒・紫・金系
+            int[] colors = {
+                0x1C1C1C, // 濃い黒
+                0x4B0082, // インディゴ
+                0x6A0DAD, // パープル
+                0x301934, // ダークパープル
+                0xB8860B, // ダークゴールデンロッド
+                0x8B008B  // ダークマゼンタ
+            };
+            return colors[random.nextInt(colors.length)];
+        }
     }
     
     @SubscribeEvent
@@ -98,7 +348,7 @@ public class SafeTrueCrafterAI {
     }
     
     private static void enhanceSkeleton(Skeleton skeleton) {
-        java.util.Random random = skeleton.getRandom();
+        RandomSource random = skeleton.getRandom();
         
         // ティアシステム（0: 通常, 1: 精鋭, 2: チャンピオン）
         int tier = random.nextFloat() < 0.7f ? 0 : (random.nextFloat() < 0.8f ? 1 : 2);
@@ -130,14 +380,20 @@ public class SafeTrueCrafterAI {
         skeleton.setItemSlot(EquipmentSlot.MAINHAND, bow);
         
         // 防具の設定（ランダム）
+        int armorColor = getRandomArmorColor(random, tier);
         if (tier == 0) {
             // 通常: 軽装
             if (random.nextFloat() < 0.6f) {
-                ItemStack helmet = new ItemStack(random.nextBoolean() ? Items.LEATHER_HELMET : Items.CHAINMAIL_HELMET);
-                skeleton.setItemSlot(EquipmentSlot.HEAD, helmet);
+                if (random.nextBoolean()) {
+                    ItemStack helmet = createColoredLeatherArmor(new ItemStack(Items.LEATHER_HELMET), armorColor);
+                    skeleton.setItemSlot(EquipmentSlot.HEAD, helmet);
+                } else {
+                    skeleton.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.CHAINMAIL_HELMET));
+                }
             }
             if (random.nextFloat() < 0.3f) {
-                skeleton.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.LEATHER_CHESTPLATE));
+                ItemStack chestplate = createColoredLeatherArmor(new ItemStack(Items.LEATHER_CHESTPLATE), armorColor);
+                skeleton.setItemSlot(EquipmentSlot.CHEST, chestplate);
             }
         } else if (tier == 1) {
             // 精鋭: 中装
@@ -222,41 +478,65 @@ public class SafeTrueCrafterAI {
     }
     
     private static void enhanceZombie(Zombie zombie) {
-        java.util.Random random = zombie.getRandom();
+        RandomSource random = zombie.getRandom();
         
         // ティアシステム（0: 通常, 1: 戦士, 2: バーサーカー）
         int tier = random.nextFloat() < 0.6f ? 0 : (random.nextFloat() < 0.75f ? 1 : 2);
         
         // 防具の設定（ティアとランダム性）
+        int armorColor = getRandomArmorColor(random, tier);
         if (tier == 0) {
             // 通常ゾンビ: 部分的な装備
             if (random.nextFloat() < 0.7f) {
-                zombie.setItemSlot(EquipmentSlot.HEAD, new ItemStack(
-                    random.nextBoolean() ? Items.LEATHER_HELMET : Items.CHAINMAIL_HELMET
-                ));
+                if (random.nextBoolean()) {
+                    ItemStack helmet = createColoredLeatherArmor(new ItemStack(Items.LEATHER_HELMET), armorColor);
+                    zombie.setItemSlot(EquipmentSlot.HEAD, helmet);
+                } else {
+                    zombie.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.CHAINMAIL_HELMET));
+                }
             }
             if (random.nextFloat() < 0.5f) {
-                zombie.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.LEATHER_CHESTPLATE));
+                ItemStack chestplate = createColoredLeatherArmor(new ItemStack(Items.LEATHER_CHESTPLATE), armorColor);
+                zombie.setItemSlot(EquipmentSlot.CHEST, chestplate);
             }
             if (random.nextFloat() < 0.3f) {
-                zombie.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.LEATHER_LEGGINGS));
+                ItemStack leggings = createColoredLeatherArmor(new ItemStack(Items.LEATHER_LEGGINGS), armorColor);
+                zombie.setItemSlot(EquipmentSlot.LEGS, leggings);
             }
             if (random.nextFloat() < 0.4f) {
-                zombie.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.LEATHER_BOOTS));
+                ItemStack boots = createColoredLeatherArmor(new ItemStack(Items.LEATHER_BOOTS), armorColor);
+                zombie.setItemSlot(EquipmentSlot.FEET, boots);
             }
         } else if (tier == 1) {
-            // 戦士ゾンビ: チェインメイル主体
+            // 戦士ゾンビ: チェインメイル主体（一部染色革）
             zombie.setItemSlot(EquipmentSlot.HEAD, new ItemStack(
                 random.nextFloat() < 0.3f ? Items.IRON_HELMET : Items.CHAINMAIL_HELMET
             ));
-            zombie.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.CHAINMAIL_CHESTPLATE));
+            // 胸部は革とチェインメイルの混合
+            if (random.nextFloat() < 0.8f) {
+                if (random.nextFloat() < 0.2f) {
+                    // 20%の確率で染色革
+                    ItemStack chestplate = createColoredLeatherArmor(new ItemStack(Items.LEATHER_CHESTPLATE), armorColor);
+                    chestplate.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1);
+                    zombie.setItemSlot(EquipmentSlot.CHEST, chestplate);
+                } else {
+                    zombie.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.CHAINMAIL_CHESTPLATE));
+                }
+            }
             if (random.nextFloat() < 0.7f) {
                 zombie.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.CHAINMAIL_LEGGINGS));
             }
             if (random.nextFloat() < 0.6f) {
-                zombie.setItemSlot(EquipmentSlot.FEET, new ItemStack(
-                    random.nextBoolean() ? Items.CHAINMAIL_BOOTS : Items.IRON_BOOTS
-                ));
+                if (random.nextFloat() < 0.15f) {
+                    // 15%の確率で染色革ブーツ
+                    ItemStack boots = createColoredLeatherArmor(new ItemStack(Items.LEATHER_BOOTS), armorColor);
+                    boots.enchant(Enchantments.FALL_PROTECTION, 2);
+                    zombie.setItemSlot(EquipmentSlot.FEET, boots);
+                } else {
+                    zombie.setItemSlot(EquipmentSlot.FEET, new ItemStack(
+                        random.nextBoolean() ? Items.CHAINMAIL_BOOTS : Items.IRON_BOOTS
+                    ));
+                }
             }
         } else {
             // バーサーカーゾンビ: フル鉄装備

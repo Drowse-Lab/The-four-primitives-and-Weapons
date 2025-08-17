@@ -9700,6 +9700,36 @@
           "src/main/resources/assets/minecraft_armor_weapon/models/item/flying_attacker_spawn_egg.json"
         ]
       }
+    },
+    {
+      "name": "Saya",
+      "type": "item",
+      "sortid": 632,
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "saya",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/minecraft_armor_weapon/models/item/saya.json",
+          "src/main/java/minecraftarmorweapon/item/SayaItem.java"
+        ]
+      },
+      "path": "~/saya"
+    },
+    {
+      "name": "SayaRightclicked",
+      "type": "procedure",
+      "sortid": 633,
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "saya_rightclicked",
+      "metadata": {
+        "files": [
+          "src/main/java/minecraftarmorweapon/procedures/SayaRightclickedProcedure.java"
+        ],
+        "dependencies": []
+      },
+      "path": "~/saya"
     }
   ],
   "variable_elements": [
@@ -10119,6 +10149,7 @@
       "entity.minecraft_armor_weapon.alchemy_craft_block_entity": "Alchemy Craft Block Entity",
       "effect.minecraft_armor_weapon.test_bow_kill_effect": "test bow",
       "item.minecraft_armor_weapon.flying_attacker_spawn_egg": "Flying Attacker Spawn Egg",
+      "item.minecraft_armor_weapon.saya": "Saya",
       "gamerule.questTimeDuration": "Quest Time Duration",
       "advancements.you_have_become_a_vampire.title": "You have become a vampire.",
       "item.minecraft_armor_weapon.nigu_shield": "Nigu Shield",
@@ -10397,6 +10428,7 @@
       "entity.minecraft_armor_weapon.alchemy_craft_block_entity": "Alchemy Craft Block Entity",
       "effect.minecraft_armor_weapon.test_bow_kill_effect": "test bow",
       "item.minecraft_armor_weapon.flying_attacker_spawn_egg": "Flying Attacker Spawn Egg",
+      "item.minecraft_armor_weapon.saya": "鞘",
       "gamerule.questTimeDuration": "Quest Time Duration",
       "advancements.you_have_become_a_vampire.title": "You have become a vampire.",
       "item.minecraft_armor_weapon.nigu_shield": "二グ盾",
