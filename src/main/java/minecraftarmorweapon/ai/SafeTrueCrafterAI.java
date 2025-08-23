@@ -783,8 +783,8 @@ public class SafeTrueCrafterAI {
             if (target != null) {
                 double distance = zombie.distanceToSqr(target);
                 
-                // ブロック設置処理
-                if (data.blockPlaceCooldown == 0) {
+                // ブロック設置処理（lunatic以上の難易度で有効）
+                if (data.blockPlaceCooldown == 0 && CustomDifficultyCommand.isTrueCrafterEnabled()) {
                     // ターゲットが高い位置にいる場合
                     if (target.getY() > zombie.getY() + 1.5) {
                         BlockPos zombiePos = zombie.blockPosition();
