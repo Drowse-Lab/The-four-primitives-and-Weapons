@@ -21,9 +21,9 @@ public class SayaRightclickedProcedure {
 			
 		CompoundTag tag = sheathStack.getOrCreateTag();
 		
-		// Shift + 右クリックで抜刀
+		// Shift + 右クリックで抜刀/納刀の切り替え
 		if (player.isShiftKeyDown()) {
-			// 鞘に刀が入っている場合
+			// 鞘に刀が入っている場合は抜刀
 			if (tag.contains("StoredKatana")) {
 				// 反対の手が空の場合のみ抜刀
 				InteractionHand otherHand = (hand == InteractionHand.MAIN_HAND) ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
@@ -43,29 +43,29 @@ public class SayaRightclickedProcedure {
 					sheathStack.setTag(tag);
 				}
 			}
-		}
-		// 通常の右クリックで納刀
-		else if (!tag.contains("StoredKatana")) {
-			// 反対の手から刀を取得
-			InteractionHand otherHand = (hand == InteractionHand.MAIN_HAND) ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
-			ItemStack katanaItem = player.getItemInHand(otherHand);
-			
-			// 反対の手に刀を持っている場合
-			if (isKatana(katanaItem)) {
-				// 刀の情報を鞘に保存
-				CompoundTag katanaTag = new CompoundTag();
-				katanaItem.save(katanaTag);
-				tag.put("StoredKatana", katanaTag);
+			// 鞘が空の場合は納刀
+			else {
+				// 反対の手から刀を取得
+				InteractionHand otherHand = (hand == InteractionHand.MAIN_HAND) ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+				ItemStack katanaItem = player.getItemInHand(otherHand);
 				
-				// カスタムモデルデータを設定（刀が入った鞘の見た目）
-				int modelData = getModelDataForKatana(katanaItem);
-				tag.putInt("CustomModelData", modelData);
-				
-				// タグを確実にItemStackに適用
-				sheathStack.setTag(tag);
-				
-				// 反対の手から刀を削除
-				player.setItemInHand(otherHand, ItemStack.EMPTY);
+				// 反対の手に刀を持っている場合
+				if (isKatana(katanaItem)) {
+					// 刀の情報を鞘に保存
+					CompoundTag katanaTag = new CompoundTag();
+					katanaItem.save(katanaTag);
+					tag.put("StoredKatana", katanaTag);
+					
+					// カスタムモデルデータを設定（刀が入った鞘の見た目）
+					int modelData = getModelDataForKatana(katanaItem);
+					tag.putInt("CustomModelData", modelData);
+					
+					// タグを確実にItemStackに適用
+					sheathStack.setTag(tag);
+					
+					// 反対の手から刀を削除
+					player.setItemInHand(otherHand, ItemStack.EMPTY);
+				}
 			}
 		}
 	}
