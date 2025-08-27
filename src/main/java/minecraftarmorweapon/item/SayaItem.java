@@ -26,7 +26,7 @@ public class SayaItem extends Item {
 		double y = entity.getY();
 		double z = entity.getZ();
 
-		SayaRightclickedProcedure.execute(world, entity);
+		SayaRightclickedProcedure.execute(world, entity, itemstack, hand);
 		return ar;
 	}
 }

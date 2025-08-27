@@ -7,7 +7,6 @@ buildscript {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
     }
 }
-
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 
@@ -69,7 +68,8 @@ dependencies {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use UTF-8 encoding for Java compilation
+    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
-apply from: 'mcreator.gradle' // Include mcreator-specific configurations
+apply from: 'mcreator.gradle'
+

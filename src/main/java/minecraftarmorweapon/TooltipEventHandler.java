@@ -14,6 +14,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -34,29 +35,37 @@ public class TooltipEventHandler {
 
         // Shiftを押しているときだけ表示
         if (Minecraft.getInstance().player != null && Screen.hasShiftDown()) {
-            if (stack.hasTag() && Minecraft.getInstance().options.advancedItemTooltips) {
-                CompoundTag tag = stack.getTag();
-                if (tag != null) {
-                    event.getToolTip().add(Component.literal("NBT Data:").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAAA))));
+            // F3+Hが有効な場合
+            if (Minecraft.getInstance().options.advancedItemTooltips) {
+                // アイテムIDを表示（/giveコマンド用）
+                String itemId = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
+                event.getToolTip().add(Component.literal("Item ID: " + itemId).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFFFF55))));
+                
+                // NBTデータがある場合は表示
+                if (stack.hasTag()) {
+                    CompoundTag tag = stack.getTag();
+                    if (tag != null) {
+                        event.getToolTip().add(Component.literal("NBT Data:").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAAA))));
 
-                    List<String> formattedNBT = formatNBT(tag, 0);
-                    int maxScroll = Math.max(0, formattedNBT.size() - MAX_LINES_BEFORE_SCROLL);
+                        List<String> formattedNBT = formatNBT(tag, 0);
+                        int maxScroll = Math.max(0, formattedNBT.size() - MAX_LINES_BEFORE_SCROLL);
 
-                    scrollIndex = Math.min(scrollIndex, maxScroll);
-                    scrollIndex = Math.max(scrollIndex, 0);
+                        scrollIndex = Math.min(scrollIndex, maxScroll);
+                        scrollIndex = Math.max(scrollIndex, 0);
 
-                    if (formattedNBT.size() > MAX_LINES_BEFORE_SCROLL) {
-                        event.getToolTip().add(
-                            Component.literal("(Scroll: Mouse Wheel)").setStyle(
-                                Style.EMPTY.withColor(TextColor.fromRgb(0x555555)).withItalic(true)
-                            )
-                        );
-                    }
+                        if (formattedNBT.size() > MAX_LINES_BEFORE_SCROLL) {
+                            event.getToolTip().add(
+                                Component.literal("(Scroll: Mouse Wheel)").setStyle(
+                                    Style.EMPTY.withColor(TextColor.fromRgb(0x555555)).withItalic(true)
+                                )
+                            );
+                        }
 
-                    for (int i = scrollIndex; i < Math.min(scrollIndex + MAX_LINES_BEFORE_SCROLL, formattedNBT.size()); i++) {
-                        event.getToolTip().add(
-                            Component.literal(formattedNBT.get(i)).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x555555)))
-                        );
+                        for (int i = scrollIndex; i < Math.min(scrollIndex + MAX_LINES_BEFORE_SCROLL, formattedNBT.size()); i++) {
+                            event.getToolTip().add(
+                                Component.literal(formattedNBT.get(i)).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x555555)))
+                            );
+                        }
                     }
                 }
             }

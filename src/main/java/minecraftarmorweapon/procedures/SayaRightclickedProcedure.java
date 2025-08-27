@@ -8,14 +8,12 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.nbt.CompoundTag;
 
 public class SayaRightclickedProcedure {
-	public static void execute(LevelAccessor world, Entity entity) {
-		if (entity == null)
+	public static void execute(LevelAccessor world, Entity entity, ItemStack sheathStack, InteractionHand hand) {
+		if (entity == null || sheathStack == null)
 			return;
 			
 		if (!(entity instanceof Player player))
 			return;
-			
-		ItemStack sheathStack = player.getItemInHand(InteractionHand.OFF_HAND);
 		
 		// 鞘を持っていない場合は処理しない
 		if (!isSaya(sheathStack))
@@ -23,52 +21,67 @@ public class SayaRightclickedProcedure {
 			
 		CompoundTag tag = sheathStack.getOrCreateTag();
 		
-		// Shift+右クリックで納刀
+		// Shift + 右クリックで抜刀
 		if (player.isShiftKeyDown()) {
-			ItemStack mainHandItem = player.getItemInHand(InteractionHand.MAIN_HAND);
-			
-			// 利き手に刀を持っていて、鞘が空の場合
-			if (isKatana(mainHandItem) && !tag.contains("StoredKatana")) {
-				// 刀の情報を鞘に保存
-				CompoundTag katanaTag = new CompoundTag();
-				mainHandItem.save(katanaTag);
-				tag.put("StoredKatana", katanaTag);
-				
-				// カスタムモデルデータを設定（刀が入った鞘の見た目）
-				int modelData = getModelDataForKatana(mainHandItem);
-				tag.putInt("CustomModelData", modelData);
-				
-				// 利き手から刀を削除
-				player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-			}
-		} 
-		// 通常の右クリックで抜刀
-		else {
 			// 鞘に刀が入っている場合
 			if (tag.contains("StoredKatana")) {
-				// 利き手が空の場合のみ抜刀
-				ItemStack mainHandItem = player.getItemInHand(InteractionHand.MAIN_HAND);
-				if (mainHandItem.isEmpty()) {
+				// 反対の手が空の場合のみ抜刀
+				InteractionHand otherHand = (hand == InteractionHand.MAIN_HAND) ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+				ItemStack otherHandItem = player.getItemInHand(otherHand);
+				if (otherHandItem.isEmpty()) {
 					// 保存された刀の情報から刀を生成
 					ItemStack katanaStack = ItemStack.of(tag.getCompound("StoredKatana"));
 					
-					// 利き手に刀を配置
-					player.setItemInHand(InteractionHand.MAIN_HAND, katanaStack);
+					// 反対の手に刀を配置
+					player.setItemInHand(otherHand, katanaStack);
 					
 					// 鞘から刀の情報を削除（空の鞘にする）
 					tag.remove("StoredKatana");
 					tag.putInt("CustomModelData", 0); // 空の鞘のモデル
+					
+					// タグを確実にItemStackに適用
+					sheathStack.setTag(tag);
 				}
+			}
+		}
+		// 通常の右クリックで納刀
+		else if (!tag.contains("StoredKatana")) {
+			// 反対の手から刀を取得
+			InteractionHand otherHand = (hand == InteractionHand.MAIN_HAND) ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+			ItemStack katanaItem = player.getItemInHand(otherHand);
+			
+			// 反対の手に刀を持っている場合
+			if (isKatana(katanaItem)) {
+				// 刀の情報を鞘に保存
+				CompoundTag katanaTag = new CompoundTag();
+				katanaItem.save(katanaTag);
+				tag.put("StoredKatana", katanaTag);
+				
+				// カスタムモデルデータを設定（刀が入った鞘の見た目）
+				int modelData = getModelDataForKatana(katanaItem);
+				tag.putInt("CustomModelData", modelData);
+				
+				// タグを確実にItemStackに適用
+				sheathStack.setTag(tag);
+				
+				// 反対の手から刀を削除
+				player.setItemInHand(otherHand, ItemStack.EMPTY);
 			}
 		}
 	}
 	
-	public static void execute(Entity entity) {
-		execute(null, entity);
-	}
-	
-	public static void execute() {
-		execute(null, null);
+	public static void execute(LevelAccessor world, Entity entity) {
+		if (entity instanceof Player player) {
+			ItemStack sheathStack = player.getItemInHand(InteractionHand.MAIN_HAND);
+			if (isSaya(sheathStack)) {
+				execute(world, entity, sheathStack, InteractionHand.MAIN_HAND);
+			} else {
+				sheathStack = player.getItemInHand(InteractionHand.OFF_HAND);
+				if (isSaya(sheathStack)) {
+					execute(world, entity, sheathStack, InteractionHand.OFF_HAND);
+				}
+			}
+		}
 	}
 	
 	private static boolean isSaya(ItemStack stack) {
@@ -86,14 +99,21 @@ public class SayaRightclickedProcedure {
 	private static int getModelDataForKatana(ItemStack katanaStack) {
 		String itemName = katanaStack.getItem().getClass().getSimpleName();
 		
-		if (itemName.contains("Iron")) return 1;
-		if (itemName.contains("Gold")) return 2;
-		if (itemName.contains("Stone")) return 3;
-		if (itemName.contains("Netherite")) return 4;
-		if (itemName.contains("Wither")) return 5;
-		if (itemName.contains("Darkness")) return 6;
-		if (itemName.contains("Magical") || itemName.contains("Magic")) return 7;
+		// Map each katana type to a specific custom model data
+		// These will correspond to different model files with proper handle textures
+		if (itemName.equals("IronKatanaItem")) return 1;
+		if (itemName.equals("GoldKatanaItem")) return 2;
+		if (itemName.equals("StoneKatanaItem")) return 3;
+		if (itemName.equals("NetheriteKatanaItem")) return 4;
+		if (itemName.equals("WitherKatanaItem")) return 5;
+		if (itemName.equals("MotoWitherKatanaItem")) return 6;
+		if (itemName.equals("DarknessKatanaItem")) return 7;
+		if (itemName.equals("MagicalKatanaItem")) return 8;
+		if (itemName.equals("MagischesFeenKatanaItem")) return 9;
+		if (itemName.equals("PrototypeKatanaItem")) return 10;
+		if (itemName.equals("OldKatanaItem")) return 11;
+		if (itemName.equals("MyTestIronKatanaItem")) return 12;
 		
-		return 0; // Default
+		return 0; // Default (empty saya)
 	}
 }
