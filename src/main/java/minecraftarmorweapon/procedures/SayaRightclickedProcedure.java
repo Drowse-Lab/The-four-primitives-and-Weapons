@@ -6,6 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvents;
 
 public class SayaRightclickedProcedure {
 	public static void execute(LevelAccessor world, Entity entity, ItemStack sheathStack, InteractionHand hand) {
@@ -21,51 +22,31 @@ public class SayaRightclickedProcedure {
 			
 		CompoundTag tag = sheathStack.getOrCreateTag();
 		
-		// Shift + 右クリックで抜刀/納刀の切り替え
-		if (player.isShiftKeyDown()) {
-			// 鞘に刀が入っている場合は抜刀
-			if (tag.contains("StoredKatana")) {
-				// 反対の手が空の場合のみ抜刀
-				InteractionHand otherHand = (hand == InteractionHand.MAIN_HAND) ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
-				ItemStack otherHandItem = player.getItemInHand(otherHand);
-				if (otherHandItem.isEmpty()) {
-					// 保存された刀の情報から刀を生成
-					ItemStack katanaStack = ItemStack.of(tag.getCompound("StoredKatana"));
-					
-					// 反対の手に刀を配置
-					player.setItemInHand(otherHand, katanaStack);
-					
-					// 鞘から刀の情報を削除（空の鞘にする）
-					tag.remove("StoredKatana");
-					tag.putInt("CustomModelData", 0); // 空の鞘のモデル
-					
-					// タグを確実にItemStackに適用
-					sheathStack.setTag(tag);
-				}
-			}
-			// 鞘が空の場合は納刀
-			else {
-				// 反対の手から刀を取得
-				InteractionHand otherHand = (hand == InteractionHand.MAIN_HAND) ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
-				ItemStack katanaItem = player.getItemInHand(otherHand);
+		// 右クリックで納刀（鞘が空の場合のみ）
+		if (!tag.contains("StoredKatana")) {
+			// 反対の手から刀を取得
+			InteractionHand otherHand = (hand == InteractionHand.MAIN_HAND) ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+			ItemStack katanaItem = player.getItemInHand(otherHand);
+			
+			// 反対の手に刀を持っている場合
+			if (isKatana(katanaItem)) {
+				// 刀の情報を鞘に保存
+				CompoundTag katanaTag = new CompoundTag();
+				katanaItem.save(katanaTag);
+				tag.put("StoredKatana", katanaTag);
 				
-				// 反対の手に刀を持っている場合
-				if (isKatana(katanaItem)) {
-					// 刀の情報を鞘に保存
-					CompoundTag katanaTag = new CompoundTag();
-					katanaItem.save(katanaTag);
-					tag.put("StoredKatana", katanaTag);
-					
-					// カスタムモデルデータを設定（刀が入った鞘の見た目）
-					int modelData = getModelDataForKatana(katanaItem);
-					tag.putInt("CustomModelData", modelData);
-					
-					// タグを確実にItemStackに適用
-					sheathStack.setTag(tag);
-					
-					// 反対の手から刀を削除
-					player.setItemInHand(otherHand, ItemStack.EMPTY);
-				}
+				// カスタムモデルデータを設定（刀が入った鞘の見た目）
+				int modelData = getModelDataForKatana(katanaItem);
+				tag.putInt("CustomModelData", modelData);
+				
+				// タグを確実にItemStackに適用
+				sheathStack.setTag(tag);
+				
+				// 反対の手から刀を削除
+				player.setItemInHand(otherHand, ItemStack.EMPTY);
+				
+				// 納刀音を再生
+				player.playSound(SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, 1.0F, 0.8F);
 			}
 		}
 	}
