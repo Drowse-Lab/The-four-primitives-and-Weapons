@@ -7,13 +7,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvents;
 
 @Mod.EventBusSubscriber(modid = "minecraft_armor_weapon")
 public class SayaLeftClickHandler {
     
     @SubscribeEvent
     public static void onLeftClickEmpty(PlayerInteractEvent.LeftClickEmpty event) {
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
         
@@ -31,7 +32,7 @@ public class SayaLeftClickHandler {
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         if (event.isCanceled()) return;
         
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
         
@@ -69,8 +70,8 @@ public class SayaLeftClickHandler {
                 // タグをItemStackに適用
                 sheathStack.setTag(tag);
                 
-                // 抜刀音を再生（オプション）
-                player.playSound(net.minecraft.sounds.SoundEvents.ITEM_ARMOR_EQUIP_IRON, 1.0F, 1.0F);
+                // 抜刀音を再生
+                player.playSound(SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F);
             }
         }
     }

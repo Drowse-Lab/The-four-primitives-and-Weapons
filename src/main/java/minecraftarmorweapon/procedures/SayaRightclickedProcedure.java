@@ -46,7 +46,7 @@ public class SayaRightclickedProcedure {
 				player.setItemInHand(otherHand, ItemStack.EMPTY);
 				
 				// 納刀音を再生
-				player.playSound(SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, 1.0F, 0.8F);
+				player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER, 1.0F, 0.8F);
 			}
 		}
 	}

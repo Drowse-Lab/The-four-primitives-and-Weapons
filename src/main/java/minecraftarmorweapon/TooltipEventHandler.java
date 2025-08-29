@@ -37,15 +37,25 @@ public class TooltipEventHandler {
         if (Minecraft.getInstance().player != null && Screen.hasShiftDown()) {
             // F3+Hが有効な場合
             if (Minecraft.getInstance().options.advancedItemTooltips) {
-                // アイテムIDを表示（/giveコマンド用）
+                // アイテムIDとNBTデータを含む完全なコマンド形式で表示（/giveコマンド用）
                 String itemId = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
-                event.getToolTip().add(Component.literal("Item ID: " + itemId).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFFFF55))));
+                String fullCommand = itemId;
                 
-                // NBTデータがある場合は表示
+                // NBTデータがある場合は、コマンド形式に含める
                 if (stack.hasTag()) {
                     CompoundTag tag = stack.getTag();
-                    if (tag != null) {
-                        event.getToolTip().add(Component.literal("NBT Data:").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAAA))));
+                    if (tag != null && !tag.isEmpty()) {
+                        fullCommand = itemId + tag.toString();
+                    }
+                }
+                
+                event.getToolTip().add(Component.literal("Item ID: " + fullCommand).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFFFF55))));
+                
+                // NBTデータの詳細表示（見やすい形式）
+                if (stack.hasTag()) {
+                    CompoundTag tag = stack.getTag();
+                    if (tag != null && !tag.isEmpty()) {
+                        event.getToolTip().add(Component.literal("NBT Data (Formatted):").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAAA))));
 
                         List<String> formattedNBT = formatNBT(tag, 0);
                         int maxScroll = Math.max(0, formattedNBT.size() - MAX_LINES_BEFORE_SCROLL);
