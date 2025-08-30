@@ -12,21 +12,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.registries.ForgeRegistries;
-
-import java.util.List;
-import java.util.ArrayList;
 
 @Mod.EventBusSubscriber(modid = "minecraft_armor_weapon")
 public class TooltipEventHandler {
-    private static final int MAX_LINES_BEFORE_SCROLL = 5;
-    private static int scrollIndex = 0;
 
     public TooltipEventHandler() {
         System.out.println("TooltipEventHandler Registered!");
-        MinecraftForge.EVENT_BUS.register(new TooltipScrollHandler());
     }
 
     @SubscribeEvent
@@ -37,115 +29,77 @@ public class TooltipEventHandler {
         if (Minecraft.getInstance().player != null && Screen.hasShiftDown()) {
             // F3+Hが有効な場合
             if (Minecraft.getInstance().options.advancedItemTooltips) {
-                // アイテムIDとNBTデータを含む完全なコマンド形式で表示（/giveコマンド用）
+                // 空行を追加
+                event.getToolTip().add(Component.literal(""));
+                
+                // セパレーターライン（上部）
+                event.getToolTip().add(Component.literal("━━━━━━━━━━━━━━━━━━━━━━━━━━━━").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x5555FF))));
+                
+                // /give コマンドヘッダー
+                event.getToolTip().add(Component.literal(" /give Command Format").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x55FFFF)).withBold(true)));
+                
+                // 区切り線
+                event.getToolTip().add(Component.literal(" ─────────────────────────").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x3333AA))));
+                
+                // アイテムIDとNBTデータを取得
                 String itemId = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
-                String fullCommand = itemId;
+                String nbtData = "";
                 
                 // NBTデータがある場合は、コマンド形式に含める
                 if (stack.hasTag()) {
                     CompoundTag tag = stack.getTag();
                     if (tag != null && !tag.isEmpty()) {
-                        fullCommand = itemId + tag.toString();
+                        nbtData = tag.toString();
                     }
                 }
                 
-                event.getToolTip().add(Component.literal("Item ID: " + fullCommand).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFFFF55))));
+                // アイテムIDの表示
+                event.getToolTip().add(Component.literal(" ▸ Item ID:").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAFF))));
+                event.getToolTip().add(Component.literal("   " + itemId).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFFFFFF))));
                 
-                // NBTデータの詳細表示（見やすい形式）
-                if (stack.hasTag()) {
-                    CompoundTag tag = stack.getTag();
-                    if (tag != null && !tag.isEmpty()) {
-                        event.getToolTip().add(Component.literal("NBT Data (Formatted):").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAAA))));
-
-                        List<String> formattedNBT = formatNBT(tag, 0);
-                        int maxScroll = Math.max(0, formattedNBT.size() - MAX_LINES_BEFORE_SCROLL);
-
-                        scrollIndex = Math.min(scrollIndex, maxScroll);
-                        scrollIndex = Math.max(scrollIndex, 0);
-
-                        if (formattedNBT.size() > MAX_LINES_BEFORE_SCROLL) {
-                            event.getToolTip().add(
-                                Component.literal("(Scroll: Mouse Wheel)").setStyle(
-                                    Style.EMPTY.withColor(TextColor.fromRgb(0x555555)).withItalic(true)
-                                )
-                            );
+                // NBTデータがある場合は改行して表示
+                if (!nbtData.isEmpty()) {
+                    event.getToolTip().add(Component.literal(""));
+                    event.getToolTip().add(Component.literal(" ▸ NBT Data:").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAFF))));
+                    
+                    // NBTデータが長い場合は改行して表示
+                    if (nbtData.length() > 50) {
+                        // 長いNBTデータを適切な位置で改行
+                        String[] nbtParts = nbtData.split("(?<=,)(?=\\w)");
+                        for (String part : nbtParts) {
+                            if (part.length() > 50) {
+                                // さらに長い場合は強制的に改行
+                                for (int i = 0; i < part.length(); i += 50) {
+                                    int end = Math.min(i + 50, part.length());
+                                    event.getToolTip().add(Component.literal("   " + part.substring(i, end)).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFFAA00))));
+                                }
+                            } else {
+                                event.getToolTip().add(Component.literal("   " + part).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFFAA00))));
+                            }
                         }
-
-                        for (int i = scrollIndex; i < Math.min(scrollIndex + MAX_LINES_BEFORE_SCROLL, formattedNBT.size()); i++) {
-                            event.getToolTip().add(
-                                Component.literal(formattedNBT.get(i)).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x555555)))
-                            );
-                        }
+                    } else {
+                        event.getToolTip().add(Component.literal("   " + nbtData).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFFAA00))));
                     }
                 }
+                
+                // アイテム数量の表示（スタックサイズが1以外の場合）
+                if (stack.getCount() > 1) {
+                    event.getToolTip().add(Component.literal(""));
+                    event.getToolTip().add(Component.literal(" ▸ Stack Size:").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAFF))));
+                    event.getToolTip().add(Component.literal("   " + stack.getCount() + " items").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAFFAA))));
+                }
+                
+                // コマンド全体の表示（コピペ用）
+                event.getToolTip().add(Component.literal(""));
+                event.getToolTip().add(Component.literal(" ▸ Full Command (Copy):").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xAAAAFF))));
+                String fullCommand = itemId + (!nbtData.isEmpty() ? nbtData : "");
+                event.getToolTip().add(Component.literal("   /give @p " + fullCommand + (stack.getCount() > 1 ? " " + stack.getCount() : ""))
+                    .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFFFF55)).withItalic(true)));
+                
+                // セパレーターライン（下部）
+                event.getToolTip().add(Component.literal("━━━━━━━━━━━━━━━━━━━━━━━━━━━━").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x5555FF))));
             }
         }
     }
 
-    private static List<String> formatNBT(Tag tag, int indentLevel) {
-        List<String> formatted = new ArrayList<>();
-        String indent = "  ".repeat(indentLevel);
-
-        if (tag instanceof CompoundTag) {
-            CompoundTag compound = (CompoundTag) tag;
-            formatted.add(indent + "{");
-
-            for (String key : compound.getAllKeys()) {
-                Tag value = compound.get(key);
-                formatted.add(indent + "  " + "\"" + key + "\": " + formatNBTValue(value, indentLevel + 1));
-            }
-
-            formatted.add(indent + "}");
-        } else if (tag instanceof ListTag) {
-            ListTag list = (ListTag) tag;
-            formatted.add(indent + "[");
-
-            for (Tag value : list) {
-                formatted.add(indent + "  " + formatNBTValue(value, indentLevel + 1));
-            }
-
-            formatted.add(indent + "]");
-        } else {
-            formatted.add(indent + tag.getAsString());
-        }
-
-        return formatted;
-    }
-
-    private static String formatNBTValue(Tag tag, int indentLevel) {
-        if (tag instanceof CompoundTag || tag instanceof ListTag) {
-            return String.join("\n", formatNBT(tag, indentLevel));
-        } else {
-            return tag.getAsString();
-        }
-    }
-
-    public static class TooltipScrollHandler {
-        public TooltipScrollHandler() {
-            System.out.println("TooltipScrollHandler Registered!");
-            MinecraftForge.EVENT_BUS.register(this);
-        }
-
-        @SubscribeEvent
-        public static void onScroll(InputEvent.MouseScrollingEvent event) {
-            System.out.println("MouseScrolled event detected! Scroll Delta: " + event.getScrollDelta());
-
-            if (Screen.hasShiftDown()) {
-                double scrollDelta = event.getScrollDelta();
-                adjustScrollIndex(scrollDelta > 0 ? -1 : 1);
-                System.out.println("Scroll Index Updated: " + scrollIndex);
-
-                event.setCanceled(true);
-            }
-        }
-    }
-
-    public static void adjustScrollIndex(int delta) {
-        scrollIndex += delta;
-        if (scrollIndex < 0) scrollIndex = 0;
-    }
-
-    public static int getScrollIndex() {
-        return scrollIndex;
-    }
 }

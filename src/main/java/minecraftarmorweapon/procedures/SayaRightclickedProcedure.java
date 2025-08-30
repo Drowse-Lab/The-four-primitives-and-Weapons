@@ -94,6 +94,7 @@ public class SayaRightclickedProcedure {
 		if (itemName.equals("PrototypeKatanaItem")) return 10;
 		if (itemName.equals("OldKatanaItem")) return 11;
 		if (itemName.equals("MyTestIronKatanaItem")) return 12;
+		if (itemName.equals("RiversOfBloodItem")) return 13;
 		
 		return 0; // Default (empty saya)
 	}
