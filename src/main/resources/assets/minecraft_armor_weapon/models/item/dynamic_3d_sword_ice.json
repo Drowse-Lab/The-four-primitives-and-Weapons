@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft_armor_weapon:custom/katanairon3d",
+  "textures": {
+    "0": "minecraft_armor_weapon:items/katana_ice",
+    "particle": "minecraft_armor_weapon:items/katana_ice"
+  }
+}

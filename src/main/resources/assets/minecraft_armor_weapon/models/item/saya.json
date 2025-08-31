@@ -1,0 +1,89 @@
+{
+	"parent": "minecraft_armor_weapon:custom/tousinnukisaya",
+	"overrides": [
+		{
+			"predicate": {
+				"custom_model_data": 0
+			},
+			"model": "minecraft_armor_weapon:custom/tousinnukisaya"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 1
+			},
+			"model": "minecraft_armor_weapon:custom/saya_iron_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 2
+			},
+			"model": "minecraft_armor_weapon:custom/saya_gold_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 3
+			},
+			"model": "minecraft_armor_weapon:custom/saya_stone_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 4
+			},
+			"model": "minecraft_armor_weapon:custom/saya_netherite_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 5
+			},
+			"model": "minecraft_armor_weapon:custom/saya_wither_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 6
+			},
+			"model": "minecraft_armor_weapon:custom/saya_motowither_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 7
+			},
+			"model": "minecraft_armor_weapon:custom/saya_darkness_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 8
+			},
+			"model": "minecraft_armor_weapon:custom/saya_magical_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 9
+			},
+			"model": "minecraft_armor_weapon:custom/saya_magischesfeen_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 10
+			},
+			"model": "minecraft_armor_weapon:custom/saya_prototype_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 11
+			},
+			"model": "minecraft_armor_weapon:custom/saya_old_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 12
+			},
+			"model": "minecraft_armor_weapon:custom/saya_mytestiron_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 13
+			},
+			"model": "minecraft_armor_weapon:custom/saya_riversofblood"
+		}
+	]
+}
