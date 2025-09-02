@@ -74,7 +74,7 @@ public class SayaRightclickedProcedure {
 	private static boolean isKatana(ItemStack stack) {
 		if (stack.isEmpty()) return false;
 		String itemName = stack.getItem().getClass().getSimpleName();
-		return itemName.contains("Katana") || itemName.contains("katana");
+		return itemName.contains("Katana") || itemName.contains("katana") || itemName.equals("RiversOfBloodItem");
 	}
 	
 	private static int getModelDataForKatana(ItemStack katanaStack) {
