@@ -22,6 +22,7 @@ import minecraftarmorweapon.network.MinecraftArmorWeaponModVariables;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModMobEffects;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
+import minecraftarmorweapon.item.KatanaNiguHumerusItem;
 
 import minecraftarmorweapon.entity.SkeltonMobEntity;
 import minecraftarmorweapon.entity.OtiruyoEntity;
@@ -37,8 +38,19 @@ public class KatanaNiguHumerusYoukuritukusitatokiProcedure {
 		double r = 0;
 		double alpha = 0;
 		double beta = 0;
-		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KATANA_NIGU_HUMERUS.get()) {
-			if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 2) {
+		ItemStack mainHandItem = entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY;
+		if (mainHandItem.getItem() == MinecraftArmorWeaponModItems.KATANA_NIGU_HUMERUS.get()) {
+			// Use item-specific NBT data instead of player variables
+			int selectedAbility = KatanaNiguHumerusItem.getSelectedAbility(mainHandItem);
+			
+			// If no ability is selected, use player's aaa variable as fallback
+			if (selectedAbility == -1) {
+				selectedAbility = (int)(entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa;
+				// Save it to the item
+				KatanaNiguHumerusItem.setSelectedAbility(mainHandItem, selectedAbility);
+			}
+			
+			if (selectedAbility == 2) {
 				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
 					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.KAITEN.get(), 1, 1, true, false));
 				if (!(entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.KURUTIMENASI.get()) : false)) {
@@ -46,7 +58,7 @@ public class KatanaNiguHumerusYoukuritukusitatokiProcedure {
 						_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 100);
 				}
 			}
-			if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 3) {
+			if (selectedAbility == 3) {
 				if (entity instanceof LivingEntity _entity)
 					_entity.swing(InteractionHand.MAIN_HAND, true);
 				entity.getPersistentData().putDouble("X", x);
@@ -61,7 +73,7 @@ public class KatanaNiguHumerusYoukuritukusitatokiProcedure {
 						_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 50);
 				}
 			}
-			if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 4) {
+			if (selectedAbility == 4) {
 				if (entity instanceof LivingEntity _entity)
 					_entity.swing(InteractionHand.MAIN_HAND, true);
 				r = 1;
@@ -213,7 +225,7 @@ public class KatanaNiguHumerusYoukuritukusitatokiProcedure {
 						_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 30);
 				}
 			}
-			if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 5) {
+			if (selectedAbility == 5) {
 				if (entity instanceof LivingEntity _entity)
 					_entity.swing(InteractionHand.MAIN_HAND, true);
 				{
@@ -282,7 +294,7 @@ public class KatanaNiguHumerusYoukuritukusitatokiProcedure {
 				if (entity instanceof Player _player)
 					_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 50);
 			}
-			if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 6) {
+			if (selectedAbility == 6) {
 				if (entity instanceof LivingEntity _entity)
 					_entity.swing(InteractionHand.MAIN_HAND, true);
 				{
