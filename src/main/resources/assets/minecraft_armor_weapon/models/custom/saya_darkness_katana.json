@@ -1,25 +1,27 @@
 {
+
 	"format_version": "1.9.0",
 	"credit": "Made with Blockbench",
-	"texture_size": [32, 128],
+	"texture_size": [16, 16],
 	"textures": {
 		"0": "minecraft_armor_weapon:items/saya",
-		"1": "minecraft_armor_weapon:blocks/katanadarkness",
+		"1": "minecraft_armor_weapon:blocks/saya_katana3ddarkness",
 		"particle": "minecraft_armor_weapon:items/saya"
 	},
 	"elements": [
+		
 		{
 			"__comment": "柄の下部分",
 			"from": [8, 4.05, 8.8],
 			"to": [8.8, 5.65, 9.6],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
 			"faces": {
-				"north": {"uv": [2.5, 0.21875, 2.875, 0.265625], "texture": "#1"},
-				"east": {"uv": [3.5, 0.15625, 3.875, 0.203125], "texture": "#1"},
-				"south": {"uv": [3, 0.21875, 3.375, 0.265625], "texture": "#1"},
-				"west": {"uv": [3.5, 0.21875, 3.875, 0.265625], "texture": "#1"},
-				"up": {"uv": [4.375, 0.2109375, 4, 0.1875], "texture": "#1"},
-				"down": {"uv": [4.375, 0.21875, 4, 0.2421875], "texture": "#1"}
+				"north": {"uv": [5, 7, 5.75, 8.5], "texture": "#1"},
+				"east": {"uv": [7, 5, 7.75, 6.5], "texture": "#1"},
+				"south": {"uv": [6, 7, 6.75, 8.5], "texture": "#1"},
+				"west": {"uv": [7, 7, 7.75, 8.5], "texture": "#1"},
+				"up": {"uv": [8.75, 6.75, 8, 6], "texture": "#1"},
+				"down": {"uv": [8.75, 7, 8, 7.75], "texture": "#1"}
 			}
 		},
 		{
@@ -28,12 +30,12 @@
 			"to": [8.8, 6.05, 9.4],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
 			"faces": {
-				"north": {"uv": [4.5, 0.21875, 4.875, 0.234375], "texture": "#1"},
-				"east": {"uv": [5, 0.0625, 5.25, 0.078125], "texture": "#1"},
-				"south": {"uv": [4.5, 0.25, 4.875, 0.265625], "texture": "#1"},
-				"west": {"uv": [5, 0.09375, 5.25, 0.109375], "texture": "#1"},
-				"up": {"uv": [4.875, 0.296875, 4.5, 0.28125], "texture": "#1"},
-				"down": {"uv": [0.375, 0.3125, 0, 0.328125], "texture": "#1"}
+				"north": {"uv": [9, 7, 9.75, 7.5], "texture": "#1"},
+				"east": {"uv": [10, 2, 10.5, 2.5], "texture": "#1"},
+				"south": {"uv": [9, 8, 9.75, 8.5], "texture": "#1"},
+				"west": {"uv": [10, 3, 10.5, 3.5], "texture": "#1"},
+				"up": {"uv": [9.75, 9.5, 9, 9], "texture": "#1"},
+				"down": {"uv": [0.75, 10, 0, 10.5], "texture": "#1"}
 			}
 		},
 		{
@@ -42,12 +44,12 @@
 			"to": [8.8, 7.8, 9.4],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
 			"faces": {
-				"north": {"uv": [2.5, 0.09375, 2.875, 0.1484375], "texture": "#1"},
-				"east": {"uv": [2, 0.15625, 2.375, 0.2109375], "texture": "#1"},
-				"south": {"uv": [2.5, 0.15625, 2.875, 0.2109375], "texture": "#1"},
-				"west": {"uv": [3, 0, 3.375, 0.0546875], "texture": "#1"},
-				"up": {"uv": [4.375, 0.2734375, 4, 0.25], "texture": "#1"},
-				"down": {"uv": [0.375, 0.28125, 0, 0.3046875], "texture": "#1"}
+				"north": {"uv": [5, 3, 5.75, 4.75], "texture": "#1"},
+				"east": {"uv": [4, 5, 4.75, 6.75], "texture": "#1"},
+				"south": {"uv": [5, 5, 5.75, 6.75], "texture": "#1"},
+				"west": {"uv": [6, 0, 6.75, 1.75], "texture": "#1"},
+				"up": {"uv": [8.75, 8.75, 8, 8], "texture": "#1"},
+				"down": {"uv": [0.75, 9, 0, 9.75], "texture": "#1"}
 			}
 		},
 		{
@@ -56,12 +58,12 @@
 			"to": [9.2, 8.05, 10.05],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11, 6.4, 3.45]},
 			"faces": {
-				"north": {"uv": [5, 0, 5.75, 0.0078125], "texture": "#1"},
-				"east": {"uv": [4.5, 0.1875, 5.5, 0.1953125], "texture": "#1"},
-				"south": {"uv": [5, 0.03125, 5.75, 0.0390625], "texture": "#1"},
-				"west": {"uv": [3.5, 0.28125, 4.5, 0.2890625], "texture": "#1"},
-				"up": {"uv": [0.75, 0.0625, 0, 0], "texture": "#1"},
-				"down": {"uv": [0.75, 0.0625, 0, 0.125], "texture": "#1"}
+				"north": {"uv": [10, 0, 11.5, 0.25], "texture": "#1"},
+				"east": {"uv": [9, 6, 11, 6.25], "texture": "#1"},
+				"south": {"uv": [10, 1, 11.5, 1.25], "texture": "#1"},
+				"west": {"uv": [7, 9, 9, 9.25], "texture": "#1"},
+				"up": {"uv": [1.5, 2, 0, 0], "texture": "#1"},
+				"down": {"uv": [1.5, 2, 0, 4], "texture": "#1"}
 			}
 		},
 		{
