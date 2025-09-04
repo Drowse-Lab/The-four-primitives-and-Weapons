@@ -84,6 +84,13 @@
 				"custom_model_data": 13
 			},
 			"model": "minecraft_armor_weapon:custom/saya_riversofblood"
+		},
+		
+		{
+			"predicate": {
+				"custom_model_data": 14
+			},
+			"model": "minecraft_armor_weapon:custom/saya_katananiguzyouwankotu3d"
 		}
 	]
 }
