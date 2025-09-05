@@ -1,5 +1,5 @@
 {
-	"format_version": "1.9.0",
+	"format_version": "1.21.6",
 	"credit": "Made with Blockbench",
 	"parent": "tousinnukisaya",
 	"texture_size": [8, 8],
@@ -47,8 +47,8 @@
 			}
 		},
 		{
-			"from": [8, 8, 8.6],
-			"to": [8.8, 13, 9.5],
+			"from": [8, 8, 8.55],
+			"to": [8.8, 13, 9.45],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 8.4, 3.2]},
 			"faces": {
 				"north": {"uv": [0, 0, 2, 10], "texture": "#1"},
