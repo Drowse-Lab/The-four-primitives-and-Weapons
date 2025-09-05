@@ -1,12 +1,7 @@
 package minecraftarmorweapon.procedures;
 
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.entity.Entity;
-
 public class MyTestIronKatanaYoukuritukusitatokiProcedure {
-	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
-		if (entity == null)
-			return;
+	public static void execute() {
 		double r = 0;
 		double alpha = 0;
 		double beta = 0;
@@ -14,6 +9,6 @@ public class MyTestIronKatanaYoukuritukusitatokiProcedure {
 		double yknockback = 0;
 		double xknockback = 0;
 		double dis = 0;
-		MytestkatanawazaProcedure.execute(world, x, y, z, entity);
+		MytestkatanawazaProcedure.execute();
 	}
 }

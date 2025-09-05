@@ -13,7 +13,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.network.chat.Component;
-import net.minecraft.nbt.CompoundTag;
 
 import minecraftarmorweapon.procedures.PrototypeKatanaYoukuritukusitatokiProcedure;
 import minecraftarmorweapon.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
@@ -53,20 +52,8 @@ public class KatanaNiguHumerusItem extends SwordItem {
 
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		ItemStack itemstack = entity.getItemInHand(hand);
-		
-		// Initialize NBT if not present
-		if (!itemstack.hasTag()) {
-			itemstack.setTag(new CompoundTag());
-		}
-		
-		// Toggle sheath state on right-click (if needed for sheath/unsheath action)
-		// This is commented out as the procedure might handle the action instead
-		// boolean currentSheathed = isSheathed(itemstack);
-		// setSheathed(itemstack, !currentSheathed);
-		
 		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		PrototypeKatanaYoukuritukusitatokiProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
+		PrototypeKatanaYoukuritukusitatokiProcedure.execute();
 		return ar;
 	}
 
@@ -80,61 +67,7 @@ public class KatanaNiguHumerusItem extends SwordItem {
 	@Override
 	public void inventoryTick(ItemStack itemstack, Level world, Entity entity, int slot, boolean selected) {
 		super.inventoryTick(itemstack, world, entity, slot, selected);
-		if (selected) {
-			// Initialize NBT if not present
-			if (!itemstack.hasTag()) {
-				itemstack.setTag(new CompoundTag());
-			}
-			CompoundTag nbt = itemstack.getTag();
-			
-			// Initialize sheath state
-			if (!nbt.contains("IsSheathed")) {
-				nbt.putBoolean("IsSheathed", false);
-			}
-			
-			// Initialize and preserve the selected ability mode
-			if (!nbt.contains("SelectedAbility")) {
-				// Don't use default value 2, preserve current selection or use a neutral value
-				nbt.putInt("SelectedAbility", -1);
-			}
-			
+		if (selected)
 			IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
-		}
-	}
-	
-	// Method to check if the katana is sheathed
-	public static boolean isSheathed(ItemStack itemstack) {
-		if (itemstack.hasTag()) {
-			CompoundTag nbt = itemstack.getTag();
-			return nbt.getBoolean("IsSheathed");
-		}
-		return false;
-	}
-	
-	// Method to set the sheathed state
-	public static void setSheathed(ItemStack itemstack, boolean sheathed) {
-		if (!itemstack.hasTag()) {
-			itemstack.setTag(new CompoundTag());
-		}
-		CompoundTag nbt = itemstack.getTag();
-		nbt.putBoolean("IsSheathed", sheathed);
-	}
-	
-	// Method to get the selected ability
-	public static int getSelectedAbility(ItemStack itemstack) {
-		if (itemstack.hasTag()) {
-			CompoundTag nbt = itemstack.getTag();
-			return nbt.getInt("SelectedAbility");
-		}
-		return -1;
-	}
-	
-	// Method to set the selected ability
-	public static void setSelectedAbility(ItemStack itemstack, int ability) {
-		if (!itemstack.hasTag()) {
-			itemstack.setTag(new CompoundTag());
-		}
-		CompoundTag nbt = itemstack.getTag();
-		nbt.putInt("SelectedAbility", ability);
 	}
 }

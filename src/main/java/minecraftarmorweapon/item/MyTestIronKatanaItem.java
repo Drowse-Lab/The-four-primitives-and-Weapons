@@ -49,7 +49,7 @@ public class MyTestIronKatanaItem extends SwordItem {
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
 		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		MyTestIronKatanaYoukuritukusitatokiProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
+		MyTestIronKatanaYoukuritukusitatokiProcedure.execute();
 		return ar;
 	}
 

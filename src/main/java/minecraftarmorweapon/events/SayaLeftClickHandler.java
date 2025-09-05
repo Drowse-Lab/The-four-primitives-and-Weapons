@@ -1,7 +1,9 @@
 package minecraftarmorweapon.events;
 
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
@@ -48,7 +50,30 @@ public class SayaLeftClickHandler {
         }
     }
     
-    private static void performBattou(Player player, ItemStack sheathStack, InteractionHand sheathHand, InteractionHand otherHand) {
+    // Mobへの攻撃時でも抜刀できるようにする（優先度を高くして先に処理）
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onAttackEntity(AttackEntityEvent event) {
+        Player player = event.getEntity();
+        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
+        
+        // メインハンドに鞘を持っている場合
+        if (isSaya(mainHand)) {
+            // 抜刀処理を実行
+            if (performBattou(player, mainHand, InteractionHand.MAIN_HAND, InteractionHand.OFF_HAND)) {
+                // 抜刀に成功したら、元の攻撃をキャンセル
+                event.setCanceled(true);
+            }
+        }
+        // オフハンドに鞘を持っている場合
+        else if (isSaya(offHand)) {
+            if (performBattou(player, offHand, InteractionHand.OFF_HAND, InteractionHand.MAIN_HAND)) {
+                event.setCanceled(true);
+            }
+        }
+    }
+    
+    private static boolean performBattou(Player player, ItemStack sheathStack, InteractionHand sheathHand, InteractionHand otherHand) {
         CompoundTag tag = sheathStack.getOrCreateTag();
         
         // 鞘に刀が入っている場合、抜刀する
@@ -72,8 +97,11 @@ public class SayaLeftClickHandler {
                 
                 // 抜刀音を再生
                 player.playSound(SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F);
+                
+                return true; // 抜刀成功
             }
         }
+        return false; // 抜刀失敗（刀が入っていない、または反対の手が空でない）
     }
     
     private static boolean isSaya(ItemStack stack) {

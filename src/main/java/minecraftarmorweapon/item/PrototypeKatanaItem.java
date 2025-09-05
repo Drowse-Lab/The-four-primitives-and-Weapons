@@ -56,7 +56,7 @@ public class PrototypeKatanaItem extends SwordItem {
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
 		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		ZokuseiritokutyuwazaProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
+		ZokuseiritokutyuwazaProcedure.execute();
 		return ar;
 	}
 

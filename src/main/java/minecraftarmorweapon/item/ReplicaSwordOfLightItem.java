@@ -52,7 +52,7 @@ public class ReplicaSwordOfLightItem extends SwordItem {
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
 		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		NomalwazaProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
+		NomalwazaProcedure.execute();
 		return ar;
 	}
 

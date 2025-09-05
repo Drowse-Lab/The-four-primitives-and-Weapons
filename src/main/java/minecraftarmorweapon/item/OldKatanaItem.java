@@ -61,12 +61,12 @@ public class OldKatanaItem extends SwordItem {
             .withItalic(false)); // イタリックを無効化
     }
 	
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		ZokuseiritokutyuwazaProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
-		return ar;
-	}
+//	@Override
+//	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
+//		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
+//		ZokuseiritokutyuwazaProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
+//		return ar;
+//	}
 
 	@Override
 	public void inventoryTick(ItemStack itemstack, Level world, Entity entity, int slot, boolean selected) {

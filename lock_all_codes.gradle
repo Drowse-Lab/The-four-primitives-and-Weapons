@@ -1,0 +1,27 @@
+// Gradle task to automatically lock all MCreator codes
+task lockAllCodes {
+    doLast {
+        def mcreatorFile = file('minecraft_armor_weapon.mcreator')
+        if (mcreatorFile.exists()) {
+            def content = mcreatorFile.text
+            // Replace all locked_code: false with locked_code: true
+            content = content.replaceAll('"locked_code"\\s*:\\s*false', '"locked_code": true')
+            mcreatorFile.text = content
+            println "✓ All MCreator element codes have been locked"
+        }
+    }
+}
+
+// Automatically run before any build
+tasks.whenTaskAdded { task ->
+    if (task.name.startsWith('build') || task.name == 'runClient' || task.name == 'runServer') {
+        task.dependsOn lockAllCodes
+    }
+}
+
+// Add task to lock codes before MCreator regeneration
+gradle.taskGraph.beforeTask { Task task ->
+    if (task.name.contains('generate') || task.name.contains('regenerate')) {
+        lockAllCodes.execute()
+    }
+}

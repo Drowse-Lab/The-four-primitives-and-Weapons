@@ -10,6 +10,9 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 
+// Apply custom code locking script
+apply from: 'lock_all_codes.gradle'
+
 version = '1.0'
 group = 'com.hrmcngs.minecraft_armor_weapon'
 archivesBaseName = 'minecraft_armor_weapon'
