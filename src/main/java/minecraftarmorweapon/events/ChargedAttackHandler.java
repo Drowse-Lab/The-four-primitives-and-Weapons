@@ -370,13 +370,20 @@ public class ChargedAttackHandler {
         PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
         WeaponType weaponType = skillData.getSelectedWeaponType();
         
-        // 固有スキルのチェック（SwordOfNight）
+        // 固有スキルのチェック
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         String itemName = mainHand.getItem().getClass().getSimpleName();
         
         if (itemName.equals("SwordOfNightItem") && skillData.isUniqueSkillEnabled("SwordOfNight")) {
             // SwordOfNightの通常攻撃（ショット）
             SwordOfNightShotProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
+            return;
+        }
+        
+        // Lunaの固有スキル（直刀の場合のみ）
+        if (itemName.equals("LunaItem") && weaponType == WeaponType.STRAIGHT_SWORD && skillData.isUniqueSkillEnabled("Luna")) {
+            // Lunaの特殊攻撃
+            minecraftarmorweapon.procedures.LunaenteiteigaaitemuwoZhentutaShiProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
             return;
         }
         
@@ -415,8 +422,8 @@ public class ChargedAttackHandler {
         }
         
         // 突き攻撃（狭い範囲、長いリーチ）
-        double range = 4.5;
-        double width = 0.5;
+        double range = 5.0;  // 範囲を拡大
+        double width = 0.8;  // 幅を少し広く
         
         List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class,
             new AABB(playerPos.add(lookVec.scale(0.5)), playerPos.add(lookVec.scale(range))).inflate(width),
@@ -475,8 +482,8 @@ public class ChargedAttackHandler {
         }
         
         // 攻撃範囲と処理
-        double range = 3.5;
-        float damage = combo == 2 ? 10.0f : 8.0f; // 3段目は強い
+        double range = 4.5;  // 範囲を拡大
+        float damage = combo == 2 ? 12.0f : 9.0f; // ダメージも少し強化
         
         AABB searchArea = new AABB(
             playerPos.x - range, playerPos.y - 1, playerPos.z - range,
@@ -488,7 +495,7 @@ public class ChargedAttackHandler {
                 if (entity == player) return false;
                 Vec3 toEntity = entity.position().subtract(playerPos).normalize();
                 double dot = lookVec.dot(toEntity);
-                return dot > 0.3 && entity.distanceTo(player) <= range;
+                return dot > 0.2 && entity.distanceTo(player) <= range;  // より広い角度で攻撃可能
             });
         
         for (LivingEntity target : targets) {
@@ -509,7 +516,7 @@ public class ChargedAttackHandler {
         // デフォルト攻撃処理
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 4; i++) {
                 serverWorld.sendParticles(
                     ParticleTypes.SWEEP_ATTACK,
                     playerPos.x + lookVec.x * (i + 1),
@@ -520,10 +527,10 @@ public class ChargedAttackHandler {
             }
         }
         
-        double range = 3.0;
+        double range = 4.5;  // 範囲を3.0から4.5に拡大
         AABB searchArea = new AABB(
             playerPos.x - range, playerPos.y - 1, playerPos.z - range,
-            playerPos.x + range, playerPos.y + 2, playerPos.z + range
+            playerPos.x + range, playerPos.y + 3, playerPos.z + range
         );
         
         List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
@@ -531,13 +538,13 @@ public class ChargedAttackHandler {
                 if (entity == player) return false;
                 Vec3 toEntity = entity.position().subtract(playerPos).normalize();
                 double dot = lookVec.dot(toEntity);
-                return dot > 0.5 && entity.distanceTo(player) <= range;
+                return dot > 0.3 && entity.distanceTo(player) <= range;  // 判定角度を0.5から0.3に緩和
             });
         
         for (LivingEntity target : targets) {
             target.hurt(DamageSource.playerAttack(player), 8.0f);
-            Vec3 knockback = target.position().subtract(playerPos).normalize().scale(0.4);
-            target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.1, knockback.z));
+            Vec3 knockback = target.position().subtract(playerPos).normalize().scale(0.5);
+            target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.15, knockback.z));
         }
         
         world.playSound(null, player.getX(), player.getY(), player.getZ(),

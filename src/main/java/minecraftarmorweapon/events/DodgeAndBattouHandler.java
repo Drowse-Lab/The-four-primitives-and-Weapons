@@ -33,7 +33,7 @@ import java.util.List;
 public class DodgeAndBattouHandler {
     
     private static final Map<UUID, DodgeData> playerDodgeData = new HashMap<>();
-    private static final int DODGE_WINDOW = 20; // 回避後1秒間のウィンドウ
+    private static final int DODGE_WINDOW = 30; // 回避後1.5秒間のウィンドウ（延長）
     private static final int DODGE_COOLDOWN = 40; // 回避クールダウン2秒（20ticks × 2）
     private static final int FALL_DAMAGE_IMMUNITY_TIME = 30; // 落下ダメージ無効時間1.5秒
     
@@ -68,6 +68,17 @@ public class DodgeAndBattouHandler {
         // 回避タイマーのカウントダウン
         if (data.dodgeTimer > 0) {
             data.dodgeTimer--;
+            
+            // ダッシュ攻撃可能時の視覚的フィードバック
+            if (data.hasDodged && !player.level.isClientSide && data.dodgeTimer % 4 == 0) {
+                ServerLevel serverWorld = (ServerLevel) player.level;
+                serverWorld.sendParticles(
+                    ParticleTypes.ELECTRIC_SPARK,
+                    player.getX(), player.getY() + 1, player.getZ(),
+                    2, 0.3, 0.3, 0.3, 0.02
+                );
+            }
+            
             if (data.dodgeTimer == 0) {
                 data.hasDodged = false;
             }
@@ -114,9 +125,11 @@ public class DodgeAndBattouHandler {
         if (mc.player != player) return;
         
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
         
         // 回避後に左クリック（攻撃キー）が押された場合
-        if (mc.options.keyAttack.isDown() && isWeapon(mainHand)) {
+        // 武器をメインハンドかオフハンドに持っていればOK
+        if (mc.options.keyAttack.isDown() && (isWeapon(mainHand) || isWeapon(offHand))) {
             performDashAttack(player);
             data.reset(); // ダッシュ攻撃後はリセット
         }
@@ -131,8 +144,13 @@ public class DodgeAndBattouHandler {
             return;
         }
         
-        // 通常の右クリック（回避）
-        performDodge(player);
+        // 武器を持っている場合のみ回避を実行
+        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
+        if (isWeapon(mainHand) || isWeapon(offHand)) {
+            // 通常の右クリック（回避）
+            performDodge(player);
+        }
     }
     
     @SubscribeEvent
@@ -163,22 +181,22 @@ public class DodgeAndBattouHandler {
         Vec3 lookVec = player.getLookAngle();
         Vec3 playerPos = player.position();
         
-        // 前方への高速移動
-        player.setDeltaMovement(player.getDeltaMovement().add(lookVec.scale(1.8)));
+        // 前方への高速移動（少し速度を上げる）
+        player.setDeltaMovement(player.getDeltaMovement().add(lookVec.scale(2.2)));
         
         // エフェクト
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
             
-            // ダッシュ攻撃のエフェクト
-            for (int i = 0; i < 8; i++) {
-                double d = i * 0.5;
+            // ダッシュ攻撃のエフェクト（より派手に）
+            for (int i = 0; i < 10; i++) {
+                double d = i * 0.6;
                 serverWorld.sendParticles(
                     ParticleTypes.SWEEP_ATTACK,
                     playerPos.x + lookVec.x * d,
                     playerPos.y + 1,
                     playerPos.z + lookVec.z * d,
-                    1, 0, 0, 0, 0
+                    2, 0, 0, 0, 0
                 );
                 
                 serverWorld.sendParticles(
@@ -186,25 +204,31 @@ public class DodgeAndBattouHandler {
                     playerPos.x + lookVec.x * d,
                     playerPos.y + 0.1,
                     playerPos.z + lookVec.z * d,
-                    2, 0.2, 0, 0.2, 0.01
+                    3, 0.3, 0, 0.3, 0.01
                 );
             }
         }
         
-        // 前方の敵に大ダメージ
-        double range = 5.0;
+        // 前方の敵に大ダメージ（範囲と判定を大幅に拡大）
+        double range = 7.0;  // 5.0から7.0に拡大
         Vec3 endPos = playerPos.add(lookVec.scale(range));
-        AABB searchArea = new AABB(playerPos, endPos).inflate(1.5);
+        AABB searchArea = new AABB(playerPos.add(-2, -1, -2), endPos.add(2, 2, 2));  // より大きな判定ボックス
         
         List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> entity != player);
+            entity -> {
+                if (entity == player) return false;
+                // 前方180度の広い範囲で判定
+                Vec3 toEntity = entity.position().subtract(playerPos).normalize();
+                double dot = lookVec.dot(toEntity);
+                return dot > -0.2 && entity.distanceTo(player) <= range;  // ほぼ360度に近い判定
+            });
         
         for (LivingEntity target : targets) {
-            // ダッシュ攻撃の高ダメージ
-            target.hurt(DamageSource.playerAttack(player), 15.0f);
+            // ダッシュ攻撃の高ダメージ（少し増加）
+            target.hurt(DamageSource.playerAttack(player), 18.0f);
             
             // 強力なノックバック
-            target.setDeltaMovement(lookVec.scale(1.2).add(0, 0.3, 0));
+            target.setDeltaMovement(lookVec.scale(1.5).add(0, 0.4, 0));
         }
         
         // サウンド
@@ -256,10 +280,10 @@ public class DodgeAndBattouHandler {
                 -Math.sin(dodgeAngle),
                 0,
                 Math.cos(dodgeAngle)
-            ).scale(1.2);
+            ).scale(1.5);  // 回避距離を増加
         } else {
-            // 後方回避（移動していない場合）
-            dodgeVec = lookVec.scale(-1.2);
+            // 前方回避（移動していない場合）- 後方から前方へ変更
+            dodgeVec = lookVec.scale(1.5);
         }
         
         // 回避移動
@@ -286,7 +310,7 @@ public class DodgeAndBattouHandler {
         world.playSound(null, player.getX(), player.getY(), player.getZ(),
             SoundEvents.ENDER_PEARL_THROW, SoundSource.PLAYERS, 0.8f, 1.5f);
         
-        player.displayClientMessage(Component.literal("§b回避"), true);
+        player.displayClientMessage(Component.literal("§b回避成功！ §e今なら左クリックでダッシュ攻撃！"), true);
     }
     
     private static boolean isWeapon(ItemStack stack) {

@@ -56,13 +56,13 @@ public class KurikarakenutigatanaItem extends SwordItem {
 			}
 		}, 3, -1.4f, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_WEAPON).fireResistant());
 	}
-
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		TyokutouProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
-		return ar;
-	}
+//
+//	@Override
+//	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
+//		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
+//		TyokutouProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
+//		return ar;
+//	}
 
 	@Override
 	public void appendHoverText(ItemStack itemstack, Level world, List<Component> list, TooltipFlag flag) {

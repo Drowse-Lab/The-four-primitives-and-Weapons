@@ -3,10 +3,15 @@ package minecraftarmorweapon.network;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import minecraftarmorweapon.skill.PlayerSkillData;
+import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
 import java.util.function.Supplier;
 
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class SkillSelectionPacket {
     private final String weaponType;
     private final String skillType;
@@ -66,5 +71,13 @@ public class SkillSelectionPacket {
             }
         });
         ctx.get().setPacketHandled(true);
+    }
+    
+    @SubscribeEvent
+    public static void registerMessage(FMLCommonSetupEvent event) {
+        MinecraftArmorWeaponMod.addNetworkMessage(SkillSelectionPacket.class, 
+            SkillSelectionPacket::encode, 
+            SkillSelectionPacket::new, 
+            SkillSelectionPacket::handle);
     }
 }

@@ -87,8 +87,9 @@ public class SkillSelectionOverlay {
         Player player = mc.player;
         PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
         
-        int baseX = screen.getGuiLeft() + 10;
-        int baseY = screen.getGuiTop() - 100;
+        // GUI位置を調整（インベントリの右側に配置）
+        int baseX = screen.getGuiLeft() + 180;
+        int baseY = screen.getGuiTop() + 20;
         
         // 武器タイプ選択ボタン
         int typeY = baseY;
@@ -149,8 +150,8 @@ public class SkillSelectionOverlay {
                 "強化攻撃: 回転斬り（周囲攻撃）");
         }
         
-        // 固有スキルのON/OFF
-        addUniqueSkillToggles(event, screen, baseX, baseY + 100);
+        // 固有スキルのON/OFF（位置を調整）
+        addUniqueSkillToggles(event, screen, skillX, skillY + 80);
     }
     
     private static void addSkillDescription(ScreenEvent.Init.Post event, int x, int y, 
@@ -210,10 +211,14 @@ public class SkillSelectionOverlay {
         // 特定の武器の固有スキル
         if (mainHand.getItem().getClass().getSimpleName().equals("ReplicaSwordOfLightItem")) {
             addUniqueSkillToggle(event, x, y, "ReplicaSwordOfLight", 
-                "光の剣 - ガード", skillData, screen);
+                "SwordOfLight - ジャストガード", skillData, screen);
         } else if (mainHand.getItem().getClass().getSimpleName().equals("SwordOfNightItem")) {
             addUniqueSkillToggle(event, x, y, "SwordOfNight",
-                "闇の剣 - テレポート攻撃", skillData, screen);
+                "Sword Of Night - テレポート攻撃", skillData, screen);
+            y += 25;
+        } else if (mainHand.getItem().getClass().getSimpleName().equals("LunaItem")) {
+            addUniqueSkillToggle(event, x, y, "Luna",
+                "Luna - 突き (直刀のみ)", skillData, screen);
             y += 25;
         }
     }
@@ -222,26 +227,41 @@ public class SkillSelectionOverlay {
                                             String itemId, String skillName,
                                             PlayerSkillData.SkillStorage skillData, Screen screen) {
         Minecraft mc = Minecraft.getInstance();
-        boolean isEnabled = skillData.isUniqueSkillEnabled(itemId);
         
-        Button toggleButton = new Button(x, y, 150, 20,
-            Component.literal(skillName + ": " + (isEnabled ? "ON" : "OFF")),
+        Button toggleButton = new Button(x, y, 180, 20,
+            Component.literal(skillName),
             button -> {
-                boolean newState = !skillData.isUniqueSkillEnabled(itemId);
+                // 現在の状態を取得してトグル
+                boolean currentState = skillData.isUniqueSkillEnabled(itemId);
+                boolean newState = !currentState;
                 skillData.setUniqueSkillEnabled(itemId, newState);
+                
+                // サーバーに変更を送信
                 MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
                     new SkillSelectionPacket(null, null, itemId, newState)
                 );
-                button.setMessage(Component.literal(skillName + ": " + (newState ? "ON" : "OFF")));
+                
+                // 画面を再初期化して更新を反映
+                screen.init(mc, screen.width, screen.height);
             }) {
             @Override
             public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
                 boolean enabled = skillData.isUniqueSkillEnabled(itemId);
-                int bgColor = enabled ? 0x4000FF00 : 0x40FF0000;
-                int textColor = this.isHoveredOrFocused() ? 0xFFFFFF : (enabled ? 0x80FF80 : 0xFF8080);
+                int bgColor = enabled ? 0x6000FF00 : 0x60404040;
+                int borderColor = enabled ? 0xFF00FF00 : 0xFF808080;
+                int textColor = this.isHoveredOrFocused() ? 0xFFFFFF : (enabled ? 0x00FF00 : 0xCCCCCC);
                 
+                // 背景を描画
                 fill(poseStack, this.x, this.y, this.x + this.width, this.y + this.height, bgColor);
-                drawCenteredString(poseStack, mc.font, this.getMessage(),
+                // 枠線を描画
+                fill(poseStack, this.x, this.y, this.x + this.width, this.y + 1, borderColor);
+                fill(poseStack, this.x, this.y + this.height - 1, this.x + this.width, this.y + this.height, borderColor);
+                fill(poseStack, this.x, this.y, this.x + 1, this.y + this.height, borderColor);
+                fill(poseStack, this.x + this.width - 1, this.y, this.x + this.width, this.y + this.height, borderColor);
+                
+                // テキストを描画（ON/OFF状態を表示）
+                String displayText = this.getMessage().getString() + " [" + (enabled ? "ON" : "OFF") + "]";
+                drawCenteredString(poseStack, mc.font, Component.literal(displayText),
                     this.x + this.width / 2, this.y + (this.height - 8) / 2, textColor);
             }
         };
