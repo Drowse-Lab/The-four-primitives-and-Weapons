@@ -95,6 +95,9 @@ public class SayaLeftClickHandler {
                 // タグをItemStackに適用
                 sheathStack.setTag(tag);
                 
+                // 鞘のアイテムスタックを強制的に更新（見た目の更新を確実にする）
+                player.setItemInHand(sheathHand, sheathStack);
+                
                 // 抜刀音を再生
                 player.playSound(SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F);
                 

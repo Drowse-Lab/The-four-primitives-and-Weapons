@@ -18,8 +18,13 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.nbt.CompoundTag;
 import minecraftarmorweapon.procedures.ZokuseiritokutyuwazaProcedure;
 import minecraftarmorweapon.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModMobEffects;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 import net.minecraft.network.chat.TextColor;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
@@ -71,8 +76,44 @@ public class OldKatanaItem extends SwordItem {
 	@Override
 	public void inventoryTick(ItemStack itemstack, Level world, Entity entity, int slot, boolean selected) {
 		super.inventoryTick(itemstack, world, entity, slot, selected);
-		if (selected)
-			IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
+		
+		if (entity instanceof Player player) {
+			// 手に持っている場合
+			if (selected) {
+				IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
+			}
+			
+			// 鞘に納刀している場合もSliceGuard効果を付与
+			boolean isSheathed = false;
+			
+			// インベントリ内の全ての鞘をチェック
+			for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+				ItemStack slotItem = player.getInventory().getItem(i);
+				
+				// 鞘アイテムかチェック
+				if (slotItem.getItem() == MinecraftArmorWeaponModItems.SAYA.get()) {
+					// 鞘に格納されている刀をチェック
+					if (slotItem.hasTag()) {
+						CompoundTag nbt = slotItem.getTag();
+						if (nbt.contains("StoredKatana")) {
+							CompoundTag storedKatana = nbt.getCompound("StoredKatana");
+							String katanaId = storedKatana.getString("id");
+							
+							// OldKatanaが納刀されているかチェック
+							if (katanaId.equals("minecraft_armor_weapon:old_katana")) {
+								isSheathed = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+			
+			// 納刀中の場合、SliceGuard効果を付与
+			if (isSheathed && !player.level.isClientSide()) {
+				player.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SLICE_GUARD.get(), 60, 1, true, false));
+			}
+		}
 	}
 
 	@Override

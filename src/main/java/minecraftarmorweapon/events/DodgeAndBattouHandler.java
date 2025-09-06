@@ -23,6 +23,18 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.MobType;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.BlockPos;
+
+import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -161,17 +173,60 @@ public class DodgeAndBattouHandler {
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
         
-        // 刀を持っている場合はブロックとの相互作用をキャンセル
+        // シフトキーが押されている場合はブロック操作を許可
+        if (player.isShiftKeyDown()) {
+            return;
+        }
+        
+        // 刀を持っている場合、回避を実行
         if (isWeapon(mainHand) || isWeapon(offHand)) {
-            event.setCanceled(true);
-            
-            // シフトキーが押されている場合は何もしない
-            if (player.isShiftKeyDown()) {
-                return;
+            // ブロックを持っていて設置しようとしている場合は許可
+            if (!player.getItemInHand(event.getHand()).isEmpty() && 
+                player.getItemInHand(event.getHand()).getItem() instanceof net.minecraft.world.item.BlockItem) {
+                return; // ブロック設置を許可
             }
             
-            // 通常の右クリック（回避）
+            // それ以外の場合は回避を実行
+            event.setCanceled(true);
             performDodge(player);
+        }
+    }
+    
+    @SubscribeEvent
+    public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+        Player player = event.getEntity();
+        
+        // シフトキーが押されている場合は通常の相互作用を許可
+        if (player.isShiftKeyDown()) {
+            return;
+        }
+        
+        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
+        
+        // 武器を持っている場合は回避を優先
+        if (isWeapon(mainHand) || isWeapon(offHand)) {
+            event.setCanceled(true);  // エンティティとの相互作用をキャンセル
+            performDodge(player);      // 回避を実行
+        }
+    }
+    
+    @SubscribeEvent
+    public static void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
+        Player player = event.getEntity();
+        
+        // シフトキーが押されている場合は通常の相互作用を許可
+        if (player.isShiftKeyDown()) {
+            return;
+        }
+        
+        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
+        
+        // 武器を持っている場合は回避を優先
+        if (isWeapon(mainHand) || isWeapon(offHand)) {
+            event.setCanceled(true);  // エンティティとの相互作用をキャンセル
+            performDodge(player);      // 回避を実行
         }
     }
     
@@ -180,6 +235,9 @@ public class DodgeAndBattouHandler {
         Level world = player.level;
         Vec3 lookVec = player.getLookAngle();
         Vec3 playerPos = player.position();
+        
+        // 竹を破壊する
+        breakBambooInPath(world, playerPos, lookVec, 7.0);
         
         // 前方への高速移動（少し速度を上げる）
         player.setDeltaMovement(player.getDeltaMovement().add(lookVec.scale(2.2)));
@@ -223,9 +281,89 @@ public class DodgeAndBattouHandler {
                 return dot > -0.2 && entity.distanceTo(player) <= range;  // ほぼ360度に近い判定
             });
         
+        ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+        String weaponName = weapon.getItem().getClass().getSimpleName();
+        
         for (LivingEntity target : targets) {
-            // ダッシュ攻撃の高ダメージ（少し増加）
-            target.hurt(DamageSource.playerAttack(player), 18.0f);
+            // 基本ダメージ
+            float baseDamage = 18.0f;
+            float actualDamage = calculateActualDamage(player, weapon, target, baseDamage);
+            
+            // ダッシュ攻撃のダメージ
+            target.hurt(DamageSource.playerAttack(player), actualDamage);
+            
+            // RiversOfBloodの吸血効果
+            if (weaponName.equals("RiversOfBloodItem")) {
+                // ターゲットが呪われているかチェック
+                boolean isCursed = target.hasEffect(MobEffects.WITHER) || 
+                                   (target.getPersistentData().contains("Feyn") && 
+                                    "cursed".equals(target.getPersistentData().getString("Feyn")));
+                
+                float healAmount = isCursed ? actualDamage * 0.5f : actualDamage * 0.2f;
+                player.heal(healAmount);
+                
+                if (isCursed) {
+                    // 呪われた敵への追加効果
+                    target.hurt(DamageSource.MAGIC, actualDamage * 0.3f);
+                    target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
+                    target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
+                }
+                
+                // 血のエフェクト
+                if (world instanceof ServerLevel serverLevel) {
+                    serverLevel.sendParticles(ParticleTypes.DAMAGE_INDICATOR,
+                        target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+                        10, 0.3, 0.3, 0.3, 0.1);
+                }
+                
+                world.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.GENERIC_DRINK, SoundSource.PLAYERS, 0.5f, 1.2f);
+            }
+            
+            // WitherKatanaのウィザー効果
+            if (weaponName.equals("WitherKatanaItem")) {
+                // ターゲットが呪われているかチェック
+                boolean isCursed = target.getPersistentData().contains("Feyn") && 
+                                   "cursed".equals(target.getPersistentData().getString("Feyn"));
+                
+                if (isCursed) {
+                    // 呪われた敵には強化されたウィザー効果
+                    target.addEffect(new MobEffectInstance(MobEffects.WITHER, 200, 2));
+                    target.hurt(DamageSource.WITHER, actualDamage * 0.5f);
+                    
+                    // 闇のオーラエフェクト
+                    if (world instanceof ServerLevel serverLevel) {
+                        serverLevel.sendParticles(ParticleTypes.SOUL,
+                            target.getX(), target.getY() + 1, target.getZ(),
+                            15, 0.5, 0.5, 0.5, 0.05);
+                    }
+                } else {
+                    // 通常のウィザー効果
+                    target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
+                }
+                
+                // ウィザーサウンド
+                world.playSound(null, target.getX(), target.getY(), target.getZ(),
+                    SoundEvents.WITHER_HURT, SoundSource.PLAYERS, 0.5f, 1.0f);
+            }
+            
+            // Killエンチャントの効果
+            if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), weapon) > 0) {
+                // 即死判定（低確率）
+                if (Math.random() < 0.05) { // 5%の確率
+                    target.hurt(DamageSource.MAGIC, target.getMaxHealth() * 2);
+                    
+                    // 即死エフェクト
+                    if (world instanceof ServerLevel serverLevel) {
+                        serverLevel.sendParticles(ParticleTypes.SMOKE,
+                            target.getX(), target.getY() + 1, target.getZ(),
+                            20, 0.5, 0.5, 0.5, 0.1);
+                    }
+                    
+                    world.playSound(null, target.getX(), target.getY(), target.getZ(),
+                        SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 0.5f, 2.0f);
+                }
+            }
             
             // 強力なノックバック
             target.setDeltaMovement(lookVec.scale(1.5).add(0, 0.4, 0));
@@ -362,6 +500,107 @@ public class DodgeAndBattouHandler {
                     Component.literal("§a落下ダメージ無効！"), 
                     true
                 );
+            }
+        }
+    }
+    
+    // プレイヤーの実際の攻撃力を計算
+    private static float calculateActualDamage(Player player, ItemStack weapon, LivingEntity target, float baseDamage) {
+        float damage = baseDamage;
+        
+        // 武器の基本攻撃力を取得
+        if (weapon.getItem() instanceof SwordItem swordItem) {
+            // ソードの基本ダメージを追加
+            damage += swordItem.getDamage();
+        }
+        
+        // プレイヤーの攻撃力属性を取得
+        double attackDamage = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        damage += (float)attackDamage;
+        
+        // 攻撃力上昇エフェクト
+        if (player.hasEffect(MobEffects.DAMAGE_BOOST)) {
+            int amplifier = player.getEffect(MobEffects.DAMAGE_BOOST).getAmplifier();
+            damage += damage * (0.3f * (amplifier + 1));
+        }
+        
+        // 弱体化エフェクト
+        if (player.hasEffect(MobEffects.WEAKNESS)) {
+            int amplifier = player.getEffect(MobEffects.WEAKNESS).getAmplifier();
+            damage -= damage * (0.2f * (amplifier + 1));
+        }
+        
+        // シャープネスエンチャント
+        int sharpnessLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SHARPNESS, weapon);
+        if (sharpnessLevel > 0) {
+            damage += 0.5f * sharpnessLevel + 0.5f;
+        }
+        
+        // アンデッド特攻
+        if (target.getMobType() == MobType.UNDEAD) {
+            int smiteLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, weapon);
+            if (smiteLevel > 0) {
+                damage += 2.5f * smiteLevel;
+            }
+        }
+        
+        // 虫特攻
+        if (target.getMobType() == MobType.ARTHROPOD) {
+            int baneLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BANE_OF_ARTHROPODS, weapon);
+            if (baneLevel > 0) {
+                damage += 2.5f * baneLevel;
+                // スローネス効果も付与
+                int duration = 20 + (int)(Math.random() * 10 * baneLevel);
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, 3));
+            }
+        }
+        
+        // クリティカルダメージの計算（ランダムで発生）
+        if (Math.random() < 0.1) { // 10%の確率でクリティカル
+            damage *= 1.5f;
+            
+            // クリティカルエフェクト
+            if (player.level instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.CRIT,
+                    target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+                    10, 0.3, 0.3, 0.3, 0.1);
+            }
+            
+            player.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+                SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
+        }
+        
+        return damage;
+    }
+    
+    // 攻撃経路上の竹を破壊する
+    private static void breakBambooInPath(Level world, Vec3 startPos, Vec3 direction, double range) {
+        if (world.isClientSide) return;
+        
+        // 攻撃経路に沿って竹をチェック
+        for (double d = 0; d <= range; d += 0.5) {
+            Vec3 checkPos = startPos.add(direction.scale(d));
+            
+            // 上下左右も含めて範囲をチェック
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 2; dy++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        BlockPos pos = new BlockPos(
+                            checkPos.x + dx,
+                            checkPos.y + dy,
+                            checkPos.z + dz
+                        );
+                        
+                        BlockState state = world.getBlockState(pos);
+                        
+                        // 竹または竹の苗をチェック
+                        if (state.getBlock() == Blocks.BAMBOO || 
+                            state.getBlock() == Blocks.BAMBOO_SAPLING) {
+                            // 竹を破壊（ドロップあり）
+                            world.destroyBlock(pos, true);
+                        }
+                    }
+                }
             }
         }
     }

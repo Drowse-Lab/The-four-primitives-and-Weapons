@@ -22,12 +22,25 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.MobType;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BambooBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.BlockPos;
 
 import minecraftarmorweapon.skill.PlayerSkillData;
 import minecraftarmorweapon.skill.PlayerSkillData.WeaponType;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModMobEffects;
 import minecraftarmorweapon.procedures.SwordOfNightTpProcedure;
 import minecraftarmorweapon.procedures.SwordOfNightShotProcedure;
+import minecraftarmorweapon.procedures.SwordOfNightChargingGlowProcedure;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
 import minecraftarmorweapon.network.AttackPacket;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
@@ -68,16 +81,7 @@ public class ChargedAttackHandler {
         LivingEntity entity = event.getEntity();
         
         // Sword of Nightの発光効果を管理
-        if (entity.getPersistentData().contains("SwordOfNightGlow")) {
-            int glowTicks = entity.getPersistentData().getInt("SwordOfNightGlow");
-            if (glowTicks > 0) {
-                entity.getPersistentData().putInt("SwordOfNightGlow", glowTicks - 1);
-            } else {
-                // 発光効果を解除
-                entity.setGlowingTag(false);
-                entity.getPersistentData().remove("SwordOfNightGlow");
-            }
-        }
+        SwordOfNightChargingGlowProcedure.managGlowTicks(entity);
     }
     
     @SubscribeEvent
@@ -105,39 +109,14 @@ public class ChargedAttackHandler {
             // Sword of Nightの場合、ターゲットを発光させる
             String itemName = data.chargingItem.getItem().getClass().getSimpleName();
             if (itemName.equals("SwordOfNightItem") && !player.level.isClientSide) {
-                // プレイヤーが見ている方向のエンティティを取得
-                Vec3 lookVec = player.getLookAngle();
-                Vec3 eyePos = player.getEyePosition();
-                Vec3 targetPos = eyePos.add(lookVec.scale(20));
-                
-                // レイキャストで最も近いエンティティを検索
-                AABB searchBox = new AABB(eyePos, targetPos).inflate(1.0);
-                List<LivingEntity> potentialTargets = player.level.getEntitiesOfClass(
-                    LivingEntity.class, searchBox,
-                    entity -> entity != player && entity.isAlive()
+                SwordOfNightChargingGlowProcedure.execute(
+                    player.level, 
+                    player.getX(), 
+                    player.getY(), 
+                    player.getZ(), 
+                    player, 
+                    true // チャージ中
                 );
-                
-                // 最も近いターゲットを見つける
-                LivingEntity closestTarget = null;
-                double closestDistance = Double.MAX_VALUE;
-                for (LivingEntity target : potentialTargets) {
-                    Vec3 toTarget = target.position().subtract(eyePos);
-                    double dot = lookVec.dot(toTarget.normalize());
-                    if (dot > 0.95) { // 視線方向に近いエンティティのみ
-                        double distance = target.distanceToSqr(player);
-                        if (distance < closestDistance && distance < 400) { // 20ブロック以内
-                            closestDistance = distance;
-                            closestTarget = target;
-                        }
-                    }
-                }
-                
-                // ターゲットに発光効果を付与
-                if (closestTarget != null) {
-                    closestTarget.setGlowingTag(true);
-                    // 1秒後に発光を解除するためのタグを設定
-                    closestTarget.getPersistentData().putInt("SwordOfNightGlow", 2);
-                }
             }
             
             // 最大チャージ到達
@@ -197,6 +176,19 @@ public class ChargedAttackHandler {
     }
     
     private static void releaseChargedAttack(Player player, ChargeData data) {
+        // Sword of Nightの場合、発光を解除
+        String itemName = data.chargingItem.getItem().getClass().getSimpleName();
+        if (itemName.equals("SwordOfNightItem") && !player.level.isClientSide) {
+            SwordOfNightChargingGlowProcedure.execute(
+                player.level,
+                player.getX(),
+                player.getY(), 
+                player.getZ(),
+                player,
+                false // チャージ解除
+            );
+        }
+        
         if (data.chargeTime >= MIN_CHARGE_TIME) {
             float chargePercent = Math.min((float) data.chargeTime / MAX_CHARGE_TIME, 1.0f);
             // サーバーに攻撃パケットを送信
@@ -243,7 +235,10 @@ public class ChargedAttackHandler {
     }
     
     private static void performChargedThrust(Player player, Level world, Vec3 lookVec, Vec3 playerPos, float chargePercent) {
-        float damage = 15.0f * (1.0f + chargePercent);
+        float baseDamage = 15.0f * (1.0f + chargePercent);
+        
+        // 竹を破壊する範囲を設定
+        breakBambooInPath(world, playerPos, lookVec, 6.0);
         double range = 6.0f + chargePercent * 2.0f;
         
         // 貫通突きエフェクト
@@ -285,7 +280,12 @@ public class ChargedAttackHandler {
             });
         
         for (LivingEntity target : targets) {
-            target.hurt(DamageSource.playerAttack(player), damage);
+            float actualDamage = calculateActualDamage(player, target, baseDamage);
+            target.hurt(DamageSource.playerAttack(player), actualDamage);
+            
+            // 武器特殊効果を適用
+            applyWeaponEffects(player, target, actualDamage);
+            
             // 貫通による吹き飛ばし
             target.setDeltaMovement(lookVec.scale(2.0 * chargePercent).add(0, 0.5, 0));
             
@@ -301,7 +301,7 @@ public class ChargedAttackHandler {
     }
     
     private static void performSpinSlash(Player player, Level world, Vec3 playerPos, float chargePercent) {
-        float damage = 12.0f * (1.0f + chargePercent * 1.5f);
+        float baseDamage = 12.0f * (1.0f + chargePercent * 1.5f);
         double range = 4.0f + chargePercent * 2.0f;
         
         // 回転斬りエフェクト
@@ -348,7 +348,11 @@ public class ChargedAttackHandler {
             entity -> entity != player && entity.distanceTo(player) <= range);
         
         for (LivingEntity target : targets) {
-            target.hurt(DamageSource.playerAttack(player), damage);
+            float actualDamage = calculateActualDamage(player, target, baseDamage);
+            target.hurt(DamageSource.playerAttack(player), actualDamage);
+            
+            // 武器特殊効果を適用
+            applyWeaponEffects(player, target, actualDamage);
             
             // 円形ノックバック
             Vec3 knockback = target.position().subtract(playerPos).normalize().scale(1.0 + chargePercent);
@@ -369,8 +373,7 @@ public class ChargedAttackHandler {
     }
     
     private static void performDefaultChargedAttack(Player player, Level world, Vec3 playerPos, float chargePercent) {
-        float baseDamage = 8.0f;
-        float damage = baseDamage * (1.0f + chargePercent * 2.0f);
+        float baseDamage = 8.0f * (1.0f + chargePercent * 2.0f);
         float range = 3.0f + chargePercent * 2.0f;
         
         world.playSound(null, player.getX(), player.getY(), player.getZ(),
@@ -401,7 +404,12 @@ public class ChargedAttackHandler {
             entity -> entity != player && entity.distanceTo(player) <= range);
         
         for (LivingEntity target : targets) {
-            target.hurt(DamageSource.playerAttack(player), damage);
+            float actualDamage = calculateActualDamage(player, target, baseDamage);
+            target.hurt(DamageSource.playerAttack(player), actualDamage);
+            
+            // 武器特殊効果を適用
+            applyWeaponEffects(player, target, actualDamage);
+            
             double knockbackStrength = 0.5 + chargePercent;
             Vec3 knockback = target.position().subtract(playerPos).normalize().scale(knockbackStrength);
             target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.3, knockback.z));
@@ -518,7 +526,13 @@ public class ChargedAttackHandler {
             entity -> entity != player);
         
         for (LivingEntity target : targets) {
-            target.hurt(DamageSource.playerAttack(player), 7.0f);
+            float baseDamage = 7.0f;
+            float actualDamage = calculateActualDamage(player, target, baseDamage);
+            target.hurt(DamageSource.playerAttack(player), actualDamage);
+            
+            // 武器特殊効果を適用
+            applyWeaponEffects(player, target, actualDamage);
+            
             // 突きによる後退
             target.setDeltaMovement(lookVec.scale(0.8).add(0, 0.1, 0));
         }
@@ -530,6 +544,9 @@ public class ChargedAttackHandler {
     private static void performKatanaCombo(Player player, Level world, Vec3 lookVec, Vec3 playerPos, ChargeData data) {
         // コンボ段階に応じた攻撃
         int combo = data.comboCounter % 3;
+        
+        // 攻撃範囲の竹を破壊
+        breakBambooInPath(world, playerPos, lookVec, 5.0);
         
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
@@ -572,7 +589,7 @@ public class ChargedAttackHandler {
         // 攻撃範囲と処理（横に広い範囲）
         double forwardRange = 4.5;  // 前方リーチ
         double horizontalRange = 3.0;  // 横幅を大幅に拡大
-        float damage = combo == 2 ? 12.0f : 9.0f;
+        float baseDamage = combo == 2 ? 12.0f : 9.0f;
         
         // 右ベクトルを計算
         Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
@@ -597,7 +614,12 @@ public class ChargedAttackHandler {
             });
         
         for (LivingEntity target : targets) {
-            target.hurt(DamageSource.playerAttack(player), damage);
+            float actualDamage = calculateActualDamage(player, target, baseDamage);
+            target.hurt(DamageSource.playerAttack(player), actualDamage);
+            
+            // 武器特殊効果を適用
+            applyWeaponEffects(player, target, actualDamage);
+            
             Vec3 knockback = target.position().subtract(playerPos).normalize().scale(0.4);
             target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.1, knockback.z));
         }
@@ -640,7 +662,13 @@ public class ChargedAttackHandler {
             });
         
         for (LivingEntity target : targets) {
-            target.hurt(DamageSource.playerAttack(player), 8.0f);
+            float baseDamage = 8.0f;
+            float actualDamage = calculateActualDamage(player, target, baseDamage);
+            target.hurt(DamageSource.playerAttack(player), actualDamage);
+            
+            // 武器特殊効果を適用
+            applyWeaponEffects(player, target, actualDamage);
+            
             Vec3 knockback = target.position().subtract(playerPos).normalize().scale(0.5);
             target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.15, knockback.z));
         }
@@ -682,6 +710,76 @@ public class ChargedAttackHandler {
                itemName.contains("Blade") || itemName.contains("katana");
     }
     
+    // プレイヤーの実際の攻撃力を計算
+    private static float calculateActualDamage(Player player, LivingEntity target, float baseDamage) {
+        ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+        float damage = baseDamage;
+        
+        // 武器の基本攻撃力を取得
+        if (weapon.getItem() instanceof SwordItem swordItem) {
+            // ソードの基本ダメージを追加
+            damage += swordItem.getDamage();
+        }
+        
+        // プレイヤーの攻撃力属性を取得
+        double attackDamage = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        damage += (float)attackDamage;
+        
+        // 攻撃力上昇エフェクト
+        if (player.hasEffect(MobEffects.DAMAGE_BOOST)) {
+            int amplifier = player.getEffect(MobEffects.DAMAGE_BOOST).getAmplifier();
+            damage += damage * (0.3f * (amplifier + 1));
+        }
+        
+        // 弱体化エフェクト
+        if (player.hasEffect(MobEffects.WEAKNESS)) {
+            int amplifier = player.getEffect(MobEffects.WEAKNESS).getAmplifier();
+            damage -= damage * (0.2f * (amplifier + 1));
+        }
+        
+        // シャープネスエンチャント
+        int sharpnessLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SHARPNESS, weapon);
+        if (sharpnessLevel > 0) {
+            damage += 0.5f * sharpnessLevel + 0.5f;
+        }
+        
+        // アンデッド特攻
+        if (target.getMobType() == MobType.UNDEAD) {
+            int smiteLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, weapon);
+            if (smiteLevel > 0) {
+                damage += 2.5f * smiteLevel;
+            }
+        }
+        
+        // 虫特攻
+        if (target.getMobType() == MobType.ARTHROPOD) {
+            int baneLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BANE_OF_ARTHROPODS, weapon);
+            if (baneLevel > 0) {
+                damage += 2.5f * baneLevel;
+                // スロウネス効果も付与
+                int duration = 20 + (int)(Math.random() * 10 * baneLevel);
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, 3));
+            }
+        }
+        
+        // クリティカルダメージの計算（ランダムで発生）
+        if (Math.random() < 0.1) { // 10%の確率でクリティカル
+            damage *= 1.5f;
+            
+            // クリティカルエフェクト
+            if (player.level instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.CRIT,
+                    target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+                    10, 0.3, 0.3, 0.3, 0.1);
+            }
+            
+            player.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+                SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
+        }
+        
+        return damage;
+    }
+    
     @SubscribeEvent
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         Player player = event.getEntity();
@@ -691,6 +789,145 @@ public class ChargedAttackHandler {
         // チャージ中はブロック破壊をキャンセル
         if (data != null && data.isCharging) {
             event.setCanceled(true);
+        }
+    }
+    
+    // 武器特殊効果を適用するヘルパーメソッド
+    private static void applyWeaponEffects(Player player, LivingEntity target, float damage) {
+        Level world = player.level;
+        ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+        String weaponName = weapon.getItem().getClass().getSimpleName();
+        
+        // RiversOfBloodの吸血効果
+        if (weaponName.equals("RiversOfBloodItem")) {
+            // ターゲットが呪われているかチェック
+            boolean isCursed = target.hasEffect(MobEffects.WITHER) || 
+                               (target.getPersistentData().contains("Feyn") && 
+                                "cursed".equals(target.getPersistentData().getString("Feyn")));
+            
+            float healAmount = isCursed ? damage * 0.5f : damage * 0.2f;
+            player.heal(healAmount);
+            
+            if (isCursed) {
+                // 呪われた敵への追加効果
+                target.hurt(DamageSource.MAGIC, damage * 0.3f);
+                target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
+                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
+            }
+            
+            // 血のエフェクト
+            if (world instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.DAMAGE_INDICATOR,
+                    target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+                    10, 0.3, 0.3, 0.3, 0.1);
+            }
+            
+            world.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.GENERIC_DRINK, SoundSource.PLAYERS, 0.5f, 1.2f);
+        }
+        
+        // WitherKatanaのウィザー効果
+        if (weaponName.equals("WitherKatanaItem")) {
+            // ターゲットが呪われているかチェック
+            boolean isCursed = target.getPersistentData().contains("Feyn") && 
+                               "cursed".equals(target.getPersistentData().getString("Feyn"));
+            
+            if (isCursed) {
+                // 呪われた敵には強化されたウィザー効果
+                target.addEffect(new MobEffectInstance(MobEffects.WITHER, 200, 2));
+                target.hurt(DamageSource.WITHER, damage * 0.5f);
+                
+                // 闇のオーラエフェクト
+                if (world instanceof ServerLevel serverLevel) {
+                    serverLevel.sendParticles(ParticleTypes.SOUL,
+                        target.getX(), target.getY() + 1, target.getZ(),
+                        15, 0.5, 0.5, 0.5, 0.05);
+                }
+            } else {
+                // 通常のウィザー効果
+                target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
+            }
+            
+            // ウィザーサウンド
+            world.playSound(null, target.getX(), target.getY(), target.getZ(),
+                SoundEvents.WITHER_HURT, SoundSource.PLAYERS, 0.5f, 1.0f);
+        }
+        
+        // Killエンチャントの効果
+        if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), weapon) > 0) {
+            // 即死判定（低確率）
+            if (Math.random() < 0.05) { // 5%の確率
+                target.hurt(DamageSource.MAGIC, target.getMaxHealth() * 2);
+                
+                // 即死エフェクト
+                if (world instanceof ServerLevel serverLevel) {
+                    serverLevel.sendParticles(ParticleTypes.SMOKE,
+                        target.getX(), target.getY() + 1, target.getZ(),
+                        20, 0.5, 0.5, 0.5, 0.1);
+                }
+                
+                world.playSound(null, target.getX(), target.getY(), target.getZ(),
+                    SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 0.5f, 2.0f);
+            }
+        }
+    }
+    
+    // 攻撃経路上の竹を破壊する
+    private static void breakBambooInPath(Level world, Vec3 startPos, Vec3 direction, double range) {
+        if (world.isClientSide) return;
+        
+        // 攻撃経路に沿って竹をチェック
+        for (double d = 0; d <= range; d += 0.5) {
+            Vec3 checkPos = startPos.add(direction.scale(d));
+            
+            // 上下左右も含めて範囲をチェック
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 2; dy++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        BlockPos pos = new BlockPos(
+                            checkPos.x + dx,
+                            checkPos.y + dy,
+                            checkPos.z + dz
+                        );
+                        
+                        BlockState state = world.getBlockState(pos);
+                        
+                        // 竹または竹の苗をチェック
+                        if (state.getBlock() == Blocks.BAMBOO || 
+                            state.getBlock() == Blocks.BAMBOO_SAPLING) {
+                            // 竹を破壊（ドロップあり）
+                            world.destroyBlock(pos, true);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // 円形範囲の竹を破壊する
+    private static void breakBambooInRadius(Level world, Vec3 centerPos, double radius) {
+        if (world.isClientSide) return;
+        
+        BlockPos center = new BlockPos(centerPos.x, centerPos.y, centerPos.z);
+        int radiusInt = (int) Math.ceil(radius);
+        
+        // 円形範囲内の竹をチェック
+        for (int x = -radiusInt; x <= radiusInt; x++) {
+            for (int y = -1; y <= 3; y++) {
+                for (int z = -radiusInt; z <= radiusInt; z++) {
+                    if (x * x + z * z <= radius * radius) {
+                        BlockPos pos = center.offset(x, y, z);
+                        BlockState state = world.getBlockState(pos);
+                        
+                        // 竹または竹の苗をチェック
+                        if (state.getBlock() == Blocks.BAMBOO || 
+                            state.getBlock() == Blocks.BAMBOO_SAPLING) {
+                            // 竹を破壊（ドロップあり）
+                            world.destroyBlock(pos, true);
+                        }
+                    }
+                }
+            }
         }
     }
     
