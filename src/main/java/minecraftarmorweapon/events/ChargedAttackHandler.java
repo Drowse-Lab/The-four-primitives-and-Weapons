@@ -2,6 +2,7 @@ package minecraftarmorweapon.events;
 
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraft.client.Minecraft;
@@ -63,6 +64,23 @@ public class ChargedAttackHandler {
     }
     
     @SubscribeEvent
+    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
+        LivingEntity entity = event.getEntity();
+        
+        // Sword of Nightの発光効果を管理
+        if (entity.getPersistentData().contains("SwordOfNightGlow")) {
+            int glowTicks = entity.getPersistentData().getInt("SwordOfNightGlow");
+            if (glowTicks > 0) {
+                entity.getPersistentData().putInt("SwordOfNightGlow", glowTicks - 1);
+            } else {
+                // 発光効果を解除
+                entity.setGlowingTag(false);
+                entity.getPersistentData().remove("SwordOfNightGlow");
+            }
+        }
+    }
+    
+    @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         
@@ -82,6 +100,44 @@ public class ChargedAttackHandler {
             // チャージエフェクト
             if (data.chargeTime % 10 == 0) {
                 displayChargeEffect(player, data.chargeTime);
+            }
+            
+            // Sword of Nightの場合、ターゲットを発光させる
+            String itemName = data.chargingItem.getItem().getClass().getSimpleName();
+            if (itemName.equals("SwordOfNightItem") && !player.level.isClientSide) {
+                // プレイヤーが見ている方向のエンティティを取得
+                Vec3 lookVec = player.getLookAngle();
+                Vec3 eyePos = player.getEyePosition();
+                Vec3 targetPos = eyePos.add(lookVec.scale(20));
+                
+                // レイキャストで最も近いエンティティを検索
+                AABB searchBox = new AABB(eyePos, targetPos).inflate(1.0);
+                List<LivingEntity> potentialTargets = player.level.getEntitiesOfClass(
+                    LivingEntity.class, searchBox,
+                    entity -> entity != player && entity.isAlive()
+                );
+                
+                // 最も近いターゲットを見つける
+                LivingEntity closestTarget = null;
+                double closestDistance = Double.MAX_VALUE;
+                for (LivingEntity target : potentialTargets) {
+                    Vec3 toTarget = target.position().subtract(eyePos);
+                    double dot = lookVec.dot(toTarget.normalize());
+                    if (dot > 0.95) { // 視線方向に近いエンティティのみ
+                        double distance = target.distanceToSqr(player);
+                        if (distance < closestDistance && distance < 400) { // 20ブロック以内
+                            closestDistance = distance;
+                            closestTarget = target;
+                        }
+                    }
+                }
+                
+                // ターゲットに発光効果を付与
+                if (closestTarget != null) {
+                    closestTarget.setGlowingTag(true);
+                    // 1秒後に発光を解除するためのタグを設定
+                    closestTarget.getPersistentData().putInt("SwordOfNightGlow", 2);
+                }
             }
             
             // 最大チャージ到達
@@ -375,8 +431,11 @@ public class ChargedAttackHandler {
         String itemName = mainHand.getItem().getClass().getSimpleName();
         
         if (itemName.equals("SwordOfNightItem") && skillData.isUniqueSkillEnabled("SwordOfNight")) {
-            // SwordOfNightの通常攻撃（ショット）
-            SwordOfNightShotProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
+            // Sword of Night Effectがアクティブな間はショットを撃たない
+            if (!player.hasEffect(MinecraftArmorWeaponModMobEffects.SWORD_OF_NIGHT_EFFECT.get())) {
+                // SwordOfNightの通常攻撃（ショット）
+                SwordOfNightShotProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
+            }
             return;
         }
         
@@ -408,9 +467,12 @@ public class ChargedAttackHandler {
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
             
-            // 直線的な突きエフェクト
+            // 直線的な突きエフェクト（横に広がるように）
             for (int i = 0; i < 5; i++) {
                 double d = i * 0.5 + 1;
+                Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
+                
+                // 中央のエフェクト
                 serverWorld.sendParticles(
                     ParticleTypes.CRIT,
                     playerPos.x + lookVec.x * d,
@@ -418,15 +480,41 @@ public class ChargedAttackHandler {
                     playerPos.z + lookVec.z * d,
                     2, 0.05, 0.05, 0.05, 0
                 );
+                
+                // 左右のエフェクト
+                for (double side = -1.5; side <= 1.5; side += 0.5) {
+                    if (side != 0) {
+                        serverWorld.sendParticles(
+                            ParticleTypes.ENCHANTED_HIT,
+                            playerPos.x + lookVec.x * d + rightVec.x * side,
+                            playerPos.y + 1,
+                            playerPos.z + lookVec.z * d + rightVec.z * side,
+                            1, 0.02, 0.02, 0.02, 0
+                        );
+                    }
+                }
             }
         }
         
-        // 突き攻撃（狭い範囲、長いリーチ）
-        double range = 5.0;  // 範囲を拡大
-        double width = 0.8;  // 幅を少し広く
+        // 突き攻撃（横に広い範囲、長いリーチ）
+        double range = 5.0;  // 前方リーチ
+        double horizontalWidth = 2.5;  // 横幅を大幅に拡大（0.8 → 2.5）
+        double verticalHeight = 1.0;  // 縦の高さは控えめに
         
-        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class,
-            new AABB(playerPos.add(lookVec.scale(0.5)), playerPos.add(lookVec.scale(range))).inflate(width),
+        // 右ベクトルを計算（横方向）
+        Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
+        
+        // 攻撃範囲を手動で構築（横長の矩形）
+        Vec3 minPoint = playerPos.add(lookVec.scale(0.5))
+            .add(rightVec.scale(-horizontalWidth))
+            .add(0, -verticalHeight * 0.5, 0);
+        Vec3 maxPoint = playerPos.add(lookVec.scale(range))
+            .add(rightVec.scale(horizontalWidth))
+            .add(0, verticalHeight * 1.5, 0);
+        
+        AABB attackBox = new AABB(minPoint, maxPoint);
+        
+        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, attackBox,
             entity -> entity != player);
         
         for (LivingEntity target : targets) {
@@ -481,21 +569,31 @@ public class ChargedAttackHandler {
             }
         }
         
-        // 攻撃範囲と処理
-        double range = 4.5;  // 範囲を拡大
-        float damage = combo == 2 ? 12.0f : 9.0f; // ダメージも少し強化
+        // 攻撃範囲と処理（横に広い範囲）
+        double forwardRange = 4.5;  // 前方リーチ
+        double horizontalRange = 3.0;  // 横幅を大幅に拡大
+        float damage = combo == 2 ? 12.0f : 9.0f;
         
-        AABB searchArea = new AABB(
-            playerPos.x - range, playerPos.y - 1, playerPos.z - range,
-            playerPos.x + range, playerPos.y + 2, playerPos.z + range
-        );
+        // 右ベクトルを計算
+        Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
+        
+        // 横長の攻撃範囲を構築
+        Vec3 minPoint = playerPos.add(lookVec.scale(-0.5))
+            .add(rightVec.scale(-horizontalRange))
+            .add(0, -0.5, 0);
+        Vec3 maxPoint = playerPos.add(lookVec.scale(forwardRange))
+            .add(rightVec.scale(horizontalRange))
+            .add(0, 2.5, 0);
+        
+        AABB searchArea = new AABB(minPoint, maxPoint);
         
         List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
             entity -> {
                 if (entity == player) return false;
                 Vec3 toEntity = entity.position().subtract(playerPos).normalize();
                 double dot = lookVec.dot(toEntity);
-                return dot > 0.2 && entity.distanceTo(player) <= range;  // より広い角度で攻撃可能
+                // より広い横方向の判定（180度近い範囲）
+                return dot > -0.3 && entity.distanceTo(player) <= forwardRange + horizontalRange;
             });
         
         for (LivingEntity target : targets) {

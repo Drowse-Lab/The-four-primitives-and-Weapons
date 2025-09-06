@@ -320,6 +320,14 @@ public class DodgeAndBattouHandler {
         if (stack.getItem() instanceof SwordItem) return true;
         
         String itemName = stack.getItem().getClass().getSimpleName();
+        
+        // Sayaアイテムの場合は、刀が入っているかチェック
+        if (itemName.equals("SayaItem")) {
+            // NBTタグを確認して、StoredKatanaが存在する場合のみtrue
+            return stack.hasTag() && stack.getTag().contains("StoredKatana");
+        }
+        
+        // その他の武器
         return itemName.contains("Katana") || itemName.contains("Sword") || 
                itemName.contains("Blade") || itemName.contains("katana");
     }
