@@ -4,8 +4,8 @@
 	"parent": "saya_bandage_katananiguzyouwankotu3d",
 	"texture_size": [8, 8],
 	"textures": {
-		"1": "saya_katananiguzyouwan",
-		"2": "block/texture",
+		"1": "minecraft_armor_weapon:blocks/saya_katananiguzyouwan",
+		"2": "minecraft_armor_weapon:items/saya",
 		"particle": "saya"
 	},
 	"elements": [
