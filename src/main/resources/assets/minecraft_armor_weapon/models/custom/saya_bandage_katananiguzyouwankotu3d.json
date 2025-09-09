@@ -6,7 +6,7 @@
 	"textures": {
 		"1": "minecraft_armor_weapon:blocks/saya_katananiguzyouwan",
 		"2": "minecraft_armor_weapon:items/saya",
-		"particle": "saya"
+		"particle": "minecraft_armor_weapon:items/saya"
 	},
 	"elements": [
 		{
