@@ -8,7 +8,7 @@ import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import java.util.function.Supplier;
 
 public class AttackPacket {
-    private final int attackType; // 0 = normal, 1 = charged
+    private final int attackType; // 0 = normal, 1 = charged, 2 = falling
     private final float chargePercent;
     
     static {
@@ -37,10 +37,14 @@ public class AttackPacket {
             ServerPlayer player = ctx.get().getSender();
             if (player != null) {
                 if (msg.attackType == 0) {
-                    // ChargedAttackHandlerのメソッドを呼び出す
+                    // 通常攻撃
                     minecraftarmorweapon.events.ChargedAttackHandler.performNormalAttack(player);
                 } else if (msg.attackType == 1) {
+                    // 溜め攻撃
                     minecraftarmorweapon.events.ChargedAttackHandler.performChargedAttack(player, msg.chargePercent);
+                } else if (msg.attackType == 2) {
+                    // 落下攻撃
+                    minecraftarmorweapon.events.ChargedAttackHandler.performFallingAttack(player, msg.chargePercent);
                 }
             }
         });

@@ -35,6 +35,7 @@ import net.minecraft.core.BlockPos;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,10 +55,15 @@ public class DodgeAndBattouHandler {
         boolean hasDodged = false;
         int cooldownTimer = 0;
         int fallDamageImmunityTimer = 0;
+        boolean isRightClickHeld = false; // 右クリック押し状態
+        boolean isDashReady = false; // ダッシュ攻撃準備状態
+        int dashAttackCooldown = 0; // ダッシュ攻撃のクールダウン
+        int airDashCount = 0; // 空中ダッシュ回数
         
         void reset() {
             dodgeTimer = 0;
             hasDodged = false;
+            isDashReady = false;
         }
         
         boolean canDodge() {
@@ -66,6 +72,10 @@ public class DodgeAndBattouHandler {
         
         boolean isFallDamageImmune() {
             return fallDamageImmunityTimer > 0;
+        }
+        
+        boolean canDashAttack() {
+            return dashAttackCooldown <= 0;
         }
     }
     
@@ -125,9 +135,56 @@ public class DodgeAndBattouHandler {
             }
         }
         
+        // ダッシュ攻撃クールダウンのカウントダウン
+        if (data.dashAttackCooldown > 0) {
+            data.dashAttackCooldown--;
+        }
+        
+        // 地面にいる場合、空中ダッシュカウントをリセット
+        if (player.isOnGround()) {
+            data.airDashCount = 0;
+        }
+        
+        // クライアント側で同時押しを検出（通常のダッシュ攻撃用）
+        if (player.level.isClientSide) {
+            checkSimultaneousInput(player, data);
+        }
+        
         // クライアント側で左クリックを検出（回避後のダッシュ攻撃用）
         if (player.level.isClientSide && data.hasDodged && data.dodgeTimer > 0) {
             checkDashAttackInput(player, data);
+        }
+    }
+    
+    @OnlyIn(Dist.CLIENT)
+    private static void checkSimultaneousInput(Player player, DodgeData data) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != player) return;
+        
+        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
+        
+        // 武器を持っていない場合はスキップ
+        if (!isWeapon(mainHand) && !isWeapon(offHand)) {
+            data.isDashReady = false;
+            return;
+        }
+        
+        boolean isRightClickHeld = mc.options.keyUse.isDown();
+        boolean isLeftClickHeld = mc.options.keyAttack.isDown();
+        
+        // シフトキーが押されている場合はダッシュ攻撃しない
+        if (player.isShiftKeyDown()) {
+            data.isDashReady = false;
+            return;
+        }
+        
+        // 右クリック＆左クリック同時押しでダッシュ攻撃
+        if (isRightClickHeld && isLeftClickHeld && !data.isDashReady) {
+            data.isDashReady = true;
+            performDashAttack(player);
+        } else if (!isRightClickHeld || !isLeftClickHeld) {
+            data.isDashReady = false;
         }
     }
     
@@ -150,15 +207,23 @@ public class DodgeAndBattouHandler {
     @SubscribeEvent
     public static void onRightClick(PlayerInteractEvent.RightClickEmpty event) {
         Player player = event.getEntity();
+        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
         
-        // シフトキーが押されている場合は何もしない
+        // シフトキーが押されている場合は納刀処理
         if (player.isShiftKeyDown()) {
+            // 武器を持っていて鞘もある場合、納刀する
+            if (isWeapon(mainHand) && isSaya(offHand)) {
+                performSheathing(player, mainHand, offHand, InteractionHand.MAIN_HAND, InteractionHand.OFF_HAND);
+                return;
+            } else if (isWeapon(offHand) && isSaya(mainHand)) {
+                performSheathing(player, offHand, mainHand, InteractionHand.OFF_HAND, InteractionHand.MAIN_HAND);
+                return;
+            }
             return;
         }
         
         // 武器を持っている場合のみ回避を実行
-        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
         if (isWeapon(mainHand) || isWeapon(offHand)) {
             // 通常の右クリック（回避）
             performDodge(player);
@@ -232,6 +297,34 @@ public class DodgeAndBattouHandler {
     
     // ダッシュ攻撃（回避後の攻撃）
     private static void performDashAttack(Player player) {
+        // ダッシュ攻撃のデータを取得
+        UUID playerId = player.getUUID();
+        DodgeData data = playerDodgeData.get(playerId);
+        if (data == null) {
+            data = new DodgeData();
+            playerDodgeData.put(playerId, data);
+        }
+        
+        // クールダウン中は実行しない
+        if (!data.canDashAttack()) {
+            player.displayClientMessage(
+                Component.literal(String.format("§cダッシュ攻撃クールダウン中 (%.1f秒)", 
+                    (float)data.dashAttackCooldown / 20.0f)), 
+                true
+            );
+            return;
+        }
+        
+        // 空中でのダッシュ制限（1回まで）
+        boolean isInAir = !player.isOnGround();
+        if (isInAir) {
+            // if (data.airDashCount >= 1) {
+            //     player.displayClientMessage(Component.literal("§c空中ダッシュは1回まで！"), true);
+            //     return;
+            // }
+            data.airDashCount++;
+        }
+        
         Level world = player.level;
         Vec3 lookVec = player.getLookAngle();
         Vec3 playerPos = player.position();
@@ -239,8 +332,20 @@ public class DodgeAndBattouHandler {
         // 竹を破壊する
         breakBambooInPath(world, playerPos, lookVec, 7.0);
         
-        // 前方への高速移動（少し速度を上げる）
-        player.setDeltaMovement(player.getDeltaMovement().add(lookVec.scale(2.2)));
+        // 前方への高速移動（空中では移動量を減少）
+        double dashStrength = isInAir ? 1.2 : 1.8;  // 空中では弱い推進力
+        
+        // 垂直方向の移動も制限
+        Vec3 dashVec = lookVec;
+        if (isInAir) {
+            // 空中では水平方向の移動を重視
+            dashVec = new Vec3(lookVec.x, Math.min(lookVec.y, 0.2), lookVec.z).normalize();
+        }
+        
+        player.setDeltaMovement(player.getDeltaMovement().add(dashVec.scale(dashStrength)));
+        
+        // クールダウンを設定（地上: 2秒、空中: 3秒）
+        data.dashAttackCooldown = isInAir ? 60 : 40;
         
         // エフェクト
         if (!world.isClientSide) {
@@ -382,6 +487,19 @@ public class DodgeAndBattouHandler {
     private static void performDodge(Player player) {
         Level world = player.level;
         Vec3 lookVec = player.getLookAngle();
+        
+        // 垂直方向の視線を制限（真上や真下を向いている場合の対処）
+        Vec3 horizontalLookVec = new Vec3(lookVec.x, 0, lookVec.z).normalize();
+        if (horizontalLookVec.length() < 0.1) {
+            // プレイヤーがほぼ真上か真下を向いている場合、前方方向を使用
+            float yaw = player.getYRot();
+            horizontalLookVec = new Vec3(
+                -Math.sin(Math.toRadians(yaw)),
+                0,
+                Math.cos(Math.toRadians(yaw))
+            );
+        }
+        
         Vec3 dodgeVec;
         
         // 回避データを取得
@@ -418,16 +536,16 @@ public class DodgeAndBattouHandler {
                 -Math.sin(dodgeAngle),
                 0,
                 Math.cos(dodgeAngle)
-            ).scale(1.5);  // 回避距離を増加
+            ).scale(0.8);  // 回避距離を減少（1.5→0.8）
         } else {
-            // 前方回避（移動していない場合）- 後方から前方へ変更
-            dodgeVec = lookVec.scale(1.5);
+            // 前方回避（移動していない場合）- 水平方向のみ
+            dodgeVec = horizontalLookVec.scale(0.8);  // 回避距離を減少（1.5→0.8）
         }
         
-        // 回避移動
+        // 回避移動（上方向の移動量を調整）
         player.setDeltaMovement(
             dodgeVec.x,
-            player.getDeltaMovement().y + 0.3,
+            player.getDeltaMovement().y + 0.15,  // 上方向の加速を減少（0.3→0.15）
             dodgeVec.z
         );
         
@@ -465,9 +583,70 @@ public class DodgeAndBattouHandler {
             return stack.hasTag() && stack.getTag().contains("StoredKatana");
         }
         
-        // その他の武器
+        // その他の武器（大文字小文字を考慮）
         return itemName.contains("Katana") || itemName.contains("Sword") || 
-               itemName.contains("Blade") || itemName.contains("katana");
+               itemName.contains("Blade") || itemName.contains("katana") ||
+               itemName.equals("RiversOfBloodItem") || itemName.equals("KatanaNiguHumerusItem");
+    }
+    
+    private static boolean isSaya(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        String itemName = stack.getItem().getClass().getSimpleName();
+        return itemName.equals("SayaItem");
+    }
+    
+    // 納刀処理
+    private static void performSheathing(Player player, ItemStack weaponStack, ItemStack sheathStack, 
+                                        InteractionHand weaponHand, InteractionHand sheathHand) {
+        if (!isWeapon(weaponStack) || !isSaya(sheathStack)) return;
+        
+        CompoundTag sheathTag = sheathStack.getOrCreateTag();
+        
+        // 鞘が空の場合のみ納刀可能
+        if (!sheathTag.contains("StoredKatana")) {
+            // 武器のNBTデータを保存
+            CompoundTag weaponData = weaponStack.save(new CompoundTag());
+            sheathTag.put("StoredKatana", weaponData);
+            
+            // 鞘の見た目を更新（CustomModelDataで刀が入っている状態を示す）
+            sheathTag.putInt("CustomModelData", getWeaponModelData(weaponStack));
+            
+            // 鞘にタグを適用
+            sheathStack.setTag(sheathTag);
+            
+            // 武器を削除
+            player.setItemInHand(weaponHand, ItemStack.EMPTY);
+            
+            // 鞘を更新
+            player.setItemInHand(sheathHand, sheathStack);
+            
+            // 納刀音を再生
+            player.playSound(SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 0.8F);
+            
+            player.displayClientMessage(Component.literal("§7納刀"), true);
+        }
+    }
+    
+    private static int getWeaponModelData(ItemStack weapon) {
+        String itemName = weapon.getItem().getClass().getSimpleName();
+        
+        // 武器ごとに異なるCustomModelDataを返す（saya.jsonと一致）
+        if (itemName.equals("IronKatanaItem")) return 1;
+        if (itemName.equals("GoldKatanaItem")) return 2;
+        if (itemName.equals("StoneKatanaItem")) return 3;
+        if (itemName.equals("NetheriteKatanaItem")) return 4;
+        if (itemName.equals("WitherKatanaItem")) return 5;
+        if (itemName.equals("MotoWitherKatanaItem")) return 6;
+        if (itemName.equals("DarknessKatanaItem")) return 7;
+        if (itemName.equals("MagicalKatanaItem")) return 8;
+        if (itemName.equals("MagischesFeenKatanaItem")) return 9;
+        if (itemName.equals("PrototypeKatanaItem")) return 10;
+        if (itemName.equals("OldKatanaItem")) return 11;
+        if (itemName.equals("MyTestIronKatanaItem")) return 12;
+        if (itemName.equals("RiversOfBloodItem")) return 13;
+        if (itemName.equals("KatanaNiguHumerusItem")) return 14;
+        
+        return 0; // デフォルト（空の鞘）
     }
     
     // 落下ダメージ無効化イベント
