@@ -49,12 +49,7 @@ public class LunaItem extends SwordItem {
 		}, 3, -1.4f, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_WEAPON));
 	}
 
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		TyokutouProcedure.execute();
-		return ar;
-	}
+	// 右クリック機能を削除（回避システムで処理される）
 
 	@Override
 	public void inventoryTick(ItemStack itemstack, Level world, Entity entity, int slot, boolean selected) {

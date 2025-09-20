@@ -278,8 +278,20 @@ public class ChargedAttackHandler {
     }
     
     private static void performChargedThrust(Player player, Level world, Vec3 lookVec, Vec3 playerPos, float chargePercent) {
+        // Luna専用の強化突き攻撃処理
+        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        String itemName = mainHand.getItem().getClass().getSimpleName();
+
+        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
+            // 直刀の強化突進攻撃を実行
+            minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.execute(
+                world, player.getX(), player.getY(), player.getZ(), player
+            );
+            return;
+        }
+
         float baseDamage = 15.0f * (1.0f + chargePercent);
-        
+
         // 竹を破壊する範囲を設定
         breakBambooInPath(world, playerPos, lookVec, 6.0);
         double range = 6.0f + chargePercent * 2.0f;
@@ -514,6 +526,18 @@ public class ChargedAttackHandler {
     }
     
     private static void performThrustAttack(Player player, Level world, Vec3 lookVec, Vec3 playerPos) {
+        // Luna専用の突き攻撃処理
+        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        String itemName = mainHand.getItem().getClass().getSimpleName();
+
+        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
+            // 直刀の通常突き攻撃を実行
+            minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.executeNormalThrust(
+                world, player.getX(), player.getY(), player.getZ(), player
+            );
+            return;
+        }
+
         // 突き攻撃のエフェクト
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
@@ -1015,15 +1039,18 @@ public class ChargedAttackHandler {
         if (sheathStack != null) {
             // 抜刀
             CompoundTag tag = sheathStack.getOrCreateTag();
-            ItemStack katanaStack = ItemStack.of(tag.getCompound("StoredKatana"));
-            
+
+            // StoredKatanaまたはStoredSwordをチェック
+            String storedKey = tag.contains("StoredKatana") ? "StoredKatana" : "StoredSword";
+            ItemStack katanaStack = ItemStack.of(tag.getCompound(storedKey));
+
             // 反対の手に刀を配置
-            InteractionHand katanaHand = sheathHand == InteractionHand.MAIN_HAND ? 
+            InteractionHand katanaHand = sheathHand == InteractionHand.MAIN_HAND ?
                                          InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
             player.setItemInHand(katanaHand, katanaStack);
-            
+
             // 鞘から刀を削除
-            tag.remove("StoredKatana");
+            tag.remove(storedKey);
             tag.putInt("CustomModelData", 0);
             sheathStack.setTag(tag);
             player.setItemInHand(sheathHand, sheathStack);
@@ -1110,11 +1137,11 @@ public class ChargedAttackHandler {
     private static boolean isSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
-        return itemName.equals("SayaItem");
+        return itemName.equals("SayaItem") || itemName.equals("TyokutouSayaItem");
     }
-    
+
     private static boolean hasStoredKatana(ItemStack stack) {
-        return stack.hasTag() && stack.getTag().contains("StoredKatana");
+        return stack.hasTag() && (stack.getTag().contains("StoredKatana") || stack.getTag().contains("StoredSword"));
     }
     
 }

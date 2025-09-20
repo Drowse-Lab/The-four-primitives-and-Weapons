@@ -304,6 +304,19 @@ public class DodgeAndBattouHandler {
             data = new DodgeData();
             playerDodgeData.put(playerId, data);
         }
+
+        // 直刀の場合は突進攻撃を実行
+        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
+
+        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
+            performStraightSwordThrust(player, mainHand);
+            return;
+        }
+        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(offHand)) {
+            performStraightSwordThrust(player, offHand);
+            return;
+        }
         
         // クールダウン中は実行しない
         if (!data.canDashAttack()) {
@@ -592,37 +605,63 @@ public class DodgeAndBattouHandler {
     private static boolean isSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
-        return itemName.equals("SayaItem");
+        return itemName.equals("SayaItem") || itemName.equals("TyokutouSayaItem");
+    }
+
+    private static boolean isTyokutouSaya(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        String itemName = stack.getItem().getClass().getSimpleName();
+        return itemName.equals("TyokutouSayaItem");
     }
     
     // 納刀処理
-    private static void performSheathing(Player player, ItemStack weaponStack, ItemStack sheathStack, 
+    private static void performSheathing(Player player, ItemStack weaponStack, ItemStack sheathStack,
                                         InteractionHand weaponHand, InteractionHand sheathHand) {
         if (!isWeapon(weaponStack) || !isSaya(sheathStack)) return;
-        
+
+        // 直刀鞘の場合
+        if (isTyokutouSaya(sheathStack)) {
+            // 直刀のみ納刀可能
+            if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(weaponStack)) {
+                minecraftarmorweapon.item.TyokutouSayaItem.sheatheSword(
+                    player, weaponStack, sheathStack, weaponHand, sheathHand
+                );
+            } else {
+                player.displayClientMessage(Component.literal("§cこの鞘には直刀のみ納刀可能です"), true);
+            }
+            return;
+        }
+
+        // 通常の鞘の処理
         CompoundTag sheathTag = sheathStack.getOrCreateTag();
-        
+
         // 鞘が空の場合のみ納刀可能
         if (!sheathTag.contains("StoredKatana")) {
+            // 直刀は通常の鞘には納刀不可
+            if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(weaponStack)) {
+                player.displayClientMessage(Component.literal("§c直刀は専用の鞘が必要です"), true);
+                return;
+            }
+
             // 武器のNBTデータを保存
             CompoundTag weaponData = weaponStack.save(new CompoundTag());
             sheathTag.put("StoredKatana", weaponData);
-            
+
             // 鞘の見た目を更新（CustomModelDataで刀が入っている状態を示す）
             sheathTag.putInt("CustomModelData", getWeaponModelData(weaponStack));
-            
+
             // 鞘にタグを適用
             sheathStack.setTag(sheathTag);
-            
+
             // 武器を削除
             player.setItemInHand(weaponHand, ItemStack.EMPTY);
-            
+
             // 鞘を更新
             player.setItemInHand(sheathHand, sheathStack);
-            
+
             // 納刀音を再生
             player.playSound(SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 0.8F);
-            
+
             player.displayClientMessage(Component.literal("§7納刀"), true);
         }
     }
@@ -752,6 +791,21 @@ public class DodgeAndBattouHandler {
         return damage;
     }
     
+    // 直刀の突進攻撃
+    private static void performStraightSwordThrust(Player player, ItemStack weapon) {
+        // 直刀の突進攻撃を実行
+        minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.execute(
+            player.level, player.getX(), player.getY(), player.getZ(), player
+        );
+
+        // クールダウン設定
+        DodgeData data = playerDodgeData.get(player.getUUID());
+        if (data != null) {
+            data.dashAttackCooldown = 30; // 1.5秒のクールダウン
+            data.reset();
+        }
+    }
+
     // 攻撃経路上の竹を破壊する
     private static void breakBambooInPath(Level world, Vec3 startPos, Vec3 direction, double range) {
         if (world.isClientSide) return;
