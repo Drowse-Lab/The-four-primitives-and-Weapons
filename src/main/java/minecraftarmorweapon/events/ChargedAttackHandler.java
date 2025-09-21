@@ -67,13 +67,15 @@ public class ChargedAttackHandler {
         int comboCounter = 0; // 連撃カウンター
         boolean isFallingCharge = false; // 落下中のチャージ
         int fallTime = 0; // 落下時間
-        
+        int chargeCooldown = 0; // チャージ攻撃後のクールダウン
+
         void reset() {
             isCharging = false;
             chargeTime = 0;
             chargingItem = ItemStack.EMPTY;
             isFallingCharge = false;
             fallTime = 0;
+            // クールダウンは維持
         }
         
         void resetCombo() {
@@ -96,12 +98,17 @@ public class ChargedAttackHandler {
         Player player = event.player;
         UUID playerId = player.getUUID();
         ChargeData data = playerChargeData.computeIfAbsent(playerId, k -> new ChargeData());
-        
+
+        // チャージクールダウンのカウントダウン
+        if (data.chargeCooldown > 0) {
+            data.chargeCooldown--;
+        }
+
         // クライアント側で左クリックの状態を検出
         if (player.level.isClientSide) {
             checkMouseInput(player, data);
         }
-        
+
         // チャージ中の処理
         if (data.isCharging && !data.chargingItem.isEmpty()) {
             data.chargeTime++;
@@ -195,18 +202,30 @@ public class ChargedAttackHandler {
                 // サーバーに攻撃パケットを送信
                 MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new AttackPacket(0, 0));
             }
-            
-            // チャージ開始（左クリック長押し）
+
+            // チャージ開始（左クリック長押し）- クールダウン中は開始しない
             if (isLeftClickHeld && !data.isCharging && data.clickReleaseTimer > 5) {
-                data.isCharging = true;
-                data.chargeTime = 0;
-                data.chargingItem = mainHand.copy();
+                if (data.chargeCooldown <= 0) {
+                    data.isCharging = true;
+                    data.chargeTime = 0;
+                    data.chargingItem = mainHand.copy();
+                } else if (data.clickReleaseTimer == 6) { // 一度だけ表示
+                    // クールダウン中のメッセージ
+                    player.displayClientMessage(
+                        Component.literal(String.format("§cチャージクールダウン (%.1f秒)", data.chargeCooldown / 20.0f)),
+                        true
+                    );
+                }
             }
             // チャージ解除
             else if (!isLeftClickHeld && data.isCharging) {
                 releaseChargedAttack(player, data);
             }
-            
+            // 左クリックが離された時はタイマーをリセット
+            else if (!isLeftClickHeld && data.wasLeftClickPressed) {
+                data.clickReleaseTimer = 0;
+            }
+
             // 左クリック押し続けている時間をカウント
             if (isLeftClickHeld) {
                 data.clickReleaseTimer++;
@@ -236,22 +255,40 @@ public class ChargedAttackHandler {
             float chargePercent = Math.min((float) data.chargeTime / MAX_CHARGE_TIME, 1.0f);
             // サーバーに攻撃パケットを送信
             MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new AttackPacket(1, chargePercent));
+
+            // チャージ攻撃後のクールダウンを設定（チャージ率に応じて長くなる）
+            data.chargeCooldown = 20 + (int)(chargePercent * 20); // 1秒～2秒
         }
         data.reset();
     }
     
     public static void performChargedAttack(Player player, float chargePercent) {
+        // サーバー側でクールダウン状態をチェック
+        UUID playerId = player.getUUID();
+        ChargeData data = playerChargeData.get(playerId);
+        boolean isCooldown = data != null && data.chargeCooldown > 0;
+        performChargedAttack(player, chargePercent, isCooldown);
+    }
+
+    public static void performChargedAttack(Player player, float chargePercent, boolean isCooldown) {
         Level world = player.level;
         Vec3 playerPos = player.position();
         Vec3 lookVec = player.getLookAngle();
-        
+
         // プレイヤーのスキルデータを取得
         PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
-        WeaponType weaponType = skillData.getSelectedWeaponType();
-        
+
         // 固有スキルのチェック
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         String itemName = mainHand.getItem().getClass().getSimpleName();
+
+        // Lunaまたは他の直刀を持っている場合は自動的に直刀タイプに設定
+        WeaponType weaponType;
+        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
+            weaponType = WeaponType.STRAIGHT_SWORD;
+        } else {
+            weaponType = skillData.getSelectedWeaponType();
+        }
         
         // ReplicaSwordOfLightの固有スキル（ガード）
         if (itemName.equals("ReplicaSwordOfLightItem") && skillData.isUniqueSkillEnabled("ReplicaSwordOfLight")) {
@@ -267,7 +304,7 @@ public class ChargedAttackHandler {
         
         if (weaponType == WeaponType.STRAIGHT_SWORD) {
             // 直刀: 強力な突き一撃
-            performChargedThrust(player, world, lookVec, playerPos, chargePercent);
+            performChargedThrust(player, world, lookVec, playerPos, chargePercent, isCooldown);
         } else if (weaponType == WeaponType.KATANA) {
             // 刀: 周囲回転斬り
             performSpinSlash(player, world, playerPos, chargePercent);
@@ -278,14 +315,18 @@ public class ChargedAttackHandler {
     }
     
     private static void performChargedThrust(Player player, Level world, Vec3 lookVec, Vec3 playerPos, float chargePercent) {
+        performChargedThrust(player, world, lookVec, playerPos, chargePercent, false);
+    }
+
+    private static void performChargedThrust(Player player, Level world, Vec3 lookVec, Vec3 playerPos, float chargePercent, boolean isCooldown) {
         // Luna専用の強化突き攻撃処理
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         String itemName = mainHand.getItem().getClass().getSimpleName();
 
         if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
-            // 直刀の強化突進攻撃を実行
-            minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.execute(
-                world, player.getX(), player.getY(), player.getZ(), player
+            // 直刀のチャージ強化突進攻撃を実行（チャージ率に応じて威力増加）
+            minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.executeChargedThrust(
+                world, player.getX(), player.getY(), player.getZ(), player, chargePercent, isCooldown
             );
             return;
         }
@@ -484,14 +525,21 @@ public class ChargedAttackHandler {
         Level world = player.level;
         Vec3 lookVec = player.getLookAngle();
         Vec3 playerPos = player.position();
-        
+
         // プレイヤーのスキルデータを取得
         PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
-        WeaponType weaponType = skillData.getSelectedWeaponType();
-        
+
         // 固有スキルのチェック
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         String itemName = mainHand.getItem().getClass().getSimpleName();
+
+        // Lunaまたは他の直刀を持っている場合は自動的に直刀タイプに設定
+        WeaponType weaponType;
+        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
+            weaponType = WeaponType.STRAIGHT_SWORD;
+        } else {
+            weaponType = skillData.getSelectedWeaponType();
+        }
         
         if (itemName.equals("SwordOfNightItem") && skillData.isUniqueSkillEnabled("SwordOfNight")) {
             // Sword of Night Effectがアクティブな間はショットを撃たない

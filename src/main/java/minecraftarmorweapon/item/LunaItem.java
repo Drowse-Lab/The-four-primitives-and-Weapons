@@ -15,8 +15,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
 
-import minecraftarmorweapon.procedures.TyokutouProcedure;
-import minecraftarmorweapon.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
+import minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
@@ -51,11 +50,11 @@ public class LunaItem extends SwordItem {
 
 	// 右クリック機能を削除（回避システムで処理される）
 
+	// 直刀として動作（突き攻撃）
 	@Override
 	public void inventoryTick(ItemStack itemstack, Level world, Entity entity, int slot, boolean selected) {
 		super.inventoryTick(itemstack, world, entity, slot, selected);
-		if (selected)
-			IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
+		// 注: 直刀の突き攻撃はDodgeAndBattouHandlerで処理される
 	}
 
 	@Override

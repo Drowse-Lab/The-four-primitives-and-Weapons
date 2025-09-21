@@ -5,7 +5,7 @@
       "type": "tab",
       "sortid": 6,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magic_books",
       "metadata": {
         "files": []
@@ -16,7 +16,7 @@
       "type": "item",
       "sortid": 2,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "fireball",
       "metadata": {
         "files": [
@@ -30,7 +30,7 @@
       "type": "item",
       "sortid": 1,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bubbleshot",
       "metadata": {
         "files": [
@@ -44,7 +44,7 @@
       "type": "item",
       "sortid": 3,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "thunderbolt",
       "metadata": {
         "files": [
@@ -58,7 +58,7 @@
       "type": "enchantment",
       "sortid": 11,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kill",
       "metadata": {
         "files": [
@@ -71,7 +71,7 @@
       "type": "procedure",
       "sortid": 9,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kill_1",
       "metadata": {
         "files": [
@@ -98,7 +98,7 @@
       "type": "tool",
       "sortid": 4,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "item_weaponsword",
       "metadata": {
         "files": [
@@ -112,7 +112,7 @@
       "type": "tab",
       "sortid": 5,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "weapon",
       "metadata": {
         "files": []
@@ -123,7 +123,7 @@
       "type": "tool",
       "sortid": 7,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "netherite_katana",
       "metadata": {
         "files": [
@@ -137,7 +137,7 @@
       "type": "procedure",
       "sortid": 8,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "arrow_1ehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -172,7 +172,7 @@
       "type": "potioneffect",
       "sortid": 16,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "arrow_1",
       "metadata": {
         "files": [
@@ -185,7 +185,7 @@
       "type": "enchantment",
       "sortid": 10,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "demonized",
       "metadata": {
         "files": [
@@ -198,7 +198,7 @@
       "type": "procedure",
       "sortid": 12,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dddgemu_neiniobareiwo_biao_shi",
       "metadata": {
         "return_type": "string",
@@ -218,7 +218,7 @@
       "type": "overlay",
       "sortid": 388,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "ddd",
       "metadata": {
         "files": [
@@ -231,7 +231,7 @@
       "type": "procedure",
       "sortid": 13,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rkiga_yasaretatoki",
       "metadata": {
         "files": [
@@ -250,7 +250,7 @@
       "type": "keybind",
       "sortid": 60,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "r",
       "metadata": {
         "files": [
@@ -263,7 +263,7 @@
       "type": "procedure",
       "sortid": 14,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "fireballeffectehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -282,7 +282,7 @@
       "type": "potioneffect",
       "sortid": 15,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "fireballeffect",
       "metadata": {
         "files": [
@@ -295,7 +295,7 @@
       "type": "procedure",
       "sortid": 17,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "fireball_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -314,7 +314,7 @@
       "type": "procedure",
       "sortid": 18,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "netherite_katana_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -328,7 +328,7 @@
       "type": "tab",
       "sortid": 19,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor",
       "metadata": {
         "files": []
@@ -339,7 +339,7 @@
       "type": "plant",
       "sortid": 20,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rose",
       "metadata": {
         "files": [
@@ -356,7 +356,7 @@
       "name": "MagicBooksLootTable",
       "type": "loottable",
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magic_books_loot_table",
       "metadata": {
         "files": [
@@ -369,7 +369,7 @@
       "type": "procedure",
       "sortid": 22,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "pillager_armorbutuno_meiteitukunoibento",
       "metadata": {
         "files": [
@@ -388,7 +388,7 @@
       "type": "armor",
       "sortid": 23,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "pillager_armor",
       "metadata": {
         "files": [
@@ -405,7 +405,7 @@
       "type": "procedure",
       "sortid": 24,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rosemobupureiyaga_zhi_wuto_chong_tusitatoki",
       "metadata": {
         "files": [
@@ -424,7 +424,7 @@
       "type": "structure",
       "sortid": 26,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "outpost_site",
       "metadata": {
         "files": [
@@ -438,7 +438,7 @@
       "type": "potioneffect",
       "sortid": 29,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tunderbolteffrct",
       "metadata": {
         "files": [
@@ -451,7 +451,7 @@
       "type": "procedure",
       "sortid": 30,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tunderbolteffrctehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -470,7 +470,7 @@
       "type": "procedure",
       "sortid": 31,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "thunderbolt_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -489,7 +489,7 @@
       "type": "procedure",
       "sortid": 34,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "illusioner_armor_chestplate_tick_event",
       "metadata": {
         "files": [
@@ -508,7 +508,7 @@
       "type": "armor",
       "sortid": 35,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "illusioner_armor",
       "metadata": {
         "files": [
@@ -525,7 +525,7 @@
       "type": "potioneffect",
       "sortid": 36,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bow_attack",
       "metadata": {
         "files": [
@@ -538,7 +538,7 @@
       "type": "potioneffect",
       "sortid": 37,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "attack_bow",
       "metadata": {
         "files": [
@@ -551,7 +551,7 @@
       "type": "procedure",
       "sortid": 38,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "attack_bowposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -570,7 +570,7 @@
       "type": "procedure",
       "sortid": 41,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bubbleshot_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -589,7 +589,7 @@
       "type": "tool",
       "sortid": 44,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "stone_katana",
       "metadata": {
         "files": [
@@ -603,7 +603,7 @@
       "type": "procedure",
       "sortid": 45,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "aaitemuwo_shoude_chituteiru_jiannoteituku",
       "metadata": {
         "files": [
@@ -638,7 +638,7 @@
       "type": "item",
       "sortid": 46,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "a",
       "metadata": {
         "files": [
@@ -652,7 +652,7 @@
       "type": "function",
       "sortid": 93,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "iron_golem_summon",
       "metadata": {
         "files": [
@@ -665,7 +665,7 @@
       "type": "procedure",
       "sortid": 51,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "iron_katanaturuwo_shoude_chituteiru_jiannoteituku",
       "metadata": {
         "files": [
@@ -700,7 +700,7 @@
       "type": "procedure",
       "sortid": 52,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "iron_katana_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -714,7 +714,7 @@
       "type": "procedure",
       "sortid": 55,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "otiruyooehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -737,7 +737,7 @@
       "type": "potioneffect",
       "sortid": 56,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "otiruyoo",
       "metadata": {
         "files": [
@@ -750,7 +750,7 @@
       "type": "item",
       "sortid": 57,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "hammer",
       "metadata": {
         "files": [
@@ -764,7 +764,7 @@
       "type": "potioneffect",
       "sortid": 62,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "aaaa",
       "metadata": {
         "files": [
@@ -777,7 +777,7 @@
       "type": "tool",
       "sortid": 63,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "iron_katana",
       "metadata": {
         "files": [
@@ -791,7 +791,7 @@
       "type": "block",
       "sortid": 64,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "cross",
       "metadata": {
         "files": [
@@ -807,7 +807,7 @@
       "type": "procedure",
       "sortid": 65,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "syugeki_on_effect_active_tick",
       "metadata": {
         "files": [
@@ -834,7 +834,7 @@
       "type": "potioneffect",
       "sortid": 66,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "syugeki",
       "metadata": {
         "files": [
@@ -847,7 +847,7 @@
       "type": "procedure",
       "sortid": 70,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "suityuuehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -866,7 +866,7 @@
       "type": "potioneffect",
       "sortid": 71,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "suityuu",
       "metadata": {
         "files": [
@@ -879,7 +879,7 @@
       "type": "procedure",
       "sortid": 72,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tissokuehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -902,7 +902,7 @@
       "type": "potioneffect",
       "sortid": 73,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tissoku",
       "metadata": {
         "files": [
@@ -915,7 +915,7 @@
       "type": "procedure",
       "sortid": 74,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bubbleshot_effectehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -934,7 +934,7 @@
       "type": "potioneffect",
       "sortid": 75,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bubbleshot_effect",
       "metadata": {
         "files": [
@@ -947,7 +947,7 @@
       "type": "potioneffect",
       "sortid": 76,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "thunder_hit",
       "metadata": {
         "files": [
@@ -960,7 +960,7 @@
       "type": "procedure",
       "sortid": 77,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "thunder_hitehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -983,7 +983,7 @@
       "type": "procedure",
       "sortid": 78,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tissokuposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -1002,7 +1002,7 @@
       "type": "potioneffect",
       "sortid": 79,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "nagiharai",
       "metadata": {
         "files": [
@@ -1015,7 +1015,7 @@
       "type": "tool",
       "sortid": 81,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "my_test_iron_katana",
       "metadata": {
         "files": [
@@ -1029,7 +1029,7 @@
       "type": "procedure",
       "sortid": 82,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "my_test_iron_katana_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -1043,7 +1043,7 @@
       "type": "potioneffect",
       "sortid": 83,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kurutimenasi",
       "metadata": {
         "files": [
@@ -1056,7 +1056,7 @@
       "type": "procedure",
       "sortid": 84,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "nkiga_yasaretatoki",
       "metadata": {
         "files": [
@@ -1075,7 +1075,7 @@
       "type": "procedure",
       "sortid": 86,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kurutimenasiposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -1094,7 +1094,7 @@
       "type": "procedure",
       "sortid": 87,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kaitennposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -1108,7 +1108,7 @@
       "type": "procedure",
       "sortid": 88,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "lunaenteiteigaaitemuwo_zhentuta_shi",
       "metadata": {
         "files": [
@@ -1143,7 +1143,7 @@
       "type": "tool",
       "sortid": 89,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "luna",
       "metadata": {
         "files": [
@@ -1157,7 +1157,7 @@
       "type": "potioneffect",
       "sortid": 90,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "waza",
       "metadata": {
         "files": [
@@ -1170,7 +1170,7 @@
       "type": "function",
       "sortid": 92,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "mahouzinn",
       "metadata": {
         "files": [
@@ -1183,7 +1183,7 @@
       "type": "procedure",
       "sortid": 95,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "luna_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -1197,7 +1197,7 @@
       "type": "function",
       "sortid": 97,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "arrows_kill",
       "metadata": {
         "files": [
@@ -1210,7 +1210,7 @@
       "type": "tab",
       "sortid": 110,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "yopkeinamono",
       "metadata": {
         "files": []
@@ -1221,7 +1221,7 @@
       "type": "procedure",
       "sortid": 120,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "effect_magicehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -1256,7 +1256,7 @@
       "type": "potioneffect",
       "sortid": 121,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "effect_magic",
       "metadata": {
         "files": [
@@ -1269,7 +1269,7 @@
       "type": "procedure",
       "sortid": 122,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "stop_arrow",
       "metadata": {
         "files": [
@@ -1304,7 +1304,7 @@
       "type": "procedure",
       "sortid": 123,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "barrier",
       "metadata": {
         "files": [
@@ -1339,7 +1339,7 @@
       "type": "potioneffect",
       "sortid": 124,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "barrier_effect",
       "metadata": {
         "files": [
@@ -1352,7 +1352,7 @@
       "type": "procedure",
       "sortid": 125,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "barrier_effectehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -1387,7 +1387,7 @@
       "type": "livingentity",
       "sortid": 126,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "skelton_mob",
       "metadata": {
         "files": [
@@ -1402,7 +1402,7 @@
       "type": "procedure",
       "sortid": 129,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "skelton_mobenteiteiwo_youkuritukusita_shi",
       "metadata": {
         "files": [
@@ -1437,7 +1437,7 @@
       "type": "procedure",
       "sortid": 131,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "gomanoriken_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -1451,7 +1451,7 @@
       "type": "procedure",
       "sortid": 132,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "aaposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -1470,7 +1470,7 @@
       "type": "potioneffect",
       "sortid": 133,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "aa",
       "metadata": {
         "files": [
@@ -1510,7 +1510,7 @@
       "type": "procedure",
       "sortid": 136,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "gomanoriken_blockburotukuga_youkuritukusaretatoki",
       "metadata": {
         "files": [
@@ -1541,7 +1541,7 @@
       "type": "item",
       "sortid": 137,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "harvest_moon_2023929",
       "metadata": {
         "files": [
@@ -1555,7 +1555,7 @@
       "type": "procedure",
       "sortid": 138,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "nagiharaiposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -1578,7 +1578,7 @@
       "type": "tool",
       "sortid": 142,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "warabitetou",
       "metadata": {
         "files": [
@@ -1592,7 +1592,7 @@
       "type": "procedure",
       "sortid": 143,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "warabitetou_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -1627,7 +1627,7 @@
       "type": "item",
       "sortid": 144,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "a_2",
       "metadata": {
         "files": [
@@ -1641,7 +1641,7 @@
       "type": "procedure",
       "sortid": 145,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "a_2aitemuwo_shoude_chituteiru_jiannoteituku",
       "metadata": {
         "files": [
@@ -1660,7 +1660,7 @@
       "type": "procedure",
       "sortid": 146,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tobi_on_effect_active_tick",
       "metadata": {
         "files": [
@@ -1687,7 +1687,7 @@
       "type": "procedure",
       "sortid": 147,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "otiroehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -1706,7 +1706,7 @@
       "type": "potioneffect",
       "sortid": 148,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "otiro",
       "metadata": {
         "files": [
@@ -1719,7 +1719,7 @@
       "type": "procedure",
       "sortid": 149,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "otiruyoenteiteigasuponsita_shi",
       "metadata": {
         "files": [
@@ -1742,7 +1742,7 @@
       "type": "livingentity",
       "sortid": 150,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "otiruyo",
       "metadata": {
         "files": [
@@ -1757,7 +1757,7 @@
       "type": "procedure",
       "sortid": 151,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "otiroposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -1776,7 +1776,7 @@
       "type": "item",
       "sortid": 152,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "wind_step",
       "metadata": {
         "files": [
@@ -1790,7 +1790,7 @@
       "type": "potioneffect",
       "sortid": 153,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "wind_step_effect",
       "metadata": {
         "files": [
@@ -1803,7 +1803,7 @@
       "type": "procedure",
       "sortid": 154,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "wind_step_effectehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -1822,7 +1822,7 @@
       "type": "procedure",
       "sortid": 155,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "wind_step_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -1841,7 +1841,7 @@
       "type": "potioneffect",
       "sortid": 156,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kaiten",
       "metadata": {
         "files": [
@@ -1854,7 +1854,7 @@
       "type": "procedure",
       "sortid": 157,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kaitenehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -1889,7 +1889,7 @@
       "type": "armor",
       "sortid": 159,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "stray_outer_armor",
       "metadata": {
         "files": [
@@ -1905,7 +1905,7 @@
       "type": "procedure",
       "sortid": 160,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "otitaehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -1940,7 +1940,7 @@
       "type": "potioneffect",
       "sortid": 161,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "otita",
       "metadata": {
         "files": [
@@ -1953,7 +1953,7 @@
       "type": "armor",
       "sortid": 163,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "strayouterarmorhat",
       "metadata": {
         "files": [
@@ -1966,7 +1966,7 @@
       "name": "MinecraftArmorAndWeapon",
       "type": "villagerprofession",
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "minecraft_armor_and_weapon",
       "metadata": {
         "files": []
@@ -1977,7 +1977,7 @@
       "type": "item",
       "sortid": 164,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magic_mcrystal",
       "metadata": {
         "files": [
@@ -1991,7 +1991,7 @@
       "type": "tool",
       "sortid": 165,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magical_katana",
       "metadata": {
         "files": [
@@ -2004,7 +2004,7 @@
       "name": "MinecraftArmorAndWeaponItems",
       "type": "villagertrade",
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "minecraft_armor_and_weapon_items",
       "metadata": {
         "files": []
@@ -2015,7 +2015,7 @@
       "type": "procedure",
       "sortid": 168,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magical_katanamobugaturude_gong_jisaretatoki",
       "metadata": {
         "files": [
@@ -2042,7 +2042,7 @@
       "type": "block",
       "sortid": 172,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "stone_bricks_trap_door",
       "metadata": {
         "files": [
@@ -2060,7 +2060,7 @@
       "type": "achievement",
       "sortid": 174,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sword_progress",
       "metadata": {
         "files": [
@@ -2073,7 +2073,7 @@
       "type": "achievement",
       "sortid": 175,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magical_katana_progress",
       "metadata": {
         "files": [
@@ -2086,7 +2086,7 @@
       "type": "tab",
       "sortid": 176,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "event",
       "metadata": {
         "files": []
@@ -2097,7 +2097,7 @@
       "type": "block",
       "sortid": 177,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rose_flower_pot",
       "metadata": {
         "files": [
@@ -2113,7 +2113,7 @@
       "type": "livingentity",
       "sortid": 178,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "hrmcngs",
       "metadata": {
         "files": [
@@ -2128,7 +2128,7 @@
       "type": "livingentity",
       "sortid": 179,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "ruami_284",
       "metadata": {
         "files": [
@@ -2143,7 +2143,7 @@
       "type": "tool",
       "sortid": 180,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "halloween_2023_10_31_sickle",
       "metadata": {
         "files": [
@@ -2157,7 +2157,7 @@
       "type": "potioneffect",
       "sortid": 181,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "zanngekitokubetu",
       "metadata": {
         "files": [
@@ -2170,7 +2170,7 @@
       "type": "procedure",
       "sortid": 182,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "zanngekitokubetuposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -2189,7 +2189,7 @@
       "type": "procedure",
       "sortid": 183,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "zanngekitokubetuehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -2212,7 +2212,7 @@
       "type": "procedure",
       "sortid": 184,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "youwakaranposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -2231,7 +2231,7 @@
       "type": "procedure",
       "sortid": 185,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "youwakaranehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -2254,7 +2254,7 @@
       "type": "potioneffect",
       "sortid": 186,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "youwakaran",
       "metadata": {
         "files": [
@@ -2267,7 +2267,7 @@
       "type": "procedure",
       "sortid": 187,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "gyetonzangekiposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -2298,7 +2298,7 @@
       "type": "potioneffect",
       "sortid": 188,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "gyetonzangeki",
       "metadata": {
         "files": [
@@ -2311,7 +2311,7 @@
       "type": "procedure",
       "sortid": 189,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "gyetonzangekiehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -2334,7 +2334,7 @@
       "type": "procedure",
       "sortid": 190,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "zanngekitokubetuposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -2348,7 +2348,7 @@
       "type": "potioneffect",
       "sortid": 191,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tobe",
       "metadata": {
         "files": [
@@ -2361,7 +2361,7 @@
       "type": "procedure",
       "sortid": 192,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tobeposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -2384,7 +2384,7 @@
       "type": "potioneffect",
       "sortid": 194,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kougeki",
       "metadata": {
         "files": [
@@ -2397,7 +2397,7 @@
       "type": "procedure",
       "sortid": 195,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kougekiposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -2428,7 +2428,7 @@
       "type": "livingentity",
       "sortid": 196,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "killotiru",
       "metadata": {
         "files": [
@@ -2443,7 +2443,7 @@
       "type": "potioneffect",
       "sortid": 197,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "zanngekikai",
       "metadata": {
         "files": [
@@ -2456,7 +2456,7 @@
       "type": "procedure",
       "sortid": 198,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "zanngekikaiehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -2479,7 +2479,7 @@
       "type": "rangeditem",
       "sortid": 199,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "katana_tobu",
       "metadata": {
         "files": [
@@ -2495,7 +2495,7 @@
       "type": "armor",
       "sortid": 200,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_armor",
       "metadata": {
         "files": [
@@ -2513,7 +2513,7 @@
       "type": "tab",
       "sortid": 201,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_armor_tab",
       "metadata": {
         "files": []
@@ -2525,7 +2525,7 @@
       "type": "armor",
       "sortid": 202,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_green_armor",
       "metadata": {
         "files": [
@@ -2543,7 +2543,7 @@
       "type": "recipe",
       "sortid": 203,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_green_helmet_crafting",
       "metadata": {
         "files": [
@@ -2557,7 +2557,7 @@
       "type": "recipe",
       "sortid": 204,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_green_chestplate_crafting",
       "metadata": {
         "files": [
@@ -2571,7 +2571,7 @@
       "type": "recipe",
       "sortid": 205,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_green_leggings_crafting",
       "metadata": {
         "files": [
@@ -2585,7 +2585,7 @@
       "type": "recipe",
       "sortid": 206,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_green_boots_crafting",
       "metadata": {
         "files": [
@@ -2599,7 +2599,7 @@
       "type": "armor",
       "sortid": 207,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_black_armor",
       "metadata": {
         "files": [
@@ -2617,7 +2617,7 @@
       "type": "armor",
       "sortid": 209,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_red_armor",
       "metadata": {
         "files": [
@@ -2635,7 +2635,7 @@
       "type": "recipe",
       "sortid": 210,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_red_helmet_crafting",
       "metadata": {
         "files": [
@@ -2649,7 +2649,7 @@
       "type": "recipe",
       "sortid": 211,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_red_chestplate_crafting",
       "metadata": {
         "files": [
@@ -2663,7 +2663,7 @@
       "type": "recipe",
       "sortid": 212,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_red_leggings_crafting",
       "metadata": {
         "files": [
@@ -2677,7 +2677,7 @@
       "type": "recipe",
       "sortid": 213,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_red_boots_crafting",
       "metadata": {
         "files": [
@@ -2691,7 +2691,7 @@
       "type": "armor",
       "sortid": 214,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_blue_armor",
       "metadata": {
         "files": [
@@ -2709,7 +2709,7 @@
       "type": "recipe",
       "sortid": 215,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_blue_helmet_crafting",
       "metadata": {
         "files": [
@@ -2723,7 +2723,7 @@
       "type": "recipe",
       "sortid": 216,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_blue_chestplate_crafting",
       "metadata": {
         "files": [
@@ -2737,7 +2737,7 @@
       "type": "recipe",
       "sortid": 217,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_blue_leggings_crafting",
       "metadata": {
         "files": [
@@ -2751,7 +2751,7 @@
       "type": "recipe",
       "sortid": 218,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_blue_boots",
       "metadata": {
         "files": [
@@ -2765,7 +2765,7 @@
       "type": "procedure",
       "sortid": 220,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "my_magic_katana_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -2779,7 +2779,7 @@
       "type": "potioneffect",
       "sortid": 221,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "syugekinanozee",
       "metadata": {
         "files": [
@@ -2792,7 +2792,7 @@
       "type": "procedure",
       "sortid": 222,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "syugekinanozeeehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -2827,7 +2827,7 @@
       "type": "potioneffect",
       "sortid": 223,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "nagiharai_2",
       "metadata": {
         "files": [
@@ -2840,7 +2840,7 @@
       "type": "procedure",
       "sortid": 224,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "nagiharai_2ehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -2863,7 +2863,7 @@
       "type": "procedure",
       "sortid": 225,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "nagiharai_2posiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -2886,7 +2886,7 @@
       "type": "tool",
       "sortid": 226,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magisches_feen_katana",
       "metadata": {
         "files": [
@@ -2900,7 +2900,7 @@
       "type": "procedure",
       "sortid": 227,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kaminariyadeehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -2923,7 +2923,7 @@
       "type": "procedure",
       "sortid": 228,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kaminariyadeposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -2946,7 +2946,7 @@
       "type": "potioneffect",
       "sortid": 229,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kaminariyade",
       "metadata": {
         "files": [
@@ -2959,7 +2959,7 @@
       "type": "procedure",
       "sortid": 230,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magisches_feen_katanamobugaturude_gong_jisaretatoki",
       "metadata": {
         "files": [
@@ -2982,7 +2982,7 @@
       "type": "potioneffect",
       "sortid": 231,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tokubetusounazangeki",
       "metadata": {
         "files": [
@@ -2995,7 +2995,7 @@
       "type": "procedure",
       "sortid": 232,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tokubetusounazangekiehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -3018,7 +3018,7 @@
       "type": "procedure",
       "sortid": 234,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "karikarisiterunemaidomaidoehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -3053,7 +3053,7 @@
       "type": "procedure",
       "sortid": 235,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "karikarisiterunemaidomaidoposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -3072,7 +3072,7 @@
       "type": "potioneffect",
       "sortid": 236,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "karikarisiterunemaidomaido",
       "metadata": {
         "files": [
@@ -3085,7 +3085,7 @@
       "type": "achievement",
       "sortid": 238,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "you_have_become_a_vampire",
       "metadata": {
         "files": [
@@ -3117,7 +3117,7 @@
       "type": "item",
       "sortid": 240,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "blood_bottle",
       "metadata": {
         "files": [
@@ -3131,7 +3131,7 @@
       "type": "procedure",
       "sortid": 242,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "katana_blood_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -3145,7 +3145,7 @@
       "type": "procedure",
       "sortid": 243,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "devour_bloodehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -3168,7 +3168,7 @@
       "type": "potioneffect",
       "sortid": 244,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "devour_blood",
       "metadata": {
         "files": [
@@ -3195,7 +3195,7 @@
       "type": "potioneffect",
       "sortid": 246,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "effect_blood_tp",
       "metadata": {
         "files": [
@@ -3208,7 +3208,7 @@
       "type": "procedure",
       "sortid": 247,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "blood_tpposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -3243,7 +3243,7 @@
       "type": "procedure",
       "sortid": 248,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "blood_tpehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -3278,7 +3278,7 @@
       "type": "potioneffect",
       "sortid": 249,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "blood_tp",
       "metadata": {
         "files": [
@@ -3291,7 +3291,7 @@
       "type": "procedure",
       "sortid": 250,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "reset_max_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -3330,7 +3330,7 @@
       "type": "item",
       "sortid": 251,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "reset_max",
       "metadata": {
         "files": [
@@ -3344,7 +3344,7 @@
       "type": "item",
       "sortid": 252,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "reset_1",
       "metadata": {
         "files": [
@@ -3358,7 +3358,7 @@
       "type": "procedure",
       "sortid": 253,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "reset_1_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -3393,7 +3393,7 @@
       "type": "tool",
       "sortid": 254,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sword_of_night",
       "metadata": {
         "files": [
@@ -3407,7 +3407,7 @@
       "type": "procedure",
       "sortid": 255,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sword_of_night_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -3442,7 +3442,7 @@
       "type": "procedure",
       "sortid": 256,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tracking",
       "metadata": {
         "files": [
@@ -3465,7 +3465,7 @@
       "type": "procedure",
       "sortid": 257,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "ngsposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -3500,7 +3500,7 @@
       "type": "procedure",
       "sortid": 258,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "ngsposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -3535,7 +3535,7 @@
       "type": "potioneffect",
       "sortid": 259,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "ngs",
       "metadata": {
         "files": [
@@ -3548,7 +3548,7 @@
       "type": "potioneffect",
       "sortid": 260,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sword_of_night_effect",
       "metadata": {
         "files": [
@@ -3561,7 +3561,7 @@
       "type": "procedure",
       "sortid": 261,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sword_of_night_make_item_glow",
       "metadata": {
         "return_type": "logic",
@@ -3581,7 +3581,7 @@
       "type": "procedure",
       "sortid": 262,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sword_of_night_effectposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -3614,7 +3614,7 @@
       "type": "block",
       "sortid": 264,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kurikaraken_block",
       "metadata": {
         "files": [
@@ -3630,7 +3630,7 @@
       "type": "attribute",
       "sortid": 328,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "mana",
       "metadata": {
         "files": []
@@ -3641,7 +3641,7 @@
       "type": "tool",
       "sortid": 265,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "prototype_katana",
       "metadata": {
         "files": [
@@ -3655,7 +3655,7 @@
       "type": "procedure",
       "sortid": 266,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "prototype_katana_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -3669,7 +3669,7 @@
       "type": "procedure",
       "sortid": 267,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "prototype_katanamobugaturude_gong_jisaretatoki",
       "metadata": {
         "files": [
@@ -3692,7 +3692,7 @@
       "type": "procedure",
       "sortid": 268,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "long_range_weapon_cutehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -3727,7 +3727,7 @@
       "type": "potioneffect",
       "sortid": 269,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "long_range_weapon_cut",
       "metadata": {
         "files": [
@@ -3740,7 +3740,7 @@
       "type": "procedure",
       "sortid": 270,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sword_of_night_effectposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -3759,7 +3759,7 @@
       "type": "procedure",
       "sortid": 272,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "wind_step_effectposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -3778,7 +3778,7 @@
       "type": "procedure",
       "sortid": 273,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "wind_step_effectposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -3797,7 +3797,7 @@
       "type": "procedure",
       "sortid": 274,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "aaa_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -3816,7 +3816,7 @@
       "type": "item",
       "sortid": 275,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "aaa",
       "metadata": {
         "files": [
@@ -3830,7 +3830,7 @@
       "type": "procedure",
       "sortid": 276,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bubbleshot_effectposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -3849,7 +3849,7 @@
       "type": "procedure",
       "sortid": 277,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bubbleshot_effectposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -3868,7 +3868,7 @@
       "type": "item",
       "sortid": 278,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "storm",
       "metadata": {
         "files": [
@@ -3882,7 +3882,7 @@
       "type": "procedure",
       "sortid": 279,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tunderbolteffrctposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -3901,7 +3901,7 @@
       "type": "procedure",
       "sortid": 280,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tunderbolteffrctposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -3920,7 +3920,7 @@
       "type": "potioneffect",
       "sortid": 281,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "storm_effect",
       "metadata": {
         "files": [
@@ -3933,7 +3933,7 @@
       "type": "procedure",
       "sortid": 282,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "storm_effectehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -3952,7 +3952,7 @@
       "type": "procedure",
       "sortid": 283,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "storm_effectposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -3971,7 +3971,7 @@
       "type": "procedure",
       "sortid": 284,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "storm_effectposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -3990,7 +3990,7 @@
       "type": "procedure",
       "sortid": 285,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "storm_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -4009,7 +4009,7 @@
       "type": "procedure",
       "sortid": 286,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kitterukitteruehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -4044,7 +4044,7 @@
       "type": "potioneffect",
       "sortid": 287,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kitterukitteru",
       "metadata": {
         "files": [
@@ -4057,7 +4057,7 @@
       "type": "procedure",
       "sortid": 288,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tp_attackposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -4071,7 +4071,7 @@
       "type": "procedure",
       "sortid": 289,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tp_attackposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -4106,7 +4106,7 @@
       "type": "potioneffect",
       "sortid": 290,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tp_attack",
       "metadata": {
         "files": [
@@ -4119,7 +4119,7 @@
       "type": "armor",
       "sortid": 291,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "oninomen",
       "metadata": {
         "files": [
@@ -4133,7 +4133,7 @@
       "type": "achievement",
       "sortid": 292,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kurikaraken_progress",
       "metadata": {
         "files": [
@@ -4146,7 +4146,7 @@
       "type": "tool",
       "sortid": 293,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "small_sword",
       "metadata": {
         "files": [
@@ -4160,7 +4160,7 @@
       "type": "procedure",
       "sortid": 294,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "small_sword_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -4195,7 +4195,7 @@
       "type": "tab",
       "sortid": 296,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "nigu",
       "metadata": {
         "files": []
@@ -4206,7 +4206,7 @@
       "type": "procedure",
       "sortid": 297,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "katana_nigu_humerus_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -4220,7 +4220,7 @@
       "type": "tool",
       "sortid": 298,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "katana_nigu_humerus",
       "metadata": {
         "files": [
@@ -4234,7 +4234,7 @@
       "type": "armor",
       "sortid": 303,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bogged_outer",
       "metadata": {
         "files": [
@@ -4251,7 +4251,7 @@
       "type": "gui",
       "sortid": 304,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rpg_book_gui",
       "metadata": {
         "files": [
@@ -4266,7 +4266,7 @@
       "type": "procedure",
       "sortid": 305,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rpg_book_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -4301,7 +4301,7 @@
       "type": "item",
       "sortid": 306,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rpg_book",
       "metadata": {
         "files": [
@@ -4316,7 +4316,7 @@
       "type": "procedure",
       "sortid": 307,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rpg_book_gui_gu_iga_biziraretatoki",
       "metadata": {
         "files": [
@@ -4335,7 +4335,7 @@
       "type": "procedure",
       "sortid": 308,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rpg_book_gui_bogged_outer_tap",
       "metadata": {
         "files": [
@@ -4354,7 +4354,7 @@
       "type": "procedure",
       "sortid": 309,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rpg_book_gui_nigu_tap",
       "metadata": {
         "files": [
@@ -4373,7 +4373,7 @@
       "type": "potioneffect",
       "sortid": 310,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "zokuseizanngeki",
       "metadata": {
         "files": [
@@ -4386,7 +4386,7 @@
       "type": "procedure",
       "sortid": 311,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "zokuseizanngekiehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -4409,7 +4409,7 @@
       "type": "procedure",
       "sortid": 312,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bow_multishot",
       "metadata": {
         "files": [
@@ -4444,7 +4444,7 @@
       "type": "procedure",
       "sortid": 313,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rpg_book_gui_magic_swordsman_tap",
       "metadata": {
         "files": [
@@ -4463,7 +4463,7 @@
       "type": "procedure",
       "sortid": 314,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bow_multishot_mamot",
       "metadata": {
         "files": [
@@ -4500,7 +4500,7 @@
       "type": "armor",
       "sortid": 316,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "das_herz_einer_fee_armor",
       "metadata": {
         "files": [
@@ -4517,7 +4517,7 @@
       "type": "block",
       "sortid": 317,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "stone_katana_block",
       "metadata": {
         "files": [
@@ -4533,7 +4533,7 @@
       "type": "block",
       "sortid": 318,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "stone_katana_block_1",
       "metadata": {
         "files": [
@@ -4549,7 +4549,7 @@
       "type": "tool",
       "sortid": 319,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "machete",
       "metadata": {
         "files": [
@@ -4563,7 +4563,7 @@
       "type": "block",
       "sortid": 322,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "makiwaridai",
       "metadata": {
         "files": [
@@ -4579,7 +4579,7 @@
       "type": "procedure",
       "sortid": 323,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "decoration_pot_with_arrows_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -4598,7 +4598,7 @@
       "type": "item",
       "sortid": 324,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "decoration_pot_with_arrows",
       "metadata": {
         "files": [
@@ -4612,7 +4612,7 @@
       "type": "procedure",
       "sortid": 325,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magic_wand_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -4647,7 +4647,7 @@
       "type": "potioneffect",
       "sortid": 329,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sword_of_night_reload",
       "metadata": {
         "files": [
@@ -4688,7 +4688,7 @@
       "type": "recipe",
       "sortid": 333,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kurikarasword",
       "metadata": {
         "files": [
@@ -4701,7 +4701,7 @@
       "type": "recipe",
       "sortid": 334,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kurikarasword_2",
       "metadata": {
         "files": [
@@ -4714,7 +4714,7 @@
       "type": "recipe",
       "sortid": 335,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kurikarakatana",
       "metadata": {
         "files": [
@@ -4727,7 +4727,7 @@
       "type": "recipe",
       "sortid": 336,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kurikarakatana_2",
       "metadata": {
         "files": [
@@ -4740,7 +4740,7 @@
       "type": "recipe",
       "sortid": 337,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kurikaratyokuto",
       "metadata": {
         "files": [
@@ -4753,7 +4753,7 @@
       "type": "recipe",
       "sortid": 338,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kurikaratyokuto_2",
       "metadata": {
         "files": [
@@ -4766,7 +4766,7 @@
       "type": "potioneffect",
       "sortid": 339,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sword_of_night_tameeee",
       "metadata": {
         "files": [
@@ -4779,7 +4779,7 @@
       "type": "potioneffect",
       "sortid": 340,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test",
       "metadata": {
         "files": [
@@ -4792,7 +4792,7 @@
       "type": "tool",
       "sortid": 341,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "ninjatou",
       "metadata": {
         "files": [
@@ -4806,7 +4806,7 @@
       "type": "procedure",
       "sortid": 342,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "ninjatou_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -4841,7 +4841,7 @@
       "type": "procedure",
       "sortid": 343,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "testposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -4860,7 +4860,7 @@
       "type": "procedure",
       "sortid": 344,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "testposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -4879,7 +4879,7 @@
       "type": "procedure",
       "sortid": 346,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "wordsparn_rpg_book_give",
       "metadata": {
         "files": [
@@ -4902,7 +4902,7 @@
       "type": "procedure",
       "sortid": 347,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rog_book_gui_kakusi_tap",
       "metadata": {
         "files": [
@@ -4921,7 +4921,7 @@
       "type": "procedure",
       "sortid": 348,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rpg_book_gui_ninja_tap",
       "metadata": {
         "files": [
@@ -4940,7 +4940,7 @@
       "type": "procedure",
       "sortid": 349,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "naihazuno_ring_while_bauble_is_equipped_tick",
       "metadata": {
         "files": [
@@ -4959,7 +4959,7 @@
       "type": "curiosbauble",
       "sortid": 350,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "naihazuno_ring",
       "metadata": {
         "files": [
@@ -4973,7 +4973,7 @@
       "type": "procedure",
       "sortid": 355,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "guardposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -5008,7 +5008,7 @@
       "type": "procedure",
       "sortid": 356,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "guardposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -5039,7 +5039,7 @@
       "type": "procedure",
       "sortid": 357,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "guardehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -5074,7 +5074,7 @@
       "type": "potioneffect",
       "sortid": 358,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "guard",
       "metadata": {
         "files": [
@@ -5087,7 +5087,7 @@
       "type": "gamerule",
       "sortid": 454,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rpg_book_give",
       "metadata": {
         "files": [],
@@ -5099,7 +5099,7 @@
       "type": "tool",
       "sortid": 362,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "replica_sword_of_light",
       "metadata": {
         "files": [
@@ -5113,7 +5113,7 @@
       "type": "tool",
       "sortid": 363,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "gold_katana",
       "metadata": {
         "files": [
@@ -5127,7 +5127,7 @@
       "type": "tab",
       "sortid": 365,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "chuzume_tab",
       "metadata": {
         "files": []
@@ -5138,7 +5138,7 @@
       "type": "procedure",
       "sortid": 366,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sibouzi",
       "metadata": {
         "files": [
@@ -5157,7 +5157,7 @@
       "type": "tool",
       "sortid": 367,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kenti",
       "metadata": {
         "files": [
@@ -5171,7 +5171,7 @@
       "type": "procedure",
       "sortid": 368,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kentimobugaturude_gong_jisaretatoki",
       "metadata": {
         "files": [
@@ -5190,7 +5190,7 @@
       "type": "procedure",
       "sortid": 369,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "zokuseiritokutyuwaza",
       "metadata": {
         "files": [
@@ -5204,7 +5204,7 @@
       "type": "procedure",
       "sortid": 370,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "nomalwaza",
       "metadata": {
         "files": [
@@ -5218,7 +5218,7 @@
       "type": "procedure",
       "sortid": 371,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magicwaza",
       "metadata": {
         "files": [
@@ -5232,7 +5232,7 @@
       "type": "procedure",
       "sortid": 372,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "mytestkatanawaza",
       "metadata": {
         "files": [
@@ -5246,7 +5246,7 @@
       "type": "procedure",
       "sortid": 373,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tyokutou",
       "metadata": {
         "files": [
@@ -5260,7 +5260,7 @@
       "type": "procedure",
       "sortid": 374,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "mukouka_guard",
       "metadata": {
         "files": [
@@ -5279,7 +5279,7 @@
       "type": "procedure",
       "sortid": 375,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "replica_sword_of_light_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -5293,7 +5293,7 @@
       "type": "potioneffect",
       "sortid": 376,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "black_hole_effect",
       "metadata": {
         "files": [
@@ -5306,7 +5306,7 @@
       "type": "animatedentity",
       "sortid": 377,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "blackhole",
       "metadata": {
         "files": [
@@ -5322,7 +5322,7 @@
       "type": "procedure",
       "sortid": 378,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "blackholeenteiteigasuponsita_shi",
       "metadata": {
         "files": [
@@ -5345,7 +5345,7 @@
       "type": "procedure",
       "sortid": 379,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "blackholeenteiteinotituku_geng_xin_shi",
       "metadata": {
         "files": [
@@ -5380,7 +5380,7 @@
       "type": "tool",
       "sortid": 381,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "desporn_kenti",
       "metadata": {
         "files": [
@@ -5394,7 +5394,7 @@
       "type": "procedure",
       "sortid": 380,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "desporn_kentimobugaturude_gong_jisaretatoki",
       "metadata": {
         "files": [
@@ -5417,7 +5417,7 @@
       "type": "procedure",
       "sortid": 382,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "blackholeenteiteiwo_youkuritukusita_shi",
       "metadata": {
         "files": [
@@ -5440,7 +5440,7 @@
       "type": "item",
       "sortid": 383,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "darkness",
       "metadata": {
         "files": [
@@ -5454,7 +5454,7 @@
       "type": "procedure",
       "sortid": 384,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "darkness_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -5481,7 +5481,7 @@
       "type": "procedure",
       "sortid": 385,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "darknessaitemuwo_shoude_chituteiru_jiannoteituku",
       "metadata": {
         "files": [
@@ -5500,7 +5500,7 @@
       "type": "tool",
       "sortid": 386,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "darkness_katana",
       "metadata": {
         "files": [
@@ -5514,7 +5514,7 @@
       "type": "overlay",
       "sortid": 387,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kuwakuwa",
       "metadata": {
         "files": [
@@ -5527,7 +5527,7 @@
       "type": "procedure",
       "sortid": 389,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "darkness_attack_effectehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -5546,7 +5546,7 @@
       "type": "potioneffect",
       "sortid": 390,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "darkness_attack_effect",
       "metadata": {
         "files": [
@@ -5559,7 +5559,7 @@
       "type": "procedure",
       "sortid": 391,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kuwakuwagemu_neiniobareiwo_biao_shi",
       "metadata": {
         "return_type": "logic",
@@ -5579,7 +5579,7 @@
       "type": "procedure",
       "sortid": 392,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "darkness_katana_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -5614,7 +5614,7 @@
       "type": "potioneffect",
       "sortid": 393,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tokubetu",
       "metadata": {
         "files": [
@@ -5627,7 +5627,7 @@
       "type": "achievement",
       "sortid": 394,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magical_swordsman_achievements",
       "metadata": {
         "files": [
@@ -5640,7 +5640,7 @@
       "type": "achievement",
       "sortid": 395,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dark_magic_swordsman_achievements",
       "metadata": {
         "files": [
@@ -5653,7 +5653,7 @@
       "type": "achievement",
       "sortid": 396,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rivers_of_blood_achievements",
       "metadata": {
         "files": [
@@ -5666,7 +5666,7 @@
       "type": "procedure",
       "sortid": 398,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rpg_book_gui_toziru",
       "metadata": {
         "files": [
@@ -5685,7 +5685,7 @@
       "type": "procedure",
       "sortid": 401,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rpg_book_gui_chuzume",
       "metadata": {
         "files": [
@@ -5704,7 +5704,7 @@
       "type": "procedure",
       "sortid": 402,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "rpg_book_gui_vampire",
       "metadata": {
         "files": [
@@ -5723,7 +5723,7 @@
       "type": "procedure",
       "sortid": 403,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "fireworks_black_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -5742,7 +5742,7 @@
       "type": "item",
       "sortid": 404,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "fireworks_black",
       "metadata": {
         "files": [
@@ -5756,7 +5756,7 @@
       "type": "tool",
       "sortid": 405,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "scythe",
       "metadata": {
         "files": [
@@ -5770,7 +5770,7 @@
       "type": "procedure",
       "sortid": 406,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "large_weapons",
       "metadata": {
         "files": [
@@ -5805,7 +5805,7 @@
       "type": "armor",
       "sortid": 407,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "warden_armor",
       "metadata": {
         "files": [
@@ -5821,7 +5821,7 @@
       "type": "gui",
       "sortid": 408,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "smithing_table_gui_2",
       "metadata": {
         "files": [
@@ -5836,7 +5836,7 @@
       "type": "block",
       "sortid": 409,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "custom_smithing_table",
       "metadata": {
         "files": [
@@ -5852,7 +5852,7 @@
       "type": "procedure",
       "sortid": 410,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "smithingtablegui_2naiyoukawatta",
       "metadata": {
         "files": [
@@ -5871,7 +5871,7 @@
       "type": "procedure",
       "sortid": 411,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "smithing_table_gui_2kono_gu_iga_kaikareteiru_jiannoteituku",
       "metadata": {
         "files": [
@@ -5890,7 +5890,7 @@
       "type": "recipe",
       "sortid": 412,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "customsmithingtablerecipe",
       "metadata": {
         "files": [
@@ -5903,7 +5903,7 @@
       "type": "tool",
       "sortid": 413,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kabuseru",
       "metadata": {
         "files": [
@@ -5917,7 +5917,7 @@
       "type": "procedure",
       "sortid": 414,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kabuserumobugaturude_gong_jisaretatoki",
       "metadata": {
         "files": [
@@ -5954,7 +5954,7 @@
       "type": "procedure",
       "sortid": 415,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "motaserumobugaturude_gong_jisaretatoki",
       "metadata": {
         "files": [
@@ -5977,7 +5977,7 @@
       "type": "procedure",
       "sortid": 417,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kabuseruturuwo_shoude_chituteiru_jiannoteituku",
       "metadata": {
         "files": [
@@ -5996,7 +5996,7 @@
       "type": "procedure",
       "sortid": 418,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "guard_now",
       "metadata": {
         "files": [
@@ -6019,7 +6019,7 @@
       "type": "procedure",
       "sortid": 419,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "attack_in_guardposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -6042,7 +6042,7 @@
       "type": "potioneffect",
       "sortid": 420,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "attack_in_guard",
       "metadata": {
         "files": [
@@ -6055,7 +6055,7 @@
       "type": "item",
       "sortid": 422,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "stone_slab",
       "metadata": {
         "files": [
@@ -6069,7 +6069,7 @@
       "type": "recipe",
       "sortid": 423,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "stone_slab_recipe",
       "metadata": {
         "files": [
@@ -6099,7 +6099,7 @@
       "type": "potioneffect",
       "sortid": 425,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "chuzume_husk_armor_knock_back",
       "metadata": {
         "files": [
@@ -6112,7 +6112,7 @@
       "type": "procedure",
       "sortid": 426,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "chuzume_husk_armor_knock_backposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -6131,7 +6131,7 @@
       "type": "procedure",
       "sortid": 427,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "chuzume_husk_armorherumetutono_meiteitukunoibento",
       "metadata": {
         "files": [
@@ -6150,7 +6150,7 @@
       "type": "procedure",
       "sortid": 428,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "chuzume_husk_armor_knock_backposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -6169,7 +6169,7 @@
       "type": "procedure",
       "sortid": 429,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "witherskeletonstonekatana",
       "metadata": {
         "files": [
@@ -6188,7 +6188,7 @@
       "type": "procedure",
       "sortid": 430,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "witherskeletonstonekatana_2",
       "metadata": {
         "files": [
@@ -6223,7 +6223,7 @@
       "type": "procedure",
       "sortid": 432,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_blockburotukuga_youkuritukusaretatoki",
       "metadata": {
         "files": [
@@ -6254,7 +6254,7 @@
       "type": "tool",
       "sortid": 433,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "moto_wither_katana",
       "metadata": {
         "files": [
@@ -6268,7 +6268,7 @@
       "type": "block",
       "sortid": 434,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "moto_wither_katana_block_1",
       "metadata": {
         "files": [
@@ -6284,7 +6284,7 @@
       "type": "block",
       "sortid": 435,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "moto_wither_katana_block",
       "metadata": {
         "files": [
@@ -6314,7 +6314,7 @@
       "type": "procedure",
       "sortid": 437,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "wither_katana_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -6328,7 +6328,7 @@
       "type": "block",
       "sortid": 438,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "wither_skeleton_spawner",
       "metadata": {
         "files": [
@@ -6344,7 +6344,7 @@
       "type": "recipe",
       "sortid": 439,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "witherskeletonspawnerrecipe",
       "metadata": {
         "files": [
@@ -6357,7 +6357,7 @@
       "type": "item",
       "sortid": 440,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "skin_of_dragon",
       "metadata": {
         "files": [
@@ -6371,7 +6371,7 @@
       "type": "procedure",
       "sortid": 441,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "skin_of_dragon_tick",
       "metadata": {
         "files": [
@@ -6406,7 +6406,7 @@
       "type": "procedure",
       "sortid": 442,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "skin_of_dragon_world_load",
       "metadata": {
         "files": [
@@ -6425,7 +6425,7 @@
       "type": "procedure",
       "sortid": 443,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "skin_of_dragondes",
       "metadata": {
         "files": [
@@ -6464,7 +6464,7 @@
       "type": "recipe",
       "sortid": 444,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_armor_helmet_normal_recipe",
       "metadata": {
         "files": [
@@ -6478,7 +6478,7 @@
       "type": "recipe",
       "sortid": 445,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_armor_chestplate_normal_recipe",
       "metadata": {
         "files": [
@@ -6492,7 +6492,7 @@
       "type": "recipe",
       "sortid": 446,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_armor_leggings_normal_recipe",
       "metadata": {
         "files": [
@@ -6506,7 +6506,7 @@
       "type": "recipe",
       "sortid": 447,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "dragon_armor_boots_normal_recipe",
       "metadata": {
         "files": [
@@ -6520,7 +6520,7 @@
       "type": "block",
       "sortid": 448,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "custom_crafter_crafting",
       "metadata": {
         "files": [
@@ -6537,7 +6537,7 @@
       "type": "gui",
       "sortid": 449,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "custom_crafter_craftinggui",
       "metadata": {
         "files": [
@@ -6551,7 +6551,7 @@
       "type": "procedure",
       "sortid": 450,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "custom_crafter_craftingburotukuga_youkuritukusaretatoki",
       "metadata": {
         "files": [
@@ -6570,7 +6570,7 @@
       "type": "procedure",
       "sortid": 451,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "hardentityehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -6605,7 +6605,7 @@
       "type": "potioneffect",
       "sortid": 452,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "hardentity",
       "metadata": {
         "files": [
@@ -6618,7 +6618,7 @@
       "type": "gamerule",
       "sortid": 453,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "quest_time_duration",
       "metadata": {
         "files": [],
@@ -6631,7 +6631,7 @@
       "type": "procedure",
       "sortid": 455,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "lanterntaskone",
       "metadata": {
         "files": [
@@ -6667,7 +6667,7 @@
       "type": "procedure",
       "sortid": 456,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "lanter_task_two",
       "metadata": {
         "files": [
@@ -6695,7 +6695,7 @@
       "type": "procedure",
       "sortid": 459,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "customsmithingtablecraftingposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -6714,7 +6714,7 @@
       "type": "procedure",
       "sortid": 460,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "customsmithingtablecraftingposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -6733,7 +6733,7 @@
       "type": "potioneffect",
       "sortid": 461,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "customsmithingtablecrafting",
       "metadata": {
         "files": [
@@ -6746,7 +6746,7 @@
       "type": "procedure",
       "sortid": 462,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "laterntaskthree",
       "metadata": {
         "files": [
@@ -6774,7 +6774,7 @@
       "type": "gui",
       "sortid": 463,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "questscreen",
       "metadata": {
         "files": [
@@ -6789,7 +6789,7 @@
       "type": "item",
       "sortid": 464,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "questbook",
       "metadata": {
         "files": [
@@ -6805,7 +6805,7 @@
       "type": "procedure",
       "sortid": 465,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "questscreennextbutton",
       "metadata": {
         "files": [
@@ -6820,7 +6820,7 @@
       "type": "procedure",
       "sortid": 466,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "lanterntaskfour",
       "metadata": {
         "files": [
@@ -6856,7 +6856,7 @@
       "type": "procedure",
       "sortid": 468,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "loki_decoydasu_feibi_dao_jugaburotukuni_dangtatutatoki",
       "metadata": {
         "files": [
@@ -6891,7 +6891,7 @@
       "type": "rangeditem",
       "sortid": 469,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "loki_decoydasu",
       "metadata": {
         "files": [
@@ -6906,7 +6906,7 @@
       "type": "tool",
       "sortid": 470,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "loki_the_trickster",
       "metadata": {
         "files": [
@@ -6920,7 +6920,7 @@
       "type": "procedure",
       "sortid": 471,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "lokidecoyeffectehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -6955,7 +6955,7 @@
       "type": "procedure",
       "sortid": 472,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "lokidecoyeffectposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -6990,7 +6990,7 @@
       "type": "potioneffect",
       "sortid": 473,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "lokidecoyeffect",
       "metadata": {
         "files": [
@@ -7003,7 +7003,7 @@
       "type": "function",
       "sortid": 474,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "loki_decoy_function",
       "metadata": {
         "files": [
@@ -7016,7 +7016,7 @@
       "type": "procedure",
       "sortid": 475,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "lokidecoyeffectposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -7039,7 +7039,7 @@
       "type": "function",
       "sortid": 476,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "load",
       "metadata": {
         "files": [
@@ -7052,7 +7052,7 @@
       "type": "function",
       "sortid": 477,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor_stand_tobasu_main",
       "metadata": {
         "files": [
@@ -7065,7 +7065,7 @@
       "type": "function",
       "sortid": 478,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor_stand_tobasu_start",
       "metadata": {
         "files": [
@@ -7078,7 +7078,7 @@
       "type": "function",
       "sortid": 479,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor_stand_tobasu_tick",
       "metadata": {
         "files": [
@@ -7091,7 +7091,7 @@
       "type": "function",
       "sortid": 482,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "move",
       "metadata": {
         "files": [
@@ -7104,7 +7104,7 @@
       "type": "procedure",
       "sortid": 484,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor_stand_tobasu_effectehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -7139,7 +7139,7 @@
       "type": "potioneffect",
       "sortid": 485,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor_stand_tobasu_effect",
       "metadata": {
         "files": [
@@ -7152,7 +7152,7 @@
       "type": "procedure",
       "sortid": 486,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor_stand_tobasu_effectposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -7171,7 +7171,7 @@
       "type": "potioneffect",
       "sortid": 488,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armorstandtobasueffectkill",
       "metadata": {
         "files": [
@@ -7184,7 +7184,7 @@
       "type": "function",
       "sortid": 490,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor_stand_tobasu_tick_kill",
       "metadata": {
         "files": [
@@ -7197,7 +7197,7 @@
       "type": "procedure",
       "sortid": 492,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armorstandtobasueffectkillehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -7232,7 +7232,7 @@
       "type": "function",
       "sortid": 493,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor_stand_tobasu_start_kill",
       "metadata": {
         "files": [
@@ -7245,7 +7245,7 @@
       "type": "function",
       "sortid": 495,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "disarm_wimd",
       "metadata": {
         "files": [
@@ -7259,7 +7259,7 @@
       "type": "function",
       "sortid": 496,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "disarm_main",
       "metadata": {
         "files": [
@@ -7273,7 +7273,7 @@
       "type": "function",
       "sortid": 497,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "disarm_disarm",
       "metadata": {
         "files": [
@@ -7287,7 +7287,7 @@
       "type": "function",
       "sortid": 498,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "disarm_move",
       "metadata": {
         "files": [
@@ -7301,7 +7301,7 @@
       "type": "function",
       "sortid": 499,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "disarm_mode",
       "metadata": {
         "files": [
@@ -7315,7 +7315,7 @@
       "type": "function",
       "sortid": 500,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "player_score_id_function",
       "metadata": {
         "files": [
@@ -7329,7 +7329,7 @@
       "type": "function",
       "sortid": 501,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "reset_player_id_function",
       "metadata": {
         "files": [
@@ -7343,7 +7343,7 @@
       "type": "procedure",
       "sortid": 502,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "player_score_idposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -7363,7 +7363,7 @@
       "type": "procedure",
       "sortid": 503,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "player_score_idposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -7383,7 +7383,7 @@
       "type": "potioneffect",
       "sortid": 504,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "player_score_id",
       "metadata": {
         "files": [
@@ -7397,7 +7397,7 @@
       "type": "procedure",
       "sortid": 507,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tame",
       "metadata": {
         "files": [
@@ -7411,7 +7411,7 @@
       "type": "procedure",
       "sortid": 508,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_youkuritukusitatoki",
       "metadata": {
         "return_type": "logic",
@@ -7435,7 +7435,7 @@
       "type": "procedure",
       "sortid": 509,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tame_waza",
       "metadata": {
         "files": [
@@ -7454,7 +7454,7 @@
       "type": "procedure",
       "sortid": 518,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tameteruehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -7489,7 +7489,7 @@
       "type": "procedure",
       "sortid": 519,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tameteruposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -7512,7 +7512,7 @@
       "type": "potioneffect",
       "sortid": 520,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tameteru",
       "metadata": {
         "files": [
@@ -7567,7 +7567,7 @@
       "type": "procedure",
       "sortid": 524,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tameteruposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -7590,7 +7590,7 @@
       "type": "procedure",
       "sortid": 526,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_animetion",
       "metadata": {
         "return_type": "logic",
@@ -7610,7 +7610,7 @@
       "type": "item",
       "sortid": 528,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "arrow_head",
       "metadata": {
         "files": [
@@ -7625,7 +7625,7 @@
       "type": "function",
       "sortid": 529,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_main",
       "metadata": {
         "files": [
@@ -7639,7 +7639,7 @@
       "type": "function",
       "sortid": 530,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_tick",
       "metadata": {
         "files": [
@@ -7653,7 +7653,7 @@
       "type": "function",
       "sortid": 531,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_start",
       "metadata": {
         "files": [
@@ -7667,7 +7667,7 @@
       "type": "procedure",
       "sortid": 532,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_effectposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -7687,7 +7687,7 @@
       "type": "procedure",
       "sortid": 533,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_effectehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -7723,7 +7723,7 @@
       "type": "potioneffect",
       "sortid": 535,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_effect",
       "metadata": {
         "files": [
@@ -7778,7 +7778,7 @@
       "type": "procedure",
       "sortid": 540,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_ranged_item_used",
       "metadata": {
         "files": [
@@ -7813,7 +7813,7 @@
       "type": "procedure",
       "sortid": 541,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kill_effect_true_or_falseposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -7833,7 +7833,7 @@
       "type": "procedure",
       "sortid": 542,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kill_effect_true_or_falseposiyon_xiao_guoga_qiereta_shi",
       "metadata": {
         "files": [
@@ -7853,7 +7853,7 @@
       "type": "potioneffect",
       "sortid": 543,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kill_effect_true_or_false",
       "metadata": {
         "files": [
@@ -7867,7 +7867,7 @@
       "type": "procedure",
       "sortid": 544,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kill_effect_true_or_falseehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -7882,7 +7882,7 @@
       "type": "procedure",
       "sortid": 545,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "onazitakasa_arrowehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -7906,7 +7906,7 @@
       "type": "potioneffect",
       "sortid": 546,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "onazitakasa_arrow",
       "metadata": {
         "files": [
@@ -7920,7 +7920,7 @@
       "type": "function",
       "sortid": 547,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_kill_main",
       "metadata": {
         "files": [
@@ -7934,7 +7934,7 @@
       "type": "function",
       "sortid": 548,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_kill_tick",
       "metadata": {
         "files": [
@@ -7948,7 +7948,7 @@
       "type": "function",
       "sortid": 549,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_kill_start",
       "metadata": {
         "files": [
@@ -7962,7 +7962,7 @@
       "type": "potioneffect",
       "sortid": 550,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_kill_effect",
       "metadata": {
         "files": [
@@ -7976,7 +7976,7 @@
       "type": "procedure",
       "sortid": 551,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_kill_effectehuekutoga_you_xiao_shinoteituku",
       "metadata": {
         "files": [
@@ -8012,7 +8012,7 @@
       "type": "procedure",
       "sortid": 552,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "onazitakasa_arrowposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -8044,7 +8044,7 @@
       "type": "livingentity",
       "sortid": 553,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "comet",
       "metadata": {
         "files": [
@@ -8059,7 +8059,7 @@
       "type": "procedure",
       "sortid": 554,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "cometenteiteinotituku_geng_xin_shi",
       "metadata": {
         "files": [
@@ -8095,7 +8095,7 @@
       "type": "livingentity",
       "sortid": 555,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "comet_kill",
       "metadata": {
         "files": [
@@ -8110,7 +8110,7 @@
       "type": "procedure",
       "sortid": 556,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "comet_killenteiteiga_si_wangsita_shi",
       "metadata": {
         "files": [
@@ -8146,7 +8146,7 @@
       "type": "procedure",
       "sortid": 557,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bakuhatuposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
       "metadata": {
         "files": [
@@ -8166,7 +8166,7 @@
       "type": "potioneffect",
       "sortid": 558,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bakuhatu",
       "metadata": {
         "files": [
@@ -8195,7 +8195,7 @@
       "type": "tool",
       "sortid": 560,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bluepurge_utigatana",
       "metadata": {
         "files": [
@@ -8210,7 +8210,7 @@
       "type": "tool",
       "sortid": 561,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bluepurge_tyokutou",
       "metadata": {
         "files": [
@@ -8225,7 +8225,7 @@
       "type": "procedure",
       "sortid": 562,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "bluepurge_youkuritukusitatoki",
       "metadata": {
         "files": [
@@ -8257,7 +8257,7 @@
       "type": "procedure",
       "sortid": 563,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "test_bow_feibi_dao_juga_feindeiru_jian",
       "metadata": {
         "files": [
@@ -8271,7 +8271,7 @@
       "type": "tool",
       "sortid": 564,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kamianari_kurikara",
       "metadata": {
         "files": [
@@ -8285,7 +8285,7 @@
       "type": "item",
       "sortid": 565,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "imitation",
       "metadata": {
         "files": [
@@ -8300,7 +8300,7 @@
       "type": "tool",
       "sortid": 566,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kaminari_kurikaraken_utigatana",
       "metadata": {
         "files": [
@@ -8315,7 +8315,7 @@
       "type": "tool",
       "sortid": 567,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kaminari_kurikaraken_sword",
       "metadata": {
         "files": [
@@ -8330,7 +8330,7 @@
       "type": "tool",
       "sortid": 568,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "kaminari_kurikaraken_tyokutou",
       "metadata": {
         "files": [
@@ -8345,7 +8345,7 @@
       "type": "recipe",
       "sortid": 569,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "hammer_craft",
       "metadata": {
         "files": [
@@ -8358,7 +8358,7 @@
       "type": "function",
       "sortid": 570,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "hardentity_function",
       "metadata": {
         "files": [
@@ -8371,7 +8371,7 @@
       "type": "function",
       "sortid": 571,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "hardentity_function_stray",
       "metadata": {
         "files": [
@@ -8384,7 +8384,7 @@
       "type": "function",
       "sortid": 572,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "hardentity_function_wither_skeleton",
       "metadata": {
         "files": [
@@ -8397,7 +8397,7 @@
       "type": "item",
       "sortid": 573,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "stray_bone",
       "metadata": {
         "files": [
@@ -8411,7 +8411,7 @@
       "type": "item",
       "sortid": 574,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "wither_bone",
       "metadata": {
         "files": [
@@ -8425,7 +8425,7 @@
       "type": "procedure",
       "sortid": 575,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "meteor_arrow_on_initial_entity_spawn",
       "metadata": {
         "files": [
@@ -8439,7 +8439,7 @@
       "type": "livingentity",
       "sortid": 576,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "meteor_arrow",
       "metadata": {
         "files": [
@@ -8454,7 +8454,7 @@
       "type": "armor",
       "sortid": 577,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "pumpkin_head",
       "metadata": {
         "files": [
@@ -8468,7 +8468,7 @@
       "type": "procedure",
       "sortid": 578,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tukaena_rightclicked",
       "metadata": {
         "files": [
@@ -8487,7 +8487,7 @@
       "type": "item",
       "sortid": 579,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tukaena",
       "metadata": {
         "files": [
@@ -8501,7 +8501,7 @@
       "type": "function",
       "sortid": 580,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "yellowstainedglasspaneguard",
       "metadata": {
         "files": [
@@ -8514,7 +8514,7 @@
       "type": "function",
       "sortid": 581,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "lightgraystainedglasspaneguard",
       "metadata": {
         "files": [
@@ -8527,7 +8527,7 @@
       "type": "function",
       "sortid": 582,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "blackstainedglasspeanguard",
       "metadata": {
         "files": [
@@ -8540,7 +8540,7 @@
       "type": "block",
       "sortid": 583,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "item_stan",
       "metadata": {
         "files": [
@@ -8557,7 +8557,7 @@
       "type": "gui",
       "sortid": 584,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "item_stand_gui",
       "metadata": {
         "files": [
@@ -8571,7 +8571,7 @@
       "type": "function",
       "sortid": 585,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sword_stand_luna",
       "metadata": {
         "files": [
@@ -8584,7 +8584,7 @@
       "type": "procedure",
       "sortid": 586,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "alchemy_craft_block_block_added",
       "metadata": {
         "files": [
@@ -8615,7 +8615,7 @@
       "type": "block",
       "sortid": 587,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "alchemy_craft_block",
       "metadata": {
         "files": [
@@ -8631,7 +8631,7 @@
       "type": "tool",
       "sortid": 588,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magicwand",
       "metadata": {
         "files": [
@@ -8645,7 +8645,7 @@
       "type": "procedure",
       "sortid": 589,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "tick",
       "metadata": {
         "files": [
@@ -8659,7 +8659,7 @@
       "type": "livingentity",
       "sortid": 590,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "alchemy_craft_block_entity",
       "metadata": {
         "files": [
@@ -8673,7 +8673,7 @@
       "type": "procedure",
       "sortid": 591,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "alchemy_craft_block_entity_on_entity_tick_update",
       "metadata": {
         "files": [
@@ -8708,7 +8708,7 @@
       "type": "procedure",
       "sortid": 592,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "alchemy_craft_block_entity_right_clicked_on_entity",
       "metadata": {
         "files": [
@@ -8727,7 +8727,7 @@
       "type": "procedure",
       "sortid": 593,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "alchemy_craft_block_effect_on_effect_active_tick",
       "metadata": {
         "files": [
@@ -8762,7 +8762,7 @@
       "type": "potioneffect",
       "sortid": 594,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "alchemy_craft_block_effect",
       "metadata": {
         "files": [
@@ -8789,7 +8789,7 @@
       "type": "procedure",
       "sortid": 596,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "slice_guard_effect_startedapplied",
       "metadata": {
         "files": [
@@ -8812,7 +8812,7 @@
       "type": "potioneffect",
       "sortid": 597,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "slice_guard",
       "metadata": {
         "files": [
@@ -8825,7 +8825,7 @@
       "type": "procedure",
       "sortid": 598,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "slice_guard_on_effect_active_tick",
       "metadata": {
         "files": [
@@ -8860,7 +8860,7 @@
       "type": "procedure",
       "sortid": 599,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "slice_guard_damage",
       "metadata": {
         "files": [
@@ -8887,7 +8887,7 @@
       "type": "procedure",
       "sortid": 600,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magic_pot_block_added",
       "metadata": {
         "files": [
@@ -8918,7 +8918,7 @@
       "type": "block",
       "sortid": 601,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "magic_pot",
       "metadata": {
         "files": [
@@ -8934,7 +8934,7 @@
       "type": "procedure",
       "sortid": 602,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "effect_blood_tp_effect_startedapplied",
       "metadata": {
         "files": [
@@ -8953,7 +8953,7 @@
       "type": "procedure",
       "sortid": 603,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "effect_blood_tp_effect_expires",
       "metadata": {
         "files": [
@@ -8985,7 +8985,7 @@
       "type": "procedure",
       "sortid": 606,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "particleanddamage",
       "metadata": {
         "files": [
@@ -9008,7 +9008,7 @@
       "type": "procedure",
       "sortid": 607,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "guwaazangeki_effect_startedapplied",
       "metadata": {
         "files": [
@@ -9043,7 +9043,7 @@
       "type": "potioneffect",
       "sortid": 608,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "guwaazangeki",
       "metadata": {
         "files": [
@@ -9056,7 +9056,7 @@
       "type": "function",
       "sortid": 612,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor_stand_tobasu_enma_tick_kill",
       "metadata": {
         "files": [
@@ -9070,7 +9070,7 @@
       "type": "function",
       "sortid": 613,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor_stand_tobasu_enma_start_kill",
       "metadata": {
         "files": [
@@ -9084,7 +9084,7 @@
       "type": "procedure",
       "sortid": 614,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armorstandtobasuenmaeffectkill_effect_expires",
       "metadata": {
         "files": [
@@ -9104,7 +9104,7 @@
       "type": "procedure",
       "sortid": 615,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armorstandtobasuenmaeffectkill_on_effect_active_tick",
       "metadata": {
         "files": [
@@ -9140,7 +9140,7 @@
       "type": "potioneffect",
       "sortid": 616,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armorstandtobasuenmaeffectkill",
       "metadata": {
         "files": [
@@ -9154,7 +9154,7 @@
       "type": "procedure",
       "sortid": 617,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "killoff_effect_startedapplied",
       "metadata": {
         "files": [
@@ -9173,7 +9173,7 @@
       "type": "procedure",
       "sortid": 618,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "killoff_effect_expires",
       "metadata": {
         "files": [
@@ -9192,7 +9192,7 @@
       "type": "potioneffect",
       "sortid": 619,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "killoff",
       "metadata": {
         "files": [
@@ -9205,7 +9205,7 @@
       "type": "potioneffect",
       "sortid": 620,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "enmazangeki",
       "metadata": {
         "files": [
@@ -9219,7 +9219,7 @@
       "type": "procedure",
       "sortid": 621,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "enmazangeki_on_effect_active_tick",
       "metadata": {
         "files": [
@@ -9255,7 +9255,7 @@
       "type": "function",
       "sortid": 622,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor_stand_tobasuyo_enma_tick_kill",
       "metadata": {
         "files": [
@@ -9268,7 +9268,7 @@
       "type": "function",
       "sortid": 623,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "armor_stand_tobasuyo_enma_start_kill",
       "metadata": {
         "files": [
@@ -9421,7 +9421,7 @@
       "type": "procedure",
       "sortid": 634,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sword_of_night_shot",
       "metadata": {
         "files": [
@@ -9456,7 +9456,7 @@
       "type": "procedure",
       "sortid": 635,
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "sword_of_night_tp",
       "metadata": {
         "files": [
@@ -9708,19 +9708,19 @@
   "sound_elements": [],
   "language_map": {
     "en_us": {
-      "effect.minecraft_armor_weapon.guard": "guard",
       "item.minecraft_armor_weapon.decoration_pot_with_arrows": "Decoration Pot With Arrows",
+      "effect.minecraft_armor_weapon.guard": "guard",
       "item.minecraft_armor_weapon.harvest_moon_2023929": "Harvest Moon 2023 9/29",
       "itemGroup.tabmagic_books": "Magic Books",
       "itemGroup.tabyopkeinamono": "建築とかに",
       "effect.minecraft_armor_weapon.syugeki": "aa",
-      "item.minecraft_armor_weapon.das_herz_einer_fee_armor_helmet": "das herz einer fee armor helmet",
       "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
+      "item.minecraft_armor_weapon.das_herz_einer_fee_armor_helmet": "das herz einer fee armor helmet",
       "item.minecraft_armor_weapon.ruami_284_spawn_egg": "ruami284 Spawn Egg",
       "entity.minecraft_armor_weapon.comet": "Comet",
-      "item.minecraft_armor_weapon.darkness": "§5Darkness",
-      "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
       "entity.minecraft_armor_weapon.comet_kill": "Comet",
+      "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
+      "item.minecraft_armor_weapon.darkness": "§5Darkness",
       "block.minecraft_armor_weapon.stone_katana_block": "Netherite Katana Block",
       "item.minecraft_armor_weapon.blackhole_spawn_egg": "Blackhole Spawn Egg",
       "entity.minecraft_armor_weapon.blackhole": "Blackhole",
@@ -9749,8 +9749,8 @@
       "block.minecraft_armor_weapon.stone_bricks_trap_door": "Stone Bricks Trap Door",
       "item.minecraft_armor_weapon.stone_katana": "§7Stone Katana",
       "item.minecraft_armor_weapon.dragon_black_armor_helmet": "§8Dragon black helmet",
-      "item.minecraft_armor_weapon.kurikarakensword": "§5kurikaraken",
       "item.minecraft_armor_weapon.kaminari_kurikaraken_sword": "Kaminari Kurikaraken Sword",
+      "item.minecraft_armor_weapon.kurikarakensword": "§5kurikaraken",
       "item.minecraft_armor_weapon.scythe": "Scythe",
       "item.minecraft_armor_weapon.wind_step": "§2Windstep",
       "item.minecraft_armor_weapon.a": "A",
@@ -9763,9 +9763,9 @@
       "effect.minecraft_armor_weapon.long_range_weapon_cut": "long_range_weapon_cut",
       "item.minecraft_armor_weapon.bogged_outer_chestplate": "Bogged Outer Chestplate",
       "item.minecraft_armor_weapon.dragon_green_armor_boots": "§2Dragon green boots",
-      "item.minecraft_armor_weapon.rivers_of_blood": "§4§lRivers of Blood",
-      "item.minecraft_armor_weapon.magicwand": "Magicwand",
       "effect.minecraft_armor_weapon.alchemy_craft_block_effect": "Alchemy Craft Block Effect",
+      "item.minecraft_armor_weapon.magicwand": "Magicwand",
+      "item.minecraft_armor_weapon.rivers_of_blood": "§4§lRivers of Blood",
       "effect.minecraft_armor_weapon.killoff": "killoff",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_boots": "das herz einer fee armor boots",
       "entity.minecraft_armor_weapon.killotiru": "Otiruyo",
@@ -9987,19 +9987,19 @@
       "item.minecraft_armor_weapon.tukaena": "Tukaena"
     },
     "ja_jp": {
-      "item.minecraft_armor_weapon.decoration_pot_with_arrows": "Decoration Pot With Arrows",
       "effect.minecraft_armor_weapon.guard": "guard",
+      "item.minecraft_armor_weapon.decoration_pot_with_arrows": "Decoration Pot With Arrows",
       "item.minecraft_armor_weapon.harvest_moon_2023929": "Harvest Moon 2023 9/29",
       "itemGroup.tabmagic_books": "Magic Books",
       "itemGroup.tabyopkeinamono": "建築とかに",
       "effect.minecraft_armor_weapon.syugeki": "aa",
-      "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_helmet": "das herz einer fee armor helmet",
+      "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
       "item.minecraft_armor_weapon.ruami_284_spawn_egg": "ruami284 Spawn Egg",
       "entity.minecraft_armor_weapon.comet": "Comet",
-      "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
-      "item.minecraft_armor_weapon.darkness": "§5Darkness",
       "entity.minecraft_armor_weapon.comet_kill": "Comet",
+      "item.minecraft_armor_weapon.darkness": "§5Darkness",
+      "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
       "block.minecraft_armor_weapon.stone_katana_block": "Netherite Katana Block",
       "item.minecraft_armor_weapon.blackhole_spawn_egg": "Blackhole Spawn Egg",
       "entity.minecraft_armor_weapon.blackhole": "Blackhole",
@@ -10028,8 +10028,8 @@
       "block.minecraft_armor_weapon.stone_bricks_trap_door": "Stone Bricks Trap Door",
       "item.minecraft_armor_weapon.dragon_black_armor_helmet": "§8Dragon black helmet",
       "item.minecraft_armor_weapon.stone_katana": "§7石の刀",
-      "item.minecraft_armor_weapon.kurikarakensword": "§5倶利伽羅剣",
       "item.minecraft_armor_weapon.kaminari_kurikaraken_sword": "Kaminari Kurikaraken Sword",
+      "item.minecraft_armor_weapon.kurikarakensword": "§5倶利伽羅剣",
       "item.minecraft_armor_weapon.wind_step": "§2Windstep",
       "item.minecraft_armor_weapon.scythe": "Scythe",
       "item.minecraft_armor_weapon.a": "A",
@@ -10042,9 +10042,9 @@
       "item.minecraft_armor_weapon.bogged_outer_chestplate": "Bogged Outer Chestplate",
       "effect.minecraft_armor_weapon.long_range_weapon_cut": "遠距離武器斬る",
       "item.minecraft_armor_weapon.dragon_green_armor_boots": "§2Dragon green boots",
-      "effect.minecraft_armor_weapon.alchemy_craft_block_effect": "Alchemy Craft Block Effect",
-      "item.minecraft_armor_weapon.magicwand": "Magicwand",
       "item.minecraft_armor_weapon.rivers_of_blood": "§4§lRivers of Blood",
+      "item.minecraft_armor_weapon.magicwand": "Magicwand",
+      "effect.minecraft_armor_weapon.alchemy_craft_block_effect": "Alchemy Craft Block Effect",
       "effect.minecraft_armor_weapon.killoff": "killoff",
       "entity.minecraft_armor_weapon.killotiru": "Otiruyo",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_boots": "das herz einer fee armor boots",
