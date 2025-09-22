@@ -536,7 +536,7 @@ public class TyokutouThrustAttackProcedure {
 
         // Killエンチャント
         if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), weapon) > 0) {
-            if (Math.random() < 0.03) { // 3%の確率で即死
+            if (Math.random() < 1.00) { // 3%の確率で即死
                 target.hurt(DamageSource.MAGIC, target.getMaxHealth() * 2);
 
                 if (player.level instanceof ServerLevel serverLevel) {
