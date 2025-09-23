@@ -29,11 +29,16 @@ import java.util.Arrays;
 
 public class TyokutouThrustAttackProcedure {
 
-    // 直刀として扱うアイテムのリスト
+    // 直刀として扱うアイテムのリスト（曲線ビームを出すアイテム）
     private static final List<String> STRAIGHT_SWORD_ITEMS = Arrays.asList(
-        "LunaItem"
+        "LunaItem",
+        "BluepurgeTyokutouItem",
+        "KaminariKurikarakenTyokutouItem",
+        "KurikarakenutigatanaItem",
+        "KurikarakenswordItem",
+        "KurikarakenItem"
         // ここに他の直刀アイテムを追加
-        // "OtherStraightSwordItem",
+        // TyokutouSayaItemは鞘なので除外
     );
 
     /**
@@ -198,7 +203,7 @@ public class TyokutouThrustAttackProcedure {
             return;
 
         // チャージ率に応じてパラメータを強化
-        double range = 8.0 + chargePercent * 4.0;  // 8.0～12.0
+        double range = 16.0 + chargePercent * 8.0;  // 16.0～24.0（倍増）
         double damage = 35.0 + chargePercent * 20.0;  // 35.0～55.0
         double thrustPower = 3.5 + chargePercent * 2.0;  // 3.5～5.5
 
@@ -220,9 +225,9 @@ public class TyokutouThrustAttackProcedure {
 
                 // チャージ最大時は追加エフェクト
                 if (chargePercent >= 1.0f && i % 2 == 0) {
-                    // END_RODを複数生成して確実に表示
+                    // ENCHANTED_HITで統一
                     serverLevel.sendParticles(
-                        ParticleTypes.END_ROD,
+                        ParticleTypes.ENCHANTED_HIT,
                         startPos.x + lookVec.x * d,
                         startPos.y + lookVec.y * d,
                         startPos.z + lookVec.z * d,
@@ -312,23 +317,24 @@ public class TyokutouThrustAttackProcedure {
             }
         }
 
-        // ビームエフェクト（クールダウン中は直線ビームのみ）
+        // ビームエフェクト（常に曲線ビームを表示）
         if (world instanceof ServerLevel serverLevel) {
-            if (isCooldown) {
-                // クールダウン中は直線ビームのみ
-                createStraightBeams(serverLevel, startPos, lookVec, player, chargePercent, range);
-            } else {
-                // 通常の曲がるビームエフェクト
-                if (!targets.isEmpty()) {
-                    // 各ターゲットに対してビームを発射
-                    for (LivingEntity target : targets) {
-                        Vec3 targetPos = target.position().add(0, target.getBbHeight() / 2, 0);
-                        createCurvingBeamsToTarget(serverLevel, targetPos, lookVec, player, chargePercent);
-                    }
-                } else {
-                    // ターゲットがいない場合は視線方向の複数の地点に向けてビームを発射
-                    createCurvingBeamsToDirection(serverLevel, lookVec, player, chargePercent, range);
+            // 常に曲がるビームエフェクトを表示（クールダウン無視）
+            if (!targets.isEmpty()) {
+                // 各ターゲットに対してビームを発射
+                for (LivingEntity target : targets) {
+                    Vec3 targetPos = target.position().add(0, target.getBbHeight() / 2, 0);
+                    createCurvingBeamsToTarget(serverLevel, targetPos, lookVec, player, chargePercent);
                 }
+            } else {
+                // ターゲットがいない場合は視線方向の複数の地点に向けてビームを発射
+                createCurvingBeamsToDirection(serverLevel, lookVec, player, chargePercent, range);
+            }
+
+            // クールダウン中は追加で直線ビームも表示（オプション）
+            if (isCooldown && chargePercent < 0.5f) {
+                // 弱いチャージの時のみ直線ビーム追加
+                createStraightBeams(serverLevel, startPos, lookVec, player, chargePercent * 0.5f, range * 0.7);
             }
         }
 
@@ -636,24 +642,56 @@ public class TyokutouThrustAttackProcedure {
 
         Vec3 playerPos = player.position().add(0, player.getEyeHeight() * 0.8, 0);
 
-        // プレイヤーの右ベクトルと上ベクトルを計算
-        Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
-        Vec3 upVec = lookVec.cross(rightVec).normalize();
+        // プレイヤーの右ベクトルと上ベクトルを計算（垂直視線対策）
+        Vec3 rightVec;
+        Vec3 upVec;
+
+        // 視線が垂直に近いかチェック
+        if (Math.abs(lookVec.y) > 0.99) {
+            // ほぼ真上または真下を向いている場合
+            // 右ベクトルはプレイヤーの向きに基づいて計算
+            float yaw = player.getYRot() * 0.017453292F;
+            rightVec = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw));
+
+            if (lookVec.y > 0) {
+                // 真上を向いている場合
+                upVec = new Vec3(-Math.cos(yaw), 0, -Math.sin(yaw));
+            } else {
+                // 真下を向いている場合
+                upVec = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
+            }
+        } else {
+            // 通常の計算
+            rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
+            upVec = lookVec.cross(rightVec).normalize();
+        }
 
         for (int i = 0; i < beamCount; i++) {
             // ビームの開始位置（プレイヤーの左右から発生）
             double sideOffset = (Math.random() - 0.5) * 2.0; // -1.0 ~ 1.0 で左右に配置
             double forwardOffset = Math.random() * -0.5; // 少し後ろから
-            double heightOffset = (Math.random() - 0.5) * 1.0; // 上下にばらつき
+            double heightOffset = Math.random() * 3.0 + 0.5; // 上方向のみに広がる（0.5～3.5）
 
             // 左右交互に、さらにランダムに広がる
             boolean isLeftSide = i % 2 == 0;
-            double horizontalSpread = (isLeftSide ? -1 : 1) * (1.5 + Math.random() * 1.5);
+            double horizontalSpread = (isLeftSide ? -1 : 1) * (2.5 + Math.random() * 2.5);  // より広く
 
-            Vec3 beamStart = playerPos
-                .add(rightVec.scale(horizontalSpread))
-                .add(lookVec.scale(forwardOffset))
-                .add(0, heightOffset, 0);
+            Vec3 beamStart;
+            if (Math.abs(lookVec.y) > 0.99) {
+                // 垂直視線の場合、円形に広がる
+                double angle = Math.PI * 2 * i / beamCount;
+                double radius = 2.5 + Math.random() * 2.5;
+                beamStart = playerPos.add(
+                    Math.cos(angle) * radius,
+                    lookVec.y > 0 ? -1 : 1,  // 上向きなら下から、下向きなら上から
+                    Math.sin(angle) * radius
+                );
+            } else {
+                beamStart = playerPos
+                    .add(rightVec.scale(horizontalSpread))
+                    .add(lookVec.scale(forwardOffset))
+                    .add(0, heightOffset, 0);
+            }
 
             // ビームの終点（ターゲット位置）
             Vec3 beamEnd = targetPos.add(
@@ -666,13 +704,24 @@ public class TyokutouThrustAttackProcedure {
             Vec3 midPoint = beamStart.add(beamEnd).scale(0.5);
 
             // 最初は外側に大きく広がる
-            Vec3 controlPoint1 = beamStart.add(
-                rightVec.scale(horizontalSpread * 1.5)  // さらに外側に
-            ).add(
-                lookVec.scale(2.0)  // 少し前方に
-            ).add(
-                upVec.scale((Math.random() - 0.5) * 2)
-            );
+            Vec3 controlPoint1;
+            if (Math.abs(lookVec.y) > 0.99) {
+                // 垂直視線の場合、放射状に広がる
+                double spreadFactor = 3.0 + Math.random() * 2.0;
+                controlPoint1 = beamStart.add(
+                    (beamStart.x - playerPos.x) * spreadFactor,
+                    lookVec.y * 4.0,
+                    (beamStart.z - playerPos.z) * spreadFactor
+                );
+            } else {
+                controlPoint1 = beamStart.add(
+                    rightVec.scale(horizontalSpread * 2.0)  // さらに外側に
+                ).add(
+                    lookVec.scale(4.0)  // より前方に
+                ).add(
+                    upVec.scale(Math.random() * 4 + 1)  // 上方向のみ（1～5）
+                );
+            }
 
             // 敵の少し手前で曲がる
             Vec3 controlPoint2 = beamEnd.add(
@@ -691,31 +740,19 @@ public class TyokutouThrustAttackProcedure {
                 // 3次ベジェ曲線の計算
                 Vec3 particlePos = bezierCubic(beamStart, controlPoint1, controlPoint2, beamEnd, t);
 
-                // パーティクルの種類（チャージ率で変化）
-                if (chargePercent >= 1.0f) {
-                    // 最大チャージ時は特別なエフェクト
-                    // パーティクルを間引いて表示（パケット負荷軽減）
-                    if (j % 2 == 0) {  // 半分に間引く
-                        serverLevel.sendParticles(
-                            ParticleTypes.END_ROD,
-                            particlePos.x, particlePos.y, particlePos.z,
-                            1, 0.02, 0.02, 0.02, 0
-                        );
-                    }
+                // パーティクルの種類（ENCHANTED_HITで統一）
+                serverLevel.sendParticles(
+                    ParticleTypes.ENCHANTED_HIT,
+                    particlePos.x, particlePos.y, particlePos.z,
+                    1, 0.02, 0.02, 0.02, 0
+                );
 
-                    // 追加の輝きエフェクト（間隔を調整）
-                    if (j % 8 == 0) {  // 間隔を広げて重なりを減らす
-                        serverLevel.sendParticles(
-                            ParticleTypes.ELECTRIC_SPARK,
-                            particlePos.x, particlePos.y, particlePos.z,
-                            2, 0.1, 0.1, 0.1, 0.01
-                        );
-                    }
-                } else {
+                // チャージ最大時は追加の輝きエフェクト（間隔を調整）
+                if (chargePercent >= 1.0f && j % 8 == 0) {  // 間隔を広げて重なりを減らす
                     serverLevel.sendParticles(
-                        ParticleTypes.ENCHANTED_HIT,
+                        ParticleTypes.ELECTRIC_SPARK,
                         particlePos.x, particlePos.y, particlePos.z,
-                        1, 0.02, 0.02, 0.02, 0
+                        2, 0.1, 0.1, 0.1, 0.01
                     );
                 }
             }
@@ -763,48 +800,116 @@ public class TyokutouThrustAttackProcedure {
 
         Vec3 playerPos = player.position().add(0, player.getEyeHeight() * 0.8, 0);
 
-        // プレイヤーの右ベクトルと上ベクトルを計算
-        Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
-        Vec3 upVec = lookVec.cross(rightVec).normalize();
+        // プレイヤーの右ベクトルと上ベクトルを計算（垂直視線対策）
+        Vec3 rightVec;
+        Vec3 upVec;
+
+        // 視線が垂直に近いかチェック
+        if (Math.abs(lookVec.y) > 0.99) {
+            // ほぼ真上または真下を向いている場合
+            // 右ベクトルはプレイヤーの向きに基づいて計算
+            float yaw = player.getYRot() * 0.017453292F;
+            rightVec = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw));
+
+            if (lookVec.y > 0) {
+                // 真上を向いている場合
+                upVec = new Vec3(-Math.cos(yaw), 0, -Math.sin(yaw));
+            } else {
+                // 真下を向いている場合
+                upVec = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
+            }
+        } else {
+            // 通常の計算
+            rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
+            upVec = lookVec.cross(rightVec).normalize();
+        }
 
         for (int i = 0; i < beamCount; i++) {
             // ビームの開始位置（プレイヤーの左右から発生）
             boolean isLeftSide = i % 2 == 0;
             double horizontalSpread = (isLeftSide ? -1 : 1) * (1.5 + Math.random() * 2.0);
-            double heightOffset = (Math.random() - 0.5) * 1.5;
+            double heightOffset = Math.random() * 3.5 + 0.5;  // 上方向のみ（0.5～4.0）
 
-            Vec3 beamStart = playerPos
-                .add(rightVec.scale(horizontalSpread))
-                .add(lookVec.scale(Math.random() * -0.5))
-                .add(0, heightOffset, 0);
+            Vec3 beamStart;
+            if (Math.abs(lookVec.y) > 0.99) {
+                // 垂直視線の場合、円形に広がる
+                double angle = Math.PI * 2 * i / beamCount;
+                double radius = 2.0 + Math.random() * 2.5;
+                beamStart = playerPos.add(
+                    Math.cos(angle) * radius,
+                    lookVec.y > 0 ? -0.5 : 0.5,  // 上向きなら少し下から、下向きなら少し上から
+                    Math.sin(angle) * radius
+                );
+            } else {
+                beamStart = playerPos
+                    .add(rightVec.scale(horizontalSpread))
+                    .add(lookVec.scale(Math.random() * -0.5))
+                    .add(0, heightOffset, 0);
+            }
 
             // ビームの最終目標地点（視線方向にランダムに散らばる）
-            double targetDistance = range + Math.random() * 5;
+            double targetDistance = range + Math.random() * 10;  // さらに長距離まで延長
             double spreadAngle = Math.toRadians(15 + Math.random() * 10); // 15-25度の広がり
             double rotationAngle = Math.random() * Math.PI * 2;
 
-            // 円錐状に広がるように終点を計算
-            Vec3 spreadOffset = rightVec.scale(Math.sin(spreadAngle) * Math.cos(rotationAngle) * targetDistance * 0.3)
-                .add(upVec.scale(Math.sin(spreadAngle) * Math.sin(rotationAngle) * targetDistance * 0.3));
+            // 円錐状に広がるように終点を計算（上方向に偏重）
+            Vec3 spreadOffset;
+            Vec3 beamEnd;
 
-            Vec3 beamEnd = playerPos
-                .add(lookVec.scale(targetDistance))
-                .add(spreadOffset);
+            if (Math.abs(lookVec.y) > 0.99) {
+                // 垂直視線の場合、円錐状に広がる
+                double endRadius = targetDistance * Math.tan(spreadAngle);
+                spreadOffset = new Vec3(
+                    Math.cos(rotationAngle) * endRadius,
+                    0,
+                    Math.sin(rotationAngle) * endRadius
+                );
+                beamEnd = playerPos
+                    .add(0, lookVec.y * targetDistance, 0)
+                    .add(spreadOffset);
+            } else {
+                spreadOffset = rightVec.scale(Math.sin(spreadAngle) * Math.cos(rotationAngle) * targetDistance * 0.3)
+                    .add(upVec.scale(Math.sin(spreadAngle) * Math.abs(Math.sin(rotationAngle)) * targetDistance * 0.5));
+                beamEnd = playerPos
+                    .add(lookVec.scale(targetDistance))
+                    .add(spreadOffset);
+            }
 
             // 屈折しながら飛ぶベジェ曲線のコントロールポイント
             double refractCount = 2 + Math.random() * 2; // 2-4回屈折
 
             // 第1コントロールポイント（最初の屈折）
-            Vec3 controlPoint1 = beamStart
-                .add(rightVec.scale(horizontalSpread * 2.0))
-                .add(lookVec.scale(targetDistance * 0.3))
-                .add(upVec.scale((Math.random() - 0.5) * 3));
+            Vec3 controlPoint1;
+            Vec3 controlPoint2;
 
-            // 第2コントロールポイント（2回目の屈折）
-            Vec3 controlPoint2 = playerPos
-                .add(lookVec.scale(targetDistance * 0.7))
-                .add(rightVec.scale((Math.random() - 0.5) * targetDistance * 0.4))
-                .add(upVec.scale((Math.random() - 0.5) * 2));
+            if (Math.abs(lookVec.y) > 0.99) {
+                // 垂直視線の場合、螺旋状に曲がる
+                double cp1Angle = rotationAngle + Math.PI * 0.5;
+                double cp1Radius = targetDistance * 0.4;
+                controlPoint1 = playerPos.add(
+                    Math.cos(cp1Angle) * cp1Radius,
+                    lookVec.y * targetDistance * 0.3,
+                    Math.sin(cp1Angle) * cp1Radius
+                );
+
+                double cp2Angle = rotationAngle - Math.PI * 0.5;
+                double cp2Radius = targetDistance * 0.3;
+                controlPoint2 = playerPos.add(
+                    Math.cos(cp2Angle) * cp2Radius,
+                    lookVec.y * targetDistance * 0.7,
+                    Math.sin(cp2Angle) * cp2Radius
+                );
+            } else {
+                controlPoint1 = beamStart
+                    .add(rightVec.scale(horizontalSpread * 2.0))
+                    .add(lookVec.scale(targetDistance * 0.3))
+                    .add(upVec.scale(Math.random() * 5 + 2));  // 上方向のみ（2～7）
+
+                controlPoint2 = playerPos
+                    .add(lookVec.scale(targetDistance * 0.7))
+                    .add(rightVec.scale((Math.random() - 0.5) * targetDistance * 0.4))
+                    .add(upVec.scale(Math.random() * 3 + 1));  // 上方向のみ（1～4）
+            }
 
             // ベジェ曲線に沿ってパーティクルを配置（密度を上げる）
             int particleCount = 60 + (int)(chargePercent * 40);  // 60-100個に増加
@@ -823,23 +928,12 @@ public class TyokutouThrustAttackProcedure {
                         1, 0, 0, 0, 0
                     );
                 } else if (t < 0.7) {
-                    // 中間部分
-                    if (chargePercent >= 1.0f) {
-                        // END_RODを間引いて表示（パケット負荷軽減）
-                        if (j % 3 == 0) {  // 3分の1に間引く
-                            serverLevel.sendParticles(
-                                ParticleTypes.END_ROD,
-                                particlePos.x, particlePos.y, particlePos.z,
-                                1, 0.02, 0.02, 0.02, 0
-                            );
-                        }
-                    } else {
-                        serverLevel.sendParticles(
-                            ParticleTypes.ENCHANTED_HIT,
-                            particlePos.x, particlePos.y, particlePos.z,
-                            1, 0.02, 0.02, 0.02, 0
-                        );
-                    }
+                    // 中間部分（ENCHANTED_HITで統一）
+                    serverLevel.sendParticles(
+                        ParticleTypes.ENCHANTED_HIT,
+                        particlePos.x, particlePos.y, particlePos.z,
+                        1, 0.02, 0.02, 0.02, 0
+                    );
                 } else {
                     // 終端部分（散らばる）
                     serverLevel.sendParticles(
