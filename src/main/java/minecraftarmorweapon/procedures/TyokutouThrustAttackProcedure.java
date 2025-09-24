@@ -227,7 +227,7 @@ public class TyokutouThrustAttackProcedure {
                 if (chargePercent >= 1.0f && i % 2 == 0) {
                     // ENCHANTED_HITで統一
                     serverLevel.sendParticles(
-                        ParticleTypes.ENCHANTED_HIT,
+                        ParticleTypes.END_ROD,
                         startPos.x + lookVec.x * d,
                         startPos.y + lookVec.y * d,
                         startPos.z + lookVec.z * d,
@@ -604,7 +604,7 @@ public class TyokutouThrustAttackProcedure {
                 // 一定間隔で追加エフェクト
                 if (j % 10 == 0) {
                     serverLevel.sendParticles(
-                        ParticleTypes.ENCHANTED_HIT,
+                        ParticleTypes.END_ROD,
                         particlePos.x, particlePos.y, particlePos.z,
                         2, 0.1, 0.1, 0.1, 0.01
                     );
@@ -742,7 +742,7 @@ public class TyokutouThrustAttackProcedure {
 
                 // パーティクルの種類（ENCHANTED_HITで統一）
                 serverLevel.sendParticles(
-                    ParticleTypes.ENCHANTED_HIT,
+                    ParticleTypes.END_ROD,
                     particlePos.x, particlePos.y, particlePos.z,
                     1, 0.02, 0.02, 0.02, 0
                 );
