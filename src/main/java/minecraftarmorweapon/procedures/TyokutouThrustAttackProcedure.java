@@ -215,19 +215,18 @@ public class TyokutouThrustAttackProcedure {
             // メインのエフェクトライン
             for (int i = 0; i < 30; i++) {
                 double d = i * 0.4;
-                serverLevel.sendParticles(
-                    ParticleTypes.SWEEP_ATTACK,
-                    startPos.x + lookVec.x * d,
-                    startPos.y + lookVec.y * d,
-                    startPos.z + lookVec.z * d,
-                    2, 0, 0, 0, 0
-                );
+                    serverLevel.sendParticles(
+                        ParticleTypes.END_ROD,
+                        startPos.x + lookVec.x * d,
+                        startPos.y + lookVec.y * d,
+                        startPos.z + lookVec.z * d,
+                        3, 0.15, 0.15, 0.15, 0.005
+                    );
 
                 // チャージ最大時は追加エフェクト
                 if (chargePercent >= 1.0f && i % 2 == 0) {
-                    // ENCHANTED_HITで統一
                     serverLevel.sendParticles(
-                        ParticleTypes.ENCHANTED_HIT,
+                        ParticleTypes.END_ROD,
                         startPos.x + lookVec.x * d,
                         startPos.y + lookVec.y * d,
                         startPos.z + lookVec.z * d,
@@ -604,7 +603,7 @@ public class TyokutouThrustAttackProcedure {
                 // 一定間隔で追加エフェクト
                 if (j % 10 == 0) {
                     serverLevel.sendParticles(
-                        ParticleTypes.ENCHANTED_HIT,
+                        ParticleTypes.END_ROD,
                         particlePos.x, particlePos.y, particlePos.z,
                         2, 0.1, 0.1, 0.1, 0.01
                     );
