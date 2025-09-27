@@ -49,3 +49,12 @@ local.properties
 logs/sever
 logs/function
 
+
+
+# MCreator Lock Files
+**/.mcreator_lock
+.protected_custom_files/
+*.backup_*
+
+# Prevent MCreator regeneration
+minecraft_armor_weapon.mcreator.lock

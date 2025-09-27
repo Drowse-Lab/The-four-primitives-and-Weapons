@@ -84,29 +84,32 @@ public class KillEnchantmentHandler {
             }
         }
         
-        // Killエンチャントが有効な場合、即死させる
+        // Killエンチャントが有効な場合、確率で即死させる
         if (hasKillEnchant) {
-            // killコマンドを実行
-            if (target.getServer() != null) {
-                target.getServer().getCommands().performPrefixedCommand(
-                    new CommandSourceStack(
-                        CommandSource.NULL, 
-                        target.position(), 
-                        target.getRotationVector(), 
-                        target.level instanceof ServerLevel ? (ServerLevel) target.level : null, 
-                        4,
-                        target.getName().getString(), 
-                        target.getDisplayName(), 
-                        target.level.getServer(), 
-                        target
-                    ), 
-                    "kill @s"
-                );
+            // 82.4%の確率で即死
+            if (Math.random() < 0.824) {
+                // killコマンドを実行
+                if (target.getServer() != null) {
+                    target.getServer().getCommands().performPrefixedCommand(
+                        new CommandSourceStack(
+                            CommandSource.NULL,
+                            target.position(),
+                            target.getRotationVector(),
+                            target.level instanceof ServerLevel ? (ServerLevel) target.level : null,
+                            4,
+                            target.getName().getString(),
+                            target.getDisplayName(),
+                            target.level.getServer(),
+                            target
+                        ),
+                        "kill @s"
+                    );
+                }
+
+                // setHealth(0f)で確実に倒す
+                // これは現在の体力のみを0にし、最大体力は変更しないので安全
+                target.setHealth(0f);
             }
-            
-            // setHealth(0f)で確実に倒す
-            // これは現在の体力のみを0にし、最大体力は変更しないので安全
-            target.setHealth(0f);
         }
     }
 }

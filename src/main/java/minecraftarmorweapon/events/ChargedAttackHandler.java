@@ -40,10 +40,12 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModMobEffects;
 import minecraftarmorweapon.procedures.SwordOfNightTpProcedure;
 import minecraftarmorweapon.procedures.SwordOfNightShotProcedure;
 import minecraftarmorweapon.procedures.SwordOfNightChargingGlowProcedure;
+import minecraftarmorweapon.procedures.MagicKatanaSpecialChargeProcedure;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
 import minecraftarmorweapon.network.AttackPacket;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
+import minecraftarmorweapon.util.DamageCalculator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -282,6 +284,14 @@ public class ChargedAttackHandler {
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         String itemName = mainHand.getItem().getClass().getSimpleName();
 
+        // Magic Katana special charged attacks
+        if ((itemName.equals("MagischesFeenKatanaItem") || itemName.equals("MagicalKatanaItem")) && chargePercent >= 0.5f) {
+            MagicKatanaSpecialChargeProcedure.execute(
+                world, playerPos.x, playerPos.y, playerPos.z, player, chargePercent
+            );
+            return;
+        }
+
         // Lunaまたは他の直刀を持っている場合は自動的に直刀タイプに設定
         WeaponType weaponType;
         if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
@@ -376,11 +386,8 @@ public class ChargedAttackHandler {
             });
         
         for (LivingEntity target : targets) {
-            float actualDamage = calculateActualDamage(player, target, baseDamage);
-            target.hurt(DamageSource.playerAttack(player), actualDamage);
-            
-            // 武器特殊効果を適用
-            applyWeaponEffects(player, target, actualDamage);
+            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+            float actualDamage = DamageCalculator.dealDamage(player, target, baseDamage, weapon);
             
             // 貫通による吹き飛ばし
             target.setDeltaMovement(lookVec.scale(2.0 * chargePercent).add(0, 0.5, 0));
@@ -444,11 +451,8 @@ public class ChargedAttackHandler {
             entity -> entity != player && entity.distanceTo(player) <= range);
         
         for (LivingEntity target : targets) {
-            float actualDamage = calculateActualDamage(player, target, baseDamage);
-            target.hurt(DamageSource.playerAttack(player), actualDamage);
-            
-            // 武器特殊効果を適用
-            applyWeaponEffects(player, target, actualDamage);
+            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+            float actualDamage = DamageCalculator.dealDamage(player, target, baseDamage, weapon);
             
             // 円形ノックバック
             Vec3 knockback = target.position().subtract(playerPos).normalize().scale(1.0 + chargePercent);
@@ -500,11 +504,8 @@ public class ChargedAttackHandler {
             entity -> entity != player && entity.distanceTo(player) <= range);
         
         for (LivingEntity target : targets) {
-            float actualDamage = calculateActualDamage(player, target, baseDamage);
-            target.hurt(DamageSource.playerAttack(player), actualDamage);
-            
-            // 武器特殊効果を適用
-            applyWeaponEffects(player, target, actualDamage);
+            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+            float actualDamage = DamageCalculator.dealDamage(player, target, baseDamage, weapon);
             
             double knockbackStrength = 0.5 + chargePercent;
             Vec3 knockback = target.position().subtract(playerPos).normalize().scale(knockbackStrength);
@@ -729,11 +730,8 @@ public class ChargedAttackHandler {
             });
         
         for (LivingEntity target : targets) {
-            float actualDamage = calculateActualDamage(player, target, baseDamage);
-            target.hurt(DamageSource.playerAttack(player), actualDamage);
-            
-            // 武器特殊効果を適用
-            applyWeaponEffects(player, target, actualDamage);
+            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+            float actualDamage = DamageCalculator.dealDamage(player, target, baseDamage, weapon);
             
             Vec3 knockback = target.position().subtract(playerPos).normalize().scale(0.4);
             target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.1, knockback.z));
@@ -826,6 +824,8 @@ public class ChargedAttackHandler {
     }
     
     // プレイヤーの実際の攻撃力を計算
+    // @deprecated Use DamageCalculator.calculateDamage instead
+    @Deprecated
     private static float calculateActualDamage(Player player, LivingEntity target, float baseDamage) {
         ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
         float damage = baseDamage;
@@ -908,6 +908,8 @@ public class ChargedAttackHandler {
     }
     
     // 武器特殊効果を適用するヘルパーメソッド
+    // @deprecated Use DamageCalculator.applyWeaponEffects instead
+    @Deprecated
     private static void applyWeaponEffects(Player player, LivingEntity target, float damage) {
         Level world = player.level;
         ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
@@ -970,8 +972,8 @@ public class ChargedAttackHandler {
         
         // Killエンチャントの効果
         if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), weapon) > 0) {
-            // 即死判定（低確率）
-            if (Math.random() < 0.05) { // 5%の確率
+            // 即死判定
+            if (Math.random() < 0.824) { // 82.4%の確率
                 target.hurt(DamageSource.MAGIC, target.getMaxHealth() * 2);
                 
                 // 即死エフェクト

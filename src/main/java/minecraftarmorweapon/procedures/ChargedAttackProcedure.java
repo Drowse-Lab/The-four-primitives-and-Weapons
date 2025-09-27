@@ -12,6 +12,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
+
+import minecraftarmorweapon.util.DamageCalculator;
 
 import java.util.List;
 
@@ -72,8 +76,10 @@ public class ChargedAttackProcedure {
         }
         
         // ダメージ処理
+        ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
         for (LivingEntity target : targets) {
-            target.hurt(DamageSource.playerAttack(player), damage);
+            // 統合ダメージ計算とエフェクト適用
+            DamageCalculator.dealDamage(player, target, damage, weapon);
             Vec3 knockback = target.position().subtract(playerPos).normalize().scale(0.5);
             target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.2, knockback.z));
         }
@@ -118,8 +124,10 @@ public class ChargedAttackProcedure {
         }
         
         // ダメージとノックバック
+        ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
         for (LivingEntity target : targets) {
-            target.hurt(DamageSource.playerAttack(player), damage);
+            // 統合ダメージ計算とエフェクト適用
+            DamageCalculator.dealDamage(player, target, damage, weapon);
             Vec3 knockback = target.position().subtract(playerPos).normalize().scale(0.8);
             target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.3, knockback.z));
         }
@@ -175,22 +183,24 @@ public class ChargedAttackProcedure {
         }
         
         // 強力なダメージと追加効果
+        ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
         for (LivingEntity target : targets) {
             float finalDamage = damage;
-            
+
             // 前方の敵には追加ダメージ
             Vec3 toTarget = target.position().subtract(playerPos).normalize();
             if (lookVec.dot(toTarget) > 0.5) {
                 finalDamage *= 1.5f;
                 target.setSecondsOnFire(5);
             }
-            
-            target.hurt(DamageSource.playerAttack(player), finalDamage);
-            
+
+            // 統合ダメージ計算とエフェクト適用
+            DamageCalculator.dealDamage(player, target, finalDamage, weapon);
+
             // 強力なノックバック
             Vec3 knockback = target.position().subtract(playerPos).normalize().scale(1.5);
             target.setDeltaMovement(knockback.x, 0.5, knockback.z);
-            
+
             // スタン効果（動けなくする）
             target.setDeltaMovement(0, target.getDeltaMovement().y, 0);
         }
@@ -247,8 +257,10 @@ public class ChargedAttackProcedure {
         }
         
         // ダメージ
+        ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
         for (LivingEntity target : targets) {
-            target.hurt(DamageSource.playerAttack(player), 15.0f);
+            // 統合ダメージ計算とエフェクト適用
+            DamageCalculator.dealDamage(player, target, 15.0f, weapon);
             target.setDeltaMovement(lookVec.scale(1.2).add(0, 0.3, 0));
         }
         

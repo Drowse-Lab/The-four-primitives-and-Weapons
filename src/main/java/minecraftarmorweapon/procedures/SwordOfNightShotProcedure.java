@@ -90,20 +90,21 @@ public class SwordOfNightShotProcedure {
 									if (!(entityiterator instanceof OtiruyoEntity)) {
 										if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 											if (entityiterator instanceof Mob) {
-												{
-													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+												// Killエンチャントの処理（82.4%の確率）
+												if (Math.random() < 0.824) {
+													{
+														Entity _ent = entityiterator;
+														if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+															_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
+																	_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+														}
 													}
-												}
-												{
-													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
-																"/deta merge entity @s (Health:0)");
+													if (entityiterator instanceof LivingEntity _livingEntity) {
+														_livingEntity.setHealth(0f);
 													}
+												} else {
+													// 通常ダメージ
+													entityiterator.hurt(DamageSource.GENERIC, 8);
 												}
 											}
 										} else {

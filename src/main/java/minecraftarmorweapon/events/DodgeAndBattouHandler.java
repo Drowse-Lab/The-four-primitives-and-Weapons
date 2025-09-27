@@ -36,6 +36,7 @@ import net.minecraft.core.BlockPos;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
 import net.minecraftforge.registries.ForgeRegistries;
+import minecraftarmorweapon.util.DamageCalculator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -405,83 +406,13 @@ public class DodgeAndBattouHandler {
         for (LivingEntity target : targets) {
             // 基本ダメージ
             float baseDamage = 18.0f;
-            float actualDamage = calculateActualDamage(player, weapon, target, baseDamage);
-            
+            float actualDamage = DamageCalculator.calculateDamage(player, target, baseDamage, weapon);
+
             // ダッシュ攻撃のダメージ
             target.hurt(DamageSource.playerAttack(player), actualDamage);
             
-            // RiversOfBloodの吸血効果
-            if (weaponName.equals("RiversOfBloodItem")) {
-                // ターゲットが呪われているかチェック
-                boolean isCursed = target.hasEffect(MobEffects.WITHER) || 
-                                   (target.getPersistentData().contains("Feyn") && 
-                                    "cursed".equals(target.getPersistentData().getString("Feyn")));
-                
-                float healAmount = isCursed ? actualDamage * 0.5f : actualDamage * 0.2f;
-                player.heal(healAmount);
-                
-                if (isCursed) {
-                    // 呪われた敵への追加効果
-                    target.hurt(DamageSource.MAGIC, actualDamage * 0.3f);
-                    target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
-                    target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
-                }
-                
-                // 血のエフェクト
-                if (world instanceof ServerLevel serverLevel) {
-                    serverLevel.sendParticles(ParticleTypes.DAMAGE_INDICATOR,
-                        target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
-                        10, 0.3, 0.3, 0.3, 0.1);
-                }
-                
-                world.playSound(null, player.getX(), player.getY(), player.getZ(),
-                    SoundEvents.GENERIC_DRINK, SoundSource.PLAYERS, 0.5f, 1.2f);
-            }
-            
-            // WitherKatanaのウィザー効果
-            if (weaponName.equals("WitherKatanaItem")) {
-                // ターゲットが呪われているかチェック
-                boolean isCursed = target.getPersistentData().contains("Feyn") && 
-                                   "cursed".equals(target.getPersistentData().getString("Feyn"));
-                
-                if (isCursed) {
-                    // 呪われた敵には強化されたウィザー効果
-                    target.addEffect(new MobEffectInstance(MobEffects.WITHER, 200, 2));
-                    target.hurt(DamageSource.WITHER, actualDamage * 0.5f);
-                    
-                    // 闇のオーラエフェクト
-                    if (world instanceof ServerLevel serverLevel) {
-                        serverLevel.sendParticles(ParticleTypes.SOUL,
-                            target.getX(), target.getY() + 1, target.getZ(),
-                            15, 0.5, 0.5, 0.5, 0.05);
-                    }
-                } else {
-                    // 通常のウィザー効果
-                    target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
-                }
-                
-                // ウィザーサウンド
-                world.playSound(null, target.getX(), target.getY(), target.getZ(),
-                    SoundEvents.WITHER_HURT, SoundSource.PLAYERS, 0.5f, 1.0f);
-            }
-            
-            // Killエンチャントの効果
-            if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), weapon) > 0) {
-                // 即死判定（低確率）
-                if (Math.random() < 0.05) { // 5%の確率
-                    target.hurt(DamageSource.MAGIC, target.getMaxHealth() * 2);
-                    
-                    // 即死エフェクト
-                    if (world instanceof ServerLevel serverLevel) {
-                        serverLevel.sendParticles(ParticleTypes.SMOKE,
-                            target.getX(), target.getY() + 1, target.getZ(),
-                            20, 0.5, 0.5, 0.5, 0.1);
-                    }
-                    
-                    world.playSound(null, target.getX(), target.getY(), target.getZ(),
-                        SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 0.5f, 2.0f);
-                }
-            }
+            // 武器エフェクトを適用
+            DamageCalculator.applyWeaponEffects(player, target, actualDamage, weapon);
             
             // 強力なノックバック
             target.setDeltaMovement(lookVec.scale(1.5).add(0, 0.4, 0));
@@ -723,6 +654,8 @@ public class DodgeAndBattouHandler {
     }
     
     // プレイヤーの実際の攻撃力を計算
+    // @deprecated Use DamageCalculator.calculateDamage instead
+    @Deprecated
     private static float calculateActualDamage(Player player, ItemStack weapon, LivingEntity target, float baseDamage) {
         float damage = baseDamage;
         

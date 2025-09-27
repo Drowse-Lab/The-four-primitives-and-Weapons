@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft_armor_weapon:storm",
+    "minecraft_armor_weapon:wind_step",
+    "minecraft_armor_weapon:bubbleshot",
+    "minecraft_armor_weapon:thunderbolt",
+    "minecraft_armor_weapon:fireball",
+    "minecraft_armor_weapon:darkness"
+  ]
+}

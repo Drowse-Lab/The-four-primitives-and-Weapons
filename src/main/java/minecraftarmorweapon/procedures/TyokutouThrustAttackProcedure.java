@@ -23,6 +23,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.InteractionHand;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
+import minecraftarmorweapon.util.DamageCalculator;
 
 import java.util.List;
 import java.util.Arrays;
@@ -118,12 +119,9 @@ public class TyokutouThrustAttackProcedure {
         // チャージ攻撃では貫通（全ての敵にダメージ）
         for (LivingEntity target : targets) {
 
-            // ダメージ計算（エンチャントや効果を適用）
-            float actualDamage = calculateDamage(player, target, (float)damage);
-            target.hurt(DamageSource.playerAttack(player), actualDamage);
-
-            // 武器特殊効果を適用
-            applyWeaponEffects(player, target, actualDamage);
+            // 統合ダメージ計算とエフェクト適用
+            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+            float actualDamage = DamageCalculator.dealDamage(player, target, (float)damage, weapon);
 
             // 貫通エフェクト
             if (world instanceof ServerLevel serverLevel) {
@@ -215,22 +213,23 @@ public class TyokutouThrustAttackProcedure {
             // メインのエフェクトライン
             for (int i = 0; i < 30; i++) {
                 double d = i * 0.4;
-                    serverLevel.sendParticles(
-                        ParticleTypes.END_ROD,
-                        startPos.x + lookVec.x * d,
-                        startPos.y + lookVec.y * d,
-                        startPos.z + lookVec.z * d,
-                        3, 0.15, 0.15, 0.15, 0.005
-                    );
+                // END_RODパーティクルを確実に表示
+                serverLevel.sendParticles(
+                    ParticleTypes.END_ROD,
+                    startPos.x + lookVec.x * d,
+                    startPos.y + lookVec.y * d,
+                    startPos.z + lookVec.z * d,
+                    5, 0.1, 0.1, 0.1, 0
+                );
 
                 // チャージ最大時は追加エフェクト
                 if (chargePercent >= 1.0f && i % 2 == 0) {
                     serverLevel.sendParticles(
-                        ParticleTypes.END_ROD,
+                        ParticleTypes.ENCHANTED_HIT,
                         startPos.x + lookVec.x * d,
                         startPos.y + lookVec.y * d,
                         startPos.z + lookVec.z * d,
-                        3, 0.15, 0.15, 0.15, 0.005
+                        4, 0.2, 0.2, 0.2, 0.01
                     );
 
                     // WAX_ONパーティクルも追加（より見やすい）
@@ -281,10 +280,9 @@ public class TyokutouThrustAttackProcedure {
 
         // 全ての敵を貫通
         for (LivingEntity target : targets) {
-            float actualDamage = calculateDamage(player, target, (float)damage);
-            target.hurt(DamageSource.playerAttack(player), actualDamage);
-
-            applyWeaponEffects(player, target, actualDamage);
+            // 統合ダメージ計算とエフェクト適用
+            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+            float actualDamage = DamageCalculator.dealDamage(player, target, (float)damage, weapon);
 
             // ターゲット位置にダメージエフェクト
             if (world instanceof ServerLevel serverLevel) {
@@ -397,12 +395,9 @@ public class TyokutouThrustAttackProcedure {
         if (!targets.isEmpty()) {
             LivingEntity target = targets.get(0);
 
-            // ダメージ計算（エンチャントや効果を適用）
-            float actualDamage = calculateDamage(player, target, (float)damage);
-            target.hurt(DamageSource.playerAttack(player), actualDamage);
-
-            // 武器特殊効果を適用
-            applyWeaponEffects(player, target, actualDamage);
+            // 統合ダメージ計算とエフェクト適用
+            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+            float actualDamage = DamageCalculator.dealDamage(player, target, (float)damage, weapon);
 
             // ノックバック
             target.setDeltaMovement(lookVec.scale(0.8).add(0, 0.2, 0));
@@ -432,7 +427,9 @@ public class TyokutouThrustAttackProcedure {
 
     /**
      * ダメージ計算（エンチャント、ポーション効果、属性を含む）
+     * @deprecated Use DamageCalculator.calculateDamage instead
      */
+    @Deprecated
     private static float calculateDamage(Player player, LivingEntity target, float baseDamage) {
         ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
         if (weapon.isEmpty()) {
@@ -506,7 +503,9 @@ public class TyokutouThrustAttackProcedure {
 
     /**
      * 武器特殊効果を適用
+     * @deprecated Use DamageCalculator.applyWeaponEffects instead
      */
+    @Deprecated
     private static void applyWeaponEffects(Player player, LivingEntity target, float damage) {
         ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
         if (weapon.isEmpty()) {
@@ -541,7 +540,7 @@ public class TyokutouThrustAttackProcedure {
 
         // Killエンチャント
         if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), weapon) > 0) {
-            if (Math.random() < 1.00) { // 3%の確率で即死
+            if (Math.random() < 0.824) { // 82.4%の確率で即死
                 target.hurt(DamageSource.MAGIC, target.getMaxHealth() * 2);
 
                 if (player.level instanceof ServerLevel serverLevel) {
@@ -732,26 +731,34 @@ public class TyokutouThrustAttackProcedure {
             );
 
             // ベジェ曲線に沿ってパーティクルを配置（密度を上げる）
-            int particleCount = 50 + (int)(chargePercent * 30);  // 50-80個に増加
+            int particleCount = 40 + (int)(chargePercent * 20);  // 40-60個に調整（パフォーマンス改善）
             for (int j = 0; j < particleCount; j++) {
                 float t = (float)j / (particleCount - 1);
 
                 // 3次ベジェ曲線の計算
                 Vec3 particlePos = bezierCubic(beamStart, controlPoint1, controlPoint2, beamEnd, t);
 
-                // パーティクルの種類（ENCHANTED_HITで統一）
-                serverLevel.sendParticles(
-                    ParticleTypes.ENCHANTED_HIT,
-                    particlePos.x, particlePos.y, particlePos.z,
-                    1, 0.02, 0.02, 0.02, 0
-                );
+                // パーティクルの種類を交互に変更して視認性向上
+                if (j % 3 == 0) {
+                    serverLevel.sendParticles(
+                        ParticleTypes.END_ROD,
+                        particlePos.x, particlePos.y, particlePos.z,
+                        1, 0, 0, 0, 0
+                    );
+                } else {
+                    serverLevel.sendParticles(
+                        ParticleTypes.ENCHANTED_HIT,
+                        particlePos.x, particlePos.y, particlePos.z,
+                        1, 0.02, 0.02, 0.02, 0
+                    );
+                }
 
                 // チャージ最大時は追加の輝きエフェクト（間隔を調整）
-                if (chargePercent >= 1.0f && j % 8 == 0) {  // 間隔を広げて重なりを減らす
+                if (chargePercent >= 1.0f && j % 10 == 0) {  // 間隔を広げて重なりを減らす
                     serverLevel.sendParticles(
-                        ParticleTypes.ELECTRIC_SPARK,
+                        ParticleTypes.WAX_ON,
                         particlePos.x, particlePos.y, particlePos.z,
-                        2, 0.1, 0.1, 0.1, 0.01
+                        1, 0.05, 0.05, 0.05, 0
                     );
                 }
             }
@@ -910,8 +917,8 @@ public class TyokutouThrustAttackProcedure {
                     .add(upVec.scale(Math.random() * 3 + 1));  // 上方向のみ（1～4）
             }
 
-            // ベジェ曲線に沿ってパーティクルを配置（密度を上げる）
-            int particleCount = 60 + (int)(chargePercent * 40);  // 60-100個に増加
+            // ベジェ曲線に沿ってパーティクルを配置（密度を最適化）
+            int particleCount = 50 + (int)(chargePercent * 25);  // 50-75個に調整
             for (int j = 0; j < particleCount; j++) {
                 float t = (float)j / (particleCount - 1);
 
@@ -919,26 +926,34 @@ public class TyokutouThrustAttackProcedure {
                 Vec3 particlePos = bezierCubic(beamStart, controlPoint1, controlPoint2, beamEnd, t);
 
                 // パーティクルの種類（進行に応じて変化）
-                if (t < 0.3) {
-                    // 開始部分
+                if (t < 0.2) {
+                    // 開始部分 - END_RODで始まり
                     serverLevel.sendParticles(
-                        ParticleTypes.SOUL_FIRE_FLAME,
+                        ParticleTypes.END_ROD,
                         particlePos.x, particlePos.y, particlePos.z,
-                        1, 0, 0, 0, 0
+                        2, 0.05, 0.05, 0.05, 0
                     );
-                } else if (t < 0.7) {
-                    // 中間部分（ENCHANTED_HITで統一）
-                    serverLevel.sendParticles(
-                        ParticleTypes.ENCHANTED_HIT,
-                        particlePos.x, particlePos.y, particlePos.z,
-                        1, 0.02, 0.02, 0.02, 0
-                    );
+                } else if (t < 0.8) {
+                    // 中間部分 - 交互にパーティクル
+                    if (j % 2 == 0) {
+                        serverLevel.sendParticles(
+                            ParticleTypes.ENCHANTED_HIT,
+                            particlePos.x, particlePos.y, particlePos.z,
+                            1, 0.02, 0.02, 0.02, 0
+                        );
+                    } else {
+                        serverLevel.sendParticles(
+                            ParticleTypes.END_ROD,
+                            particlePos.x, particlePos.y, particlePos.z,
+                            1, 0, 0, 0, 0
+                        );
+                    }
                 } else {
                     // 終端部分（散らばる）
                     serverLevel.sendParticles(
                         ParticleTypes.ELECTRIC_SPARK,
                         particlePos.x, particlePos.y, particlePos.z,
-                        2, 0.2, 0.2, 0.2, 0.02
+                        2, 0.15, 0.15, 0.15, 0.01
                     );
                 }
 

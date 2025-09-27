@@ -1,6 +1,9 @@
 
 package minecraftarmorweapon.item;
 
+import top.theillusivec4.curios.api.type.capability.ICurioItem;
+import top.theillusivec4.curios.api.SlotContext;
+
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.ItemStack;
@@ -15,7 +18,7 @@ import minecraftarmorweapon.procedures.DarknessYoukuritukusitatokiProcedure;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
-public class DarknessItem extends Item {
+public class DarknessItem extends Item implements ICurioItem {
 	public DarknessItem() {
 		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS).stacksTo(1).rarity(Rarity.EPIC));
 	}
@@ -38,5 +41,15 @@ public class DarknessItem extends Item {
 		if (selected)
 			DarknessaitemuwoShoudeChituteiruJiannoteitukuProcedure.execute(entity);
 		DarknessaitemuwoShoudeChituteiruJiannoteitukuProcedure.execute(entity);
+	}
+
+	@Override
+	public boolean canEquip(SlotContext slotContext, ItemStack stack) {
+		return true;
+	}
+
+	@Override
+	public boolean canEquipFromUse(SlotContext slotContext, ItemStack stack) {
+		return true;
 	}
 }
