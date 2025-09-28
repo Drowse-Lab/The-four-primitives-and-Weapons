@@ -22,7 +22,7 @@ import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.PlayMessages;
 
 import minecraftarmorweapon.util.DamageCalculator;
-import minecraftarmorweapon.init.CustomEntityInit;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModCustomEntities;
 
 public class DarkProjectileEntity extends AbstractHurtingProjectile {
     private LivingEntity target;
@@ -36,7 +36,7 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
     }
 
     public DarkProjectileEntity(Level world, LivingEntity shooter, LivingEntity target, float damage) {
-        super(CustomEntityInit.DARK_PROJECTILE.get(), shooter, 0, 0, 0, world);
+        super(MinecraftArmorWeaponModCustomEntities.DARK_PROJECTILE.get(), shooter, 0, 0, 0, world);
         this.shooter = shooter;
         this.target = target;
         this.damage = damage;
@@ -44,7 +44,7 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
     }
 
     public DarkProjectileEntity(PlayMessages.SpawnEntity packet, Level world) {
-        super(CustomEntityInit.DARK_PROJECTILE.get(), world);
+        super(MinecraftArmorWeaponModCustomEntities.DARK_PROJECTILE.get(), world);
     }
 
     @Override
