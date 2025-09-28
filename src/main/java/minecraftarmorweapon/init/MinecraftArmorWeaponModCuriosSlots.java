@@ -15,4 +15,7 @@ public class MinecraftArmorWeaponModCuriosSlots {
 	public static void enqueueIMC(final InterModEnqueueEvent event) {
 		InterModComms.sendTo(CuriosApi.MODID, SlotTypeMessage.REGISTER_TYPE, () -> SlotTypePreset.RING.getMessageBuilder().size(2).build());
 	}
+		public static void enqueueIMC(final InterModEnqueueEvent event) {
+		InterModComms.sendTo(CuriosApi.MODID, SlotTypeMessage.REGISTER_TYPE, () -> SlotTypePreset.BACK.getMessageBuilder().size(1).build());
+	}
 }
