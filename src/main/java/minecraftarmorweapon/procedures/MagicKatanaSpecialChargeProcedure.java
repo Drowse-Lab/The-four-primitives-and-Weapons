@@ -796,7 +796,7 @@ public class MagicKatanaSpecialChargeProcedure {
             var attributes = weapon.getAttributeModifiers(net.minecraft.world.entity.EquipmentSlot.MAINHAND);
             if (attributes.containsKey(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)) {
                 for (var modifier : attributes.get(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)) {
-                    baseDamage += modifier.getAmount();
+                    baseDamage += (float) modifier.getAmount();
                 }
             }
             // それでも0の場合はデフォルト値
