@@ -10,7 +10,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 
 public class KillEnchantment extends Enchantment {
 	public KillEnchantment(EquipmentSlot... slots) {
-		super(Enchantment.Rarity.EPIC, EnchantmentCategory.WEAPON, slots);
+		super(Enchantment.Rarity.RARE, EnchantmentCategory.WEAPON, slots);
 	}
 
 	@Override

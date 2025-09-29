@@ -50,7 +50,7 @@ public class TornadoEntity extends Entity {
         this.noCulling = true;
     }
 
-    // クライアント側のスポーン用コンストラクタ
+    // Client-side spawn constructor
     public TornadoEntity(PlayMessages.SpawnEntity packet, Level world) {
         this(MinecraftArmorWeaponModCustomEntities.TORNADO.get(), world);
     }
@@ -355,5 +355,21 @@ public class TornadoEntity extends Entity {
 
     public void setMaxHeight(float height) {
         this.maxHeight = height;
+    }
+
+    public void setOwner(Player player) {
+        this.owner = player;
+    }
+
+    public void setDirection(Vec3 direction) {
+        this.moveDirection = direction.normalize();
+    }
+
+    public void setWithElectricity(boolean withElectricity) {
+        entityData.set(WITH_ELECTRICITY, withElectricity);
+    }
+
+    public void setWeapon(ItemStack weapon) {
+        this.weaponStack = weapon.copy();
     }
 }

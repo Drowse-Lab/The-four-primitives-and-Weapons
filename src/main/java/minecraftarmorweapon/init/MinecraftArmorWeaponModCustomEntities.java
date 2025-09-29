@@ -29,7 +29,7 @@ public class MinecraftArmorWeaponModCustomEntities {
                     .setShouldReceiveVelocityUpdates(true)
                     .setTrackingRange(128)
                     .setUpdateInterval(1)
-                    .setCustomClientFactory(TornadoEntity::new)
+                    .setCustomClientFactory((spawnEntity, level) -> new TornadoEntity(spawnEntity, level))
                     .sized(1.0f, 1.0f)
                     .build("tornado"));
 
@@ -38,7 +38,7 @@ public class MinecraftArmorWeaponModCustomEntities {
                     .setShouldReceiveVelocityUpdates(true)
                     .setTrackingRange(64)
                     .setUpdateInterval(1)
-                    .setCustomClientFactory(DarkProjectileEntity::new)
+                    .setCustomClientFactory((spawnEntity, level) -> new DarkProjectileEntity(spawnEntity, level))
                     .sized(0.5f, 0.5f)
                     .build("dark_projectile"));
 }

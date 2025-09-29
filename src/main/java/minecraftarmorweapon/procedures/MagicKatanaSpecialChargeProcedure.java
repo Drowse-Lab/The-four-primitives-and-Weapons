@@ -33,6 +33,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import minecraftarmorweapon.util.DamageCalculator;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModCustomEntities;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
 import minecraftarmorweapon.entity.DarkProjectileEntity;
 import minecraftarmorweapon.entity.TornadoEntity;
 
@@ -48,29 +50,29 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 public class MagicKatanaSpecialChargeProcedure {
 
     /**
-     * MagischesFeenKatanaまたはMagicalKatanaの特殊チャージ攻撃を実行
-     * @param world ワールド
-     * @param x X座標
-     * @param y Y座標
-     * @param z Z座標
-     * @param entity プレイヤー
-     * @param chargePercent チャージ率
+     * Execute special charge attack for MagischesFeenKatana or MagicalKatana
+     * @param world World instance
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param z Z coordinate
+     * @param entity Player entity
+     * @param chargePercent Charge percentage
      */
     public static void execute(LevelAccessor world, double x, double y, double z, Entity entity, float chargePercent) {
         if (!(entity instanceof Player player)) return;
 
-        // プレイヤーのインベントリをチェック
+        // Check player's inventory
         ItemStack specialItem = findSpecialItem(player);
 
         if (specialItem.isEmpty()) {
-            // 特殊アイテムがない場合は通常の魔法攻撃
+            // Execute default magic attack if no special item
             executeDefaultMagicAttack(world, x, y, z, player, chargePercent);
             return;
         }
 
         String itemName = specialItem.getItem().getClass().getSimpleName();
 
-        // アイテムに応じた特殊攻撃を実行
+        // Execute special attack based on item type
         switch (itemName) {
             case "StormItem":
                 executeStormAttack(world, x, y, z, player, chargePercent);
@@ -97,7 +99,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * プレイヤーのCuriosスロット（book）から特殊アイテムを検索
+     * Find special item from player's Curios slot (book)
      */
     private static ItemStack findSpecialItem(Player player) {
         // Curiosスロットから取得
@@ -131,7 +133,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * StormItem - 竜巻と感電効果（TornadoEntity使用）
+     * StormItem - Tornado with electric shock effect (using TornadoEntity)
      */
     private static void executeStormAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         if (!(world instanceof Level level)) return;
@@ -139,13 +141,22 @@ public class MagicKatanaSpecialChargeProcedure {
         Vec3 lookVec = player.getLookAngle();
         Vec3 startPos = player.position().add(lookVec.scale(2.0));
 
-        // 武器の攻撃力を取得
+        // Get weapon attack damage
         ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
         float baseDamage = getWeaponDamage(weapon);
-        float damage = (baseDamage + 5.0f) * (1.0f + chargePercent);
 
-        // TornadoEntityを生成（感電効果付き）
-        TornadoEntity tornado = new TornadoEntity(level, player, startPos, lookVec, true, damage, weapon);
+        // Calculate full damage with DamageCalculator (including enchantments and player attributes)
+        float calculatedDamage = DamageCalculator.calculateDamage(player, null, baseDamage + 5.0f, weapon);
+        float damage = calculatedDamage * (1.0f + chargePercent);
+
+        // Generate tornado entity (with electricity effect)
+        TornadoEntity tornado = new TornadoEntity(MinecraftArmorWeaponModCustomEntities.TORNADO.get(), level);
+        tornado.setOwner(player);
+        tornado.setPos(startPos.x, startPos.y, startPos.z);
+        tornado.setDirection(lookVec);
+        tornado.setWithElectricity(true);
+        tornado.setDamage(damage);
+        tornado.setWeapon(weapon);
         tornado.setSpeed(0.8f); // 高速移動
         tornado.setLifespan(200); // 10秒間
         tornado.setRadius(4.0f);
@@ -165,7 +176,13 @@ public class MagicKatanaSpecialChargeProcedure {
             Vec3 newDirection = new Vec3(newX, lookVec.y, newZ).normalize();
             Vec3 sideStartPos = player.position().add(newDirection.scale(2.0));
 
-            TornadoEntity sideTornado = new TornadoEntity(level, player, sideStartPos, newDirection, true, damage * 0.8f, weapon);
+            TornadoEntity sideTornado = new TornadoEntity(MinecraftArmorWeaponModCustomEntities.TORNADO.get(), level);
+            sideTornado.setOwner(player);
+            sideTornado.setPos(sideStartPos.x, sideStartPos.y, sideStartPos.z);
+            sideTornado.setDirection(newDirection);
+            sideTornado.setWithElectricity(true);
+            sideTornado.setDamage(damage * 0.8f);
+            sideTornado.setWeapon(weapon);
             sideTornado.setSpeed(0.8f);
             sideTornado.setLifespan(160); // 少し短め
             sideTornado.setRadius(3.0f); // 少し小さめ
@@ -182,7 +199,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * WindStepItem - 竜巻効果（感電なし、TornadoEntity使用）
+     * WindStepItem - Tornado effect without electricity (using TornadoEntity)
      */
     private static void executeWindStepAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         if (!(world instanceof Level level)) return;
@@ -190,13 +207,22 @@ public class MagicKatanaSpecialChargeProcedure {
         Vec3 lookVec = player.getLookAngle();
         Vec3 startPos = player.position().add(lookVec.scale(2.0));
 
-        // 武器の攻撃力を取得
+        // Get weapon attack damage
         ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
         float baseDamage = getWeaponDamage(weapon);
-        float damage = (baseDamage + 4.0f) * (1.0f + chargePercent);
 
-        // TornadoEntityを生成（感電効果なし）
-        TornadoEntity tornado = new TornadoEntity(level, player, startPos, lookVec, false, damage, weapon);
+        // DamageCalculatorで完全なダメージ計算
+        float calculatedDamage = DamageCalculator.calculateDamage(player, null, baseDamage + 4.0f, weapon);
+        float damage = calculatedDamage * (1.0f + chargePercent);
+
+        // Generate tornado entity (without electricity effect)
+        TornadoEntity tornado = new TornadoEntity(MinecraftArmorWeaponModCustomEntities.TORNADO.get(), level);
+        tornado.setOwner(player);
+        tornado.setPos(startPos.x, startPos.y, startPos.z);
+        tornado.setDirection(lookVec);
+        tornado.setWithElectricity(false);
+        tornado.setDamage(damage);
+        tornado.setWeapon(weapon);
         tornado.setSpeed(1.0f); // より高速
         tornado.setLifespan(240); // 12秒間
         tornado.setRadius(5.0f); // 大きめ
@@ -211,7 +237,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * ThunderboltItem - 横斬撃と雷撃
+     * ThunderboltItem - Horizontal slash with lightning strike
      */
     private static void executeThunderboltAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         Vec3 lookVec = player.getLookAngle();
@@ -247,11 +273,14 @@ public class MagicKatanaSpecialChargeProcedure {
             });
 
         for (LivingEntity target : targets) {
-            // ダメージ（item攻撃力＋2）
+            // ダメージ計算（エンチャントとKill効果を含む）
             ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
             float baseDamage = getWeaponDamage(weapon);
-            float damage = (baseDamage + 2.0f) * (1.0f + chargePercent);
+            float damage = DamageCalculator.calculateDamage(player, target, baseDamage + 2.0f, weapon) * (1.0f + chargePercent);
+
+            // ダメージを与えてエンチャント効果も適用
             DamageCalculator.dealDamage(player, target, damage, weapon);
+            DamageCalculator.applyWeaponEffects(player, target, damage, weapon);
 
             // 3秒間のフラッシュ点滅効果の後に雷を落とす
             if (world instanceof ServerLevel serverLevel) {
@@ -331,7 +360,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * FireballItem - 火炎弾攻撃
+     * FireballItem - Fireball attack
      */
     private static void executeFireballAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         Vec3 lookVec = player.getLookAngle();
@@ -373,7 +402,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * BubbleshotItem - 方向性ノックバック
+     * BubbleshotItem - Directional knockback
      */
     private static void executeBubbleshotAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         Vec3 lookVec = player.getLookAngle();
@@ -408,21 +437,24 @@ public class MagicKatanaSpecialChargeProcedure {
             });
 
         for (LivingEntity target : targets) {
-            // ダメージ（item攻撃力のみ）
+            // ダメージ計算（エンチャントとKill効果を含む）
             ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
             float baseDamage = getWeaponDamage(weapon);
-            float damage = baseDamage * (1.0f + chargePercent);
-            DamageCalculator.dealDamage(player, target, damage, weapon);
+            float damage = DamageCalculator.calculateDamage(player, target, baseDamage, weapon) * (1.0f + chargePercent);
 
-            // 鈍足3
+            // ダメージを与えてエンチャント効果も適用
+            DamageCalculator.dealDamage(player, target, damage, weapon);
+            DamageCalculator.applyWeaponEffects(player, target, damage, weapon);
+
+            // Slowness III
             target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 2));
 
-            // ターゲットが向いている方向に強力なノックバック
-            Vec3 targetLookVec = target.getLookAngle();
+            // Strong knockback away from player
+            Vec3 knockbackDirection = target.position().subtract(playerPos).normalize();
             target.setDeltaMovement(
-                targetLookVec.x * 3.0,
+                knockbackDirection.x * 3.0,
                 0.5,
-                targetLookVec.z * 3.0
+                knockbackDirection.z * 3.0
             );
 
             // 泡エフェクト
@@ -441,7 +473,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * DarknessItem - 追尾弾
+     * DarknessItem - Homing projectile
      */
     private static void executeDarknessAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         if (!(world instanceof Level level)) return;
@@ -449,13 +481,17 @@ public class MagicKatanaSpecialChargeProcedure {
         // 視線の先のターゲットを検索
         LivingEntity target = findTargetInSight(world, player, 30.0);
 
-        // ダメージを計算（item攻撃力＋7）
+        // ダメージを計算（エンチャント効果込み）
         ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
         float baseDamage = getWeaponDamage(weapon);
-        float damage = (baseDamage + 7.0f) * (1.0f + chargePercent);
+        float damage = DamageCalculator.calculateDamage(player, target, baseDamage + 7.0f, weapon) * (1.0f + chargePercent);
 
-        // DarkProjectileEntityを生成
-        DarkProjectileEntity projectile = new DarkProjectileEntity(level, player, target, damage);
+        // Generate dark projectile entity
+        DarkProjectileEntity projectile = new DarkProjectileEntity(MinecraftArmorWeaponModCustomEntities.DARK_PROJECTILE.get(), level);
+        projectile.setOwner(player);
+        projectile.setTarget(target);
+        projectile.setDamage(damage);
+        projectile.setWeapon(weapon);
 
         // 初期位置を設定
         Vec3 startPos = player.position().add(0, player.getEyeHeight() - 0.1, 0);
@@ -496,7 +532,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * デフォルトの魔法攻撃
+     * Default magic attack
      */
     private static void executeDefaultMagicAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         Vec3 lookVec = player.getLookAngle();
@@ -526,8 +562,12 @@ public class MagicKatanaSpecialChargeProcedure {
 
         for (LivingEntity target : targets) {
             ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-            float damage = 15.0f * (1.0f + chargePercent);
+            float baseDamage = getWeaponDamage(weapon);
+            float damage = DamageCalculator.calculateDamage(player, target, baseDamage + 8.0f, weapon) * (1.0f + chargePercent);
+
+            // ダメージを与えてエンチャント効果も適用
             DamageCalculator.dealDamage(player, target, damage, weapon);
+            DamageCalculator.applyWeaponEffects(player, target, damage, weapon);
         }
 
         if (world instanceof Level level) {
@@ -715,7 +755,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * 視線の先のターゲットを検索
+     * Find target in player's line of sight
      */
     private static LivingEntity findTargetInSight(LevelAccessor world, Player player, double maxRange) {
         Vec3 start = player.getEyePosition();
@@ -741,18 +781,42 @@ public class MagicKatanaSpecialChargeProcedure {
     // createHomingProjectile メソッドは削除（DarkProjectileEntityで置き換え）
 
     /**
-     * 武器の基本攻撃力を取得
+     * Get weapon base damage (actual item damage + enchantments)
      */
     private static float getWeaponDamage(ItemStack weapon) {
         if (weapon.isEmpty()) return 4.0f;
 
-        // 基本攻撃力（デフォルトの魔法刀の攻撃力）
-        float baseDamage = 7.0f;
+        float baseDamage = 0.0f;
+
+        // 武器の実際の攻撃力を取得（SwordItemの場合）
+        if (weapon.getItem() instanceof net.minecraft.world.item.SwordItem swordItem) {
+            baseDamage = swordItem.getDamage();
+        } else {
+            // 剣以外の場合は属性から取得を試みる
+            var attributes = weapon.getAttributeModifiers(net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+            if (attributes.containsKey(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)) {
+                for (var modifier : attributes.get(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)) {
+                    baseDamage += modifier.getAmount();
+                }
+            }
+            // それでも0の場合はデフォルト値
+            if (baseDamage == 0.0f) {
+                baseDamage = 7.0f; // 魔法刀のデフォルト攻撃力
+            }
+        }
 
         // シャープネスエンチャント
         int sharpnessLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SHARPNESS, weapon);
         if (sharpnessLevel > 0) {
             baseDamage += 0.5f * sharpnessLevel + 0.5f;
+        }
+
+        // 武器固有の名前によるボーナス（必要に応じて）
+        String weaponName = weapon.getItem().getClass().getSimpleName();
+        if (weaponName.equals("MagischesFeenKatanaItem")) {
+            baseDamage += 2.0f; // 魔法の妖精刀ボーナス
+        } else if (weaponName.equals("MagicalKatanaItem")) {
+            baseDamage += 1.0f; // 魔法刀ボーナス
         }
 
         return baseDamage;
