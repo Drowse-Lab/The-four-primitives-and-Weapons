@@ -12,7 +12,12 @@ public class KillEnchantment extends Enchantment {
 	public KillEnchantment(EquipmentSlot... slots) {
 		super(Enchantment.Rarity.RARE, EnchantmentCategory.WEAPON, slots);
 	}
-	
+
+	@Override
+	public int getMaxLevel() {
+		return 10;
+	}
+	//levelが1上がると即死の確率が10%上がる
 	@Override
 	public boolean canEnchant(ItemStack stack) {
 		// 通常の武器に加えて、弓とクロスボウにも適用可能

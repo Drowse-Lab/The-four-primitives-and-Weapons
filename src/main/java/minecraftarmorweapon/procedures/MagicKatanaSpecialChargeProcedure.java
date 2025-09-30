@@ -33,7 +33,10 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import minecraftarmorweapon.util.DamageCalculator;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModCustomEntities;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
 import minecraftarmorweapon.entity.DarkProjectileEntity;
+import minecraftarmorweapon.entity.TornadoEntity;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -47,29 +50,29 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 public class MagicKatanaSpecialChargeProcedure {
 
     /**
-     * MagischesFeenKatanaまたはMagicalKatanaの特殊チャージ攻撃を実行
-     * @param world ワールド
-     * @param x X座標
-     * @param y Y座標
-     * @param z Z座標
-     * @param entity プレイヤー
-     * @param chargePercent チャージ率
+     * Execute special charge attack for MagischesFeenKatana or MagicalKatana
+     * @param world World instance
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param z Z coordinate
+     * @param entity Player entity
+     * @param chargePercent Charge percentage
      */
     public static void execute(LevelAccessor world, double x, double y, double z, Entity entity, float chargePercent) {
         if (!(entity instanceof Player player)) return;
 
-        // プレイヤーのインベントリをチェック
+        // Check player's inventory
         ItemStack specialItem = findSpecialItem(player);
 
         if (specialItem.isEmpty()) {
-            // 特殊アイテムがない場合は通常の魔法攻撃
+            // Execute default magic attack if no special item
             executeDefaultMagicAttack(world, x, y, z, player, chargePercent);
             return;
         }
 
         String itemName = specialItem.getItem().getClass().getSimpleName();
 
-        // アイテムに応じた特殊攻撃を実行
+        // Execute special attack based on item type
         switch (itemName) {
             case "StormItem":
                 executeStormAttack(world, x, y, z, player, chargePercent);
@@ -96,7 +99,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * プレイヤーのCuriosスロット（book）から特殊アイテムを検索
+     * Find special item from player's Curios slot (book)
      */
     private static ItemStack findSpecialItem(Player player) {
         // Curiosスロットから取得
@@ -130,109 +133,111 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * StormItem - 竜巻と感電効果
+     * StormItem - Tornado with electric shock effect (using TornadoEntity)
      */
     private static void executeStormAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
+        if (!(world instanceof Level level)) return;
+
         Vec3 lookVec = player.getLookAngle();
-        Vec3 playerPos = player.position();
-        double range = 20.0;
+        Vec3 startPos = player.position().add(lookVec.scale(2.0));
 
-        // 竜巻の生成と移動
-        for (double distance = 0; distance <= range; distance += 0.5) {
-            Vec3 tornadoPos = playerPos.add(lookVec.scale(distance));
+        // Get weapon attack damage
+        ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+        float baseDamage = getWeaponDamage(weapon);
 
-            // 竜巻エフェクト
-            if (world instanceof ServerLevel serverLevel) {
-                createTornadoEffect(serverLevel, tornadoPos, true); // trueで感電エフェクト付き
-            }
+        // Calculate full damage with DamageCalculator (including enchantments and player attributes)
+        float calculatedDamage = DamageCalculator.calculateDamage(player, null, baseDamage + 5.0f, weapon);
+        float damage = calculatedDamage * (1.0f + chargePercent);
 
-            // 範囲内のエンティティを巻き込む
-            AABB searchArea = new AABB(
-                tornadoPos.x - 3, tornadoPos.y - 1, tornadoPos.z - 3,
-                tornadoPos.x + 3, tornadoPos.y + 6, tornadoPos.z + 3
-            );
+        // Generate tornado entity (with electricity effect)
+        TornadoEntity tornado = new TornadoEntity(MinecraftArmorWeaponModCustomEntities.TORNADO.get(), level);
+        tornado.setOwner(player);
+        tornado.setPos(startPos.x, startPos.y, startPos.z);
+        tornado.setDirection(lookVec);
+        tornado.setWithElectricity(true);
+        tornado.setDamage(damage);
+        tornado.setWeapon(weapon);
+        tornado.setSpeed(0.8f); // 高速移動
+        tornado.setLifespan(200); // 10秒間
+        tornado.setRadius(4.0f);
+        tornado.setMaxHeight(15.0f);
 
-            List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-                entity -> entity != player && entity.position().distanceTo(tornadoPos) <= 3.0);
+        // ワールドに追加
+        level.addFreshEntity(tornado);
 
-            for (LivingEntity target : targets) {
-                // 打ち上げと回転
-                liftAndRotateEntity(target, tornadoPos);
+        // 追加の竜巻を生成（扇状に3つ）
+        for (int i = -1; i <= 1; i++) {
+            if (i == 0) continue; // 中央は既に生成済み
 
-                // 感電効果
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 2));
+            // 左右15度ずつずらした方向
+            double angle = Math.toRadians(i * 15);
+            double newX = lookVec.x * Math.cos(angle) - lookVec.z * Math.sin(angle);
+            double newZ = lookVec.x * Math.sin(angle) + lookVec.z * Math.cos(angle);
+            Vec3 newDirection = new Vec3(newX, lookVec.y, newZ).normalize();
+            Vec3 sideStartPos = player.position().add(newDirection.scale(2.0));
 
-                // ダメージ（item攻撃力＋5）
-                ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-                float baseDamage = getWeaponDamage(weapon);
-                float damage = (baseDamage + 5.0f) * (1.0f + chargePercent);
-                DamageCalculator.dealDamage(player, target, damage, weapon);
+            TornadoEntity sideTornado = new TornadoEntity(MinecraftArmorWeaponModCustomEntities.TORNADO.get(), level);
+            sideTornado.setOwner(player);
+            sideTornado.setPos(sideStartPos.x, sideStartPos.y, sideStartPos.z);
+            sideTornado.setDirection(newDirection);
+            sideTornado.setWithElectricity(true);
+            sideTornado.setDamage(damage * 0.8f);
+            sideTornado.setWeapon(weapon);
+            sideTornado.setSpeed(0.8f);
+            sideTornado.setLifespan(160); // 少し短め
+            sideTornado.setRadius(3.0f); // 少し小さめ
+            sideTornado.setMaxHeight(12.0f);
 
-                // 感電エフェクト
-                if (world instanceof ServerLevel serverLevel && world.getRandom().nextFloat() < 0.3f) {
-                    serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
-                        target.getX(), target.getY() + 1, target.getZ(),
-                        20, 0.5, 0.5, 0.5, 0.1);
-                }
-            }
+            level.addFreshEntity(sideTornado);
         }
 
         // サウンド
-        if (world instanceof Level level) {
-            level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 1.0f, 1.0f);
-            level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.TRIDENT_RIPTIDE_3, SoundSource.PLAYERS, 1.0f, 0.8f);
-        }
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+            SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 1.0f, 1.0f);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+            SoundEvents.TRIDENT_RIPTIDE_3, SoundSource.PLAYERS, 1.0f, 0.8f);
     }
 
     /**
-     * WindStepItem - 竜巻効果（感電なし）
+     * WindStepItem - Tornado effect without electricity (using TornadoEntity)
      */
     private static void executeWindStepAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
+        if (!(world instanceof Level level)) return;
+
         Vec3 lookVec = player.getLookAngle();
-        Vec3 playerPos = player.position();
-        double range = 20.0;
+        Vec3 startPos = player.position().add(lookVec.scale(2.0));
 
-        // 竜巻の生成と移動
-        for (double distance = 0; distance <= range; distance += 0.5) {
-            Vec3 tornadoPos = playerPos.add(lookVec.scale(distance));
+        // Get weapon attack damage
+        ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+        float baseDamage = getWeaponDamage(weapon);
 
-            // 竜巻エフェクト
-            if (world instanceof ServerLevel serverLevel) {
-                createTornadoEffect(serverLevel, tornadoPos, false); // falseで感電エフェクトなし
-            }
+        // DamageCalculatorで完全なダメージ計算
+        float calculatedDamage = DamageCalculator.calculateDamage(player, null, baseDamage + 4.0f, weapon);
+        float damage = calculatedDamage * (1.0f + chargePercent);
 
-            // 範囲内のエンティティを巻き込む
-            AABB searchArea = new AABB(
-                tornadoPos.x - 3, tornadoPos.y - 1, tornadoPos.z - 3,
-                tornadoPos.x + 3, tornadoPos.y + 6, tornadoPos.z + 3
-            );
+        // Generate tornado entity (without electricity effect)
+        TornadoEntity tornado = new TornadoEntity(MinecraftArmorWeaponModCustomEntities.TORNADO.get(), level);
+        tornado.setOwner(player);
+        tornado.setPos(startPos.x, startPos.y, startPos.z);
+        tornado.setDirection(lookVec);
+        tornado.setWithElectricity(false);
+        tornado.setDamage(damage);
+        tornado.setWeapon(weapon);
+        tornado.setSpeed(1.0f); // より高速
+        tornado.setLifespan(240); // 12秒間
+        tornado.setRadius(5.0f); // 大きめ
+        tornado.setMaxHeight(20.0f); // 高め
 
-            List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-                entity -> entity != player && entity.position().distanceTo(tornadoPos) <= 3.0);
-
-            for (LivingEntity target : targets) {
-                // 打ち上げと回転
-                liftAndRotateEntity(target, tornadoPos);
-
-                // ダメージ（item攻撃力＋4）
-                ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-                float baseDamage = getWeaponDamage(weapon);
-                float damage = (baseDamage + 4.0f) * (1.0f + chargePercent);
-                DamageCalculator.dealDamage(player, target, damage, weapon);
-            }
-        }
+        // ワールドに追加
+        level.addFreshEntity(tornado);
 
         // サウンド
-        if (world instanceof Level level) {
-            level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.TRIDENT_RIPTIDE_2, SoundSource.PLAYERS, 1.0f, 1.2f);
-        }
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+            SoundEvents.TRIDENT_RIPTIDE_2, SoundSource.PLAYERS, 1.0f, 1.2f);
     }
 
     /**
-     * ThunderboltItem - 横斬撃と雷撃
+     * ThunderboltItem - Horizontal slash with lightning strike
      */
     private static void executeThunderboltAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         Vec3 lookVec = player.getLookAngle();
@@ -268,37 +273,82 @@ public class MagicKatanaSpecialChargeProcedure {
             });
 
         for (LivingEntity target : targets) {
-            // ダメージ（item攻撃力＋2）
+            // ダメージ計算（エンチャントとKill効果を含む）
             ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
             float baseDamage = getWeaponDamage(weapon);
-            float damage = (baseDamage + 2.0f) * (1.0f + chargePercent);
+            float damage = DamageCalculator.calculateDamage(player, target, baseDamage + 2.0f, weapon) * (1.0f + chargePercent);
+
+            // ダメージを与えてエンチャント効果も適用
             DamageCalculator.dealDamage(player, target, damage, weapon);
+            DamageCalculator.applyWeaponEffects(player, target, damage, weapon);
 
-            // 大量の雷を落とす
+            // 3秒間のフラッシュ点滅効果の後に雷を落とす
             if (world instanceof ServerLevel serverLevel) {
-                for (int i = 0; i < 5; i++) {
-                    // FLASHパーティクル
-                    serverLevel.sendParticles(ParticleTypes.FLASH,
-                        target.getX() + (Math.random() - 0.5) * 2,
-                        target.getY() + 1,
-                        target.getZ() + (Math.random() - 0.5) * 2,
-                        1, 0, 0, 0, 0);
+                final LivingEntity finalTarget = target;
 
-                    // 実際の雷を召喚
-                    if (i == 0) { // 最初の1本だけ実際の雷
-                        LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(serverLevel);
-                        if (lightning != null) {
-                            lightning.moveTo(Vec3.atBottomCenterOf(target.blockPosition()));
-                            lightning.setVisualOnly(false);
-                            serverLevel.addFreshEntity(lightning);
+                // 点滅効果のタスクを作成（3秒間、0.15秒ごとに点滅）
+                Runnable blinkTask = new Runnable() {
+                    private int tickCount = 0;
+                    private final int maxTicks = 60; // 3秒間（60ティック）
+
+                    @Override
+                    public void run() {
+                        if (tickCount < maxTicks) {
+                            // 3ティックごとに点滅（0.15秒ごと）
+                            if (tickCount % 3 == 0) {
+                                // FLASHパーティクル（点滅効果）
+                                serverLevel.sendParticles(ParticleTypes.FLASH,
+                                    finalTarget.getX(),
+                                    finalTarget.getY() + 1,
+                                    finalTarget.getZ(),
+                                    1, 0, 0, 0, 0);
+
+                                // 電気のスパークエフェクト
+                                serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
+                                    finalTarget.getX(), finalTarget.getY() + 1, finalTarget.getZ(),
+                                    10, 0.5, 0.5, 0.5, 0.1);
+                            }
+
+                            tickCount++;
+
+                            // 次のティックでも実行
+                            serverLevel.getServer().execute(this);
+                        } else {
+                            // 3秒経過後、雷を落とす
+                            // 複数の雷を落とす
+                            for (int i = 0; i < 5; i++) {
+                                // 大きなFLASHパーティクル
+                                serverLevel.sendParticles(ParticleTypes.FLASH,
+                                    finalTarget.getX() + (Math.random() - 0.5) * 2,
+                                    finalTarget.getY() + 1,
+                                    finalTarget.getZ() + (Math.random() - 0.5) * 2,
+                                    3, 0, 0, 0, 0);
+
+                                // 実際の雷を召喚
+                                if (i == 0) { // 最初の1本だけ実際の雷
+                                    LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(serverLevel);
+                                    if (lightning != null) {
+                                        lightning.moveTo(Vec3.atBottomCenterOf(finalTarget.blockPosition()));
+                                        lightning.setVisualOnly(false);
+                                        serverLevel.addFreshEntity(lightning);
+                                    }
+                                }
+                            }
+
+                            // 追加エフェクト（大量の電気スパーク）
+                            serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
+                                finalTarget.getX(), finalTarget.getY() + 1, finalTarget.getZ(),
+                                100, 1.0, 1.0, 1.0, 0.3);
+
+                            // 雷のサウンド
+                            serverLevel.playSound(null, finalTarget.getX(), finalTarget.getY(), finalTarget.getZ(),
+                                SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 2.0f, 1.0f);
                         }
                     }
-                }
+                };
 
-                // 追加エフェクト
-                serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
-                    target.getX(), target.getY() + 1, target.getZ(),
-                    50, 1.0, 1.0, 1.0, 0.2);
+                // タスクを開始
+                serverLevel.getServer().execute(blinkTask);
             }
         }
 
@@ -310,7 +360,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * FireballItem - 火炎弾攻撃
+     * FireballItem - Fireball attack
      */
     private static void executeFireballAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         Vec3 lookVec = player.getLookAngle();
@@ -352,7 +402,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * BubbleshotItem - 方向性ノックバック
+     * BubbleshotItem - Directional knockback
      */
     private static void executeBubbleshotAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         Vec3 lookVec = player.getLookAngle();
@@ -387,21 +437,24 @@ public class MagicKatanaSpecialChargeProcedure {
             });
 
         for (LivingEntity target : targets) {
-            // ダメージ（item攻撃力のみ）
+            // ダメージ計算（エンチャントとKill効果を含む）
             ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
             float baseDamage = getWeaponDamage(weapon);
-            float damage = baseDamage * (1.0f + chargePercent);
-            DamageCalculator.dealDamage(player, target, damage, weapon);
+            float damage = DamageCalculator.calculateDamage(player, target, baseDamage, weapon) * (1.0f + chargePercent);
 
-            // 鈍足3
+            // ダメージを与えてエンチャント効果も適用
+            DamageCalculator.dealDamage(player, target, damage, weapon);
+            DamageCalculator.applyWeaponEffects(player, target, damage, weapon);
+
+            // Slowness III
             target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 2));
 
-            // ターゲットが向いている方向に強力なノックバック
-            Vec3 targetLookVec = target.getLookAngle();
+            // Strong knockback away from player
+            Vec3 knockbackDirection = target.position().subtract(playerPos).normalize();
             target.setDeltaMovement(
-                targetLookVec.x * 3.0,
+                knockbackDirection.x * 3.0,
                 0.5,
-                targetLookVec.z * 3.0
+                knockbackDirection.z * 3.0
             );
 
             // 泡エフェクト
@@ -420,7 +473,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * DarknessItem - 追尾弾
+     * DarknessItem - Homing projectile
      */
     private static void executeDarknessAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         if (!(world instanceof Level level)) return;
@@ -428,13 +481,17 @@ public class MagicKatanaSpecialChargeProcedure {
         // 視線の先のターゲットを検索
         LivingEntity target = findTargetInSight(world, player, 30.0);
 
-        // ダメージを計算（item攻撃力＋7）
+        // ダメージを計算（エンチャント効果込み）
         ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
         float baseDamage = getWeaponDamage(weapon);
-        float damage = (baseDamage + 7.0f) * (1.0f + chargePercent);
+        float damage = DamageCalculator.calculateDamage(player, target, baseDamage + 7.0f, weapon) * (1.0f + chargePercent);
 
-        // DarkProjectileEntityを生成
-        DarkProjectileEntity projectile = new DarkProjectileEntity(level, player, target, damage);
+        // Generate dark projectile entity
+        DarkProjectileEntity projectile = new DarkProjectileEntity(MinecraftArmorWeaponModCustomEntities.DARK_PROJECTILE.get(), level);
+        projectile.setOwner(player);
+        projectile.setTarget(target);
+        projectile.setDamage(damage);
+        projectile.setWeapon(weapon);
 
         // 初期位置を設定
         Vec3 startPos = player.position().add(0, player.getEyeHeight() - 0.1, 0);
@@ -475,7 +532,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * デフォルトの魔法攻撃
+     * Default magic attack
      */
     private static void executeDefaultMagicAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         Vec3 lookVec = player.getLookAngle();
@@ -505,8 +562,12 @@ public class MagicKatanaSpecialChargeProcedure {
 
         for (LivingEntity target : targets) {
             ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-            float damage = 15.0f * (1.0f + chargePercent);
+            float baseDamage = getWeaponDamage(weapon);
+            float damage = DamageCalculator.calculateDamage(player, target, baseDamage + 8.0f, weapon) * (1.0f + chargePercent);
+
+            // ダメージを与えてエンチャント効果も適用
             DamageCalculator.dealDamage(player, target, damage, weapon);
+            DamageCalculator.applyWeaponEffects(player, target, damage, weapon);
         }
 
         if (world instanceof Level level) {
@@ -516,59 +577,113 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * 竜巻エフェクトを生成（縦の円筒形）
+     * 竜巻エフェクトを生成（大型の螺旋状竜巻）
+     * @deprecated TornadoEntityを使用してください
      */
+    @Deprecated
     private static void createTornadoEffect(ServerLevel world, Vec3 pos, boolean withElectricity) {
-        // 竜巻の高さ
-        double maxHeight = 8.0;
+        // 竜巻の高さ（より大きく）
+        double maxHeight = 15.0;
 
-        // 時間経過に基づく回転オフセット
-        double timeOffset = System.currentTimeMillis() * 0.001;
+        // 時間経過に基づく回転オフセット（より高速回転）
+        double timeOffset = System.currentTimeMillis() * 0.003;
 
-        // 縦の竜巻を描画
-        for (double h = 0; h <= maxHeight; h += 0.3) {
-            // 高さに応じて半径を変える（上に行くほど狭く）
-            double radius = 2.5 * (1.0 - h / maxHeight * 0.7);
+        // 縦の竜巻を描画（より密度の高いエフェクト）
+        for (double h = 0; h <= maxHeight; h += 0.2) {
+            // 高さに応じて半径を変える（下部は広く、上部に向けて徐々に狭く、そして最上部で少し広がる）
+            double heightRatio = h / maxHeight;
+            double radius;
+            if (heightRatio < 0.1) {
+                // 地面付近は地面から巻き上げる効果で広い
+                radius = 4.0 * (1.0 + (0.1 - heightRatio) * 2);
+            } else if (heightRatio < 0.8) {
+                // 中間部は標準的な漏斗形状
+                radius = 4.0 * (1.0 - heightRatio * 0.5);
+            } else {
+                // 上部は少し広がる（雲に繋がる効果）
+                radius = 2.5 * (1.0 + (heightRatio - 0.8) * 0.5);
+            }
 
-            // この高さでの円周上のパーティクル数
-            int particleCount = Math.max(8, (int)(radius * 12));
+            // この高さでの円周上のパーティクル数（より多くのパーティクル）
+            int particleCount = Math.max(16, (int)(radius * 20));
 
             for (int i = 0; i < particleCount; i++) {
-                // 螺旋状の回転を加える
-                double angle = (i / (double)particleCount) * Math.PI * 2 + h * 0.8 + timeOffset;
-                double xOffset = Math.cos(angle) * radius;
-                double zOffset = Math.sin(angle) * radius;
+                // 複数層の螺旋を作成（二重螺旋）
+                for (int layer = 0; layer < 2; layer++) {
+                    // 螺旋状の回転を加える（層ごとにオフセット）
+                    double angle = (i / (double)particleCount) * Math.PI * 2
+                                 + h * 1.2 // より強い螺旋
+                                 + timeOffset * (layer + 1) // 層ごとに異なる速度
+                                 + layer * Math.PI; // 層をずらす
 
-                // メインの竜巻パーティクル（白い煙）
-                world.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
-                    pos.x + xOffset, pos.y + h, pos.z + zOffset,
-                    1, 0, 0.1, 0, 0.02);
+                    double layerRadius = radius * (1.0 - layer * 0.2); // 内側の層は少し小さく
+                    double xOffset = Math.cos(angle) * layerRadius;
+                    double zOffset = Math.sin(angle) * layerRadius;
 
-                // 追加の雲エフェクト
-                if (i % 2 == 0) {
-                    world.sendParticles(ParticleTypes.CLOUD,
-                        pos.x + xOffset * 0.8, pos.y + h, pos.z + zOffset * 0.8,
-                        1, 0.1, 0, 0.1, 0.01);
+                    // メインの竜巻パーティクル（複数種類の煙）
+                    if (layer == 0) {
+                        // 外側の層：濃い煙
+                        world.sendParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,
+                            pos.x + xOffset, pos.y + h, pos.z + zOffset,
+                            1, 0, 0.15, 0, 0.03);
+                    } else {
+                        // 内側の層：薄い煙
+                        world.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                            pos.x + xOffset, pos.y + h, pos.z + zOffset,
+                            1, 0, 0.1, 0, 0.02);
+                    }
+
+                    // 渦巻きの流れを表現（速度ベクトル付きパーティクル）
+                    if (i % 3 == 0) {
+                        double nextAngle = angle + 0.3;
+                        double vx = (Math.cos(nextAngle) - Math.cos(angle)) * 0.1;
+                        double vz = (Math.sin(nextAngle) - Math.sin(angle)) * 0.1;
+
+                        world.sendParticles(ParticleTypes.CLOUD,
+                            pos.x + xOffset, pos.y + h, pos.z + zOffset,
+                            1, vx, 0.05, vz, 0.05);
+                    }
                 }
 
-                // 感電エフェクト
-                if (withElectricity && h % 2.0 < 0.3 && i % 3 == 0) {
+                // 感電エフェクト（より派手に）
+                if (withElectricity && i % 2 == 0) {
+                    double angle = (i / (double)particleCount) * Math.PI * 2 + h * 0.8 + timeOffset;
+                    double xOffset = Math.cos(angle) * radius;
+                    double zOffset = Math.sin(angle) * radius;
+
+                    // 電気スパーク
                     world.sendParticles(ParticleTypes.ELECTRIC_SPARK,
                         pos.x + xOffset, pos.y + h, pos.z + zOffset,
-                        2, 0.2, 0.2, 0.2, 0.05);
+                        3, 0.3, 0.3, 0.3, 0.1);
 
-                    // 稲妻のような線
-                    if (Math.random() < 0.1) {
+                    // 稲妻のような線（より頻繁に）
+                    if (Math.random() < 0.2) {
                         world.sendParticles(ParticleTypes.END_ROD,
                             pos.x + xOffset, pos.y + h, pos.z + zOffset,
-                            1, 0, 0.5, 0, 0.1);
+                            1, 0, 1.0, 0, 0.2);
                     }
+                }
+            }
+
+            // 地面付近の巻き上げ効果
+            if (h < 2.0) {
+                int groundParticles = 30;
+                for (int i = 0; i < groundParticles; i++) {
+                    double angle = (i / (double)groundParticles) * Math.PI * 2 + timeOffset * 2;
+                    double groundRadius = (5.0 - h) * 1.5;
+                    double xOffset = Math.cos(angle) * groundRadius;
+                    double zOffset = Math.sin(angle) * groundRadius;
+
+                    // 土埃のエフェクト
+                    world.sendParticles(ParticleTypes.POOF,
+                        pos.x + xOffset, pos.y + h * 0.5, pos.z + zOffset,
+                        1, 0.1, 0.05, 0.1, 0.02);
                 }
             }
         }
 
-        // 竜巻の中心に上昇気流エフェクト
-        for (double h = 0; h <= maxHeight; h += 0.5) {
+        // 竜巻の中心に強力な上昇気流エフェクト
+        for (double h = 0; h <= maxHeight; h += 0.3) {
             world.sendParticles(ParticleTypes.SMOKE,
                 pos.x, pos.y + h, pos.z,
                 2, 0.1, 0, 0.1, 0.1);
@@ -578,7 +693,7 @@ public class MagicKatanaSpecialChargeProcedure {
         for (int i = 0; i < 20; i++) {
             double angle = (i / 20.0) * Math.PI * 2;
             double groundRadius = 3.0;
-            world.sendParticles(ParticleTypes.DUST_PLUME,
+            world.sendParticles(ParticleTypes.POOF,
                 pos.x + Math.cos(angle) * groundRadius,
                 pos.y + 0.1,
                 pos.z + Math.sin(angle) * groundRadius,
@@ -587,37 +702,60 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * エンティティを竜巻で巻き上げて回転させる
+     * エンティティを竜巻で巻き上げて回転させる（より強力な効果）
+     * @deprecated TornadoEntityの内部処理で実装されています
      */
+    @Deprecated
     private static void liftAndRotateEntity(LivingEntity entity, Vec3 tornadoCenter) {
         Vec3 toCenter = tornadoCenter.subtract(entity.position());
         double horizontalDistance = Math.sqrt(toCenter.x * toCenter.x + toCenter.z * toCenter.z);
 
         if (horizontalDistance > 0.1) {
-            // 中心に向かって引き寄せ
-            double pullStrength = Math.max(0, 1.0 - horizontalDistance / 3.0) * 0.3;
+            // 中心に向かって強く引き寄せ
+            double pullStrength = Math.max(0, 1.0 - horizontalDistance / 4.0) * 0.6;
             Vec3 pullVec = new Vec3(toCenter.x, 0, toCenter.z).normalize().scale(pullStrength);
 
-            // 回転方向のベクトル（反時計回り）
-            Vec3 rotationVec = new Vec3(-toCenter.z, 0, toCenter.x).normalize().scale(0.5);
+            // 回転方向のベクトル（反時計回り、より高速）
+            Vec3 rotationVec = new Vec3(-toCenter.z, 0, toCenter.x).normalize().scale(0.8);
 
-            // 上昇力
-            double liftForce = 0.5;
+            // 高さに応じた上昇力（螺旋状に上昇）
+            double currentHeight = entity.getY() - tornadoCenter.y;
+            double liftForce;
+            if (currentHeight < 5.0) {
+                // 低高度では強い上昇力
+                liftForce = 1.2;
+            } else if (currentHeight < 10.0) {
+                // 中高度では中程度の上昇力
+                liftForce = 0.7;
+            } else {
+                // 高高度では弱い上昇力（最終的に落下）
+                liftForce = 0.3;
+            }
+
+            // 螺旋状の動きを追加
+            double spiralAngle = System.currentTimeMillis() * 0.01;
+            double spiralRadius = 0.3;
+            double spiralX = Math.cos(spiralAngle) * spiralRadius;
+            double spiralZ = Math.sin(spiralAngle) * spiralRadius;
 
             // 最終的な運動量
             entity.setDeltaMovement(
-                pullVec.x + rotationVec.x,
+                pullVec.x + rotationVec.x + spiralX,
                 liftForce,
-                pullVec.z + rotationVec.z
+                pullVec.z + rotationVec.z + spiralZ
             );
 
-            // エンティティを回転させる
-            entity.setYRot(entity.getYRot() + 20);
+            // エンティティを高速回転させる
+            entity.setYRot(entity.getYRot() + 35);
+            entity.setXRot(entity.getXRot() + 10); // ピッチも回転
+
+            // 落下ダメージを無効化（一時的に）
+            entity.fallDistance = 0;
         }
     }
 
     /**
-     * 視線の先のターゲットを検索
+     * Find target in player's line of sight
      */
     private static LivingEntity findTargetInSight(LevelAccessor world, Player player, double maxRange) {
         Vec3 start = player.getEyePosition();
@@ -643,18 +781,42 @@ public class MagicKatanaSpecialChargeProcedure {
     // createHomingProjectile メソッドは削除（DarkProjectileEntityで置き換え）
 
     /**
-     * 武器の基本攻撃力を取得
+     * Get weapon base damage (actual item damage + enchantments)
      */
     private static float getWeaponDamage(ItemStack weapon) {
         if (weapon.isEmpty()) return 4.0f;
 
-        // 基本攻撃力（デフォルトの魔法刀の攻撃力）
-        float baseDamage = 7.0f;
+        float baseDamage = 0.0f;
+
+        // 武器の実際の攻撃力を取得（SwordItemの場合）
+        if (weapon.getItem() instanceof net.minecraft.world.item.SwordItem swordItem) {
+            baseDamage = swordItem.getDamage();
+        } else {
+            // 剣以外の場合は属性から取得を試みる
+            var attributes = weapon.getAttributeModifiers(net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+            if (attributes.containsKey(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)) {
+                for (var modifier : attributes.get(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)) {
+                    baseDamage += (float) modifier.getAmount();
+                }
+            }
+            // それでも0の場合はデフォルト値
+            if (baseDamage == 0.0f) {
+                baseDamage = 7.0f; // 魔法刀のデフォルト攻撃力
+            }
+        }
 
         // シャープネスエンチャント
         int sharpnessLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SHARPNESS, weapon);
         if (sharpnessLevel > 0) {
             baseDamage += 0.5f * sharpnessLevel + 0.5f;
+        }
+
+        // 武器固有の名前によるボーナス（必要に応じて）
+        String weaponName = weapon.getItem().getClass().getSimpleName();
+        if (weaponName.equals("MagischesFeenKatanaItem")) {
+            baseDamage += 2.0f; // 魔法の妖精刀ボーナス
+        } else if (weaponName.equals("MagicalKatanaItem")) {
+            baseDamage += 1.0f; // 魔法刀ボーナス
         }
 
         return baseDamage;

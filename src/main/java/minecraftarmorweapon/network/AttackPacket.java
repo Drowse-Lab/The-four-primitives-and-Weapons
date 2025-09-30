@@ -43,8 +43,8 @@ public class AttackPacket {
                     // 溜め攻撃
                     minecraftarmorweapon.events.ChargedAttackHandler.performChargedAttack(player, msg.chargePercent);
                 } else if (msg.attackType == 2) {
-                    // 落下攻撃
-                    minecraftarmorweapon.events.ChargedAttackHandler.performFallingAttack(player, msg.chargePercent);
+                    // 落下攻撃（特定アイテム専用のため一時的にコメントアウト）
+                    // minecraftarmorweapon.events.ChargedAttackHandler.performFallingAttack(player, msg.chargePercent);
                 }
             }
         });

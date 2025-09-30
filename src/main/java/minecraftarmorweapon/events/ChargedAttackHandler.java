@@ -179,7 +179,7 @@ public class ChargedAttackHandler {
                 
                 // 落下チャージエフェクト
                 if (data.fallTime % 5 == 0) {
-                    displayFallingChargeEffect(player, data.fallTime);
+                    // displayFallingChargeEffect(player, data.fallTime); // 一時的にコメントアウト
                 }
             }
             // 落下チャージ解除または着地
@@ -1047,142 +1047,142 @@ public class ChargedAttackHandler {
             }
         }
     }
-    
-    private static void displayFallingChargeEffect(Player player, int fallTime) {
-        if (player.level.isClientSide) return;
-        
-        ServerLevel serverWorld = (ServerLevel) player.level;
-        double radius = Math.min(fallTime / 20.0, 2.0);
-        
-        // 落下中の円形エフェクト
-        for (int i = 0; i < 360; i += 30) {
-            double angle = Math.toRadians(i);
-            serverWorld.sendParticles(
-                ParticleTypes.ELECTRIC_SPARK,
-                player.getX() + Math.cos(angle) * radius,
-                player.getY(),
-                player.getZ() + Math.sin(angle) * radius,
-                1, 0, 0.1, 0, 0.01
-            );
-        }
-    }
-    
-    // 落下攻撃の実行
-    public static void performFallingAttack(Player player, float fallPower) {
-        Level world = player.level;
-        Vec3 playerPos = player.position();
-        
-        // 抜刀処理（鞘から刀を抜く）
-        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-        ItemStack sheathStack = null;
-        InteractionHand sheathHand = null;
-        
-        if (isSaya(mainHand) && hasStoredKatana(mainHand)) {
-            sheathStack = mainHand;
-            sheathHand = InteractionHand.MAIN_HAND;
-        } else if (isSaya(offHand) && hasStoredKatana(offHand)) {
-            sheathStack = offHand;
-            sheathHand = InteractionHand.OFF_HAND;
-        }
-        
-        if (sheathStack != null) {
-            // 抜刀
-            CompoundTag tag = sheathStack.getOrCreateTag();
 
-            // StoredKatanaまたはStoredSwordをチェック
-            String storedKey = tag.contains("StoredKatana") ? "StoredKatana" : "StoredSword";
-            ItemStack katanaStack = ItemStack.of(tag.getCompound(storedKey));
+    // private static void displayFallingChargeEffect(Player player, int fallTime) {
+    //     if (player.level.isClientSide) return;
+    //
+    //     ServerLevel serverWorld = (ServerLevel) player.level;
+    //     double radius = Math.min(fallTime / 20.0, 2.0);
+    //
+    //     // 落下中の円形エフェクト
+    //     for (int i = 0; i < 360; i += 30) {
+    //         double angle = Math.toRadians(i);
+    //         serverWorld.sendParticles(
+    //             ParticleTypes.ELECTRIC_SPARK,
+    //             player.getX() + Math.cos(angle) * radius,
+    //             player.getY(),
+    //             player.getZ() + Math.sin(angle) * radius,
+    //             1, 0, 0.1, 0, 0.01
+    //         );
+    //     }
+    // }
 
-            // 反対の手に刀を配置
-            InteractionHand katanaHand = sheathHand == InteractionHand.MAIN_HAND ?
-                                         InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
-            player.setItemInHand(katanaHand, katanaStack);
+    // 落下攻撃の実行（特定アイテム専用のため一時的にコメントアウト）
+    // public static void performFallingAttack(Player player, float fallPower) {
+    //     Level world = player.level;
+    //     Vec3 playerPos = player.position();
 
-            // 鞘から刀を削除
-            tag.remove(storedKey);
-            tag.putInt("CustomModelData", 0);
-            sheathStack.setTag(tag);
-            player.setItemInHand(sheathHand, sheathStack);
-        }
-        
-        // 大ダメージの範囲攻撃
-        double range = 5.0 * (1.0 + fallPower);
-        float baseDamage = 20.0f * (1.0f + fallPower * 2.0f);
-        
-        // 地面衝撃エフェクト
-        if (!world.isClientSide) {
-            ServerLevel serverWorld = (ServerLevel) world;
-            
-            // 衝撃波エフェクト
-            for (int ring = 0; ring < 3; ring++) {
-                double r = range * (ring + 1) / 3.0;
-                for (int i = 0; i < 360; i += 10) {
-                    double angle = Math.toRadians(i);
-                    serverWorld.sendParticles(
-                        ParticleTypes.EXPLOSION,
-                        playerPos.x + Math.cos(angle) * r,
-                        playerPos.y + 0.1,
-                        playerPos.z + Math.sin(angle) * r,
-                        1, 0, 0, 0, 0
-                    );
-                }
-            }
-            
-            // 縦の衝撃エフェクト
-            for (int i = 0; i < 20; i++) {
-                serverWorld.sendParticles(
-                    ParticleTypes.CLOUD,
-                    playerPos.x, playerPos.y + i * 0.2, playerPos.z,
-                    5, 0.3, 0, 0.3, 0.1
-                );
-            }
-        }
-        
-        // 範囲内の全ての敵にダメージ
-        AABB searchArea = new AABB(
-            playerPos.x - range, playerPos.y - 2, playerPos.z - range,
-            playerPos.x + range, playerPos.y + 4, playerPos.z + range
-        );
-        
-        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> entity != player && entity.distanceTo(player) <= range);
-        
-        for (LivingEntity target : targets) {
-            float actualDamage = calculateActualDamage(player, target, baseDamage);
-            target.hurt(DamageSource.playerAttack(player), actualDamage);
-            
-            // 武器特殊効果を適用
-            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-            if (weapon.isEmpty()) {
-                weapon = player.getItemInHand(InteractionHand.OFF_HAND);
-            }
-            applyWeaponEffects(player, target, actualDamage);
-            
-            // 強烈な吹き飛ばし
-            Vec3 knockback = target.position().subtract(playerPos).normalize();
-            target.setDeltaMovement(
-                knockback.x * (1.5 + fallPower),
-                0.5 + fallPower * 0.5,
-                knockback.z * (1.5 + fallPower)
-            );
-            
-            // スタン効果
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 
-                                                  (int)(40 * fallPower), 2));
-        }
-        
-        // 地震音
-        world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
-            SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 2.0f, 0.5f);
-        world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
-            SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 1.5f, 0.8f);
-        
-        player.displayClientMessage(
-            Component.literal(fallPower >= 1.5f ? "§c§l落下斬撃！！" : "§c落下斬撃！"), 
-            true
-        );
-    }
+    //     // 抜刀処理（鞘から刀を抜く）
+    //     ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+    //     ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
+    //     ItemStack sheathStack = null;
+    //     InteractionHand sheathHand = null;
+    //
+    //     if (isSaya(mainHand) && hasStoredKatana(mainHand)) {
+    //         sheathStack = mainHand;
+    //         sheathHand = InteractionHand.MAIN_HAND;
+    //     } else if (isSaya(offHand) && hasStoredKatana(offHand)) {
+    //         sheathStack = offHand;
+    //         sheathHand = InteractionHand.OFF_HAND;
+    //     }
+    //
+    //     if (sheathStack != null) {
+    //         // 抜刀
+    //         CompoundTag tag = sheathStack.getOrCreateTag();
+    //
+    //         // StoredKatanaまたはStoredSwordをチェック
+    //         String storedKey = tag.contains("StoredKatana") ? "StoredKatana" : "StoredSword";
+    //         ItemStack katanaStack = ItemStack.of(tag.getCompound(storedKey));
+    //
+    //         // 反対の手に刀を配置
+    //         InteractionHand katanaHand = sheathHand == InteractionHand.MAIN_HAND ?
+    //                                      InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+    //         player.setItemInHand(katanaHand, katanaStack);
+    //
+    //         // 鞘から刀を削除
+    //         tag.remove(storedKey);
+    //         tag.putInt("CustomModelData", 0);
+    //         sheathStack.setTag(tag);
+    //         player.setItemInHand(sheathHand, sheathStack);
+    //     }
+    //
+    //     // 大ダメージの範囲攻撃
+    //     double range = 5.0 * (1.0 + fallPower);
+    //     float baseDamage = 20.0f * (1.0f + fallPower * 2.0f);
+    //
+    //     // 地面衝撃エフェクト
+    //     if (!world.isClientSide) {
+    //         ServerLevel serverWorld = (ServerLevel) world;
+    //
+    //         // 衝撃波エフェクト
+    //         for (int ring = 0; ring < 3; ring++) {
+    //             double r = range * (ring + 1) / 3.0;
+    //             for (int i = 0; i < 360; i += 10) {
+    //                 double angle = Math.toRadians(i);
+    //                 serverWorld.sendParticles(
+    //                     ParticleTypes.EXPLOSION,
+    //                     playerPos.x + Math.cos(angle) * r,
+    //                     playerPos.y + 0.1,
+    //                     playerPos.z + Math.sin(angle) * r,
+    //                     1, 0, 0, 0, 0
+    //                 );
+    //             }
+    //         }
+    //
+    //         // 縦の衝撃エフェクト
+    //         for (int i = 0; i < 20; i++) {
+    //             serverWorld.sendParticles(
+    //                 ParticleTypes.CLOUD,
+    //                 playerPos.x, playerPos.y + i * 0.2, playerPos.z,
+    //                 5, 0.3, 0, 0.3, 0.1
+    //             );
+    //         }
+    //     }
+    //
+    //     // 範囲内の全ての敵にダメージ
+    //     AABB searchArea = new AABB(
+    //         playerPos.x - range, playerPos.y - 2, playerPos.z - range,
+    //         playerPos.x + range, playerPos.y + 4, playerPos.z + range
+    //     );
+    //
+    //     List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
+    //         entity -> entity != player && entity.distanceTo(player) <= range);
+    //
+    //     for (LivingEntity target : targets) {
+    //         float actualDamage = calculateActualDamage(player, target, baseDamage);
+    //         target.hurt(DamageSource.playerAttack(player), actualDamage);
+    //
+    //         // 武器特殊効果を適用
+    //         ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+    //         if (weapon.isEmpty()) {
+    //             weapon = player.getItemInHand(InteractionHand.OFF_HAND);
+    //         }
+    //         applyWeaponEffects(player, target, actualDamage);
+    //
+    //         // 強烈な吹き飛ばし
+    //         Vec3 knockback = target.position().subtract(playerPos).normalize();
+    //         target.setDeltaMovement(
+    //             knockback.x * (1.5 + fallPower),
+    //             0.5 + fallPower * 0.5,
+    //             knockback.z * (1.5 + fallPower)
+    //         );
+    //
+    //         // スタン効果
+    //         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,
+    //                                               (int)(40 * fallPower), 2));
+    //     }
+    //
+    //     // 地震音
+    //     world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
+    //         SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 2.0f, 0.5f);
+    //     world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
+    //         SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 1.5f, 0.8f);
+
+    //     player.displayClientMessage(
+    //         Component.literal(fallPower >= 1.5f ? "§c§l落下斬撃！！" : "§c落下斬撃！"),
+    //         true
+    //     );
+    // }
     
     private static boolean isSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;

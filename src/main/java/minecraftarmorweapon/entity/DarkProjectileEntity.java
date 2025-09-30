@@ -22,7 +22,8 @@ import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.PlayMessages;
 
 import minecraftarmorweapon.util.DamageCalculator;
-import minecraftarmorweapon.init.CustomEntityInit;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModCustomEntities;
+import net.minecraft.world.entity.EntityType;
 
 public class DarkProjectileEntity extends AbstractHurtingProjectile {
     private LivingEntity target;
@@ -30,13 +31,14 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
     private float damage = 15.0f;
     private int ticksAlive = 0;
     private static final int MAX_LIFE = 200; // 10秒
+    private net.minecraft.world.item.ItemStack weaponStack = net.minecraft.world.item.ItemStack.EMPTY;
 
     public DarkProjectileEntity(EntityType<? extends DarkProjectileEntity> type, Level world) {
         super(type, world);
     }
 
     public DarkProjectileEntity(Level world, LivingEntity shooter, LivingEntity target, float damage) {
-        super(CustomEntityInit.DARK_PROJECTILE.get(), shooter, 0, 0, 0, world);
+        super(MinecraftArmorWeaponModCustomEntities.DARK_PROJECTILE.get(), shooter, 0, 0, 0, world);
         this.shooter = shooter;
         this.target = target;
         this.damage = damage;
@@ -44,7 +46,7 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
     }
 
     public DarkProjectileEntity(PlayMessages.SpawnEntity packet, Level world) {
-        super(CustomEntityInit.DARK_PROJECTILE.get(), world);
+        super(MinecraftArmorWeaponModCustomEntities.DARK_PROJECTILE.get(), world);
     }
 
     @Override
@@ -197,5 +199,25 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
     @Override
     protected ParticleOptions getTrailParticle() {
         return ParticleTypes.SOUL;
+    }
+
+    // Setter methods for MagicKatanaSpecialChargeProcedure
+    public void setTarget(LivingEntity target) {
+        this.target = target;
+    }
+
+    public void setDamage(float damage) {
+        this.damage = damage;
+    }
+
+    public void setWeapon(net.minecraft.world.item.ItemStack weapon) {
+        this.weaponStack = weapon.copy();
+    }
+
+    public void setOwner(Entity owner) {
+        if (owner instanceof LivingEntity) {
+            this.shooter = (LivingEntity) owner;
+            super.setOwner(owner);
+        }
     }
 }
