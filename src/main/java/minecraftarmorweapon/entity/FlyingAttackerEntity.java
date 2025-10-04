@@ -1173,27 +1173,17 @@ public class FlyingAttackerEntity extends Monster {
         if (target instanceof FlyingAttackerEntity) {
             return;
         }
-        
+
         // 表示用アイテムから攻撃力を計算
         ItemStack displayItem = this.getDisplayItem();
         float baseDamage = 5.0F; // デフォルトダメージ
-        
-        // Killエンチャントのチェック
-        boolean hasKillEnchant = false;
+
         if (!displayItem.isEmpty()) {
-            int killLevel = EnchantmentHelper.getItemEnchantmentLevel(
-                MinecraftArmorWeaponModEnchantments.KILL.get(), displayItem);
-            if (killLevel > 0) {
-                hasKillEnchant = true;
-                // killエンチャントフラグをNBTに設定
-                this.getPersistentData().putBoolean("minecraft_armor_weapon:killentity", true);
-            }
-            
             // アイテムの攻撃ダメージ属性から基本ダメージを取得
             // これによりカスタム武器の攻撃力も正しく取得できる
             Collection<AttributeModifier> damageModifiers = displayItem.getAttributeModifiers(EquipmentSlot.MAINHAND)
                 .get(Attributes.ATTACK_DAMAGE);
-            
+
             if (damageModifiers != null && !damageModifiers.isEmpty()) {
                 // 基本値（1.0）を含めて攻撃力を計算
                 double totalDamage = 1.0; // プレイヤーの素手攻撃力
@@ -1212,20 +1202,8 @@ public class FlyingAttackerEntity extends Monster {
                 SwordItem sword = (SwordItem) displayItem.getItem();
                 baseDamage = sword.getDamage() + 4.0F;
             }
-            
-            // EnchantmentHelperを使用してすべてのエンチャントダメージを計算
-            // これにより他modのエンチャントも自動的に適用される
-            float enchantmentDamage = EnchantmentHelper.getDamageBonus(displayItem, target.getMobType());
-            baseDamage += enchantmentDamage;
         }
-        
-        // ダメージを与える
-        DamageSource damageSource = DamageSource.mobAttack(this);
-        if (this.owner != null) {
-            // 召喚者の攻撃として扱う
-            damageSource = DamageSource.mobAttack(this.owner instanceof Mob ? (Mob)this.owner : this);
-        }
-        
+
         // クリティカル判定（20%確率 + Looting/幸運レベル * 5%）
         boolean isCritical = false;
         if (!displayItem.isEmpty()) {
@@ -1236,60 +1214,32 @@ public class FlyingAttackerEntity extends Monster {
                 baseDamage *= 1.5F;
             }
         }
-        
+
+        // DamageCalculatorを使用してダメージを与える（Killエンチャント等も自動適用）
         System.out.println("DEBUG: Attempting to deal " + baseDamage + " damage");
-        boolean hit = target.hurt(damageSource, baseDamage);
+        boolean hit = false;
+        if (this.owner != null) {
+            // 召喚者の攻撃として扱う
+            float actualDamage = minecraftarmorweapon.util.DamageCalculator.dealDamage(this.owner, target, baseDamage, displayItem);
+            hit = actualDamage > 0; // ダメージが与えられたかどうか
+        } else {
+            // 召喚者がいない場合は通常のダメージ
+            DamageSource damageSource = DamageSource.mobAttack(this);
+            hit = target.hurt(damageSource, baseDamage);
+        }
         System.out.println("DEBUG: Hit successful? " + hit);
         
         if (hit) {
-            // エンチャントのヒット時効果を適用（他modのエンチャントも含む）
+            // DamageCalculatorが既にエンチャント効果を適用しているが、
+            // ノックバックとスイープ攻撃は別途適用する
             if (!displayItem.isEmpty()) {
-                // doPostHurtEffectsはヒット後のすべてのエンチャント効果を適用
-                EnchantmentHelper.doPostHurtEffects(this, target);
-                
-                // doPostDamageEffectsは攻撃後のすべてのエンチャント効果を適用
-                EnchantmentHelper.doPostDamageEffects(target, this);
-                
-                // 火属性エンチャント（バニラ）
-                int fireAspectLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FIRE_ASPECT, displayItem);
-                if (fireAspectLevel > 0) {
-                    target.setSecondsOnFire(fireAspectLevel * 4);
-                }
-                
                 // ノックバック計算（エンチャント込み）
                 float knockbackStrength = 0.5F;
                 int knockbackLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.KNOCKBACK, displayItem);
                 if (knockbackLevel > 0) {
                     knockbackStrength += knockbackLevel * 0.5F;
                 }
-                
-                // スイープ攻撃エンチャント
-                int sweepingLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SWEEPING_EDGE, displayItem);
-                if (sweepingLevel > 0) {
-                    // スイープダメージの計算（レベルに応じて増加）
-                    float sweepRatio = sweepingLevel / 3.0F; // レベル1=33%, レベル2=66%, レベル3=100%
-                    float sweepDamage = 1.0F + sweepRatio * baseDamage;
-                    // 周囲の敵にダメージ
-                    List<LivingEntity> nearbyTargets = this.level.getEntitiesOfClass(LivingEntity.class, 
-                            target.getBoundingBox().inflate(1.0D, 0.25D, 1.0D));
-                    if (nearbyTargets != null) {
-                        for (LivingEntity nearbyEntity : nearbyTargets) {
-                            if (nearbyEntity != null && nearbyEntity != target && nearbyEntity != this && nearbyEntity != this.owner 
-                                    && !this.isAlliedTo(nearbyEntity) && this.distanceToSqr(nearbyEntity) < 9.0D) {
-                                nearbyEntity.knockback(0.4F, this.getX() - nearbyEntity.getX(), this.getZ() - nearbyEntity.getZ());
-                                nearbyEntity.hurt(damageSource, sweepDamage);
-                            }
-                        }
-                    }
-                    // スイープエフェクト
-                    if (this.level instanceof ServerLevel) {
-                        ServerLevel serverLevel = (ServerLevel) this.level;
-                        serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.SWEEP_ATTACK,
-                            target.getX(), target.getY() + target.getBbHeight() * 0.5, target.getZ(),
-                            1, 0, 0, 0, 0);
-                    }
-                }
-                
+
                 // ノックバック適用
                 double knockbackX = target.getX() - this.getX();
                 double knockbackZ = target.getZ() - this.getZ();
@@ -1303,12 +1253,44 @@ public class FlyingAttackerEntity extends Monster {
                         )
                     );
                 }
+
+                // スイープ攻撃エンチャント
+                int sweepingLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SWEEPING_EDGE, displayItem);
+                if (sweepingLevel > 0) {
+                    // スイープダメージの計算（レベルに応じて増加）
+                    float sweepRatio = sweepingLevel / 3.0F; // レベル1=33%, レベル2=66%, レベル3=100%
+                    float sweepDamage = 1.0F + sweepRatio * baseDamage;
+                    // 周囲の敵にダメージ
+                    List<LivingEntity> nearbyTargets = this.level.getEntitiesOfClass(LivingEntity.class,
+                            target.getBoundingBox().inflate(1.0D, 0.25D, 1.0D));
+                    if (nearbyTargets != null) {
+                        for (LivingEntity nearbyEntity : nearbyTargets) {
+                            if (nearbyEntity != null && nearbyEntity != target && nearbyEntity != this && nearbyEntity != this.owner
+                                    && !this.isAlliedTo(nearbyEntity) && this.distanceToSqr(nearbyEntity) < 9.0D) {
+                                nearbyEntity.knockback(0.4F, this.getX() - nearbyEntity.getX(), this.getZ() - nearbyEntity.getZ());
+                                if (this.owner != null) {
+                                    // DamageCalculatorを使用（戻り値は使用しない）
+                                    minecraftarmorweapon.util.DamageCalculator.dealDamage(this.owner, nearbyEntity, sweepDamage, displayItem);
+                                } else {
+                                    nearbyEntity.hurt(DamageSource.mobAttack(this), sweepDamage);
+                                }
+                            }
+                        }
+                    }
+                    // スイープエフェクト
+                    if (this.level instanceof ServerLevel) {
+                        ServerLevel serverLevel = (ServerLevel) this.level;
+                        serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.SWEEP_ATTACK,
+                            target.getX(), target.getY() + target.getBbHeight() * 0.5, target.getZ(),
+                            1, 0, 0, 0, 0);
+                    }
+                }
             }
-            
+
             // 攻撃エフェクト
             this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0F, 1.0F);
-            
+
             // クリティカルエフェクト
             if (isCritical) {
                 this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
@@ -1321,9 +1303,6 @@ public class FlyingAttackerEntity extends Monster {
                 }
             }
         }
-        
-        // 攻撃後にkillエンチャントフラグをクリア
-        this.getPersistentData().remove("minecraft_armor_weapon:killentity");
     }
     
     private void shootArrowAt(LivingEntity target) {

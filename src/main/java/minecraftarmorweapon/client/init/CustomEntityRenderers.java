@@ -7,7 +7,8 @@ import net.minecraftforge.fml.common.Mod;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.client.renderer.DarkProjectileRenderer;
-import minecraftarmorweapon.init.CustomEntityInit;
+import minecraftarmorweapon.client.renderer.TornadoRenderer;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModCustomEntities;
 
 /**
  * カスタムエンティティのレンダラー登録用クラス
@@ -18,9 +19,8 @@ public class CustomEntityRenderers {
 
     @SubscribeEvent
     public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        // エンティティが登録されていることを確認してから登録
-        if (CustomEntityInit.DARK_PROJECTILE != null && CustomEntityInit.DARK_PROJECTILE.isPresent()) {
-            event.registerEntityRenderer(CustomEntityInit.DARK_PROJECTILE.get(), DarkProjectileRenderer::new);
-        }
+        // Register entity renderers
+        event.registerEntityRenderer(MinecraftArmorWeaponModCustomEntities.TORNADO.get(), TornadoRenderer::new);
+        event.registerEntityRenderer(MinecraftArmorWeaponModCustomEntities.DARK_PROJECTILE.get(), DarkProjectileRenderer::new);
     }
 }

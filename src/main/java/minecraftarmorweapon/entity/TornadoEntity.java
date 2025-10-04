@@ -76,18 +76,26 @@ public class TornadoEntity extends Entity {
     @Override
     public void tick() {
         super.tick();
+        tickCount++;
+
+        // デバッグ: 最初のtickでログ出力
+        if (tickCount == 1) {
+            minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("TornadoEntity: First tick! Position: {}, {}, {}, Side: {}",
+                getX(), getY(), getZ(), level.isClientSide ? "CLIENT" : "SERVER");
+        }
+
+        // 寿命チェック
+        if (tickCount >= lifespan) {
+            minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("TornadoEntity: Lifespan reached, discarding");
+            discard();
+            return;
+        }
+
+        // 移動（両側で同期）
+        moveAlongPath();
 
         if (!level.isClientSide) {
-            tickCount++;
-
-            // 寿命チェック
-            if (tickCount >= lifespan) {
-                discard();
-                return;
-            }
-
-            // 移動
-            moveAlongPath();
+            // サーバー側の処理
 
             // エフェクトと攻撃処理
             if (tickCount % 2 == 0) {
@@ -97,6 +105,11 @@ public class TornadoEntity extends Entity {
             // ダメージ処理（5tickごと）
             if (tickCount % 5 == 0) {
                 damageNearbyEntities();
+            }
+
+            // サーバー側でもパーティクルを生成してクライアントに送信
+            if (tickCount % 2 == 0 && level instanceof ServerLevel serverLevel) {
+                createServerParticles(serverLevel);
             }
         } else {
             // クライアント側のエフェクト
@@ -219,6 +232,57 @@ public class TornadoEntity extends Entity {
 
             // 落下ダメージを無効化
             entity.fallDistance = 0;
+        }
+    }
+
+    private void createServerParticles(ServerLevel serverLevel) {
+        Vec3 pos = position();
+        boolean withElectricity = entityData.get(WITH_ELECTRICITY);
+        double timeOffset = tickCount * 0.1;
+
+        // 竜巻の視覚効果（サーバー側で生成してクライアントに送信）
+        for (double h = 0; h <= maxHeight; h += 1.0) { // 間隔を広げてパフォーマンス向上
+            double heightRatio = h / maxHeight;
+            double currentRadius;
+
+            if (heightRatio < 0.1) {
+                currentRadius = radius * (1.0 + (0.1 - heightRatio) * 2);
+            } else if (heightRatio < 0.8) {
+                currentRadius = radius * (1.0 - heightRatio * 0.5);
+            } else {
+                currentRadius = radius * 0.6 * (1.0 + (heightRatio - 0.8) * 0.5);
+            }
+
+            // 螺旋パーティクル
+            int particleCount = Math.max(4, (int)(currentRadius * 5)); // パーティクル数を減らす
+            for (int i = 0; i < particleCount; i++) {
+                double angle = (i / (double)particleCount) * Math.PI * 2 + h * 1.2 + timeOffset;
+                double xOffset = Math.cos(angle) * currentRadius;
+                double zOffset = Math.sin(angle) * currentRadius;
+
+                // 煙パーティクル
+                serverLevel.sendParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,
+                    pos.x + xOffset, pos.y + h, pos.z + zOffset,
+                    1, 0, 0, 0, xOffset * 0.05);
+
+                // 感電エフェクト（StormItemの場合）
+                if (withElectricity && i % 2 == 0) {
+                    serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
+                        pos.x + xOffset, pos.y + h, pos.z + zOffset,
+                        2, 0.2, 0.2, 0.2, 0);
+                }
+            }
+        }
+
+        // 地面の巻き上げ効果
+        for (int i = 0; i < 8; i++) {
+            double angle = (i / 8.0) * Math.PI * 2 + timeOffset;
+            double groundRadius = radius * 1.2;
+            serverLevel.sendParticles(ParticleTypes.POOF,
+                pos.x + Math.cos(angle) * groundRadius,
+                pos.y + 0.1,
+                pos.z + Math.sin(angle) * groundRadius,
+                1, 0, 0, 0, 0.05);
         }
     }
 

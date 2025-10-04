@@ -59,10 +59,19 @@ public class MagicKatanaSpecialChargeProcedure {
      * @param chargePercent Charge percentage
      */
     public static void execute(LevelAccessor world, double x, double y, double z, Entity entity, float chargePercent) {
-        if (!(entity instanceof Player player)) return;
+        minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("MagicKatanaSpecialChargeProcedure.execute() called! ChargePercent: {}", chargePercent);
+
+        if (!(entity instanceof Player player)) {
+            minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.warn("MagicKatanaSpecialCharge: Entity is not a player!");
+            return;
+        }
+
+        minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("MagicKatanaSpecialCharge: Player: {}, World: {}", player.getName().getString(), world.isClientSide() ? "CLIENT" : "SERVER");
 
         // Check player's inventory
         ItemStack specialItem = findSpecialItem(player);
+
+        minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("MagicKatanaSpecialCharge: Special item found: {}", specialItem.isEmpty() ? "NONE" : specialItem.getItem().getClass().getSimpleName());
 
         if (specialItem.isEmpty()) {
             // Execute default magic attack if no special item
@@ -136,7 +145,12 @@ public class MagicKatanaSpecialChargeProcedure {
      * StormItem - Tornado with electric shock effect (using TornadoEntity)
      */
     private static void executeStormAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
-        if (!(world instanceof Level level)) return;
+        minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("MagicKatanaSpecialCharge: Executing STORM attack!");
+
+        if (!(world instanceof Level level)) {
+            minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.warn("MagicKatanaSpecialCharge: World is not Level instance!");
+            return;
+        }
 
         Vec3 lookVec = player.getLookAngle();
         Vec3 startPos = player.position().add(lookVec.scale(2.0));
@@ -163,7 +177,8 @@ public class MagicKatanaSpecialChargeProcedure {
         tornado.setMaxHeight(15.0f);
 
         // ワールドに追加
-        level.addFreshEntity(tornado);
+        boolean spawned = level.addFreshEntity(tornado);
+        minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("MagicKatanaSpecialCharge: STORM center tornado spawned: {} at {}, {}, {}", spawned, startPos.x, startPos.y, startPos.z);
 
         // 追加の竜巻を生成（扇状に3つ）
         for (int i = -1; i <= 1; i++) {
@@ -188,7 +203,8 @@ public class MagicKatanaSpecialChargeProcedure {
             sideTornado.setRadius(3.0f); // 少し小さめ
             sideTornado.setMaxHeight(12.0f);
 
-            level.addFreshEntity(sideTornado);
+            boolean sideSpawned = level.addFreshEntity(sideTornado);
+            minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("MagicKatanaSpecialCharge: STORM side tornado {} spawned: {}", i, sideSpawned);
         }
 
         // サウンド
@@ -202,7 +218,12 @@ public class MagicKatanaSpecialChargeProcedure {
      * WindStepItem - Tornado effect without electricity (using TornadoEntity)
      */
     private static void executeWindStepAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
-        if (!(world instanceof Level level)) return;
+        minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("MagicKatanaSpecialCharge: Executing WINDSTEP attack!");
+
+        if (!(world instanceof Level level)) {
+            minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.warn("MagicKatanaSpecialCharge: World is not Level instance!");
+            return;
+        }
 
         Vec3 lookVec = player.getLookAngle();
         Vec3 startPos = player.position().add(lookVec.scale(2.0));
@@ -229,7 +250,8 @@ public class MagicKatanaSpecialChargeProcedure {
         tornado.setMaxHeight(20.0f); // 高め
 
         // ワールドに追加
-        level.addFreshEntity(tornado);
+        boolean spawned = level.addFreshEntity(tornado);
+        minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("MagicKatanaSpecialCharge: WINDSTEP tornado spawned: {} at {}, {}, {}", spawned, startPos.x, startPos.y, startPos.z);
 
         // サウンド
         level.playSound(null, player.getX(), player.getY(), player.getZ(),
@@ -476,7 +498,12 @@ public class MagicKatanaSpecialChargeProcedure {
      * DarknessItem - Homing projectile
      */
     private static void executeDarknessAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
-        if (!(world instanceof Level level)) return;
+        minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("MagicKatanaSpecialCharge: Executing DARKNESS attack!");
+
+        if (!(world instanceof Level level)) {
+            minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.warn("MagicKatanaSpecialCharge: World is not Level instance!");
+            return;
+        }
 
         // 視線の先のターゲットを検索
         LivingEntity target = findTargetInSight(world, player, 30.0);
@@ -513,7 +540,9 @@ public class MagicKatanaSpecialChargeProcedure {
         }
 
         // ワールドに追加
-        level.addFreshEntity(projectile);
+        boolean spawned = level.addFreshEntity(projectile);
+        minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("MagicKatanaSpecialCharge: DARKNESS projectile spawned: {} at {}, {}, {}, target: {}",
+            spawned, projectile.getX(), projectile.getY(), projectile.getZ(), target != null ? target.getName().getString() : "NONE");
 
         // 発射エフェクト
         if (world instanceof ServerLevel serverLevel) {

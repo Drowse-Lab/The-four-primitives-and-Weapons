@@ -23,13 +23,17 @@ public class StormItem extends Item implements ICurioItem {
 
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
+		minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("StormItem.use() called! World: {}, Hand: {}", world.isClientSide ? "CLIENT" : "SERVER", hand);
+
 		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
 		ItemStack itemstack = ar.getObject();
 		double x = entity.getX();
 		double y = entity.getY();
 		double z = entity.getZ();
 
+		minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("StormItem: Calling StormYoukuritukusitatokiProcedure.execute()");
 		StormYoukuritukusitatokiProcedure.execute(entity);
+
 		return ar;
 	}
 
