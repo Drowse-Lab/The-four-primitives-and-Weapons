@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//mnt/c/Users/hrmcn/Downloads/tempest-e2561/data/sword/functions/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

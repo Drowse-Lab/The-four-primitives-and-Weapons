@@ -120,8 +120,15 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
 
         if (entity instanceof LivingEntity livingEntity && entity != this.getOwner()) {
             // ダメージを与える
-            if (shooter != null) {
-                DamageCalculator.dealDamage(shooter, livingEntity, damage, null);
+            if (shooter != null && shooter instanceof net.minecraft.world.entity.player.Player player) {
+                // 実際の攻撃イベントを発火（武器攻撃力 + エンチャント + エフェクト）
+                player.attack(livingEntity);
+
+                // 無敵時間をリセットしてボーナスダメージ（+7）を追加
+                livingEntity.invulnerableTime = 0;
+                livingEntity.hurt(DamageSource.playerAttack(player), damage);
+            } else if (shooter != null) {
+                livingEntity.hurt(DamageSource.mobAttack(shooter), damage);
             } else {
                 livingEntity.hurt(DamageSource.MAGIC, damage);
             }
