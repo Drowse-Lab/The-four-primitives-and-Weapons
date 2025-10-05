@@ -40,18 +40,18 @@ jobs:
       - name: Build Mod with Gradle Wrapper
         run: ./gradlew build -x test --daemon --incremental
 
-  bad-apple-display:
-    name: Display Bad Apple
-    runs-on: ubuntu-latest
-    needs: mod-build
-    permissions:
-      contents: read
-    steps:
-      - name: Download Bad Apple Animation
-        run: curl -O https://raw.githubusercontent.com/Chion82/ASCII_bad_apple/master/play.txt
+  # bad-apple-display:
+  #   name: Display Bad Apple
+  #   runs-on: ubuntu-latest
+  #   needs: mod-build
+  #   permissions:
+  #     contents: read
+  #   steps:
+  #     - name: Download Bad Apple Animation
+  #       run: curl -O https://raw.githubusercontent.com/Chion82/ASCII_bad_apple/master/play.txt
 
-      - name: Debug Animation Display
-        run: head -n 20 play.txt
+  #     - name: Debug Animation Display
+  #       run: head -n 20 play.txt
 
-      - name: Display Bad Apple Animation
-        run: awk '/^\$+$/ { system("sleep 0.05; clear") } { print }' play.txt
+  #     - name: Display Bad Apple Animation
+  #       run: awk '/^\$+$/ { system("sleep 0.05; clear") } { print }' play.txt
