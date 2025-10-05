@@ -12,13 +12,10 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 
 import minecraftarmorweapon.client.renderer.SkeltonMobRenderer;
-import minecraftarmorweapon.client.renderer.Ruami284Renderer;
-import minecraftarmorweapon.client.renderer.Reisame284Renderer;
 import minecraftarmorweapon.client.renderer.OtiruyoRenderer;
 import minecraftarmorweapon.client.renderer.MeteorArrowRenderer;
 import minecraftarmorweapon.client.renderer.KillotiruRenderer;
 import minecraftarmorweapon.client.renderer.KatanaTobuRenderer;
-import minecraftarmorweapon.client.renderer.HrmcngsRenderer;
 import minecraftarmorweapon.client.renderer.FlyingAttackerRenderer;
 import minecraftarmorweapon.client.renderer.CometRenderer;
 import minecraftarmorweapon.client.renderer.CometKillRenderer;
@@ -31,8 +28,6 @@ public class MinecraftArmorWeaponModEntityRenderers {
 	public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.SKELTON_MOB.get(), SkeltonMobRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.OTIRUYO.get(), OtiruyoRenderer::new);
-		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.HRMCNGS.get(), HrmcngsRenderer::new);
-		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.RUAMI_284.get(), Ruami284Renderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.KILLOTIRU.get(), KillotiruRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.KATANA_TOBU.get(), KatanaTobuRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.BLACKHOLE.get(), BlackholeRenderer::new);
@@ -42,7 +37,6 @@ public class MinecraftArmorWeaponModEntityRenderers {
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.COMET_KILL.get(), CometKillRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.METEOR_ARROW.get(), MeteorArrowRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.ALCHEMY_CRAFT_BLOCK_ENTITY.get(), AlchemyCraftBlockEntityRenderer::new);
-		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.REISAME_284.get(), Reisame284Renderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), FlyingAttackerRenderer::new);
 	}
 }

@@ -149,7 +149,10 @@ public class TornadoEntity extends Entity {
 
                 // 感電効果（StormItemの場合のみ）
                 if (withElectricity && !affectedEntities.contains(target)) {
-                    target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 2));
+                    // グロウ効果（感電を表現）
+                    target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 100, 0));
+                    // 弱体化（感電によるダメージ）
+                    target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 1));
 
                     // 感電パーティクル
                     serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,

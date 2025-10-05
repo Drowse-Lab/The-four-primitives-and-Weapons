@@ -2109,36 +2109,6 @@
       }
     },
     {
-      "name": "Hrmcngs",
-      "type": "livingentity",
-      "sortid": 178,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "hrmcngs",
-      "metadata": {
-        "files": [
-          "src/main/java/minecraftarmorweapon/client/renderer/HrmcngsRenderer.java",
-          "src/main/java/minecraftarmorweapon/entity/HrmcngsEntity.java",
-          "src/main/resources/assets/minecraft_armor_weapon/models/item/hrmcngs_spawn_egg.json"
-        ]
-      }
-    },
-    {
-      "name": "Ruami284",
-      "type": "livingentity",
-      "sortid": 179,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "ruami_284",
-      "metadata": {
-        "files": [
-          "src/main/java/minecraftarmorweapon/entity/Ruami284Entity.java",
-          "src/main/resources/assets/minecraft_armor_weapon/models/item/ruami_284_spawn_egg.json",
-          "src/main/java/minecraftarmorweapon/client/renderer/Ruami284Renderer.java"
-        ]
-      }
-    },
-    {
       "name": "Halloween20231031Sickle",
       "type": "tool",
       "sortid": 180,
@@ -9290,22 +9260,6 @@
       }
     },
     {
-      "name": "Reisame284",
-      "type": "livingentity",
-      "sortid": 625,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "reisame_284",
-      "metadata": {
-        "files": [
-          "src/main/java/minecraftarmorweapon/entity/Reisame284Entity.java",
-          "src/main/resources/assets/minecraft_armor_weapon/models/item/reisame_284_spawn_egg.json",
-          "src/main/java/minecraftarmorweapon/client/renderer/Reisame284Renderer.java",
-          "src/main/resources/data/minecraft_armor_weapon/forge/biome_modifier/reisame_284_biome_modifier.json"
-        ]
-      }
-    },
-    {
       "name": "FeynTooltipEvent",
       "type": "code",
       "sortid": 626,
@@ -9708,15 +9662,14 @@
   "sound_elements": [],
   "language_map": {
     "en_us": {
-      "effect.minecraft_armor_weapon.guard": "guard",
       "item.minecraft_armor_weapon.decoration_pot_with_arrows": "Decoration Pot With Arrows",
-      "item.minecraft_armor_weapon.harvest_moon_2023929": "Harvest Moon 2023 9/29",
+      "effect.minecraft_armor_weapon.guard": "guard",
       "itemGroup.tabmagic_books": "Magic Books",
+      "item.minecraft_armor_weapon.harvest_moon_2023929": "Harvest Moon 2023 9/29",
       "itemGroup.tabyopkeinamono": "建築とかに",
       "effect.minecraft_armor_weapon.syugeki": "aa",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_helmet": "das herz einer fee armor helmet",
       "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
-      "item.minecraft_armor_weapon.ruami_284_spawn_egg": "ruami284 Spawn Egg",
       "entity.minecraft_armor_weapon.comet": "Comet",
       "item.minecraft_armor_weapon.darkness": "§5Darkness",
       "effect.minecraft_armor_weapon.bow_attack": "illusioner_armor_effect",
@@ -9725,7 +9678,6 @@
       "item.minecraft_armor_weapon.blackhole_spawn_egg": "Blackhole Spawn Egg",
       "entity.minecraft_armor_weapon.blackhole": "Blackhole",
       "advancements.magical_swordsman_achievements.descr": "§eGet Magisches feen katana",
-      "entity.minecraft_armor_weapon.ruami_284": "ruami284",
       "effect.minecraft_armor_weapon.suityuu": "suityuu",
       "effect.minecraft_armor_weapon.enmazangeki": "ebnazabngeki",
       "advancements.you_have_become_a_vampire.descr": "You have become a vampire.",
@@ -9737,7 +9689,6 @@
       "item.minecraft_armor_weapon.pumpkin_head_helmet": "Pumpkin Head",
       "advancements.sword_progress.descr": "Swordsman.",
       "effect.minecraft_armor_weapon.summon_trigger_effect": "summon_trigger_effect",
-      "item.minecraft_armor_weapon.hrmcngs_spawn_egg": "hrmcngs Spawn Egg",
       "item.minecraft_armor_weapon.small_sword": "Small sword",
       "item.minecraft_armor_weapon.iron_katana": "§7Iron Katana",
       "item.minecraft_armor_weapon.machete": "Machete",
@@ -9923,8 +9874,6 @@
       "item.minecraft_armor_weapon.dragon_blue_armor_helmet": "§1Dragon blue helmet",
       "item.minecraft_armor_weapon.chuzume_husk_armor_helmet": "§gchuzume husk helmet",
       "advancements.magical_swordsman_achievements.title": "§eYou\u0027ve become a Magical Swordsman!",
-      "item.minecraft_armor_weapon.reisame_284_spawn_egg": "Reisame 2 8 4 Spawn Egg",
-      "entity.minecraft_armor_weapon.hrmcngs": "hrmcngs",
       "item.minecraft_armor_weapon.reset_max": "Reset Max",
       "effect.minecraft_armor_weapon.armor_stand_tobasu_effect": "armor stand effect",
       "gamerule.rpgBookGive.description": "Give RPG Book when respawning or at initial spawn or",
@@ -9943,7 +9892,6 @@
       "entity.minecraft_armor_weapon.skelton_mob": "Skelton Mob",
       "effect.minecraft_armor_weapon.zokuseizanngeki": "zannfgeki",
       "item.minecraft_armor_weapon.rpg_book": "RPG Book",
-      "entity.minecraft_armor_weapon.reisame_284": "Reisame 2 8 4",
       "effect.minecraft_armor_weapon.tameteru": "minecraft_armor_weapon:test_bow_tameteru",
       "block.minecraft_armor_weapon.alchemy_craft_block": "Alchemy Craft Block",
       "effect.minecraft_armor_weapon.aa": "n0okku",
@@ -9988,15 +9936,14 @@
       "item.minecraft_armor_weapon.tukaena": "Tukaena"
     },
     "ja_jp": {
-      "effect.minecraft_armor_weapon.guard": "guard",
       "item.minecraft_armor_weapon.decoration_pot_with_arrows": "Decoration Pot With Arrows",
-      "item.minecraft_armor_weapon.harvest_moon_2023929": "Harvest Moon 2023 9/29",
+      "effect.minecraft_armor_weapon.guard": "guard",
       "itemGroup.tabmagic_books": "Magic Books",
+      "item.minecraft_armor_weapon.harvest_moon_2023929": "Harvest Moon 2023 9/29",
       "itemGroup.tabyopkeinamono": "建築とかに",
       "effect.minecraft_armor_weapon.syugeki": "aa",
       "item.minecraft_armor_weapon.das_herz_einer_fee_armor_helmet": "das herz einer fee armor helmet",
       "item.minecraft_armor_weapon.illusioner_armor_boots": "Illusioner Armor Boots",
-      "item.minecraft_armor_weapon.ruami_284_spawn_egg": "ruami284 Spawn Egg",
       "entity.minecraft_armor_weapon.comet": "Comet",
       "entity.minecraft_armor_weapon.comet_kill": "Comet",
       "item.minecraft_armor_weapon.darkness": "§5Darkness",
@@ -10005,7 +9952,6 @@
       "item.minecraft_armor_weapon.blackhole_spawn_egg": "Blackhole Spawn Egg",
       "entity.minecraft_armor_weapon.blackhole": "Blackhole",
       "advancements.magical_swordsman_achievements.descr": "Magisches feen katanaを得る",
-      "entity.minecraft_armor_weapon.ruami_284": "ruami284",
       "effect.minecraft_armor_weapon.suityuu": "suityuu",
       "effect.minecraft_armor_weapon.enmazangeki": "ebnazabngeki",
       "advancements.you_have_become_a_vampire.descr": "吸血鬼になったよ",
@@ -10017,7 +9963,6 @@
       "item.minecraft_armor_weapon.pumpkin_head_helmet": "Pumpkin Head",
       "advancements.sword_progress.descr": "剣士",
       "effect.minecraft_armor_weapon.summon_trigger_effect": "summon_trigger_effect",
-      "item.minecraft_armor_weapon.hrmcngs_spawn_egg": "hrmcngs Spawn Egg",
       "item.minecraft_armor_weapon.small_sword": "小太刀",
       "item.minecraft_armor_weapon.iron_katana": "§7鉄の刀",
       "item.minecraft_armor_weapon.machete": "鉈",
@@ -10203,8 +10148,6 @@
       "item.minecraft_armor_weapon.dragon_blue_armor_helmet": "§1Dragon blue helmet",
       "item.minecraft_armor_weapon.chuzume_husk_armor_helmet": "§gchuzume husk helmet",
       "advancements.magical_swordsman_achievements.title": "君は魔法剣士になった",
-      "item.minecraft_armor_weapon.reisame_284_spawn_egg": "Reisame 2 8 4 Spawn Egg",
-      "entity.minecraft_armor_weapon.hrmcngs": "hrmcngs",
       "item.minecraft_armor_weapon.reset_max": "Reset Max",
       "effect.minecraft_armor_weapon.armor_stand_tobasu_effect": "armor stand effect",
       "gamerule.rpgBookGive.description": "リスポーンしたときや初期スポーンの時にRPG Bookを与えるか",
@@ -10223,7 +10166,6 @@
       "entity.minecraft_armor_weapon.skelton_mob": "Skelton Mob",
       "effect.minecraft_armor_weapon.zokuseizanngeki": "zannfgeki",
       "item.minecraft_armor_weapon.rpg_book": "RPG Book",
-      "entity.minecraft_armor_weapon.reisame_284": "Reisame 2 8 4",
       "effect.minecraft_armor_weapon.tameteru": "minecraft_armor_weapon:test_bow_tameteru",
       "block.minecraft_armor_weapon.alchemy_craft_block": "Alchemy Craft Block",
       "effect.minecraft_armor_weapon.aa": "n0okku",
@@ -10392,7 +10334,7 @@
     "currentGenerator": "forge-1.19.2",
     "credits": "nemui",
     "modElementsPackage": "minecraftarmorweapon",
-    "lockBaseModFiles": false
+    "lockBaseModFiles": true
   },
   "mcreatorVersion": 202300224119
 }
