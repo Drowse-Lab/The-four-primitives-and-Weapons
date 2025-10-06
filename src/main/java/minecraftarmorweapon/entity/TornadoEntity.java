@@ -324,8 +324,8 @@ public class TornadoEntity extends Entity {
         // Tempest風の縦型竜巻エフェクト（5ブロック高さ）
         for (double h = 0; h <= 5.0; h += 0.5) {
             double heightRatio = h / 5.0;
-            // 上に行くほど狭くなる（Tempest風）
-            double currentRadius = 0.5 + (5.0 - h) / 5.0 * 1.5;
+            // // 上に行くほど狭くなる（Tempest風）
+            // double currentRadius = 0.5 + (5.0 - h) / 5.0 * 1.5;
 
             // 螺旋状のパーティクル
             int particleCount = (int)(currentRadius * 10);
