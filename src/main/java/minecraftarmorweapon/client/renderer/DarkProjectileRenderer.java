@@ -54,40 +54,40 @@ public class DarkProjectileRenderer extends EntityRenderer<DarkProjectileEntity>
         float b = (color & 0xFF) / 255.0f;
 
         // 前面
-        vertex(consumer, matrix4f, matrix3f, -size, -size, size, 0, 1, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, size, -size, size, 1, 1, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, size, size, size, 1, 0, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, -size, -size, size, 0, 0.1, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, size, -size, size, 0.1, 0.1, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, size, size, size, 0.1, 0, r, g, b, light);
         vertex(consumer, matrix4f, matrix3f, -size, size, size, 0, 0, r, g, b, light);
 
         // 背面
         vertex(consumer, matrix4f, matrix3f, -size, size, -size, 0, 0, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, size, size, -size, 1, 0, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, size, -size, -size, 1, 1, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, -size, -size, -size, 0, 1, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, size, size, -size, 0.1, 0, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, size, -size, -size, 0.1, 0.1, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, -size, -size, -size, 0, 0.1, r, g, b, light);
 
         // 上面
         vertex(consumer, matrix4f, matrix3f, -size, size, -size, 0, 0, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, -size, size, size, 0, 1, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, size, size, size, 1, 1, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, size, size, -size, 1, 0, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, -size, size, size, 0, 0.1, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, size, size, size, 0.1, 0.1, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, size, size, -size, 0.1, 0, r, g, b, light);
 
         // 下面
         vertex(consumer, matrix4f, matrix3f, -size, -size, size, 0, 0, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, -size, -size, -size, 0, 1, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, size, -size, -size, 1, 1, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, size, -size, size, 1, 0, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, -size, -size, -size, 0, 0.1, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, size, -size, -size, 0.1, 0.1, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, size, -size, size, 0.1, 0, r, g, b, light);
 
         // 右面
-        vertex(consumer, matrix4f, matrix3f, size, -size, -size, 0, 1, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, size, size, -size, 1, 1, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, size, size, size, 1, 0, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, size, -size, -size, 0, 0.1, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, size, size, -size, 0.1, 0.1, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, size, size, size, 0.1, 0, r, g, b, light);
         vertex(consumer, matrix4f, matrix3f, size, -size, size, 0, 0, r, g, b, light);
 
         // 左面
         vertex(consumer, matrix4f, matrix3f, -size, -size, size, 0, 0, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, -size, size, size, 1, 0, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, -size, size, -size, 1, 1, r, g, b, light);
-        vertex(consumer, matrix4f, matrix3f, -size, -size, -size, 0, 1, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, -size, size, size, 0.1, 0, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, -size, size, -size, 0.1, 0.1, r, g, b, light);
+        vertex(consumer, matrix4f, matrix3f, -size, -size, -size, 0, 0.1, r, g, b, light);
     }
 
     private void vertex(VertexConsumer consumer, Matrix4f matrix4f, Matrix3f matrix3f, float x, float y, float z, float u, float v, float r, float g, float b, int light) {
