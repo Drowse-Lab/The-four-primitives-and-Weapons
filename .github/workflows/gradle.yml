@@ -1,6 +1,8 @@
 name: Multi-Build Workflow
 
 on:
+  check_run:
+    types: [rerequested, completed]
   push:
     branches: [ "1.19.2" ]
   pull_request:
@@ -23,22 +25,22 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Cache Gradle
-        uses: actions/cache@v3
-        with:
-          path: ~/.gradle/caches
-          key: gradle-cache-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-cache-${{ runner.os }}-
+      # - name: Cache Gradle
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ~/.gradle/caches
+      #     key: gradle-cache-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      #     restore-keys: |
+      #       gradle-cache-${{ runner.os }}-
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
+      # - name: Set up Gradle
+      #   uses: gradle/actions/setup-gradle@v3
 
-      - name: Grant Execution Permission for Gradlew
-        run: chmod +x ./gradlew
+      # - name: Grant Execution Permission for Gradlew
+      #   run: chmod +x ./gradlew
 
-      - name: Build Mod with Gradle Wrapper
-        run: ./gradlew build -x test --daemon --incremental
+      # - name: Build Mod with Gradle Wrapper
+      #   run: ./gradlew build -x test --daemon --incremental
 
   # bad-apple-display:
   #   name: Display Bad Apple
