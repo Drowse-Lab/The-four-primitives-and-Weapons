@@ -3,15 +3,10 @@ package minecraftarmorweapon.init;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.network.PlayMessages;
 
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Entity;
 
 import minecraftarmorweapon.entity.TornadoEntity;
 import minecraftarmorweapon.entity.DarkProjectileEntity;
@@ -24,11 +19,6 @@ import minecraftarmorweapon.MinecraftArmorWeaponMod;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MinecraftArmorWeaponModCustomEntities {
     public static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MinecraftArmorWeaponMod.MODID);
-
-    static {
-        // MODバスへの登録（静的初期化ブロック内で実行）
-        REGISTRY.register(FMLJavaModLoadingContext.get().getModEventBus());
-    }
 
     public static final RegistryObject<EntityType<TornadoEntity>> TORNADO = REGISTRY.register("tornado",
             () -> EntityType.Builder.<TornadoEntity>of(TornadoEntity::new, MobCategory.MISC)

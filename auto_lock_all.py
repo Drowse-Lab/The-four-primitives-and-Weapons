@@ -83,11 +83,20 @@ def protect_custom_files():
 
     custom_files = [
         "src/main/java/minecraftarmorweapon/init/CustomEntityInit.java",
+        "src/main/java/minecraftarmorweapon/init/MinecraftArmorWeaponModCustomEntities.java",
+        "src/main/java/minecraftarmorweapon/init/MinecraftArmorWeaponModModels.java",
         "src/main/java/minecraftarmorweapon/entity/DarkProjectileEntity.java",
+        "src/main/java/minecraftarmorweapon/entity/TornadoEntity.java",
+        "src/main/java/minecraftarmorweapon/entity/ai/CustomMeleeAttackGoal.java",
         "src/main/java/minecraftarmorweapon/client/init/CustomEntityRenderers.java",
         "src/main/java/minecraftarmorweapon/client/renderer/DarkProjectileRenderer.java",
+        "src/main/java/minecraftarmorweapon/client/model/Modelplayer_slim.java",
         "src/main/java/minecraftarmorweapon/util/DamageCalculator.java",
-        "src/main/java/minecraftarmorweapon/procedures/MagicKatanaSpecialChargeProcedure.java"
+        "src/main/java/minecraftarmorweapon/procedures/MagicKatanaSpecialChargeProcedure.java",
+        "src/main/java/minecraftarmorweapon/procedures/TyokutouThrustAttackProcedure.java",
+        "src/main/java/minecraftarmorweapon/procedures/SummonTriggerEffectEffectExpiresProcedure.java",
+        "src/main/java/minecraftarmorweapon/item/MagicalKatanaItem.java",
+        "src/main/java/minecraftarmorweapon/item/MagischesFeenKatanaItem.java"
     ]
 
     protected_dir = ".protected_custom_files"

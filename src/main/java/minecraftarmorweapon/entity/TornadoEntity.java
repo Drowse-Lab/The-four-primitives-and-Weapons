@@ -118,6 +118,11 @@ public class TornadoEntity extends Entity {
     }
 
     private void moveAlongPath() {
+        // moveDirectionがnullの場合はデフォルト方向を設定
+        if (moveDirection == null) {
+            moveDirection = new Vec3(0, 0, 1);
+        }
+
         Vec3 currentPos = position();
         Vec3 newPos = currentPos.add(moveDirection.scale(entityData.get(SPEED)));
         setPos(newPos.x, newPos.y, newPos.z);
@@ -144,12 +149,18 @@ public class TornadoEntity extends Entity {
             double horizontalDistance = Math.sqrt(toCenter.x * toCenter.x + toCenter.z * toCenter.z);
 
             if (horizontalDistance <= radius * 1.5) {
+                // Levitation効果（Tempestと同じ）
+                target.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 20, 40));
+
                 // 竜巻に巻き込む
                 liftAndRotateEntity(target, pos);
 
                 // 感電効果（StormItemの場合のみ）
                 if (withElectricity && !affectedEntities.contains(target)) {
-                    target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 2));
+                    // グロウ効果（感電を表現）
+                    target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 100, 0));
+                    // 弱体化（感電によるダメージ）
+                    target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 1));
 
                     // 感電パーティクル
                     serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
@@ -161,6 +172,20 @@ public class TornadoEntity extends Entity {
                 if (!affectedEntities.contains(target)) {
                     affectedEntities.add(target);
                 }
+            }
+        }
+
+        // 範囲外のエンティティからLevitation効果を解除（Tempestと同じ）
+        AABB clearArea = new AABB(
+            pos.x - radius * 3, pos.y - 3, pos.z - radius * 3,
+            pos.x + radius * 3, pos.y + maxHeight + 3, pos.z + radius * 3
+        );
+
+        List<LivingEntity> nearbyEntities = level.getEntitiesOfClass(LivingEntity.class, clearArea);
+        for (LivingEntity entity : nearbyEntities) {
+            double distance = entity.position().distanceTo(pos);
+            if (distance >= radius * 1.5 && distance <= radius * 3) {
+                entity.removeEffect(MobEffects.LEVITATION);
             }
         }
     }
@@ -238,45 +263,50 @@ public class TornadoEntity extends Entity {
     private void createServerParticles(ServerLevel serverLevel) {
         Vec3 pos = position();
         boolean withElectricity = entityData.get(WITH_ELECTRICITY);
-        double timeOffset = tickCount * 0.1;
+        double timeOffset = tickCount * 0.3; // 回転速度を上げる
 
-        // 竜巻の視覚効果（サーバー側で生成してクライアントに送信）
-        for (double h = 0; h <= maxHeight; h += 1.0) { // 間隔を広げてパフォーマンス向上
-            double heightRatio = h / maxHeight;
-            double currentRadius;
+        // Tempest風の縦型竜巻エフェクト（5ブロック高さ）
+        for (double h = 0; h <= 5.0; h += 0.5) {
+            double heightRatio = h / 5.0;
+            // 上に行くほど狭くなる（Tempest風）
+            double currentRadius = 0.5 + (5.0 - h) / 5.0 * 1.5;
 
-            if (heightRatio < 0.1) {
-                currentRadius = radius * (1.0 + (0.1 - heightRatio) * 2);
-            } else if (heightRatio < 0.8) {
-                currentRadius = radius * (1.0 - heightRatio * 0.5);
-            } else {
-                currentRadius = radius * 0.6 * (1.0 + (heightRatio - 0.8) * 0.5);
-            }
-
-            // 螺旋パーティクル
-            int particleCount = Math.max(4, (int)(currentRadius * 5)); // パーティクル数を減らす
+            // 螺旋状のパーティクル
+            int particleCount = (int)(currentRadius * 8);
             for (int i = 0; i < particleCount; i++) {
-                double angle = (i / (double)particleCount) * Math.PI * 2 + h * 1.2 + timeOffset;
+                double angle = (i / (double)particleCount) * Math.PI * 2 + h * 0.5 + timeOffset;
                 double xOffset = Math.cos(angle) * currentRadius;
                 double zOffset = Math.sin(angle) * currentRadius;
 
-                // 煙パーティクル
-                serverLevel.sendParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,
+                // poof パーティクル（Tempestと同じ）
+                serverLevel.sendParticles(ParticleTypes.POOF,
                     pos.x + xOffset, pos.y + h, pos.z + zOffset,
-                    1, 0, 0, 0, xOffset * 0.05);
+                    3, 0.1, 0.1, 0.1, 0.02);
+
+                // sweep_attack パーティクル（Tempestと同じ）
+                if (i % 2 == 0) {
+                    serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK,
+                        pos.x + xOffset, pos.y + h, pos.z + zOffset,
+                        1, 0, 0, 0, 0);
+                }
 
                 // 感電エフェクト（StormItemの場合）
-                if (withElectricity && i % 2 == 0) {
+                if (withElectricity && i % 3 == 0) {
                     serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
                         pos.x + xOffset, pos.y + h, pos.z + zOffset,
-                        2, 0.2, 0.2, 0.2, 0);
+                        1, 0.1, 0.1, 0.1, 0.01);
                 }
             }
         }
 
+        // 中心の雲パーティクル
+        serverLevel.sendParticles(ParticleTypes.CLOUD,
+            pos.x, pos.y + 2.5, pos.z,
+            2, 0.3, 1.0, 0.3, 0.01);
+
         // 地面の巻き上げ効果
-        for (int i = 0; i < 8; i++) {
-            double angle = (i / 8.0) * Math.PI * 2 + timeOffset;
+        for (int i = 0; i < 10; i++) {
+            double angle = (i / 10.0) * Math.PI * 2 + timeOffset;
             double groundRadius = radius * 1.2;
             serverLevel.sendParticles(ParticleTypes.POOF,
                 pos.x + Math.cos(angle) * groundRadius,
@@ -289,32 +319,32 @@ public class TornadoEntity extends Entity {
     private void createVisualEffects() {
         Vec3 pos = position();
         boolean withElectricity = entityData.get(WITH_ELECTRICITY);
-        double timeOffset = tickCount * 0.1;
+        double timeOffset = tickCount * 0.3; // 回転速度を上げる
 
-        // 竜巻の視覚効果
-        for (double h = 0; h <= maxHeight; h += 0.5) {
-            double heightRatio = h / maxHeight;
-            double currentRadius;
+        // Tempest風の縦型竜巻エフェクト（5ブロック高さ）
+        for (double h = 0; h <= 5.0; h += 0.5) {
+            double heightRatio = h / 5.0;
+            // 上に行くほど狭くなる（Tempest風）
+            double currentRadius = 0.5 + (5.0 - h) / 5.0 * 1.5;
 
-            if (heightRatio < 0.1) {
-                currentRadius = radius * (1.0 + (0.1 - heightRatio) * 2);
-            } else if (heightRatio < 0.8) {
-                currentRadius = radius * (1.0 - heightRatio * 0.5);
-            } else {
-                currentRadius = radius * 0.6 * (1.0 + (heightRatio - 0.8) * 0.5);
-            }
-
-            // 螺旋パーティクル
-            int particleCount = Math.max(8, (int)(currentRadius * 10));
+            // 螺旋状のパーティクル
+            int particleCount = (int)(currentRadius * 10);
             for (int i = 0; i < particleCount; i++) {
-                double angle = (i / (double)particleCount) * Math.PI * 2 + h * 1.2 + timeOffset;
+                double angle = (i / (double)particleCount) * Math.PI * 2 + h * 0.5 + timeOffset;
                 double xOffset = Math.cos(angle) * currentRadius;
                 double zOffset = Math.sin(angle) * currentRadius;
 
-                // 煙パーティクル
-                level.addParticle(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,
+                // poof パーティクル（Tempestと同じ）
+                level.addParticle(ParticleTypes.POOF,
                     pos.x + xOffset, pos.y + h, pos.z + zOffset,
                     xOffset * 0.05, 0.1, zOffset * 0.05);
+
+                // sweep_attack パーティクル（Tempestと同じ）
+                if (i % 2 == 0) {
+                    level.addParticle(ParticleTypes.SWEEP_ATTACK,
+                        pos.x + xOffset, pos.y + h, pos.z + zOffset,
+                        0, 0, 0);
+                }
 
                 // 感電エフェクト（StormItemの場合）
                 if (withElectricity && i % 3 == 0 && Math.random() < 0.3) {
@@ -325,9 +355,14 @@ public class TornadoEntity extends Entity {
             }
         }
 
+        // 中心の雲パーティクル
+        level.addParticle(ParticleTypes.CLOUD,
+            pos.x, pos.y + 2.5, pos.z,
+            0, 0.1, 0);
+
         // 地面の巻き上げ効果
-        for (int i = 0; i < 10; i++) {
-            double angle = (i / 10.0) * Math.PI * 2 + timeOffset;
+        for (int i = 0; i < 12; i++) {
+            double angle = (i / 12.0) * Math.PI * 2 + timeOffset;
             double groundRadius = radius * 1.2;
             level.addParticle(ParticleTypes.POOF,
                 pos.x + Math.cos(angle) * groundRadius,
@@ -359,6 +394,19 @@ public class TornadoEntity extends Entity {
         tickCount = compound.getInt("TickCount");
         radius = compound.getFloat("Radius");
         maxHeight = compound.getFloat("MaxHeight");
+
+        // moveDirectionの読み込み
+        if (compound.contains("DirectionX")) {
+            moveDirection = new Vec3(
+                compound.getDouble("DirectionX"),
+                compound.getDouble("DirectionY"),
+                compound.getDouble("DirectionZ")
+            );
+        } else {
+            // デフォルト値（前方向）
+            moveDirection = new Vec3(0, 0, 1);
+        }
+
         if (compound.hasUUID("Owner")) {
             if (level instanceof ServerLevel serverLevel) {
                 Entity entity = serverLevel.getEntity(compound.getUUID("Owner"));
@@ -378,6 +426,14 @@ public class TornadoEntity extends Entity {
         compound.putInt("TickCount", tickCount);
         compound.putFloat("Radius", radius);
         compound.putFloat("MaxHeight", maxHeight);
+
+        // moveDirectionの保存
+        if (moveDirection != null) {
+            compound.putDouble("DirectionX", moveDirection.x);
+            compound.putDouble("DirectionY", moveDirection.y);
+            compound.putDouble("DirectionZ", moveDirection.z);
+        }
+
         if (owner != null) {
             compound.putUUID("Owner", owner.getUUID());
         }
