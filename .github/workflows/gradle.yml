@@ -1,6 +1,8 @@
 name: Multi-Build Workflow
 
 on:
+  check_run:
+    types: [rerequested, completed]
   push:
     branches: [ "1.19.2" ]
   pull_request:
