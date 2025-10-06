@@ -34,11 +34,11 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Grant Execution Permission for Gradlew
-        run: chmod +x ./gradlew
+      # - name: Grant Execution Permission for Gradlew
+      #   run: chmod +x ./gradlew
 
-      - name: Build Mod with Gradle Wrapper
-        run: ./gradlew build -x test --daemon --incremental
+      # - name: Build Mod with Gradle Wrapper
+      #   run: ./gradlew build -x test --daemon --incremental
 
   # bad-apple-display:
   #   name: Display Bad Apple
