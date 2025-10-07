@@ -9604,22 +9604,7 @@
         ]
       }
     },
-    {
-      "name": "Reisame284",
-      "type": "livingentity",
-      "sortid": 625,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "reisame_284",
-      "metadata": {
-        "files": [
-          "src/main/java/minecraftarmorweapon/entity/Reisame284Entity.java",
-          "src/main/resources/assets/minecraft_armor_weapon/models/item/reisame_284_spawn_egg.json",
-          "src/main/java/minecraftarmorweapon/client/renderer/Reisame284Renderer.java",
-          "src/main/resources/data/minecraft_armor_weapon/forge/biome_modifier/reisame_284_biome_modifier.json"
-        ]
-      }
-    },
+
     {
       "name": "FeynTooltipEvent",
       "type": "code",
@@ -10237,7 +10222,6 @@
       "item.minecraft_armor_weapon.dragon_blue_armor_helmet": "§1Dragon blue helmet",
       "item.minecraft_armor_weapon.chuzume_husk_armor_helmet": "§gchuzume husk helmet",
       "advancements.magical_swordsman_achievements.title": "§eYou\u0027ve become a Magical Swordsman!",
-      "item.minecraft_armor_weapon.reisame_284_spawn_egg": "Reisame 2 8 4 Spawn Egg",
       "entity.minecraft_armor_weapon.hrmcngs": "hrmcngs",
       "item.minecraft_armor_weapon.reset_max": "Reset Max",
       "effect.minecraft_armor_weapon.armor_stand_tobasu_effect": "armor stand effect",
@@ -10257,7 +10241,7 @@
       "entity.minecraft_armor_weapon.skelton_mob": "Skelton Mob",
       "effect.minecraft_armor_weapon.zokuseizanngeki": "zannfgeki",
       "item.minecraft_armor_weapon.rpg_book": "RPG Book",
-      "entity.minecraft_armor_weapon.reisame_284": "Reisame 2 8 4",
+      
       "effect.minecraft_armor_weapon.tameteru": "minecraft_armor_weapon:test_bow_tameteru",
       "block.minecraft_armor_weapon.alchemy_craft_block": "Alchemy Craft Block",
       "effect.minecraft_armor_weapon.aa": "n0okku",
@@ -10516,7 +10500,7 @@
       "item.minecraft_armor_weapon.dragon_blue_armor_helmet": "§1Dragon blue helmet",
       "item.minecraft_armor_weapon.chuzume_husk_armor_helmet": "§gchuzume husk helmet",
       "advancements.magical_swordsman_achievements.title": "君は魔法剣士になった",
-      "item.minecraft_armor_weapon.reisame_284_spawn_egg": "Reisame 2 8 4 Spawn Egg",
+    
       "entity.minecraft_armor_weapon.hrmcngs": "hrmcngs",
       "item.minecraft_armor_weapon.reset_max": "Reset Max",
       "effect.minecraft_armor_weapon.armor_stand_tobasu_effect": "armor stand effect",
@@ -10536,7 +10520,7 @@
       "entity.minecraft_armor_weapon.skelton_mob": "Skelton Mob",
       "effect.minecraft_armor_weapon.zokuseizanngeki": "zannfgeki",
       "item.minecraft_armor_weapon.rpg_book": "RPG Book",
-      "entity.minecraft_armor_weapon.reisame_284": "Reisame 2 8 4",
+     
       "effect.minecraft_armor_weapon.tameteru": "minecraft_armor_weapon:test_bow_tameteru",
       "block.minecraft_armor_weapon.alchemy_craft_block": "Alchemy Craft Block",
       "effect.minecraft_armor_weapon.aa": "n0okku",

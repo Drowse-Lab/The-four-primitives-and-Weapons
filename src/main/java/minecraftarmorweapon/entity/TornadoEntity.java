@@ -28,6 +28,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class TornadoEntity extends Entity {
 
@@ -37,12 +38,18 @@ public class TornadoEntity extends Entity {
 
     private Player owner;
     private Vec3 moveDirection;
-    private int lifespan = 200; // 10秒間存在
-    private float maxHeight = 15.0f;
-    private float radius = 4.0f;
+    private float maxTravelDistance = 24.0f; // 最大飛距離（ブロック数）
+    private float tornadoSpeed = 0.3f; // 竜巻の速度（ブロック/tick）
+    private int lifespan = 200; // 最大寿命（安全装置）
+    private float tornadoHeight = 8.0f; // 竜巻の縦の長さ（8ブロック）
+    private float tornadoRadius = 2.0f; // 竜巻の半径
+    private float maxHeight = 8.0f;
+    private float radius = 16.0f; // 引き寄せ範囲（元のコマンドと同じ）
     private List<LivingEntity> affectedEntities = new ArrayList<>();
     private int tickCount = 0;
     private ItemStack weaponStack = ItemStack.EMPTY;
+    private Random random = new Random();
+    private Vec3 startPosition; // 開始位置
 
     public TornadoEntity(EntityType<? extends TornadoEntity> type, Level world) {
         super(type, world);
@@ -60,17 +67,18 @@ public class TornadoEntity extends Entity {
         this.owner = owner;
         this.moveDirection = direction.normalize();
         this.weaponStack = weapon.copy();
+        this.startPosition = position; // 開始位置を記録
         setPos(position.x, position.y, position.z);
         entityData.set(WITH_ELECTRICITY, withElectricity);
         entityData.set(DAMAGE, damage);
-        entityData.set(SPEED, 0.5f);
+        entityData.set(SPEED, tornadoSpeed);
     }
 
     @Override
     protected void defineSynchedData() {
         entityData.define(WITH_ELECTRICITY, false);
         entityData.define(DAMAGE, 10.0f);
-        entityData.define(SPEED, 0.5f);
+        entityData.define(SPEED, tornadoSpeed);
     }
 
     @Override
@@ -82,11 +90,45 @@ public class TornadoEntity extends Entity {
         if (tickCount == 1) {
             minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("TornadoEntity: First tick! Position: {}, {}, {}, Side: {}",
                 getX(), getY(), getZ(), level.isClientSide ? "CLIENT" : "SERVER");
+
+            // 最初のtickで生成音を再生
+            if (!level.isClientSide) {
+                level.playSound(null, getX(), getY(), getZ(),
+                    SoundEvents.EVOKER_CAST_SPELL, SoundSource.HOSTILE, 4.0f, 0.8f);
+            }
+
+            // 開始位置が未設定の場合（ロード時など）
+            if (startPosition == null) {
+                startPosition = position();
+            }
         }
 
-        // 寿命チェック
+        // 飛距離チェック
+        if (startPosition != null) {
+            double traveledDistance = position().distanceTo(startPosition);
+            if (traveledDistance >= maxTravelDistance) {
+                minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("TornadoEntity: Max travel distance reached! Distance: {}", traveledDistance);
+                if (!level.isClientSide) {
+                    spawnDespawnEffect();
+                }
+                discard();
+                return;
+            }
+        }
+
+        // 寿命チェック（安全装置）
         if (tickCount >= lifespan) {
             minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("TornadoEntity: Lifespan reached, discarding");
+            if (!level.isClientSide) {
+                spawnDespawnEffect();
+            }
+            discard();
+            return;
+        }
+
+        // ブロック衝突チェック
+        if (!level.isClientSide && checkBlockCollision()) {
+            spawnDespawnEffect();
             discard();
             return;
         }
@@ -111,6 +153,12 @@ public class TornadoEntity extends Entity {
             if (tickCount % 2 == 0 && level instanceof ServerLevel serverLevel) {
                 createServerParticles(serverLevel);
             }
+
+            // 竜巻の音を定期的に再生
+            if (tickCount % 10 == 0) {
+                level.playSound(null, getX(), getY(), getZ(),
+                    SoundEvents.EVOKER_CAST_SPELL, SoundSource.HOSTILE, 4.0f, 0.8f);
+            }
         } else {
             // クライアント側のエフェクト
             createVisualEffects();
@@ -118,9 +166,75 @@ public class TornadoEntity extends Entity {
     }
 
     private void moveAlongPath() {
+        // moveDirectionがnullの場合はデフォルト方向を設定
+        if (moveDirection == null) {
+            moveDirection = new Vec3(0, 0, 1);
+        }
+
         Vec3 currentPos = position();
-        Vec3 newPos = currentPos.add(moveDirection.scale(entityData.get(SPEED)));
-        setPos(newPos.x, newPos.y, newPos.z);
+        // Y座標は最初の高さを維持（水平移動のみ）
+        Vec3 horizontalDirection = new Vec3(moveDirection.x, 0, moveDirection.z).normalize();
+        Vec3 newPos = currentPos.add(horizontalDirection.scale(entityData.get(SPEED)));
+        setPos(newPos.x, currentPos.y, newPos.z);
+    }
+
+    private boolean checkBlockCollision() {
+        Vec3 pos = position();
+        // 竜巻の中心部分（コア）がブロックに当たったかチェック
+        // 高さの中心部分（3-5ブロック目）のみをチェック
+        int solidBlockCount = 0;
+        int totalCheckPoints = 0;
+
+        // 竜巻の中心高さ（3-5ブロック）のみチェック
+        for (double h = 3.0; h <= 5.0; h += 1.0) {
+            double currentRadius = 1.0 + (h * 0.1);
+
+            // 中心部分（半径の60%）を8方向でチェック
+            for (int i = 0; i < 8; i++) {
+                double angle = (i / 8.0) * Math.PI * 2;
+                double xOffset = Math.cos(angle) * currentRadius * 0.6;
+                double zOffset = Math.sin(angle) * currentRadius * 0.6;
+
+                int blockX = (int) Math.floor(pos.x + xOffset);
+                int blockY = (int) Math.floor(pos.y + h);
+                int blockZ = (int) Math.floor(pos.z + zOffset);
+
+                totalCheckPoints++;
+
+                if (!level.getBlockState(new net.minecraft.core.BlockPos(blockX, blockY, blockZ)).isAir()) {
+                    solidBlockCount++;
+                }
+            }
+        }
+
+        // 60%以上がブロックに当たっている場合
+        if (totalCheckPoints > 0 && (solidBlockCount / (double)totalCheckPoints) >= 0.6) {
+            minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("TornadoEntity: Block collision detected! solidBlockCount={}, totalCheckPoints={}, ratio={}",
+                solidBlockCount, totalCheckPoints, (solidBlockCount / (double)totalCheckPoints));
+            return true;
+        }
+
+        return false;
+    }
+
+    private void spawnDespawnEffect() {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+
+        Vec3 pos = position();
+
+        // 爆発パーティクル
+        serverLevel.sendParticles(ParticleTypes.EXPLOSION,
+            pos.x, pos.y + maxHeight / 2, pos.z,
+            10, radius / 2, maxHeight / 4, radius / 2, 0.1);
+
+        // POOFパーティクル（煙）
+        serverLevel.sendParticles(ParticleTypes.POOF,
+            pos.x, pos.y + tornadoHeight / 2, pos.z,
+            50, 1, tornadoHeight / 4, 1, 0.2);
+
+        // 消滅音を再生
+        level.playSound(null, pos.x, pos.y, pos.z,
+            SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 0.5f, 1.2f);
     }
 
     private void applyTornadoEffects() {
@@ -129,10 +243,10 @@ public class TornadoEntity extends Entity {
         Vec3 pos = position();
         boolean withElectricity = entityData.get(WITH_ELECTRICITY);
 
-        // 竜巻の物理効果
+        // 竜巻の物理効果（元のコマンドの範囲：distance=..16）
         AABB searchArea = new AABB(
-            pos.x - radius * 1.5, pos.y - 1, pos.z - radius * 1.5,
-            pos.x + radius * 1.5, pos.y + maxHeight, pos.z + radius * 1.5
+            pos.x - radius, pos.y - 1, pos.z - radius,
+            pos.x + radius, pos.y + maxHeight, pos.z + radius
         );
 
         List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, searchArea,
@@ -140,21 +254,23 @@ public class TornadoEntity extends Entity {
 
         for (LivingEntity target : targets) {
             Vec3 targetPos = target.position();
-            Vec3 toCenter = pos.subtract(targetPos);
-            double horizontalDistance = Math.sqrt(toCenter.x * toCenter.x + toCenter.z * toCenter.z);
+            double distance = pos.distanceTo(targetPos);
 
-            if (horizontalDistance <= radius * 1.5) {
+            if (distance <= radius) {
+                // Slow Falling効果（元のコマンドと同じ）
+                target.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 20, 100, false, false));
+                // Glowing効果（元のコマンドと同じ）
+                target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 20, 100, false, false));
+
                 // 竜巻に巻き込む
                 liftAndRotateEntity(target, pos);
 
-                // 感電効果（StormItemの場合のみ）
-                if (withElectricity && !affectedEntities.contains(target)) {
-                    target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 2));
-
-                    // 感電パーティクル
-                    serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
-                        target.getX(), target.getY() + 1, target.getZ(),
-                        20, 0.5, 0.5, 0.5, 0.1);
+                // 感電エフェクト（StormItemの場合）
+                if (withElectricity) {
+                    // Snowflakeパーティクル
+                    serverLevel.sendParticles(ParticleTypes.SNOWFLAKE,
+                        target.getX(), target.getY(), target.getZ(),
+                        1, 0.1, 0, 0.1, 0.001);
                 }
 
                 // 影響を受けたエンティティのリストに追加
@@ -191,93 +307,86 @@ public class TornadoEntity extends Entity {
     }
 
     private void liftAndRotateEntity(LivingEntity entity, Vec3 tornadoCenter) {
-        Vec3 toCenter = tornadoCenter.subtract(entity.position());
+        Vec3 entityPos = entity.position();
+        Vec3 toCenter = tornadoCenter.subtract(entityPos);
         double horizontalDistance = Math.sqrt(toCenter.x * toCenter.x + toCenter.z * toCenter.z);
 
-        if (horizontalDistance > 0.1) {
-            // 中心に向かって引き寄せ
-            double pullStrength = Math.max(0, 1.0 - horizontalDistance / (radius * 1.5)) * 0.6;
-            Vec3 pullVec = new Vec3(toCenter.x, 0, toCenter.z).normalize().scale(pullStrength);
+        // 元のコマンドの動き：tp @s ^2 ^0.3 ^0.6 facing entity tornado
+        // エンティティを竜巻の方向に引き寄せながら、横と上に移動させる
 
-            // 回転方向のベクトル
-            Vec3 rotationVec = new Vec3(-toCenter.z, 0, toCenter.x).normalize().scale(0.8);
+        // 竜巻の方向を向く
+        Vec3 direction = toCenter.normalize();
 
-            // 高さに応じた上昇力
-            double currentHeight = entity.getY() - tornadoCenter.y;
-            double liftForce;
-            if (currentHeight < maxHeight * 0.3) {
-                liftForce = 1.2;
-            } else if (currentHeight < maxHeight * 0.7) {
-                liftForce = 0.7;
-            } else {
-                liftForce = 0.3;
-            }
+        // 横方向の移動（回転）- ^2（右に2ブロック）
+        double angle = Math.atan2(toCenter.z, toCenter.x);
+        double sideX = Math.cos(angle + Math.PI / 2) * 2.0;
+        double sideZ = Math.sin(angle + Math.PI / 2) * 2.0;
 
-            // 螺旋状の動き
-            double spiralAngle = tickCount * 0.2;
-            double spiralRadius = 0.3;
-            double spiralX = Math.cos(spiralAngle) * spiralRadius;
-            double spiralZ = Math.sin(spiralAngle) * spiralRadius;
+        // 上方向の移動 - ^0.3（上に0.3ブロック）
+        double upMotion = 0.3;
 
-            // 運動量を設定
-            entity.setDeltaMovement(
-                pullVec.x + rotationVec.x + spiralX,
-                liftForce,
-                pullVec.z + rotationVec.z + spiralZ
-            );
+        // 前方向の移動 - ^0.6（前に0.6ブロック、竜巻の方向）
+        double forwardMotion = 0.6;
 
-            // エンティティを回転
-            entity.setYRot(entity.getYRot() + 35);
-            entity.setXRot(entity.getXRot() + 10);
+        // 運動量を設定
+        entity.setDeltaMovement(
+            direction.x * forwardMotion + sideX * 0.1,
+            upMotion,
+            direction.z * forwardMotion + sideZ * 0.1
+        );
 
-            // 落下ダメージを無効化
-            entity.fallDistance = 0;
-        }
+        // 落下ダメージを無効化
+        entity.fallDistance = 0;
     }
 
     private void createServerParticles(ServerLevel serverLevel) {
         Vec3 pos = position();
         boolean withElectricity = entityData.get(WITH_ELECTRICITY);
-        double timeOffset = tickCount * 0.1;
+        double timeOffset = tickCount * 0.3; // 回転速度を上げる
 
-        // 竜巻の視覚効果（サーバー側で生成してクライアントに送信）
-        for (double h = 0; h <= maxHeight; h += 1.0) { // 間隔を広げてパフォーマンス向上
-            double heightRatio = h / maxHeight;
-            double currentRadius;
+        // 縦型竜巻エフェクト（上に行くほど広がる）
+        for (double h = 0; h <= tornadoHeight; h += 1.0) {
+            // 上に行くほど広がる（元のコマンドと同じ）
+            // h=0: 1.0, h=1: 1.1, h=2: 1.2, ..., h=8: 1.8
+            double currentRadius = 1.0 + (h * 0.1);
 
-            if (heightRatio < 0.1) {
-                currentRadius = radius * (1.0 + (0.1 - heightRatio) * 2);
-            } else if (heightRatio < 0.8) {
-                currentRadius = radius * (1.0 - heightRatio * 0.5);
-            } else {
-                currentRadius = radius * 0.6 * (1.0 + (heightRatio - 0.8) * 0.5);
-            }
-
-            // 螺旋パーティクル
-            int particleCount = Math.max(4, (int)(currentRadius * 5)); // パーティクル数を減らす
+            // 螺旋状のパーティクル
+            int particleCount = (int)(currentRadius * 8);
             for (int i = 0; i < particleCount; i++) {
-                double angle = (i / (double)particleCount) * Math.PI * 2 + h * 1.2 + timeOffset;
+                double angle = (i / (double)particleCount) * Math.PI * 2 + h * 0.5 + timeOffset;
                 double xOffset = Math.cos(angle) * currentRadius;
                 double zOffset = Math.sin(angle) * currentRadius;
 
-                // 煙パーティクル
-                serverLevel.sendParticles(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,
+                // poof パーティクル（元のコマンドと同じ）
+                serverLevel.sendParticles(ParticleTypes.POOF,
                     pos.x + xOffset, pos.y + h, pos.z + zOffset,
-                    1, 0, 0, 0, xOffset * 0.05);
+                    (int)currentRadius, 1, (int)currentRadius, 0.1, 5);
+
+                // sweep_attack パーティクル（小さく）
+                if (i % 2 == 0) {
+                    serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK,
+                        pos.x + xOffset, pos.y + h, pos.z + zOffset,
+                        1, 0, 0, 0, 1);
+                }
 
                 // 感電エフェクト（StormItemの場合）
-                if (withElectricity && i % 2 == 0) {
+                if (withElectricity && i % 3 == 0) {
                     serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
                         pos.x + xOffset, pos.y + h, pos.z + zOffset,
-                        2, 0.2, 0.2, 0.2, 0);
+                        1, 0.1, 0.1, 0.1, 0.01);
                 }
             }
         }
 
+        // 中心の雲パーティクル（強制的に表示）
+        serverLevel.sendParticles(ParticleTypes.CLOUD,
+            pos.x, pos.y + tornadoHeight / 2, pos.z,
+            5, 0.5, 1.5, 0.5, 0.02);
+
         // 地面の巻き上げ効果
-        for (int i = 0; i < 8; i++) {
-            double angle = (i / 8.0) * Math.PI * 2 + timeOffset;
-            double groundRadius = radius * 1.2;
+        for (int i = 0; i < 10; i++) {
+            double angle = (i / 10.0) * Math.PI * 2 + timeOffset;
+            double groundRadius = 1.2;
             serverLevel.sendParticles(ParticleTypes.POOF,
                 pos.x + Math.cos(angle) * groundRadius,
                 pos.y + 0.1,
@@ -289,32 +398,32 @@ public class TornadoEntity extends Entity {
     private void createVisualEffects() {
         Vec3 pos = position();
         boolean withElectricity = entityData.get(WITH_ELECTRICITY);
-        double timeOffset = tickCount * 0.1;
+        double timeOffset = tickCount * 0.3; // 回転速度を上げる
 
-        // 竜巻の視覚効果
-        for (double h = 0; h <= maxHeight; h += 0.5) {
-            double heightRatio = h / maxHeight;
-            double currentRadius;
+        // 縦型竜巻エフェクト（上に行くほど広がる）
+        for (double h = 0; h <= tornadoHeight; h += 1.0) {
+            // 上に行くほど広がる（元のコマンドと同じ）
+            // h=0: 1.0, h=1: 1.1, h=2: 1.2, ..., h=8: 1.8
+            double currentRadius = 1.0 + (h * 0.1);
 
-            if (heightRatio < 0.1) {
-                currentRadius = radius * (1.0 + (0.1 - heightRatio) * 2);
-            } else if (heightRatio < 0.8) {
-                currentRadius = radius * (1.0 - heightRatio * 0.5);
-            } else {
-                currentRadius = radius * 0.6 * (1.0 + (heightRatio - 0.8) * 0.5);
-            }
-
-            // 螺旋パーティクル
-            int particleCount = Math.max(8, (int)(currentRadius * 10));
+            // 螺旋状のパーティクル
+            int particleCount = (int)(currentRadius * 12);
             for (int i = 0; i < particleCount; i++) {
-                double angle = (i / (double)particleCount) * Math.PI * 2 + h * 1.2 + timeOffset;
+                double angle = (i / (double)particleCount) * Math.PI * 2 + h * 0.5 + timeOffset;
                 double xOffset = Math.cos(angle) * currentRadius;
                 double zOffset = Math.sin(angle) * currentRadius;
 
-                // 煙パーティクル
-                level.addParticle(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE,
+                // poof パーティクル
+                level.addParticle(ParticleTypes.POOF,
                     pos.x + xOffset, pos.y + h, pos.z + zOffset,
                     xOffset * 0.05, 0.1, zOffset * 0.05);
+
+                // sweep_attack パーティクル
+                if (i % 2 == 0) {
+                    level.addParticle(ParticleTypes.SWEEP_ATTACK,
+                        pos.x + xOffset, pos.y + h, pos.z + zOffset,
+                        0, 0, 0);
+                }
 
                 // 感電エフェクト（StormItemの場合）
                 if (withElectricity && i % 3 == 0 && Math.random() < 0.3) {
@@ -325,10 +434,19 @@ public class TornadoEntity extends Entity {
             }
         }
 
+        // 中心の雲パーティクル
+        for (int i = 0; i < 3; i++) {
+            level.addParticle(ParticleTypes.CLOUD,
+                pos.x + (random.nextDouble() - 0.5) * 0.5,
+                pos.y + tornadoHeight / 2 + (random.nextDouble() - 0.5) * 1.0,
+                pos.z + (random.nextDouble() - 0.5) * 0.5,
+                0, 0.1, 0);
+        }
+
         // 地面の巻き上げ効果
-        for (int i = 0; i < 10; i++) {
-            double angle = (i / 10.0) * Math.PI * 2 + timeOffset;
-            double groundRadius = radius * 1.2;
+        for (int i = 0; i < 12; i++) {
+            double angle = (i / 12.0) * Math.PI * 2 + timeOffset;
+            double groundRadius = 1.2;
             level.addParticle(ParticleTypes.POOF,
                 pos.x + Math.cos(angle) * groundRadius,
                 pos.y + 0.1,
@@ -359,6 +477,28 @@ public class TornadoEntity extends Entity {
         tickCount = compound.getInt("TickCount");
         radius = compound.getFloat("Radius");
         maxHeight = compound.getFloat("MaxHeight");
+
+        // 開始位置の読み込み
+        if (compound.contains("StartPosX")) {
+            startPosition = new Vec3(
+                compound.getDouble("StartPosX"),
+                compound.getDouble("StartPosY"),
+                compound.getDouble("StartPosZ")
+            );
+        }
+
+        // moveDirectionの読み込み
+        if (compound.contains("DirectionX")) {
+            moveDirection = new Vec3(
+                compound.getDouble("DirectionX"),
+                compound.getDouble("DirectionY"),
+                compound.getDouble("DirectionZ")
+            );
+        } else {
+            // デフォルト値（前方向）
+            moveDirection = new Vec3(0, 0, 1);
+        }
+
         if (compound.hasUUID("Owner")) {
             if (level instanceof ServerLevel serverLevel) {
                 Entity entity = serverLevel.getEntity(compound.getUUID("Owner"));
@@ -378,6 +518,21 @@ public class TornadoEntity extends Entity {
         compound.putInt("TickCount", tickCount);
         compound.putFloat("Radius", radius);
         compound.putFloat("MaxHeight", maxHeight);
+
+        // 開始位置の保存
+        if (startPosition != null) {
+            compound.putDouble("StartPosX", startPosition.x);
+            compound.putDouble("StartPosY", startPosition.y);
+            compound.putDouble("StartPosZ", startPosition.z);
+        }
+
+        // moveDirectionの保存
+        if (moveDirection != null) {
+            compound.putDouble("DirectionX", moveDirection.x);
+            compound.putDouble("DirectionY", moveDirection.y);
+            compound.putDouble("DirectionZ", moveDirection.z);
+        }
+
         if (owner != null) {
             compound.putUUID("Owner", owner.getUUID());
         }

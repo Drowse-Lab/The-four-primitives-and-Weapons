@@ -148,9 +148,6 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> MAGICAL_KATANA = REGISTRY.register("magical_katana", () -> new MagicalKatanaItem());
 	public static final RegistryObject<Item> STONE_BRICKS_TRAP_DOOR = block(MinecraftArmorWeaponModBlocks.STONE_BRICKS_TRAP_DOOR, MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO);
 	public static final RegistryObject<Item> ROSE_FLOWER_POT = block(MinecraftArmorWeaponModBlocks.ROSE_FLOWER_POT, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
-	public static final RegistryObject<Item> HRMCNGS_SPAWN_EGG = REGISTRY.register("hrmcngs_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.HRMCNGS, -406791, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
-	public static final RegistryObject<Item> RUAMI_284_SPAWN_EGG = REGISTRY.register("ruami_284_spawn_egg",
-			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.RUAMI_284, -14277082, -4210753, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 	public static final RegistryObject<Item> HALLOWEEN_2023_10_31_SICKLE = REGISTRY.register("halloween_2023_10_31_sickle", () -> new Halloween20231031SickleItem());
 	public static final RegistryObject<Item> KILLOTIRU_SPAWN_EGG = REGISTRY.register("killotiru_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.KILLOTIRU, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 	public static final RegistryObject<Item> KATANA_TOBU = REGISTRY.register("katana_tobu", () -> new KatanaTobuItem());
@@ -261,7 +258,6 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> MAGICWAND = REGISTRY.register("magicwand", () -> new MagicwandItem());
 	public static final RegistryObject<Item> OLD_KATANA = REGISTRY.register("old_katana", () -> new OldKatanaItem());
 	public static final RegistryObject<Item> MAGIC_POT = block(MinecraftArmorWeaponModBlocks.MAGIC_POT, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
-	public static final RegistryObject<Item> REISAME_284_SPAWN_EGG = REGISTRY.register("reisame_284_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.REISAME_284, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 	public static final RegistryObject<Item> FLYING_ATTACKER_SPAWN_EGG = REGISTRY.register("flying_attacker_spawn_egg",
 			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.FLYING_ATTACKER, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 	public static final RegistryObject<Item> SAYA = REGISTRY.register("saya", () -> new SayaItem());

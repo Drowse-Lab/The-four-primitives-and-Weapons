@@ -21,7 +21,7 @@ title @p title {"text":"\uE001"}
 give @p written_book{title:"",author:"",pages:['{"text":"\\uE102","color":white}']}
 
 #・出血ぽいパーティクル
-particle item redstone ~ ~1 ~ 0.5 0.5 0.5 0.3
+particle item redstone ~ ~1 ~ 0.5 0.5 0.5 0.3 
 
 
 tellraw @p {"font":"illageralt","text":"MISO SOUP ZIRU"}

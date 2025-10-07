@@ -18,14 +18,11 @@ import net.minecraft.world.entity.Entity;
 
 import minecraftarmorweapon.entity.TestBowEntity;
 import minecraftarmorweapon.entity.SkeltonMobEntity;
-import minecraftarmorweapon.entity.Ruami284Entity;
-import minecraftarmorweapon.entity.Reisame284Entity;
 import minecraftarmorweapon.entity.OtiruyoEntity;
 import minecraftarmorweapon.entity.MeteorArrowEntity;
 import minecraftarmorweapon.entity.LokiDecoydasuEntity;
 import minecraftarmorweapon.entity.KillotiruEntity;
 import minecraftarmorweapon.entity.KatanaTobuEntity;
-import minecraftarmorweapon.entity.HrmcngsEntity;
 import minecraftarmorweapon.entity.FlyingAttackerEntity;
 import minecraftarmorweapon.entity.CometKillEntity;
 import minecraftarmorweapon.entity.CometEntity;
@@ -43,14 +40,6 @@ public class MinecraftArmorWeaponModEntities {
 					.sized(0.6f, 1.5f));
 	public static final RegistryObject<EntityType<OtiruyoEntity>> OTIRUYO = register("otiruyo",
 			EntityType.Builder.<OtiruyoEntity>of(OtiruyoEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(OtiruyoEntity::new).fireImmune().sized(1.2f, 3.6f));
-	public static final RegistryObject<EntityType<HrmcngsEntity>> HRMCNGS = register("hrmcngs",
-			EntityType.Builder.<HrmcngsEntity>of(HrmcngsEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(HrmcngsEntity::new)
-
-					.sized(0.9f, 0.9f));
-	public static final RegistryObject<EntityType<Ruami284Entity>> RUAMI_284 = register("ruami_284",
-			EntityType.Builder.<Ruami284Entity>of(Ruami284Entity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(Ruami284Entity::new)
-
-					.sized(0.9f, 0.9f));
 	public static final RegistryObject<EntityType<KillotiruEntity>> KILLOTIRU = register("killotiru", EntityType.Builder.<KillotiruEntity>of(KillotiruEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64)
 			.setUpdateInterval(3).setCustomClientFactory(KillotiruEntity::new).fireImmune().sized(1.2f, 3.6f));
 	public static final RegistryObject<EntityType<KatanaTobuEntity>> KATANA_TOBU = register("projectile_katana_tobu",
@@ -72,10 +61,6 @@ public class MinecraftArmorWeaponModEntities {
 					.setCustomClientFactory(AlchemyCraftBlockEntityEntity::new)
 
 					.sized(0.1f, 0.1f));
-	public static final RegistryObject<EntityType<Reisame284Entity>> REISAME_284 = register("reisame_284",
-			EntityType.Builder.<Reisame284Entity>of(Reisame284Entity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(Reisame284Entity::new)
-
-					.sized(0.9f, 0.9f));
 	public static final RegistryObject<EntityType<FlyingAttackerEntity>> FLYING_ATTACKER = register("flying_attacker",
 			EntityType.Builder.<FlyingAttackerEntity>of(FlyingAttackerEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(FlyingAttackerEntity::new)
 
@@ -90,15 +75,12 @@ public class MinecraftArmorWeaponModEntities {
 		event.enqueueWork(() -> {
 			SkeltonMobEntity.init();
 			OtiruyoEntity.init();
-			HrmcngsEntity.init();
-			Ruami284Entity.init();
 			KillotiruEntity.init();
 			BlackholeEntity.init();
 			CometEntity.init();
 			CometKillEntity.init();
 			MeteorArrowEntity.init();
 			AlchemyCraftBlockEntityEntity.init();
-			Reisame284Entity.init();
 			FlyingAttackerEntity.init();
 		});
 	}
@@ -107,15 +89,12 @@ public class MinecraftArmorWeaponModEntities {
 	public static void registerAttributes(EntityAttributeCreationEvent event) {
 		event.put(SKELTON_MOB.get(), SkeltonMobEntity.createAttributes().build());
 		event.put(OTIRUYO.get(), OtiruyoEntity.createAttributes().build());
-		event.put(HRMCNGS.get(), HrmcngsEntity.createAttributes().build());
-		event.put(RUAMI_284.get(), Ruami284Entity.createAttributes().build());
 		event.put(KILLOTIRU.get(), KillotiruEntity.createAttributes().build());
 		event.put(BLACKHOLE.get(), BlackholeEntity.createAttributes().build());
 		event.put(COMET.get(), CometEntity.createAttributes().build());
 		event.put(COMET_KILL.get(), CometKillEntity.createAttributes().build());
 		event.put(METEOR_ARROW.get(), MeteorArrowEntity.createAttributes().build());
 		event.put(ALCHEMY_CRAFT_BLOCK_ENTITY.get(), AlchemyCraftBlockEntityEntity.createAttributes().build());
-		event.put(REISAME_284.get(), Reisame284Entity.createAttributes().build());
 		event.put(FLYING_ATTACKER.get(), FlyingAttackerEntity.createAttributes().build());
 	}
 }

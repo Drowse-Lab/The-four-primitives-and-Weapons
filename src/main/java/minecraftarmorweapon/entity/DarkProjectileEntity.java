@@ -23,7 +23,6 @@ import net.minecraftforge.network.PlayMessages;
 
 import minecraftarmorweapon.util.DamageCalculator;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModCustomEntities;
-import net.minecraft.world.entity.EntityType;
 
 public class DarkProjectileEntity extends AbstractHurtingProjectile {
     private LivingEntity target;
@@ -31,7 +30,6 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
     private float damage = 15.0f;
     private int ticksAlive = 0;
     private static final int MAX_LIFE = 200; // 10秒
-    private net.minecraft.world.item.ItemStack weaponStack = net.minecraft.world.item.ItemStack.EMPTY;
 
     public DarkProjectileEntity(EntityType<? extends DarkProjectileEntity> type, Level world) {
         super(type, world);
@@ -122,8 +120,15 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
 
         if (entity instanceof LivingEntity livingEntity && entity != this.getOwner()) {
             // ダメージを与える
-            if (shooter != null) {
-                DamageCalculator.dealDamage(shooter, livingEntity, damage, null);
+            if (shooter != null && shooter instanceof net.minecraft.world.entity.player.Player player) {
+                // 実際の攻撃イベントを発火（武器攻撃力 + エンチャント + エフェクト）
+                player.attack(livingEntity);
+
+                // 無敵時間をリセットしてボーナスダメージ（+7）を追加
+                livingEntity.invulnerableTime = 0;
+                livingEntity.hurt(DamageSource.playerAttack(player), damage);
+            } else if (shooter != null) {
+                livingEntity.hurt(DamageSource.mobAttack(shooter), damage);
             } else {
                 livingEntity.hurt(DamageSource.MAGIC, damage);
             }
@@ -199,25 +204,5 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
     @Override
     protected ParticleOptions getTrailParticle() {
         return ParticleTypes.SOUL;
-    }
-
-    // Setter methods for MagicKatanaSpecialChargeProcedure
-    public void setTarget(LivingEntity target) {
-        this.target = target;
-    }
-
-    public void setDamage(float damage) {
-        this.damage = damage;
-    }
-
-    public void setWeapon(net.minecraft.world.item.ItemStack weapon) {
-        this.weaponStack = weapon.copy();
-    }
-
-    public void setOwner(Entity owner) {
-        if (owner instanceof LivingEntity) {
-            this.shooter = (LivingEntity) owner;
-            super.setOwner(owner);
-        }
     }
 }

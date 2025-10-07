@@ -10,9 +10,6 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 
-// Apply custom code locking script
-apply from: 'lock_all_codes.gradle'
-
 version = '1.0'
 group = 'com.hrmcngs.minecraft_armor_weapon'
 archivesBaseName = 'minecraft_armor_weapon'
@@ -30,11 +27,6 @@ minecraft {
 
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            
-            // Mixin設定
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            arg "-mixin.config=mixins.minecraft_armor_weapon.json"
 
             mods {
                 examplemod {
@@ -48,11 +40,6 @@ minecraft {
 
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            
-            // Mixin設定
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            arg "-mixin.config=mixins.minecraft_armor_weapon.json"
 
             mods {
                 examplemod {
@@ -64,10 +51,7 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.19.2-43.2.0' // Ensure the Forge version matches your mappings
-    
-    // Mixin
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    minecraft 'net.minecraftforge:forge:1.19.2-43.2.0'
 }
 
 tasks.withType(JavaCompile).configureEach {

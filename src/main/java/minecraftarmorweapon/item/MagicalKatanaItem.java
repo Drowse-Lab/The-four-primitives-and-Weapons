@@ -19,8 +19,11 @@ import net.minecraft.world.InteractionHand;
 import minecraftarmorweapon.procedures.MagicalKatanamobugaturudeGongJisaretatokiProcedure;
 import minecraftarmorweapon.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 import minecraftarmorweapon.procedures.IronKatanaYoukuritukusitatokiProcedure;
+import minecraftarmorweapon.procedures.MagicKatanaSpecialChargeProcedure;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
+
+import net.minecraft.world.item.UseAnim;
 
 public class MagicalKatanaItem extends SwordItem {
 	public MagicalKatanaItem() {
@@ -60,9 +63,31 @@ public class MagicalKatanaItem extends SwordItem {
 
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		IronKatanaYoukuritukusitatokiProcedure.execute();
-		return ar;
+		ItemStack itemstack = entity.getItemInHand(hand);
+		entity.startUsingItem(hand);
+		return InteractionResultHolder.consume(itemstack);
+	}
+
+	@Override
+	public void releaseUsing(ItemStack stack, Level world, LivingEntity entity, int timeLeft) {
+		if (entity instanceof Player player) {
+			int chargeDuration = this.getUseDuration(stack) - timeLeft;
+			float chargePercent = Math.min(chargeDuration / 20.0f, 1.0f); // 最大1秒でフルチャージ
+
+			if (chargePercent >= 0.5f) { // 50%以上チャージで発動
+				MagicKatanaSpecialChargeProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player, chargePercent);
+			}
+		}
+	}
+
+	@Override
+	public int getUseDuration(ItemStack stack) {
+		return 72000; // 最大使用時間（3600秒）
+	}
+
+	@Override
+	public UseAnim getUseAnimation(ItemStack stack) {
+		return UseAnim.BOW; // 弓のような使用アニメーション
 	}
 
 	@Override
