@@ -108,6 +108,9 @@ public class TornadoEntity extends Entity {
             double traveledDistance = position().distanceTo(startPosition);
             if (traveledDistance >= maxTravelDistance) {
                 minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("TornadoEntity: Max travel distance reached! Distance: {}", traveledDistance);
+                if (!level.isClientSide) {
+                    spawnDespawnEffect();
+                }
                 discard();
                 return;
             }
@@ -116,12 +119,16 @@ public class TornadoEntity extends Entity {
         // 寿命チェック（安全装置）
         if (tickCount >= lifespan) {
             minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("TornadoEntity: Lifespan reached, discarding");
+            if (!level.isClientSide) {
+                spawnDespawnEffect();
+            }
             discard();
             return;
         }
 
         // ブロック衝突チェック
         if (!level.isClientSide && checkBlockCollision()) {
+            spawnDespawnEffect();
             discard();
             return;
         }
@@ -204,22 +211,30 @@ public class TornadoEntity extends Entity {
         if (totalCheckPoints > 0 && (solidBlockCount / (double)totalCheckPoints) >= 0.6) {
             minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("TornadoEntity: Block collision detected! solidBlockCount={}, totalCheckPoints={}, ratio={}",
                 solidBlockCount, totalCheckPoints, (solidBlockCount / (double)totalCheckPoints));
-
-            // 消滅音を再生
-            level.playSound(null, pos.x, pos.y, pos.z,
-                SoundEvents.FIRE_EXTINGUISH, SoundSource.HOSTILE, 4.0f, 0.8f);
-
-            // 消滅パーティクル
-            if (level instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(ParticleTypes.POOF,
-                    pos.x, pos.y + tornadoHeight / 2, pos.z,
-                    1000, 1, tornadoHeight / 4, 1, 0.4);
-            }
-
             return true;
         }
 
         return false;
+    }
+
+    private void spawnDespawnEffect() {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+
+        Vec3 pos = position();
+
+        // 爆発パーティクル
+        serverLevel.sendParticles(ParticleTypes.EXPLOSION,
+            pos.x, pos.y + maxHeight / 2, pos.z,
+            10, radius / 2, maxHeight / 4, radius / 2, 0.1);
+
+        // POOFパーティクル（煙）
+        serverLevel.sendParticles(ParticleTypes.POOF,
+            pos.x, pos.y + tornadoHeight / 2, pos.z,
+            50, 1, tornadoHeight / 4, 1, 0.2);
+
+        // 消滅音を再生
+        level.playSound(null, pos.x, pos.y, pos.z,
+            SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 0.5f, 1.2f);
     }
 
     private void applyTornadoEffects() {

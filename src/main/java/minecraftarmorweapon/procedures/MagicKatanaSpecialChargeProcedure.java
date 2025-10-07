@@ -169,7 +169,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * ThunderboltItem - 横斬撃と雷撃
+     * ThunderboltItem - 横斬撃と雷撃（5秒後に雷が落ちる）
      */
     private static void executeThunderboltAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
         Vec3 lookVec = player.getLookAngle();
@@ -212,39 +212,34 @@ public class MagicKatanaSpecialChargeProcedure {
             target.invulnerableTime = 0;
             target.hurt(DamageSource.playerAttack(player), 2.0f);
 
-            // 大量の雷を落とす
+            // プレイヤーの向いている方向に少しノックバック
+            Vec3 knockbackVec = lookVec.normalize().multiply(0.5, 0.2, 0.5); // 水平方向に0.5、上に0.2
+            target.setDeltaMovement(target.getDeltaMovement().add(knockbackVec));
+
+            // 5秒間（100tick）のThunderboltエフェクトを付与
+            target.addEffect(new MobEffectInstance(
+                minecraftarmorweapon.init.MinecraftArmorWeaponModMobEffects.TUNDERBOLTEFFRCT.get(),
+                100, // 100tick = 5秒
+                0,
+                false,
+                false
+            ));
+
+            // 5秒間動けないように（移動速度低下 レベル10で完全停止）
+            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 10, false, false));
+
+            // 初期のFLASHパーティクル
             if (world instanceof ServerLevel serverLevel) {
-                for (int i = 0; i < 8; i++) {
-                    // FLASHパーティクル
-                    serverLevel.sendParticles(ParticleTypes.FLASH,
-                        target.getX() + (Math.random() - 0.5) * 2,
-                        target.getY() + 1,
-                        target.getZ() + (Math.random() - 0.5) * 2,
-                        1, 0, 0, 0, 0);
-
-                    // 実際の雷を複数召喚
-                    if (i < 3) { // 3本の雷
-                        LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(serverLevel);
-                        if (lightning != null) {
-                            lightning.moveTo(Vec3.atBottomCenterOf(target.blockPosition()
-                                .offset((int)((Math.random() - 0.5) * 2), 0, (int)((Math.random() - 0.5) * 2))));
-                            lightning.setVisualOnly(false);
-                            serverLevel.addFreshEntity(lightning);
-                        }
-                    }
-                }
-
-                // 追加エフェクト
-                serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
+                serverLevel.sendParticles(ParticleTypes.FLASH,
                     target.getX(), target.getY() + 1, target.getZ(),
-                    50, 1.0, 1.0, 1.0, 0.2);
+                    3, 0.3, 0.5, 0.3, 0);
             }
         }
 
         // サウンド
         if (world instanceof Level level) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 2.0f, 0.5f);
+                SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 1.0f, 1.5f);
         }
     }
 

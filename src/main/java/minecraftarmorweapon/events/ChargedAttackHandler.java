@@ -292,6 +292,12 @@ public class ChargedAttackHandler {
             return;
         }
 
+//        // Luna専用のチャージ攻撃
+//        if (itemName.equals("LunaItem")) {
+//            performLunaChargedAttack(player, world, lookVec, playerPos, chargePercent);
+//            return;
+//        }
+//
         // Lunaまたは他の直刀を持っている場合は自動的に直刀タイプに設定
         WeaponType weaponType;
         if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
