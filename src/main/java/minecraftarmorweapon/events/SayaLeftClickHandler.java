@@ -75,32 +75,35 @@ public class SayaLeftClickHandler {
     
     private static boolean performBattou(Player player, ItemStack sheathStack, InteractionHand sheathHand, InteractionHand otherHand) {
         CompoundTag tag = sheathStack.getOrCreateTag();
-        
-        // 鞘に刀が入っている場合、抜刀する
-        if (tag.contains("StoredKatana")) {
+
+        // 鞘に刀が入っている場合、抜刀する（StoredKatanaまたはStoredSwordをチェック）
+        String storedKey = tag.contains("StoredKatana") ? "StoredKatana" :
+                          tag.contains("StoredSword") ? "StoredSword" : null;
+
+        if (storedKey != null) {
             ItemStack otherHandItem = player.getItemInHand(otherHand);
-            
+
             // 反対の手が空の場合のみ抜刀
             if (otherHandItem.isEmpty()) {
                 // 保存された刀の情報から刀を生成
-                ItemStack katanaStack = ItemStack.of(tag.getCompound("StoredKatana"));
-                
+                ItemStack weaponStack = ItemStack.of(tag.getCompound(storedKey));
+
                 // 反対の手に刀を配置
-                player.setItemInHand(otherHand, katanaStack);
-                
+                player.setItemInHand(otherHand, weaponStack);
+
                 // 鞘から刀の情報を削除（空の鞘にする）
-                tag.remove("StoredKatana");
+                tag.remove(storedKey);
                 tag.putInt("CustomModelData", 0); // 空の鞘のモデル
-                
+
                 // タグをItemStackに適用
                 sheathStack.setTag(tag);
-                
+
                 // 鞘のアイテムスタックを強制的に更新（見た目の更新を確実にする）
                 player.setItemInHand(sheathHand, sheathStack);
-                
+
                 // 抜刀音を再生
                 player.playSound(SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F);
-                
+
                 return true; // 抜刀成功
             }
         }
@@ -110,6 +113,6 @@ public class SayaLeftClickHandler {
     private static boolean isSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
-        return itemName.equals("SayaItem");
+        return itemName.equals("SayaItem") || itemName.equals("TyokutoSayaItem");
     }
 }

@@ -3,9 +3,9 @@
 	"credit": "Made with Blockbench",
 	"parent": "item/handheld",
 	"textures": {
-		"2": "minecraft_armor_weapon:items/luna",
+		"2": "minecraft_armor_weapon:items/bluepurgestyokutouimage",
 		"3": "minecraft_armor_weapon:items/saya_tyokuto",
-		"particle": "minecraft_armor_weapon:items/luna"
+		"particle": "minecraft_armor_weapon:items/bluepurgestyokutouimage"
 	},
 	"elements": [
 		{

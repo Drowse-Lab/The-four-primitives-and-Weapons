@@ -513,20 +513,25 @@ public class DodgeAndBattouHandler {
     
     private static boolean isWeapon(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        
+
         // SwordItemまたはカタナ系アイテムかチェック
         if (stack.getItem() instanceof SwordItem) return true;
-        
+
         String itemName = stack.getItem().getClass().getSimpleName();
-        
+
         // Sayaアイテムの場合は、刀が入っているかチェック
         if (itemName.equals("SayaItem")) {
             // NBTタグを確認して、StoredKatanaが存在する場合のみtrue
             return stack.hasTag() && stack.getTag().contains("StoredKatana");
         }
-        
+
+        // 直刀の判定
+        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(stack)) {
+            return true;
+        }
+
         // その他の武器（大文字小文字を考慮）
-        return itemName.contains("Katana") || itemName.contains("Sword") || 
+        return itemName.contains("Katana") || itemName.contains("Sword") ||
                itemName.contains("Blade") || itemName.contains("katana") ||
                itemName.equals("RiversOfBloodItem") || itemName.equals("KatanaNiguHumerusItem");
     }
