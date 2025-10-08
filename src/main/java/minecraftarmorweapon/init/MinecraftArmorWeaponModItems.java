@@ -21,6 +21,7 @@ import minecraftarmorweapon.item.WitherBoneItem;
 import minecraftarmorweapon.item.WindStepItem;
 import minecraftarmorweapon.item.WardenArmorItem;
 import minecraftarmorweapon.item.WarabitetouItem;
+import minecraftarmorweapon.item.TyokutoSayaItem;
 import minecraftarmorweapon.item.TukaenaItem;
 import minecraftarmorweapon.item.ThunderboltItem;
 import minecraftarmorweapon.item.TestBowItem;
@@ -261,6 +262,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> FLYING_ATTACKER_SPAWN_EGG = REGISTRY.register("flying_attacker_spawn_egg",
 			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.FLYING_ATTACKER, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 	public static final RegistryObject<Item> SAYA = REGISTRY.register("saya", () -> new SayaItem());
+	public static final RegistryObject<Item> TYOKUTO_SAYA = REGISTRY.register("tyokuto_saya", () -> new TyokutoSayaItem());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, CreativeModeTab tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));

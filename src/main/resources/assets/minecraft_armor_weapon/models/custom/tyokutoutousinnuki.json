@@ -1,10 +1,10 @@
 {
 	"format_version": "1.9.0",
 	"credit": "Made with Blockbench",
-	"parent": "tyokutoutousinnuki",
+	"parent": "item/handheld",
 	"textures": {
-		"0": "saya_tyokuto",
-		"particle": "saya_tyokuto"
+		"0": "minecraft_armor_weapon:items/saya_tyokuto",
+		"particle": "minecraft_armor_weapon:items/saya_tyokuto"
 	},
 	"elements": [
 		{
@@ -31,6 +31,34 @@
 			"rotation": [-180, 0, 0],
 			"translation": [0, 0.75, 2.25],
 			"scale": [1, 1.5, 1]
+		},
+		"firstperson_righthand": {
+			"translation": [3.25, 4.5, -2.25],
+			"scale": [1, 1.2, 1]
+		},
+		"firstperson_lefthand": {
+			"translation": [-12.5, 4.75, -2],
+			"scale": [1, 1.2, 1]
+		},
+		"ground": {
+			"rotation": [-180, 0, 0],
+			"translation": [7.75, 3.5, 7.75],
+			"scale": [1, 1.5, 1]
+		},
+		"gui": {
+			"rotation": [-90, 135, 90],
+			"translation": [-9.5, 1.75, 1.3],
+			"scale": [1, 1.3, 1]
+		},
+		"head": {
+			"rotation": [-90, 40, -90],
+			"translation": [-10.25, -2.75, 14.5],
+			"scale": [1, 1.5, 1]
+		},
+		"fixed": {
+			"rotation": [-90, -135, -90],
+			"translation": [12.75, 3, 10.5],
+			"scale": [1.4, 1.65, 1.4]
 		}
 	},
 	"groups": [

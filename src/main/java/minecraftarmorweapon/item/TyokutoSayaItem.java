@@ -18,8 +18,8 @@ import minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure;
 
 import java.util.List;
 
-public class TyokutouSayaItem extends Item {
-    public TyokutouSayaItem() {
+public class TyokutoSayaItem extends Item {
+    public TyokutoSayaItem() {
         super(new Item.Properties()
             .tab(MinecraftArmorWeaponModTabs.TAB_WEAPON)
             .stacksTo(1)
@@ -111,7 +111,15 @@ public class TyokutouSayaItem extends Item {
             sheathTag.put("StoredSword", swordData);
 
             // 鞘の見た目を更新（納刀状態）
-            sheathTag.putInt("CustomModelData", getSwordModelData(swordStack));
+            int modelData = getSwordModelData(swordStack);
+            sheathTag.putInt("CustomModelData", modelData);
+
+            // デバッグメッセージ
+            String swordName = swordStack.getItem().getClass().getSimpleName();
+            player.displayClientMessage(
+                Component.literal("§7納刀: " + swordName + " (ModelData: " + modelData + ")"),
+                true
+            );
 
             // 鞘にタグを適用
             sheathStack.setTag(sheathTag);
@@ -124,8 +132,8 @@ public class TyokutouSayaItem extends Item {
 
             // 納刀音
             player.playSound(SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 0.8F);
-
-            player.displayClientMessage(Component.literal("§7納刀"), true);
+        } else {
+            player.displayClientMessage(Component.literal("§c鞘には既に刀が入っています"), true);
         }
     }
 

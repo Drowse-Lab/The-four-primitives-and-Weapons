@@ -1,0 +1,29 @@
+{
+	"parent": "minecraft_armor_weapon:custom/tyokutoutousinnuki",
+	"overrides": [
+		{
+			"predicate": {
+				"custom_model_data": 0
+			},
+			"model": "minecraft_armor_weapon:custom/tyokutoutousinnuki"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 1
+			},
+			"model": "minecraft_armor_weapon:custom/tyokutoutousiniri"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 2
+			},
+			"model": "minecraft_armor_weapon:custom/tyokutoutousiniri"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 3
+			},
+			"model": "minecraft_armor_weapon:custom/tyokutoutousiniri"
+		}
+	]
+}
