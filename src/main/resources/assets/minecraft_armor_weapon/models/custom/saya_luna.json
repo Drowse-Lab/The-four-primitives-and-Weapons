@@ -3,8 +3,8 @@
 	"credit": "Made with Blockbench",
 	"parent": "saya_luna",
 	"textures": {
-		"2": "luna",
-		"3": "MCreatorWorkspaces/minecraft_armor_weapon/saya/saya_tyokuto",
+		"2": "minecraft_armor_weapon:blocks/luna",
+		"3": "minecraft_armor_weapon:items/saya_tyokuto",
 		"particle": "luna"
 	},
 	"elements": [
