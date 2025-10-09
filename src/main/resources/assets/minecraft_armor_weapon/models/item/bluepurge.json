@@ -16,6 +16,18 @@
         "custom_model_data": 2
       },
       "model": "minecraft_armor_weapon:item/bluepurge_tyokutou"
+    },
+    {
+      "predicate": {
+        "minecraft_armor_weapon:glowing": 1.0
+      },
+      "model": "minecraft_armor_weapon:custom/bluepurgelight"
+    },
+    {
+      "predicate": {
+        "minecraft_armor_weapon:glowing": 2.0
+      },
+      "model": "minecraft_armor_weapon:custom/bluepurgeair"
     }
   ]
 }
