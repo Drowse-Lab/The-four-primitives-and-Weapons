@@ -12,18 +12,7 @@
 				"custom_model_data": 1
 			},
 			"model": "minecraft_armor_weapon:custom/tyokutoutousiniri_luna"
-		},
-		{
-			"predicate": {
-				"custom_model_data": 2
-			},
-			"model": "minecraft_armor_weapon:custom/tyokutoutousiniri_bluepurge"
-		},
-		{
-			"predicate": {
-				"custom_model_data": 3
-			},
-			"model": "minecraft_armor_weapon:custom/tyokutoutousiniri_kurikara"
 		}
+		
 	]
 }
