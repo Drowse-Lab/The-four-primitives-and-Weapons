@@ -8,7 +8,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 
-public class SayaRightclickedProcedure {
+public class TyokutoSayaRightclickedProcedure {
 	public static void execute(LevelAccessor world, Entity entity, ItemStack sheathStack, InteractionHand hand) {
 		if (entity == null || sheathStack == null)
 			return;
@@ -82,20 +82,20 @@ public class SayaRightclickedProcedure {
 		
 		// Map each katana type to a specific custom model data
 		// These will correspond to different model files with proper handle textures
-		if (itemName.equals("IronKatanaItem")) return 1;
-		if (itemName.equals("GoldKatanaItem")) return 2;
-		if (itemName.equals("StoneKatanaItem")) return 3;
-		if (itemName.equals("NetheriteKatanaItem")) return 4;
-		if (itemName.equals("WitherKatanaItem")) return 5;
-		if (itemName.equals("MotoWitherKatanaItem")) return 6;
-		if (itemName.equals("DarknessKatanaItem")) return 7;
-		if (itemName.equals("MagicalKatanaItem")) return 8;
-		if (itemName.equals("MagischesFeenKatanaItem")) return 9;
-		if (itemName.equals("PrototypeKatanaItem")) return 10;
-		if (itemName.equals("OldKatanaItem")) return 11;
-		if (itemName.equals("MyTestIronKatanaItem")) return 12;
-		if (itemName.equals("RiversOfBloodItem")) return 13;
-		if (itemName.equals("KatanaNiguHumerusItem")) return 14;
+		if (itemName.equals("LunaItem")) return 1;
+		// if (itemName.equals("Item")) return 2;
+		// if (itemName.equals("Item")) return 3;
+		// if (itemName.equals("Item")) return 4;
+		// if (itemName.equals("WitherKatanaItem")) return 5;
+		// if (itemName.equals("MotoWitherKatanaItem")) return 6;
+		// if (itemName.equals("DarknessKatanaItem")) return 7;
+		// if (itemName.equals("MagicalKatanaItem")) return 8;
+		// if (itemName.equals("MagischesFeenKatanaItem")) return 9;
+		// if (itemName.equals("PrototypeKatanaItem")) return 10;
+		// if (itemName.equals("OldKatanaItem")) return 11;
+		// if (itemName.equals("MyTestIronKatanaItem")) return 12;
+		// if (itemName.equals("RiversOfBloodItem")) return 13;
+		// if (itemName.equals("KatanaNiguHumerusItem")) return 14;
 		
 		return 0; // Default (empty saya)
 	}
