@@ -114,6 +114,12 @@ public class ElementalTooltipEvent {
         if (num == 8) return "VIII";
         if (num == 9) return "IX";
         if (num == 10) return "X";
+        if (num == 11) return "XI";
+        if (num == 12) return "XII";
+        if (num == 13) return "XIII";
+        if (num == 14) return "XIV";
+        if (num == 15) return "XV";
+        if (num == 16) return "XVI";
         if (num == 343014) return "零";
         return String.valueOf(num);
     }
