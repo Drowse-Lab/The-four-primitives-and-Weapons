@@ -230,7 +230,7 @@
       "name": "RkigaYasaretatoki",
       "type": "procedure",
       "sortid": 13,
-      "compiles": false,
+      "compiles": true,
       "locked_code": true,
       "registry_name": "rkiga_yasaretatoki",
       "metadata": {

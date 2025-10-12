@@ -16,6 +16,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.DustParticleOptions;
+import com.mojang.math.Vector3f;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -29,9 +31,10 @@ import java.util.Arrays;
 
 public class TyokutouThrustAttackProcedure {
 
-    // 直刀として扱うアイテムのリスト（曲線ビームを出すアイテム）
+    // 直刀として扱うアイテムのリスト
+    // 注意: 曲線ビームを使えるのはLunaItemのみ、他の直刀は高速突き攻撃のみ
     private static final List<String> STRAIGHT_SWORD_ITEMS = Arrays.asList(
-        "LunaItem",
+        "LunaItem",           // 曲線ビーム使用可能
         "BluepurgeTyokutouItem",
         "KaminariKurikarakenTyokutouItem",
         "KurikarakenutigatanaItem",
@@ -58,6 +61,15 @@ public class TyokutouThrustAttackProcedure {
         }
 
         return STRAIGHT_SWORD_ITEMS.contains(itemName);
+    }
+
+    /**
+     * アイテムがLunaかどうかを判定（曲線ビームを使えるのはLunaのみ）
+     */
+    public static boolean isLunaItem(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        String itemName = stack.getItem().getClass().getSimpleName();
+        return itemName.equals("LunaItem");
     }
 
     /**
@@ -298,25 +310,32 @@ public class TyokutouThrustAttackProcedure {
             }
         }
 
-        // ビームエフェクト（常に曲線ビームを表示）
+        // ビームエフェクト（Lunaのみ曲線ビームを表示、他の直刀は突き攻撃のみ）
         if (world instanceof ServerLevel serverLevel) {
-            // 常に曲がるビームエフェクトを表示（クールダウン無視）
-            if (!targets.isEmpty()) {
-                // 各ターゲットに対してビームを発射
-                for (LivingEntity target : targets) {
-                    Vec3 targetPos = target.position().add(0, target.getBbHeight() / 2, 0);
-                    createCurvingBeamsToTarget(serverLevel, targetPos, lookVec, player, chargePercent);
-                }
-            } else {
-                // ターゲットがいない場合は視線方向の複数の地点に向けてビームを発射
-                createCurvingBeamsToDirection(serverLevel, lookVec, player, chargePercent, range);
-            }
+            // プレイヤーが持っているアイテムを取得
+            ItemStack heldItem = (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY);
 
-            // クールダウン中は追加で直線ビームも表示（オプション）
-            if (isCooldown && chargePercent < 0.5f) {
-                // 弱いチャージの時のみ直線ビーム追加
-                createStraightBeams(serverLevel, startPos, lookVec, player, chargePercent * 0.5f, range * 0.7);
+            // Lunaのみ曲線ビームを表示
+            if (isLunaItem(heldItem)) {
+                // 曲がるビームエフェクトを表示（クールダウン無視）
+                if (!targets.isEmpty()) {
+                    // 各ターゲットに対してビームを発射
+                    for (LivingEntity target : targets) {
+                        Vec3 targetPos = target.position().add(0, target.getBbHeight() / 2, 0);
+                        createCurvingBeamsToTarget(serverLevel, targetPos, lookVec, player, chargePercent);
+                    }
+                } else {
+                    // ターゲットがいない場合は視線方向の複数の地点に向けてビームを発射
+                    createCurvingBeamsToDirection(serverLevel, lookVec, player, chargePercent, range);
+                }
+
+                // クールダウン中は追加で直線ビームも表示（オプション）
+                if (isCooldown && chargePercent < 0.5f) {
+                    // 弱いチャージの時のみ直線ビーム追加
+                    createStraightBeams(serverLevel, startPos, lookVec, player, chargePercent * 0.5f, range * 0.7);
+                }
             }
+            // 他の直刀は曲線ビーム無し（高速突き攻撃のみ）
         }
 
         // 突進音（強化版）
@@ -343,16 +362,19 @@ public class TyokutouThrustAttackProcedure {
         Vec3 lookVec = player.getLookAngle();
         Vec3 startPos = player.position().add(0, player.getEyeHeight(), 0);
 
-        // エフェクト
+        // エフェクト（小さいDustパーティクル）
         if (world instanceof ServerLevel serverLevel) {
-            for (int i = 0; i < 8; i++) {
-                double d = i * 0.5;
+            // 白っぽい小さなDustパーティクル
+            DustParticleOptions dustOptions = new DustParticleOptions(new Vector3f(0.9f, 0.95f, 1.0f), 0.4f);
+
+            for (int i = 0; i < 12; i++) {
+                double d = i * 0.35;
                 serverLevel.sendParticles(
-                    ParticleTypes.SWEEP_ATTACK,
+                    dustOptions,
                     startPos.x + lookVec.x * d,
                     startPos.y + lookVec.y * d,
                     startPos.z + lookVec.z * d,
-                    1, 0, 0, 0, 0
+                    2, 0.05, 0.05, 0.05, 0
                 );
             }
         }

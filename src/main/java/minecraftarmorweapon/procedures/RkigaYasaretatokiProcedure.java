@@ -9,10 +9,10 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Mth;
+import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.particles.ParticleTypes;
 
-import minecraftarmorweapon.network.MinecraftArmorWeaponModVariables;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 
 public class RkigaYasaretatokiProcedure {
@@ -35,25 +35,14 @@ public class RkigaYasaretatokiProcedure {
 			isHoldingBluepurge = true;
 		}
 
-		// Check if bluepurge is currently hidden
-		boolean isBluepurgeHidden = (entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null)
-			.orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).bluepurge_hidden;
+		// Get entity persistent data
+		CompoundTag entityData = entity.getPersistentData();
 
-		// If hand is empty and bluepurge is hidden, restore it
-		if (mainHandItem.isEmpty() && isBluepurgeHidden && entity instanceof Player) {
-			// Get stored bluepurge item type
-			String storedType = (entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null)
-				.orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).bluepurge_item_type;
-
-			// Create ItemStack based on stored type
-			ItemStack restoredItem = ItemStack.EMPTY;
-			if (storedType.equals("bluepurge")) {
-				restoredItem = new ItemStack(MinecraftArmorWeaponModItems.BLUEPURGE.get());
-			} else if (storedType.equals("bluepurge_tyokutou")) {
-				restoredItem = new ItemStack(MinecraftArmorWeaponModItems.BLUEPURGE_TYOKUTOU.get());
-			} else if (storedType.equals("bluepurge_utigatana")) {
-				restoredItem = new ItemStack(MinecraftArmorWeaponModItems.BLUEPURGE_UTIGATANA.get());
-			}
+		// If hand is empty and there's a covered up item, restore it
+		if (mainHandItem.isEmpty() && entityData.contains("CoverUp") && entity instanceof Player) {
+			// Restore ItemStack from CoverUp tag (preserves enchantments, CustomModelData, etc.)
+			CompoundTag savedItemTag = entityData.getCompound("CoverUp");
+			ItemStack restoredItem = ItemStack.of(savedItemTag);
 
 			if (!restoredItem.isEmpty()) {
 				// Set item to reappearing state
@@ -64,12 +53,8 @@ public class RkigaYasaretatokiProcedure {
 				// Give item to player
 				((Player) entity).setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, restoredItem);
 
-				// Clear hidden flag
-				entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-					capability.bluepurge_hidden = false;
-					capability.bluepurge_item_type = "";
-					capability.syncPlayerVariables(entity);
-				});
+				// Clear CoverUp tag
+				entityData.remove("CoverUp");
 
 				// Create reappearing particle effect
 				double particleAmount = 30;
@@ -104,23 +89,22 @@ public class RkigaYasaretatokiProcedure {
 
 			// Toggle state based on current state
 			if (state == 0) {
-				// Save which bluepurge item type for restoration later
-				String itemType = "";
-				if (mainHandItem.getItem() == MinecraftArmorWeaponModItems.BLUEPURGE.get()) {
-					itemType = "bluepurge";
-				} else if (mainHandItem.getItem() == MinecraftArmorWeaponModItems.BLUEPURGE_TYOKUTOU.get()) {
-					itemType = "bluepurge_tyokutou";
-				} else if (mainHandItem.getItem() == MinecraftArmorWeaponModItems.BLUEPURGE_UTIGATANA.get()) {
-					itemType = "bluepurge_utigatana";
+				// Check if already have a covered up item
+				if (entityData.contains("CoverUp")) {
+					// Display message: already have one item covered up
+					if (entity instanceof Player player) {
+						player.displayClientMessage(Component.translatable("message.minecraft_armor_weapon.coverup_limit"), true);
+					}
+					return; // Don't cover up another item
 				}
 
-				// Save to player variables
-				final String finalItemType = itemType;
-				entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-					capability.bluepurge_hidden = true;
-					capability.bluepurge_item_type = finalItemType;
-					capability.syncPlayerVariables(entity);
-				});
+				// Save ItemStack to entity NBT (preserves enchantments, CustomModelData, etc.)
+				CompoundTag savedItemStack = new CompoundTag();
+				mainHandItem.save(savedItemStack);
+
+				// Save to entity NBT with CoverUp tag
+				entityData.put("CoverUp", savedItemStack);
+
 				// Normal state -> Start disappearing animation
 				tag.putInt("BluepurgeState", 2);
 				tag.putInt("BluepurgeTimer", 60); // 3 seconds total

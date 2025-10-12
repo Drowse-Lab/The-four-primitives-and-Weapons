@@ -95,8 +95,6 @@ public class MinecraftArmorWeaponModVariables {
 			clone.playerQuestChallengeNumber = original.playerQuestChallengeNumber;
 			clone.questScreenPage = original.questScreenPage;
 			clone.playerLockChallenge = original.playerLockChallenge;
-			clone.bluepurge_hidden = original.bluepurge_hidden;
-			clone.bluepurge_item_type = original.bluepurge_item_type;
 			if (!event.isWasDeath()) {
 				clone.noa = original.noa;
 				clone.SpeedStaff = original.SpeedStaff;
@@ -320,8 +318,6 @@ public class MinecraftArmorWeaponModVariables {
 		public double playerQuestChallengeNumber = 0.0;
 		public double questScreenPage = 1.0;
 		public boolean playerLockChallenge = false;
-		public boolean bluepurge_hidden = false;
-		public String bluepurge_item_type = "";
 
 		public void syncPlayerVariables(Entity entity) {
 			if (entity instanceof ServerPlayer serverPlayer)
@@ -353,8 +349,6 @@ public class MinecraftArmorWeaponModVariables {
 			nbt.putDouble("playerQuestChallengeNumber", playerQuestChallengeNumber);
 			nbt.putDouble("questScreenPage", questScreenPage);
 			nbt.putBoolean("playerLockChallenge", playerLockChallenge);
-			nbt.putBoolean("bluepurge_hidden", bluepurge_hidden);
-			nbt.putString("bluepurge_item_type", bluepurge_item_type);
 			return nbt;
 		}
 
@@ -383,8 +377,6 @@ public class MinecraftArmorWeaponModVariables {
 			playerQuestChallengeNumber = nbt.getDouble("playerQuestChallengeNumber");
 			questScreenPage = nbt.getDouble("questScreenPage");
 			playerLockChallenge = nbt.getBoolean("playerLockChallenge");
-			bluepurge_hidden = nbt.getBoolean("bluepurge_hidden");
-			bluepurge_item_type = nbt.getString("bluepurge_item_type");
 		}
 	}
 
@@ -432,8 +424,6 @@ public class MinecraftArmorWeaponModVariables {
 					variables.playerQuestChallengeNumber = message.data.playerQuestChallengeNumber;
 					variables.questScreenPage = message.data.questScreenPage;
 					variables.playerLockChallenge = message.data.playerLockChallenge;
-					variables.bluepurge_hidden = message.data.bluepurge_hidden;
-					variables.bluepurge_item_type = message.data.bluepurge_item_type;
 				}
 			});
 			context.setPacketHandled(true);

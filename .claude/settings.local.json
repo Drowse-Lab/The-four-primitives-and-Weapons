@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Read(//mnt/c/Users/hrmcn/Downloads/tempest-e2561/data/sword/functions/**)"
+      "Read(//mnt/c/Users/hrmcn/Downloads/tempest-e2561/data/sword/functions/**)",
+      "Bash(\"/mnt/c/Program Files/Java/jdk-17/bin/java.exe\" -version)",
+      "Bash(PATH=\"/mnt/c/Program Files/Java/jdk-17/bin:$PATH\" ./gradlew build --console=plain)",
+      "Bash(bash gradlew build --console=plain)",
+      "Bash(\"/mnt/c/Program Files/Java/jdk-17/bin/javac.exe\" -version)",
+      "Bash(\"/mnt/c/Program Files/Java/jdk-17/bin/javac.exe\" -cp \"../../../build/tmp/compileJava/*:.\" minecraftarmorweapon/procedures/TyokutouThrustAttackProcedure.java)"
     ],
     "deny": [],
     "ask": []
