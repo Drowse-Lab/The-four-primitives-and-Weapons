@@ -11,8 +11,8 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 
 version = '1.0'
-group = 'com.hrmcngs.minecraft_armor_weapon'
-archivesBaseName = 'minecraft_armor_weapon'
+group = 'com.yourname.modid'
+archivesBaseName = 'modid'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
@@ -27,8 +27,6 @@ minecraft {
 
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             mods {
                 examplemod {
@@ -42,8 +40,6 @@ minecraft {
 
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
             mods {
                 examplemod {

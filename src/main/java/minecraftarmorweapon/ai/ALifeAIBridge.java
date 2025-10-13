@@ -32,6 +32,12 @@ public class ALifeAIBridge {
     private int comboCount = 0;
     private float dodgeSuccessRate = 0.3f;
 
+    // プレイヤー動作用のタイミング管理
+    private long lastChargeTime = 0;
+    private long lastSkillTime = 0;
+    private boolean hasChargeTime = false;
+    private boolean hasSkillTime = false;
+
     public ALifeAIBridge(Mob entity, int tier) {
         this.entity = entity;
         this.tier = tier;
@@ -133,7 +139,7 @@ public class ALifeAIBridge {
     }
 
     /**
-     * 現在の状態に応じた行動を実行
+     * 現在の状態に応じた行動を実行（プレイヤーと同じ動作を含む）
      */
     private AIAction executeCurrentState(WorldData data) {
         switch (currentState) {
@@ -144,13 +150,191 @@ public class ALifeAIBridge {
             case SEARCH:
                 return handleSearch(data);
             case COMBAT:
-                return handleCombat(data);
+                return handleCombatLikePlayer(data);  // プレイヤーのような戦闘
             case RETREAT:
                 return handleRetreat(data);
             case DODGE:
                 return handleDodge(data);
             default:
                 return new AIAction("idle");
+        }
+    }
+
+    /**
+     * プレイヤーのような戦闘行動
+     */
+    private AIAction handleCombatLikePlayer(WorldData data) {
+        if (currentTarget == null || !currentTarget.isAlive()) {
+            return new AIAction("idle");
+        }
+
+        double distance = data.nearestEnemyDistance;
+        long currentTime = data.currentTime;
+
+        // 回避判定（プレイヤーの右クリック相当）
+        if (shouldDodge(data, currentTime)) {
+            return executeDodge(data);
+        }
+
+        // チャージ攻撃判定（プレイヤーの左クリック長押し相当）
+        if (shouldChargeAttack(data, currentTime, distance)) {
+            return executeChargeAttack(data);
+        }
+
+        // 武器スキル使用判定（プレイヤーの右クリック相当）
+        if (shouldUseWeaponSkill(data, currentTime, distance)) {
+            return executeWeaponSkill(data);
+        }
+
+        // 攻撃範囲外なら接近
+        if (distance > 3.0) {
+            return handleCombat(data);  // 既存の接近ロジック
+        }
+
+        // 通常攻撃
+        return handleCombat(data);  // 既存の攻撃ロジック
+    }
+
+    /**
+     * 回避すべきかを判定
+     */
+    private boolean shouldDodge(WorldData data, long currentTime) {
+        // クールダウン中は回避できない（2秒）
+        if (currentTime - lastDodgeTime < 2000) {
+            return false;
+        }
+
+        // ティアに応じた回避確率
+        float dodgeChance = getTierDodgeRate(tier);
+
+        // 敵が近すぎる場合は回避を検討
+        if (data.nearestEnemyDistance < 2.0) {
+            return Math.random() < dodgeChance * 0.3;
+        }
+
+        return false;
+    }
+
+    /**
+     * チャージ攻撃すべきかを判定
+     */
+    private boolean shouldChargeAttack(WorldData data, long currentTime, double distance) {
+        // チャージ攻撃のクールダウン（2秒）
+        if (!hasChargeTime) {
+            lastChargeTime = 0;
+            hasChargeTime = true;
+        }
+
+        if (currentTime - lastChargeTime < 2000) {
+            return false;
+        }
+
+        // 適切な距離（3～7ブロック）で高確率でチャージ
+        if (3.0 <= distance && distance <= 7.0) {
+            float tacticalAwareness = getTierTacticalAwareness(tier);
+            return Math.random() < tacticalAwareness * 0.6;
+        }
+
+        return false;
+    }
+
+    /**
+     * 武器スキルを使用すべきかを判定
+     */
+    private boolean shouldUseWeaponSkill(WorldData data, long currentTime, double distance) {
+        // スキルのクールダウン（3秒）
+        if (!hasSkillTime) {
+            lastSkillTime = 0;
+            hasSkillTime = true;
+        }
+
+        if (currentTime - lastSkillTime < 3000) {
+            return false;
+        }
+
+        // 敵が近い場合に防御スキルを使用
+        if (distance < 5.0) {
+            float tacticalAwareness = getTierTacticalAwareness(tier);
+            return Math.random() < tacticalAwareness * 0.4;
+        }
+
+        return false;
+    }
+
+    /**
+     * 回避を実行
+     */
+    private AIAction executeDodge(WorldData data) {
+        lastDodgeTime = data.currentTime;
+
+        AIAction action = new AIAction("dodge");
+
+        // 敵から離れる方向に回避
+        if (data.nearestEnemyPosition != null) {
+            Vec3 entityPos = entity.position();
+            Vec3 enemyPos = data.nearestEnemyPosition;
+            Vec3 awayDirection = entityPos.subtract(enemyPos).normalize();
+
+            action.direction = awayDirection;
+        } else {
+            // ランダムな横方向に回避
+            double angle = Math.random() * Math.PI * 2;
+            action.direction = new Vec3(Math.cos(angle), 0, Math.sin(angle));
+        }
+
+        action.speed = 0.8f;
+        action.verticalBoost = 0.15f;
+        action.distance = 0.8f;
+
+        return action;
+    }
+
+    /**
+     * チャージ攻撃を実行
+     */
+    private AIAction executeChargeAttack(WorldData data) {
+        lastChargeTime = data.currentTime;
+
+        AIAction action = new AIAction("charge_attack");
+
+        // チャージ率を決定（ティアが高いほど長くチャージ）
+        float tacticalAwareness = getTierTacticalAwareness(tier);
+        float chargePercent = 0.5f + (tacticalAwareness * 0.5f);
+        chargePercent = Math.min(chargePercent, 1.0f);
+
+        action.chargePercent = chargePercent;
+        action.damageMultiplier = 1.0f + chargePercent * 2.0f;
+        action.target = data.nearestEnemyPosition;
+
+        return action;
+    }
+
+    /**
+     * 武器スキルを実行
+     */
+    private AIAction executeWeaponSkill(WorldData data) {
+        lastSkillTime = data.currentTime;
+
+        AIAction action = new AIAction("use_weapon_skill");
+        action.skillType = "guard";  // ガードスキル
+        action.duration = 5.0f;      // 5秒間
+
+        return action;
+    }
+
+    /**
+     * ティアに応じた戦術認識度を取得
+     */
+    private float getTierTacticalAwareness(int tier) {
+        switch (tier) {
+            case 1: return 0.3f;   // 一般兵
+            case 2: return 0.5f;   // エリート兵
+            case 3: return 0.7f;   // 特異点
+            case 4: return 0.8f;   // 英雄級
+            case 5: return 0.9f;   // 神話級
+            case 6: return 0.95f;  // 天使級
+            case 7: return 1.0f;   // 神聖級
+            default: return 0.3f;
         }
     }
 
@@ -286,6 +470,15 @@ public class ALifeAIBridge {
         public Vec3 target;
         public float speed;
         public int combo;
+
+        // プレイヤー動作用の追加フィールド
+        public Vec3 direction;          // 回避方向
+        public float verticalBoost;     // 上方向の加速
+        public float distance;          // 回避距離
+        public float chargePercent;     // チャージ率
+        public float damageMultiplier;  // ダメージ倍率
+        public String skillType;        // スキルタイプ
+        public float duration;          // 持続時間
 
         public AIAction(String action) {
             this.action = action;

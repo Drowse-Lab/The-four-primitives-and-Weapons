@@ -200,8 +200,39 @@ class BaseALifeAI:
         return {"action": "search", "data": {}}
 
     def _handle_combat(self, world_data: Dict) -> Dict:
-        """戦闘状態の処理（サブクラスで実装）"""
-        raise NotImplementedError("Combat behavior must be implemented in subclass")
+        """
+        戦闘状態の処理
+
+        プレイヤーのような戦闘行動を実行:
+        - 回避判定（右クリック相当）
+        - チャージ攻撃判定（左クリック長押し相当）
+        - 通常攻撃
+        """
+        enemy_distance = world_data.get("nearest_enemy_distance", float('inf'))
+        current_time = world_data.get("current_time", 0)
+
+        # 回避判定（危険な攻撃が来ている場合）
+        if self.should_dodge(world_data):
+            return self._execute_dodge(world_data)
+
+        # チャージ攻撃判定（適切な距離とタイミングの場合）
+        if self.should_charge_attack(world_data):
+            return self._execute_charge_attack(world_data)
+
+        # 武器スキル使用判定（右クリック相当）
+        if self.should_use_weapon_skill(world_data):
+            return self._execute_weapon_skill(world_data)
+
+        # 攻撃範囲外なら接近
+        if enemy_distance > 3.0:
+            return self._move_towards_target(world_data)
+
+        # 攻撃範囲内なら通常攻撃
+        if enemy_distance <= 3.0 and current_time - self.last_attack_time >= 1.5:
+            self.last_attack_time = current_time
+            return self._execute_normal_attack(world_data)
+
+        return {"action": "idle", "data": {}}
 
     def _handle_retreat(self, world_data: Dict) -> Dict:
         """撤退状態の処理"""
@@ -222,6 +253,105 @@ class BaseALifeAI:
             "data": {
                 "direction": dodge_direction,
                 "speed": 0.8
+            }
+        }
+
+    def _execute_dodge(self, world_data: Dict) -> Dict:
+        """
+        回避を実行（プレイヤーの右クリック動作を模倣）
+
+        プレイヤーの回避と同じ:
+        - 移動方向に基づいて回避
+        - 上方向に少し浮く
+        - クールダウンを設定
+        """
+        current_time = world_data.get("current_time", 0)
+        self.last_dodge_time = current_time
+        self.successful_dodges += 1
+
+        # 回避方向を計算
+        dodge_direction = self._calculate_dodge_direction(world_data)
+
+        return {
+            "action": "dodge",
+            "data": {
+                "direction": dodge_direction,
+                "speed": 0.8,  # プレイヤーと同じ速度
+                "vertical_boost": 0.15,  # 上方向の加速（プレイヤーと同じ）
+                "distance": 0.8,  # 回避距離
+                "fall_damage_immunity": 1.5  # 1.5秒間落下ダメージ無効
+            }
+        }
+
+    def _execute_charge_attack(self, world_data: Dict) -> Dict:
+        """
+        チャージ攻撃を実行（プレイヤーの左クリック長押しを模倣）
+
+        チャージ時間は戦術認識度に応じて決定:
+        - 低ティア: 短いチャージ（50%）
+        - 高ティア: 最大チャージ（100%）
+        """
+        current_time = world_data.get("current_time", 0)
+        if not hasattr(self, 'last_charge_time'):
+            self.last_charge_time = 0
+        self.last_charge_time = current_time
+
+        # チャージ率を決定（ティアが高いほど長くチャージ）
+        charge_percent = 0.5 + (self.tactical_awareness * 0.5)
+        charge_percent = min(charge_percent, 1.0)
+
+        return {
+            "action": "charge_attack",
+            "data": {
+                "charge_percent": charge_percent,
+                "damage_multiplier": 1.0 + charge_percent * 2.0,  # チャージ率に応じた倍率
+                "cooldown": 1.0 + charge_percent  # チャージ率に応じたクールダウン
+            }
+        }
+
+    def _execute_weapon_skill(self, world_data: Dict) -> Dict:
+        """
+        武器スキルを使用（プレイヤーの右クリックを模倣）
+
+        ReplicaSwordOfLightなどの固有スキル
+        """
+        current_time = world_data.get("current_time", 0)
+        if not hasattr(self, 'last_skill_time'):
+            self.last_skill_time = 0
+        self.last_skill_time = current_time
+
+        return {
+            "action": "use_weapon_skill",
+            "data": {
+                "skill_type": "guard",  # ガードスキル（ReplicaSwordOfLight）
+                "duration": 5.0  # 5秒間
+            }
+        }
+
+    def _execute_normal_attack(self, world_data: Dict) -> Dict:
+        """
+        通常攻撃を実行（プレイヤーの左クリックを模倣）
+        """
+        return {
+            "action": "attack",
+            "data": {
+                "type": "normal",
+                "weapon": self.current_weapon.value,
+                "damage_multiplier": 1.0
+            }
+        }
+
+    def _move_towards_target(self, world_data: Dict) -> Dict:
+        """ターゲットに向かって移動"""
+        enemy_pos = world_data.get("nearest_enemy_position", None)
+        if enemy_pos is None:
+            return {"action": "idle", "data": {}}
+
+        return {
+            "action": "move_to_target",
+            "data": {
+                "target": enemy_pos,
+                "speed": 0.3
             }
         }
 
@@ -287,13 +417,86 @@ class BaseALifeAI:
                 self.health_threshold += 0.05 * self.learning_rate
 
     def should_dodge(self, world_data: Dict) -> bool:
-        """回避すべきかを判定"""
+        """
+        回避すべきかを判定（プレイヤーの右クリック相当）
+
+        判定基準:
+        - 敵の攻撃が来ている
+        - 回避のクールダウンが終わっている
+        - ティアに応じた成功率
+        """
+        current_time = world_data.get("current_time", 0)
+
+        # クールダウン中は回避できない（プレイヤーと同じく2秒）
+        dodge_cooldown = 2.0
+        if current_time - self.last_dodge_time < dodge_cooldown:
+            return False
+
         # ティアが高いほど、より確実に回避する
         dodge_chance = self.tactical_awareness
 
         # 敵の攻撃を検知
         if world_data.get("incoming_attack", False):
             return random.random() < dodge_chance
+
+        # 敵が近すぎる場合も回避を検討（予防的回避）
+        enemy_distance = world_data.get("nearest_enemy_distance", float('inf'))
+        if enemy_distance < 2.0 and random.random() < dodge_chance * 0.3:
+            return True
+
+        return False
+
+    def should_charge_attack(self, world_data: Dict) -> bool:
+        """
+        チャージ攻撃すべきかを判定（プレイヤーの左クリック長押し相当）
+
+        判定基準:
+        - 敵が適切な距離にいる
+        - チャージ攻撃のクールダウンが終わっている
+        - 戦術認識度が高い
+        """
+        current_time = world_data.get("current_time", 0)
+        enemy_distance = world_data.get("nearest_enemy_distance", float('inf'))
+
+        # チャージ攻撃のクールダウン（プレイヤーと同じく1～2秒）
+        charge_cooldown = 2.0
+        if not hasattr(self, 'last_charge_time'):
+            self.last_charge_time = 0
+
+        if current_time - self.last_charge_time < charge_cooldown:
+            return False
+
+        # 適切な距離（3～7ブロック）で高確率でチャージ
+        if 3.0 <= enemy_distance <= 7.0:
+            charge_chance = self.tactical_awareness * 0.6
+            return random.random() < charge_chance
+
+        # 近すぎる場合は低確率
+        if enemy_distance < 3.0 and random.random() < self.tactical_awareness * 0.2:
+            return True
+
+        return False
+
+    def should_use_weapon_skill(self, world_data: Dict) -> bool:
+        """
+        武器スキルを使用すべきかを判定（プレイヤーの右クリック相当）
+
+        武器固有のスキル（ReplicaSwordOfLightのガードなど）
+        """
+        current_time = world_data.get("current_time", 0)
+
+        # スキルのクールダウン
+        skill_cooldown = 3.0
+        if not hasattr(self, 'last_skill_time'):
+            self.last_skill_time = 0
+
+        if current_time - self.last_skill_time < skill_cooldown:
+            return False
+
+        # 敵が近い場合に防御スキルを使用
+        enemy_distance = world_data.get("nearest_enemy_distance", float('inf'))
+        if enemy_distance < 5.0 and random.random() < self.tactical_awareness * 0.4:
+            return True
 
         return False
 
