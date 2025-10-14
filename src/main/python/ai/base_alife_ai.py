@@ -25,7 +25,7 @@ class AIState(Enum):
     DODGE = "dodge"            # 回避
     HEAL = "heal"              # 回復
     REPOSITION = "reposition"  # 位置調整
-
+    # = ""                     # 警戒
 
 class WeaponType(Enum):
     """武器タイプ"""
