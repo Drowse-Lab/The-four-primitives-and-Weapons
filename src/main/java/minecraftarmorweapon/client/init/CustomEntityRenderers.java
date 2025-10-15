@@ -6,8 +6,10 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
+import minecraftarmorweapon.client.renderer.CommonSoldierRenderer;
 import minecraftarmorweapon.client.renderer.DarkProjectileRenderer;
 import minecraftarmorweapon.client.renderer.TornadoRenderer;
+import minecraftarmorweapon.init.CustomEntityInit;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModCustomEntities;
 
 /**
@@ -22,5 +24,6 @@ public class CustomEntityRenderers {
         // Register entity renderers
         event.registerEntityRenderer(MinecraftArmorWeaponModCustomEntities.TORNADO.get(), TornadoRenderer::new);
         event.registerEntityRenderer(MinecraftArmorWeaponModCustomEntities.DARK_PROJECTILE.get(), DarkProjectileRenderer::new);
+        event.registerEntityRenderer(CustomEntityInit.COMMON_SOLDIER.get(), CommonSoldierRenderer::new);
     }
 }

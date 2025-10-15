@@ -40,6 +40,7 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModFeatures;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEntities;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModCustomEntities;
+import minecraftarmorweapon.init.CustomEntityInit;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModBlocks;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModBlockEntities;
 
@@ -66,6 +67,8 @@ public class MinecraftArmorWeaponMod {
 		MinecraftArmorWeaponModItems.REGISTRY.register(bus);
 		MinecraftArmorWeaponModEntities.REGISTRY.register(bus);
 		MinecraftArmorWeaponModCustomEntities.REGISTRY.register(bus);
+		CustomEntityInit.CUSTOM_ENTITIES.register(bus);
+		CustomEntityInit.CUSTOM_ITEMS.register(bus);
 		MinecraftArmorWeaponModBlockEntities.REGISTRY.register(bus);
 		MinecraftArmorWeaponModFeatures.REGISTRY.register(bus);
 
