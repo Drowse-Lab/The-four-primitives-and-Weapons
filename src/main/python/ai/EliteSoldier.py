@@ -33,8 +33,8 @@ class CommonSoldierAI(BaseALifeAI):
         # 一般兵固有のパラメータ
         self.attack_range = 3.0        # 攻撃範囲
         self.attack_cooldown = 1.5     # 攻撃クールダウン（秒）
-        self.dodge_success_rate = 0.3  # 回避成功率30%
-        self.combo_max = 2             # 最大コンボ数
+        self.dodge_success_rate = 0.5  # 回避成功率50%
+        self.combo_max = 4             # 最大コンボ数
         self.current_combo = 0
 
         # 行動パターン
@@ -169,13 +169,13 @@ class CommonSoldierAI(BaseALifeAI):
     def get_skill_level(self) -> Dict:
         """スキルレベルを取得"""
         return {
-            "melee": 0.4,      # 近接戦闘: 40%
-            "ranged": 0.3,     # 遠距離戦闘: 30%
+            "melee": 0.3,      # 近接戦闘: 30%
+            "ranged": 0.2,     # 遠距離戦闘: 20%
             "magic": 0.0,      # 魔法: 不可
             "defense": 0.4,    # 防御: 40%
-            "dodge": 0.4,      # 回避: 40%
-            "tactics": 0.3,    # 戦術: 30%
-            "learning": 0.1    # 学習: 10%
+            "dodge": 0.5,      # 回避: 50%
+            "tactics": 0.5,    # 戦術: 50%
+            "learning": 0.2    # 学習: 20%
         }
 
 
