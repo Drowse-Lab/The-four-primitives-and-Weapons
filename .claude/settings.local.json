@@ -6,7 +6,11 @@
       "Bash(PATH=\"/mnt/c/Program Files/Java/jdk-17/bin:$PATH\" ./gradlew build --console=plain)",
       "Bash(bash gradlew build --console=plain)",
       "Bash(\"/mnt/c/Program Files/Java/jdk-17/bin/javac.exe\" -version)",
-      "Bash(\"/mnt/c/Program Files/Java/jdk-17/bin/javac.exe\" -cp \"../../../build/tmp/compileJava/*:.\" minecraftarmorweapon/procedures/TyokutouThrustAttackProcedure.java)"
+      "Bash(\"/mnt/c/Program Files/Java/jdk-17/bin/javac.exe\" -cp \"../../../build/tmp/compileJava/*:.\" minecraftarmorweapon/procedures/TyokutouThrustAttackProcedure.java)",
+      "Bash(export JAVA_HOME=\"/mnt/c/Program Files/Java/jdk-17\")",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(\"/mnt/c/Program Files/Java/jdk-17/bin/javac.exe\" -cp \"../../../build/tmp/compileJava/*:.\" minecraftarmorweapon/procedures/GuardNowProcedure.java)",
+      "Bash(\"/mnt/c/Program Files/Java/jdk-17/bin/javac.exe\" -encoding UTF-8 -cp \"../../../build/tmp/compileJava/*:.\" minecraftarmorweapon/procedures/GuardNowProcedure.java)"
     ],
     "deny": [],
     "ask": []

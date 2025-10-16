@@ -106,6 +106,15 @@ public class PlayerLikeAIGoal extends Goal {
             case "strafe":
                 strafe(action);
                 break;
+            case "heal":
+                executeHeal(action);
+                break;
+            case "retreat":
+                executeRetreat(action);
+                break;
+            case "guard":
+                executeGuard(action);
+                break;
             case "idle":
             default:
                 // 何もしない
@@ -383,6 +392,78 @@ public class PlayerLikeAIGoal extends Goal {
 
             entity.getNavigation().moveTo(destination.x, destination.y, destination.z, action.speed);
             entity.getLookControl().setLookAt(targetPos.x, targetPos.y, targetPos.z);
+        }
+    }
+
+    /**
+     * 回復を実行
+     */
+    private void executeHeal(ALifeAIBridge.AIAction action) {
+        float healAmount = action.damageMultiplier; // heal_amountを再利用
+        entity.heal(healAmount);
+
+        // 回復エフェクト
+        Level world = entity.level;
+        if (!world.isClientSide) {
+            ServerLevel serverWorld = (ServerLevel) world;
+            serverWorld.sendParticles(
+                ParticleTypes.HEART,
+                entity.getX(), entity.getY() + 1.5, entity.getZ(),
+                5, 0.3, 0.3, 0.3, 0.1
+            );
+        }
+
+        // 回復サウンド
+        world.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+            SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.HOSTILE, 0.5f, 1.5f);
+    }
+
+    /**
+     * 撤退を実行
+     */
+    private void executeRetreat(ALifeAIBridge.AIAction action) {
+        if (action.direction == null) {
+            return;
+        }
+
+        // 撤退方向に移動（通常より速く）
+        Vec3 retreatVec = action.direction.scale(action.speed);
+        entity.setDeltaMovement(retreatVec.x, entity.getDeltaMovement().y, retreatVec.z);
+
+        // 煙エフェクト
+        Level world = entity.level;
+        if (!world.isClientSide && random.nextInt(5) == 0) {
+            ServerLevel serverWorld = (ServerLevel) world;
+            serverWorld.sendParticles(
+                ParticleTypes.POOF,
+                entity.getX(), entity.getY(), entity.getZ(),
+                1, 0.1, 0.1, 0.1, 0.02
+            );
+        }
+    }
+
+    /**
+     * 防御姿勢を実行
+     */
+    private void executeGuard(ALifeAIBridge.AIAction action) {
+        // ガード効果を付与
+        if (MinecraftArmorWeaponModMobEffects.GUARD.get() != null) {
+            entity.addEffect(new MobEffectInstance(
+                MinecraftArmorWeaponModMobEffects.GUARD.get(),
+                60, // 3秒
+                0
+            ));
+        }
+
+        // ガードエフェクト
+        Level world = entity.level;
+        if (!world.isClientSide && actionTicks % 10 == 0) {
+            ServerLevel serverWorld = (ServerLevel) world;
+            serverWorld.sendParticles(
+                ParticleTypes.ENCHANTED_HIT,
+                entity.getX(), entity.getY() + 1, entity.getZ(),
+                3, 0.3, 0.3, 0.3, 0
+            );
         }
     }
 

@@ -10,6 +10,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.effect.MobEffectInstance;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModMobEffects;
+import minecraftarmorweapon.entity.CommonSoldierEntity;
 
 import javax.annotation.Nullable;
 
@@ -29,6 +30,12 @@ public class GuardNowProcedure {
 	private static void execute(@Nullable Event event, Entity entity, Entity sourceentity) {
 		if (entity == null || sourceentity == null)
 			return;
+
+		// Skip A-Life AI entities (they don't have the required attributes)
+		if (entity instanceof CommonSoldierEntity) {
+			return;
+		}
+
 		if (sourceentity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.GUARD.get()) : false) {
 			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.ATTACK_IN_GUARD.get(), 60, 1, false, false));
