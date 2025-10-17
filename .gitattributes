@@ -1,4 +1,4 @@
 *.md linguist-detectable=true
 *.yaml linguist-detectable=true
 *.yml linguist-detectable=true
-*.py linguist-detectable=true
+*.py linguist-detectable=
