@@ -1,5 +1,7 @@
 ## Based on GitHub's Eclipse .gitignore
 
+*.md linguist-detectable=true
+
 run/
 !run/**/*.nbt
 !run/**/*.mcfunction
