@@ -1,3 +1,4 @@
+# [![Typing SVG](https://readme-typing-svg.demolab.com?font=Jacquard+12&size=60&pause=1000&color=513C90&background=C1FCFF00&center=true&vCenter=true&multiline=true&random=true&width=500&height=115&lines=The-four-primitives-and-Weapons)](https://git.io/typing-svg)  
 ## リポジトリ管理者
 この作品は、今のところは、  
 数人の学生によって作られています  
