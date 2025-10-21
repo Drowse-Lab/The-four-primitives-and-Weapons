@@ -5,3 +5,4 @@
 *.jar linguist-detectable=true
 *.json linguist-detectable=true
 *.json linguist-language=java
+*.yaml linguist-language=yml
