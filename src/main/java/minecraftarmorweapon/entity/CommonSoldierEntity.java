@@ -287,18 +287,24 @@ public class CommonSoldierEntity extends PathfinderMob {
 
     @Override
     public boolean canAttack(net.minecraft.world.entity.LivingEntity target) {
-        // プレイヤーの場合：戦闘モードに入っている場合のみ攻撃可能
+        // プレイヤーの場合
         if (target instanceof Player player) {
+            // クリエイティブ/スペクテーターモードのプレイヤーは攻撃しない
+            if (player.isCreative() || player.isSpectator()) {
+                return false;
+            }
+
+            // サバイバル/アドベンチャーモードで戦闘モードに入っている場合のみ攻撃可能
             UUID playerUUID = player.getUUID();
             return playerCombatMode.getOrDefault(playerUUID, false);
         }
 
-        // 敵対Mobは攻撃可能
+        // 敵対Mobは常に攻撃可能
         if (target instanceof Monster && !(target instanceof IronGolem)) {
-            return super.canAttack(target);
+            return true;
         }
 
-        return false;
+        return super.canAttack(target);
     }
 
     public int getAITier() {

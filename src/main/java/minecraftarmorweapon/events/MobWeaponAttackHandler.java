@@ -33,25 +33,30 @@ public class MobWeaponAttackHandler {
 
     @SubscribeEvent
     public static void onLivingAttack(LivingAttackEvent event) {
-        // 攻撃を受けた側のエンティティ
-        LivingEntity target = event.getEntity();
+        try {
+            // 攻撃を受けた側のエンティティ
+            LivingEntity target = event.getEntity();
 
-        // ダメージソースを取得
-        DamageSource source = event.getSource();
+            // ダメージソースを取得
+            DamageSource source = event.getSource();
 
-        // 攻撃者を取得
-        if (source.getEntity() instanceof LivingEntity attacker) {
-            // プレイヤーの場合はChargedAttackHandlerで処理されるのでスキップ
-            if (attacker instanceof Player) {
-                return;
+            // 攻撃者を取得
+            if (source.getEntity() instanceof LivingEntity attacker) {
+                // プレイヤーの場合はChargedAttackHandlerで処理されるのでスキップ
+                if (attacker instanceof Player) {
+                    return;
+                }
+
+                // Mobが武器を持っているかチェック
+                ItemStack weapon = attacker.getMainHandItem();
+                if (isWeapon(weapon)) {
+                    // 武器攻撃エフェクトを追加
+                    enhanceMobWeaponAttack(attacker, target, weapon, event);
+                }
             }
-
-            // Mobが武器を持っているかチェック
-            ItemStack weapon = attacker.getMainHandItem();
-            if (isWeapon(weapon)) {
-                // 武器攻撃エフェクトを追加
-                enhanceMobWeaponAttack(attacker, target, weapon, event);
-            }
+        } catch (Throwable e) {
+            System.err.println("[MobWeaponAttack] Error in onLivingAttack: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -88,48 +93,56 @@ public class MobWeaponAttackHandler {
      */
     private static void performMobThrustAttack(LivingEntity attacker, LivingEntity target,
                                                Level world, Vec3 lookVec, Vec3 attackerPos) {
-        ServerLevel serverWorld = (ServerLevel) world;
+        try {
+            ServerLevel serverWorld = (ServerLevel) world;
 
-        // 小さいDustパーティクルエフェクト（直刀用）
-        DustParticleOptions dustOptions = new DustParticleOptions(
-            new Vector3f(0.9f, 0.95f, 1.0f), 0.4f
-        );
+            // 攻撃方向をターゲット位置から計算
+            Vec3 attackDirection = target.position().subtract(attackerPos).normalize();
 
-        for (int i = 0; i < 8; i++) {
-            double d = i * 0.4;
-            serverWorld.sendParticles(
-                dustOptions,
-                attackerPos.x + lookVec.x * d,
-                attackerPos.y + attacker.getBbHeight() * 0.6,
-                attackerPos.z + lookVec.z * d,
-                2, 0.05, 0.05, 0.05, 0
+            // 小さいDustパーティクルエフェクト（直刀用）
+            DustParticleOptions dustOptions = new DustParticleOptions(
+                new Vector3f(0.9f, 0.95f, 1.0f), 0.4f
             );
-        }
 
-        // 突き音
-        world.playSound(null, attackerPos.x, attackerPos.y, attackerPos.z,
-            SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 0.8f, 1.5f);
-
-        // 前方の追加ターゲットにダメージ（貫通効果）
-        double range = 4.0;
-        AABB searchArea = new AABB(attackerPos, attackerPos.add(lookVec.scale(range))).inflate(1.0);
-
-        List<LivingEntity> additionalTargets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> entity != attacker && entity != target && entity.isAlive() &&
-                      !entity.isAlliedTo(attacker));
-
-        for (LivingEntity additionalTarget : additionalTargets) {
-            Vec3 toEntity = additionalTarget.position().subtract(attackerPos);
-            double dot = lookVec.dot(toEntity.normalize());
-
-            if (dot > 0.8 && toEntity.length() <= range) {
-                // 追加ダメージ（50%）
-                float damage = 3.0f;
-                additionalTarget.hurt(DamageSource.mobAttack(attacker), damage);
-
-                // ノックバック
-                additionalTarget.setDeltaMovement(lookVec.scale(0.5).add(0, 0.1, 0));
+            for (int i = 0; i < 8; i++) {
+                double d = i * 0.4;
+                serverWorld.sendParticles(
+                    dustOptions,
+                    attackerPos.x + attackDirection.x * d,
+                    attackerPos.y + attacker.getBbHeight() * 0.6,
+                    attackerPos.z + attackDirection.z * d,
+                    2, 0.05, 0.05, 0.05, 0
+                );
             }
+
+            // 突き音
+            world.playSound(null, attackerPos.x, attackerPos.y, attackerPos.z,
+                SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 0.8f, 1.5f);
+
+            // 前方の追加ターゲットにダメージ（貫通効果）
+            double range = 4.0;
+            AABB searchArea = new AABB(attackerPos, attackerPos.add(attackDirection.scale(range))).inflate(1.0);
+
+            List<LivingEntity> additionalTargets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
+                entity -> entity != attacker && entity != target && entity.isAlive() &&
+                          !entity.isAlliedTo(attacker));
+
+            for (LivingEntity additionalTarget : additionalTargets) {
+                Vec3 toEntity = additionalTarget.position().subtract(attackerPos);
+                double dot = attackDirection.dot(toEntity.normalize());
+
+                if (dot > 0.8 && toEntity.length() <= range) {
+                    // 追加ダメージ（50%）
+                    float damage = 3.0f;
+                    additionalTarget.hurt(DamageSource.mobAttack(attacker), damage);
+
+                    // ノックバック
+                    additionalTarget.setDeltaMovement(attackDirection.scale(0.5).add(0, 0.1, 0));
+                }
+            }
+        } catch (Throwable e) {
+            System.err.println("[MobWeaponAttack] Error in performMobThrustAttack: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -138,57 +151,65 @@ public class MobWeaponAttackHandler {
      */
     private static void performMobSlashAttack(LivingEntity attacker, LivingEntity target,
                                               Level world, Vec3 lookVec, Vec3 attackerPos) {
-        ServerLevel serverWorld = (ServerLevel) world;
+        try {
+            ServerLevel serverWorld = (ServerLevel) world;
 
-        // スラッシュエフェクト
-        for (int i = 0; i < 5; i++) {
-            double d = i * 0.5 + 1;
-            serverWorld.sendParticles(
-                ParticleTypes.SWEEP_ATTACK,
-                attackerPos.x + lookVec.x * d,
-                attackerPos.y + attacker.getBbHeight() * 0.6,
-                attackerPos.z + lookVec.z * d,
-                1, 0.2, 0.2, 0.2, 0
-            );
-        }
+            // 攻撃方向をターゲット位置から計算
+            Vec3 attackDirection = target.position().subtract(attackerPos).normalize();
 
-        // スラッシュ音
-        world.playSound(null, attackerPos.x, attackerPos.y, attackerPos.z,
-            SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0f, 1.0f);
-
-        // 横に広い範囲攻撃
-        double range = 3.5;
-        double horizontalWidth = 2.0;
-        Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
-
-        Vec3 minPoint = attackerPos.add(lookVec.scale(-0.5))
-            .add(rightVec.scale(-horizontalWidth))
-            .add(0, -0.5, 0);
-        Vec3 maxPoint = attackerPos.add(lookVec.scale(range))
-            .add(rightVec.scale(horizontalWidth))
-            .add(0, 2.0, 0);
-
-        AABB searchArea = new AABB(minPoint, maxPoint);
-
-        List<LivingEntity> additionalTargets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> entity != attacker && entity != target && entity.isAlive() &&
-                      !entity.isAlliedTo(attacker));
-
-        for (LivingEntity additionalTarget : additionalTargets) {
-            Vec3 toEntity = additionalTarget.position().subtract(attackerPos).normalize();
-            double dot = lookVec.dot(toEntity);
-
-            if (dot > -0.2 && additionalTarget.distanceTo(attacker) <= range) {
-                // 追加ダメージ
-                float damage = 4.0f;
-                additionalTarget.hurt(DamageSource.mobAttack(attacker), damage);
-
-                // ノックバック
-                Vec3 knockback = toEntity.scale(0.4);
-                additionalTarget.setDeltaMovement(
-                    additionalTarget.getDeltaMovement().add(knockback.x, 0.1, knockback.z)
+            // スラッシュエフェクト
+            for (int i = 0; i < 5; i++) {
+                double d = i * 0.5 + 1;
+                serverWorld.sendParticles(
+                    ParticleTypes.SWEEP_ATTACK,
+                    attackerPos.x + attackDirection.x * d,
+                    attackerPos.y + attacker.getBbHeight() * 0.6,
+                    attackerPos.z + attackDirection.z * d,
+                    1, 0.2, 0.2, 0.2, 0
                 );
             }
+
+            // スラッシュ音
+            world.playSound(null, attackerPos.x, attackerPos.y, attackerPos.z,
+                SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0f, 1.0f);
+
+            // 横に広い範囲攻撃
+            double range = 3.5;
+            double horizontalWidth = 2.0;
+            Vec3 rightVec = new Vec3(-attackDirection.z, 0, attackDirection.x).normalize();
+
+            Vec3 minPoint = attackerPos.add(attackDirection.scale(-0.5))
+                .add(rightVec.scale(-horizontalWidth))
+                .add(0, -0.5, 0);
+            Vec3 maxPoint = attackerPos.add(attackDirection.scale(range))
+                .add(rightVec.scale(horizontalWidth))
+                .add(0, 2.0, 0);
+
+            AABB searchArea = new AABB(minPoint, maxPoint);
+
+            List<LivingEntity> additionalTargets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
+                entity -> entity != attacker && entity != target && entity.isAlive() &&
+                          !entity.isAlliedTo(attacker));
+
+            for (LivingEntity additionalTarget : additionalTargets) {
+                Vec3 toEntity = additionalTarget.position().subtract(attackerPos).normalize();
+                double dot = attackDirection.dot(toEntity);
+
+                if (dot > -0.2 && additionalTarget.distanceTo(attacker) <= range) {
+                    // 追加ダメージ
+                    float damage = 4.0f;
+                    additionalTarget.hurt(DamageSource.mobAttack(attacker), damage);
+
+                    // ノックバック
+                    Vec3 knockback = toEntity.scale(0.4);
+                    additionalTarget.setDeltaMovement(
+                        additionalTarget.getDeltaMovement().add(knockback.x, 0.1, knockback.z)
+                    );
+                }
+            }
+        } catch (Throwable e) {
+            System.err.println("[MobWeaponAttack] Error in performMobSlashAttack: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -197,49 +218,57 @@ public class MobWeaponAttackHandler {
      */
     private static void performMobDefaultAttack(LivingEntity attacker, LivingEntity target,
                                                 Level world, Vec3 lookVec, Vec3 attackerPos) {
-        ServerLevel serverWorld = (ServerLevel) world;
+        try {
+            ServerLevel serverWorld = (ServerLevel) world;
 
-        // 基本エフェクト
-        for (int i = 0; i < 3; i++) {
-            serverWorld.sendParticles(
-                ParticleTypes.CRIT,
-                attackerPos.x + lookVec.x * (i + 1),
-                attackerPos.y + attacker.getBbHeight() * 0.6,
-                attackerPos.z + lookVec.z * (i + 1),
-                2, 0.1, 0.1, 0.1, 0
-            );
-        }
+            // 攻撃方向をターゲット位置から計算
+            Vec3 attackDirection = target.position().subtract(attackerPos).normalize();
 
-        // 攻撃音
-        world.playSound(null, attackerPos.x, attackerPos.y, attackerPos.z,
-            SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.HOSTILE, 0.8f, 1.0f);
-
-        // 前方範囲の追加ダメージ
-        double range = 3.0;
-        AABB searchArea = new AABB(
-            attackerPos.x - range, attackerPos.y - 1, attackerPos.z - range,
-            attackerPos.x + range, attackerPos.y + 2, attackerPos.z + range
-        );
-
-        List<LivingEntity> additionalTargets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> entity != attacker && entity != target && entity.isAlive() &&
-                      !entity.isAlliedTo(attacker));
-
-        for (LivingEntity additionalTarget : additionalTargets) {
-            Vec3 toEntity = additionalTarget.position().subtract(attackerPos).normalize();
-            double dot = lookVec.dot(toEntity);
-
-            if (dot > 0.5 && additionalTarget.distanceTo(attacker) <= range) {
-                // 追加ダメージ
-                float damage = 3.0f;
-                additionalTarget.hurt(DamageSource.mobAttack(attacker), damage);
-
-                // ノックバック
-                Vec3 knockback = toEntity.scale(0.3);
-                additionalTarget.setDeltaMovement(
-                    additionalTarget.getDeltaMovement().add(knockback.x, 0.1, knockback.z)
+            // 基本エフェクト
+            for (int i = 0; i < 3; i++) {
+                serverWorld.sendParticles(
+                    ParticleTypes.CRIT,
+                    attackerPos.x + attackDirection.x * (i + 1),
+                    attackerPos.y + attacker.getBbHeight() * 0.6,
+                    attackerPos.z + attackDirection.z * (i + 1),
+                    2, 0.1, 0.1, 0.1, 0
                 );
             }
+
+            // 攻撃音
+            world.playSound(null, attackerPos.x, attackerPos.y, attackerPos.z,
+                SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.HOSTILE, 0.8f, 1.0f);
+
+            // 前方範囲の追加ダメージ
+            double range = 3.0;
+            AABB searchArea = new AABB(
+                attackerPos.x - range, attackerPos.y - 1, attackerPos.z - range,
+                attackerPos.x + range, attackerPos.y + 2, attackerPos.z + range
+            );
+
+            List<LivingEntity> additionalTargets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
+                entity -> entity != attacker && entity != target && entity.isAlive() &&
+                          !entity.isAlliedTo(attacker));
+
+            for (LivingEntity additionalTarget : additionalTargets) {
+                Vec3 toEntity = additionalTarget.position().subtract(attackerPos).normalize();
+                double dot = attackDirection.dot(toEntity);
+
+                if (dot > 0.5 && additionalTarget.distanceTo(attacker) <= range) {
+                    // 追加ダメージ
+                    float damage = 3.0f;
+                    additionalTarget.hurt(DamageSource.mobAttack(attacker), damage);
+
+                    // ノックバック
+                    Vec3 knockback = toEntity.scale(0.3);
+                    additionalTarget.setDeltaMovement(
+                        additionalTarget.getDeltaMovement().add(knockback.x, 0.1, knockback.z)
+                    );
+                }
+            }
+        } catch (Throwable e) {
+            System.err.println("[MobWeaponAttack] Error in performMobDefaultAttack: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

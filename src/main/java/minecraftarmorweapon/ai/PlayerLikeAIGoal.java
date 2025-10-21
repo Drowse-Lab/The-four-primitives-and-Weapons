@@ -84,41 +84,46 @@ public class PlayerLikeAIGoal extends Goal {
      * アクションを実行
      */
     private void executeAction(ALifeAIBridge.AIAction action) {
-        switch (action.action) {
-            case "dodge":
-                executeDodge(action);
-                break;
-            case "charge_attack":
-                executeChargeAttack(action);
-                break;
-            case "use_weapon_skill":
-                executeWeaponSkill(action);
-                break;
-            case "attack":
-                executeNormalAttack(action);
-                break;
-            case "move_to_target":
-                moveToTarget(action);
-                break;
-            case "move_away":
-                moveAway(action);
-                break;
-            case "strafe":
-                strafe(action);
-                break;
-            case "heal":
-                executeHeal(action);
-                break;
-            case "retreat":
-                executeRetreat(action);
-                break;
-            case "guard":
-                executeGuard(action);
-                break;
-            case "idle":
-            default:
-                // 何もしない
-                break;
+        try {
+            switch (action.action) {
+                case "dodge":
+                    executeDodge(action);
+                    break;
+                case "charge_attack":
+                    executeChargeAttack(action);
+                    break;
+                case "use_weapon_skill":
+                    executeWeaponSkill(action);
+                    break;
+                case "attack":
+                    executeNormalAttack(action);
+                    break;
+                case "move_to_target":
+                    moveToTarget(action);
+                    break;
+                case "move_away":
+                    moveAway(action);
+                    break;
+                case "strafe":
+                    strafe(action);
+                    break;
+                case "heal":
+                    executeHeal(action);
+                    break;
+                case "retreat":
+                    executeRetreat(action);
+                    break;
+                case "guard":
+                    executeGuard(action);
+                    break;
+                case "idle":
+                default:
+                    // 何もしない
+                    break;
+            }
+        } catch (Throwable e) {
+            System.err.println("[PlayerLikeAI] Error executing action " + action.action + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -204,8 +209,15 @@ public class PlayerLikeAIGoal extends Goal {
             entity.getLookControl().setLookAt(action.target.x, action.target.y, action.target.z);
         }
 
+        // 攻撃方向をターゲット位置から計算
+        Vec3 lookVec;
+        if (action.target != null) {
+            lookVec = action.target.subtract(entityPos).normalize();
+        } else {
+            lookVec = entity.getLookAngle();
+        }
+
         // 混乱効果時：攻撃方向がランダムにずれる
-        Vec3 lookVec = entity.getLookAngle();
         if (entity.hasEffect(MobEffects.CONFUSION)) {
             double angleOffset = (random.nextDouble() - 0.5) * Math.PI * 0.5; // ±45度のずれ
             double cos = Math.cos(angleOffset);

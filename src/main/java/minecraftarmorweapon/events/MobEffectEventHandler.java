@@ -45,30 +45,35 @@ public class MobEffectEventHandler {
      */
     @SubscribeEvent
     public static void onMobEffectAdded(MobEffectEvent.Added event) {
-        // サーバー側でのみ処理
-        if (event.getEntity().level.isClientSide()) {
-            return;
-        }
+        try {
+            // サーバー側でのみ処理
+            if (event.getEntity().level.isClientSide()) {
+                return;
+            }
 
-        LivingEntity entity = event.getEntity();
-        MobEffectInstance effectInstance = event.getEffectInstance();
+            LivingEntity entity = event.getEntity();
+            MobEffectInstance effectInstance = event.getEffectInstance();
 
-        // Mobでない場合はスキップ（プレイヤーには影響しない）
-        if (!(entity instanceof Mob mob)) {
-            return;
-        }
+            // Mobでない場合はスキップ（プレイヤーには影響しない）
+            if (!(entity instanceof Mob mob)) {
+                return;
+            }
 
-        // 効果の種類に応じて処理
-        if (effectInstance.getEffect() == MobEffects.BLINDNESS) {
-            applyBlindnessEffect(mob, effectInstance);
-        } else if (effectInstance.getEffect() == MobEffects.CONFUSION) {
-            applyNauseaEffect(mob, effectInstance);
-        } else if (effectInstance.getEffect() == MobEffects.WEAKNESS) {
-            applyWeaknessEffect(mob, effectInstance);
-        } else if (effectInstance.getEffect() == MobEffects.DARKNESS) {
-            applyDarknessEffect(mob, effectInstance);
-        } else if (effectInstance.getEffect() == MobEffects.GLOWING) {
-            applyGlowingEffect(mob, effectInstance);
+            // 効果の種類に応じて処理
+            if (effectInstance.getEffect() == MobEffects.BLINDNESS) {
+                applyBlindnessEffect(mob, effectInstance);
+            } else if (effectInstance.getEffect() == MobEffects.CONFUSION) {
+                applyNauseaEffect(mob, effectInstance);
+            } else if (effectInstance.getEffect() == MobEffects.WEAKNESS) {
+                applyWeaknessEffect(mob, effectInstance);
+            } else if (effectInstance.getEffect() == MobEffects.DARKNESS) {
+                applyDarknessEffect(mob, effectInstance);
+            } else if (effectInstance.getEffect() == MobEffects.GLOWING) {
+                applyGlowingEffect(mob, effectInstance);
+            }
+        } catch (Throwable e) {
+            System.err.println("[MobEffect] Error in onMobEffectAdded: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -77,27 +82,32 @@ public class MobEffectEventHandler {
      */
     @SubscribeEvent
     public static void onMobEffectRemoved(MobEffectEvent.Remove event) {
-        // サーバー側でのみ処理
-        if (event.getEntity().level.isClientSide()) {
-            return;
-        }
+        try {
+            // サーバー側でのみ処理
+            if (event.getEntity().level.isClientSide()) {
+                return;
+            }
 
-        LivingEntity entity = event.getEntity();
+            LivingEntity entity = event.getEntity();
 
-        // Mobでない場合はスキップ
-        if (!(entity instanceof Mob mob)) {
-            return;
-        }
+            // Mobでない場合はスキップ
+            if (!(entity instanceof Mob mob)) {
+                return;
+            }
 
-        // 効果の種類に応じて元に戻す
-        if (event.getEffect() == MobEffects.BLINDNESS) {
-            removeBlindnessEffect(mob);
-        } else if (event.getEffect() == MobEffects.CONFUSION) {
-            removeNauseaEffect(mob);
-        } else if (event.getEffect() == MobEffects.WEAKNESS) {
-            removeWeaknessEffect(mob);
-        } else if (event.getEffect() == MobEffects.DARKNESS) {
-            removeDarknessEffect(mob);
+            // 効果の種類に応じて元に戻す
+            if (event.getEffect() == MobEffects.BLINDNESS) {
+                removeBlindnessEffect(mob);
+            } else if (event.getEffect() == MobEffects.CONFUSION) {
+                removeNauseaEffect(mob);
+            } else if (event.getEffect() == MobEffects.WEAKNESS) {
+                removeWeaknessEffect(mob);
+            } else if (event.getEffect() == MobEffects.DARKNESS) {
+                removeDarknessEffect(mob);
+            }
+        } catch (Throwable e) {
+            System.err.println("[MobEffect] Error in onMobEffectRemoved: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

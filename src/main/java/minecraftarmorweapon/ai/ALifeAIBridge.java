@@ -9,6 +9,8 @@ import net.minecraft.core.BlockPos;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * ALife AIシステムとJavaの橋渡しクラス
@@ -74,6 +76,22 @@ public class ALifeAIBridge {
         data.health = entity.getHealth();
         data.maxHealth = entity.getMaxHealth();
 
+        // 周囲の敵をすべて取得（クリエイティブ/スペクテーターを除外）
+        data.nearbyEnemies = entity.level.getEntitiesOfClass(
+            LivingEntity.class,
+            entity.getBoundingBox().inflate(16.0),
+            e -> e != entity &&
+                 e.isAlive() &&
+                 !e.isAlliedTo(entity) &&
+                 entity.canAttack(e) &&
+                 (!(e instanceof Player player) || (!player.isCreative() && !player.isSpectator()))
+        );
+
+        // 近くの敵の数をカウント（5ブロック以内）
+        data.nearbyEnemyCount = (int) data.nearbyEnemies.stream()
+            .filter(e -> entity.distanceTo(e) <= 5.0)
+            .count();
+
         // 最も近い敵を探す
         Optional<LivingEntity> nearestEnemy = findNearestEnemy();
         if (nearestEnemy.isPresent()) {
@@ -91,18 +109,72 @@ public class ALifeAIBridge {
     }
 
     /**
-     * 最も近い敵を探す
+     * 最も近い敵を探す（優先度: entity.getTarget() → 最も近い敵）
+     * クリエイティブ/スペクテーターモードのプレイヤーは除外
      */
     private Optional<LivingEntity> findNearestEnemy() {
+        // 優先度1: entity.getTarget()（攻撃されたMobを追いかける）
+        LivingEntity target = entity.getTarget();
+        if (target != null && target.isAlive() && entity.distanceTo(target) < 32.0) {
+            // クリエイティブ/スペクテーターのプレイヤーの場合はターゲット解除
+            if (target instanceof Player player) {
+                if (player.isCreative() || player.isSpectator()) {
+                    entity.setTarget(null);
+                    return Optional.empty();
+                }
+            }
+            return Optional.of(target);
+        }
+
+        // 優先度2: 最も近い有効な敵（クリエイティブ/スペクテーターを除外）
         return entity.level.getEntitiesOfClass(
             LivingEntity.class,
             entity.getBoundingBox().inflate(16.0),
             e -> e != entity &&
                  e.isAlive() &&
                  !e.isAlliedTo(entity) &&
-                 (e instanceof Player || e.getTeam() != entity.getTeam())
+                 entity.canAttack(e) &&
+                 (!(e instanceof Player player) || (!player.isCreative() && !player.isSpectator()))
         ).stream()
         .min((e1, e2) -> Double.compare(entity.distanceTo(e1), entity.distanceTo(e2)));
+    }
+
+    /**
+     * 最も危険な敵を見つける（脅威度評価）
+     */
+    private LivingEntity findMostDangerousEnemy(WorldData data) {
+        LivingEntity mostDangerous = null;
+        double highestThreat = 0.0;
+
+        for (LivingEntity enemy : data.nearbyEnemies) {
+            double threat = 0.0;
+            double dist = entity.distanceTo(enemy);
+
+            // 距離が近いほど脅威度が高い
+            if (dist <= 2.0) {
+                threat += 10.0;
+            } else if (dist <= 5.0) {
+                threat += 5.0 / dist;
+            }
+
+            // 体力が低い敵は優先的に倒す
+            float healthRatio = enemy.getHealth() / enemy.getMaxHealth();
+            if (healthRatio < 0.5f) {
+                threat += 3.0;
+            }
+
+            // プレイヤーは最優先
+            if (enemy instanceof Player) {
+                threat += 15.0;
+            }
+
+            if (threat > highestThreat) {
+                highestThreat = threat;
+                mostDangerous = enemy;
+            }
+        }
+
+        return mostDangerous;
     }
 
     /**
@@ -170,29 +242,83 @@ public class ALifeAIBridge {
 
         double distance = data.nearestEnemyDistance;
         long currentTime = data.currentTime;
+        int nearbyEnemyCount = data.nearbyEnemyCount;
+        boolean isPlayerTarget = currentTarget instanceof Player;
 
-        // 回避判定（プレイヤーの右クリック相当）
-        if (shouldDodge(data, currentTime)) {
-            return executeDodge(data);
+        // 複数の敵に囲まれている場合の判定（3体以上が5ブロック以内）
+        if (nearbyEnemyCount >= 3) {
+            System.out.println("[ALifeAI] " + entity.getName().getString() + " は " + nearbyEnemyCount + "体の敵に囲まれている！");
+
+            // HPが50%以下なら後退優先
+            float hpPercent = data.health / data.maxHealth;
+            if (hpPercent < 0.5f) {
+                return handleRetreat(data);
+            }
+
+            // チャージ攻撃で複数を巻き込む（クールダウン2秒に短縮）
+            if (currentTime - lastChargeTime >= 2000) {
+                return executeChargeAttack(data);
+            }
         }
 
-        // チャージ攻撃判定（プレイヤーの左クリック長押し相当）
-        if (shouldChargeAttack(data, currentTime, distance)) {
-            return executeChargeAttack(data);
+        // 複数の敵がいる場合、ターゲット優先度を評価（プレイヤー以外の場合）
+        if (nearbyEnemyCount >= 2 && !isPlayerTarget) {
+            LivingEntity mostDangerous = findMostDangerousEnemy(data);
+            if (mostDangerous != null && mostDangerous != currentTarget) {
+                System.out.println("[ALifeAI] ターゲット変更: " + currentTarget.getName().getString() + " → " + mostDangerous.getName().getString());
+                currentTarget = mostDangerous;
+                entity.setTarget(mostDangerous);
+
+                AIAction action = new AIAction("change_target");
+                action.target = mostDangerous.position();
+                return action;
+            }
         }
 
-        // 武器スキル使用判定（プレイヤーの右クリック相当）
-        if (shouldUseWeaponSkill(data, currentTime, distance)) {
-            return executeWeaponSkill(data);
+        // プレイヤー相手の場合：間合い調整・回避・スキルを使用
+        if (isPlayerTarget) {
+            // 回避判定（プレイヤーの右クリック相当）
+            if (shouldDodge(data, currentTime)) {
+                return executeDodge(data);
+            }
+
+            // 武器スキル使用判定（プレイヤーの右クリック相当）
+            if (shouldUseWeaponSkill(data, currentTime, distance)) {
+                return executeWeaponSkill(data);
+            }
+
+            // チャージ攻撃判定（プレイヤー相手：高確率80%）
+            if (shouldChargeAttack(data, currentTime, distance, true)) {
+                return executeChargeAttack(data);
+            }
+
+            // 攻撃範囲外なら接近（間合い調整あり）
+            if (distance > 3.0) {
+                return handleCombat(data);
+            }
+
+            // 通常攻撃
+            return handleCombat(data);
         }
 
-        // 攻撃範囲外なら接近
-        if (distance > 3.0) {
-            return handleCombat(data);  // 既存の接近ロジック
-        }
+        // Mob相手の場合：シンプルに追いかけて攻撃
+        else {
+            // チャージ攻撃判定（Mob相手：低確率40%）
+            if (shouldChargeAttack(data, currentTime, distance, false)) {
+                return executeChargeAttack(data);
+            }
 
-        // 通常攻撃
-        return handleCombat(data);  // 既存の攻撃ロジック
+            // 攻撃範囲外なら速く接近（速度0.4）
+            if (distance > 3.0) {
+                AIAction action = new AIAction("move_to_target");
+                action.target = data.nearestEnemyPosition;
+                action.speed = 0.4f;  // Mob相手は速く動く
+                return action;
+            }
+
+            // 通常攻撃
+            return handleCombat(data);
+        }
     }
 
     /**
@@ -216,23 +342,31 @@ public class ALifeAIBridge {
     }
 
     /**
-     * チャージ攻撃すべきかを判定
+     * チャージ攻撃すべきかを判定（プレイヤー vs Mob で確率が異なる）
      */
-    private boolean shouldChargeAttack(WorldData data, long currentTime, double distance) {
-        // チャージ攻撃のクールダウン（2秒）
+    private boolean shouldChargeAttack(WorldData data, long currentTime, double distance, boolean isPlayerTarget) {
+        // チャージ攻撃のクールダウン（3秒）
         if (!hasChargeTime) {
             lastChargeTime = 0;
             hasChargeTime = true;
         }
 
-        if (currentTime - lastChargeTime < 2000) {
+        if (currentTime - lastChargeTime < 3000) {
             return false;
         }
 
-        // 適切な距離（3～7ブロック）で高確率でチャージ
-        if (3.0 <= distance && distance <= 7.0) {
+        // 適切な距離（3～10ブロック）でチャージ攻撃を検討
+        if (3.0 <= distance && distance <= 10.0) {
             float tacticalAwareness = getTierTacticalAwareness(tier);
-            return Math.random() < tacticalAwareness * 0.6;
+
+            // プレイヤー相手：高確率（80%）
+            if (isPlayerTarget) {
+                return Math.random() < tacticalAwareness * 0.8;
+            }
+            // Mob相手：低確率（40%）
+            else {
+                return Math.random() < tacticalAwareness * 0.4;
+            }
         }
 
         return false;
@@ -459,6 +593,8 @@ public class ALifeAIBridge {
         Vec3 nearestEnemyPosition;
         double nearestEnemyDistance;
         long currentTime;
+        List<LivingEntity> nearbyEnemies = new ArrayList<>();
+        int nearbyEnemyCount = 0;
     }
 
     /**

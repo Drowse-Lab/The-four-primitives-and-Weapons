@@ -41,12 +41,12 @@ class PlayerStyleBaseAI(BaseALifeAI):
         # 攻撃範囲（サブクラスでオーバーライド可能）
         self.attack_range = 3.0
         self.dash_attack_range = 7.0
-        self.charge_attack_range = 5.0
+        self.charge_attack_range = 10.0  # チャージ攻撃範囲を拡大（3～10ブロック）
 
         # クールダウン（サブクラスでオーバーライド可能）
         self.attack_cooldown = 1.5
         self.dash_cooldown = 3.0
-        self.charge_cooldown = 4.0
+        self.charge_cooldown = 3.0  # チャージ攻撃のクールダウン
 
         # 攻撃タイミング
         self.last_dash_time = 0.0
@@ -63,7 +63,14 @@ class PlayerStyleBaseAI(BaseALifeAI):
 
         # 攻撃確率（サブクラスでオーバーライド可能）
         self.dash_attack_chance = 0.4
-        self.charge_attack_chance = 0.3
+        self.charge_attack_chance = 0.3  # 基本チャージ攻撃確率
+        self.charge_attack_chance_vs_player = 0.8  # プレイヤー相手の確率
+        self.charge_attack_chance_vs_mob = 0.4  # Mob相手の確率
+
+        # スキル使用
+        self.last_skill_time = 0.0
+        self.skill_cooldown = 3.0
+        self.skill_use_chance = 0.4
 
         # ドロップテーブル
         self.drop_table = self._initialize_drop_table()
@@ -75,6 +82,10 @@ class PlayerStyleBaseAI(BaseALifeAI):
         self.last_heal_time = 0.0
         self.heal_cooldown = 10.0  # 10秒ごとに回復可能
         self.heal_amount_per_tick = 0.5  # 1tickあたりの回復量
+
+        # 複数敵対応
+        self.surrounded_threshold = 3  # 3体以上で囲まれていると判断
+        self.surrounded_distance = 5.0  # 5ブロック以内の敵をカウント
 
     def update(self, delta_time: float, world_data: Dict) -> Dict:
         """装備情報を更新してから基底クラスの更新"""
@@ -102,9 +113,11 @@ class PlayerStyleBaseAI(BaseALifeAI):
         return "sword"
 
     def _handle_combat(self, world_data: Dict) -> Dict:
-        """プレイヤースタイル戦闘処理（撤退・回復含む）"""
+        """プレイヤースタイル戦闘処理（撤退・回復・複数敵対応含む）"""
         enemy_distance = world_data.get("nearest_enemy_distance", float('inf'))
         current_time = world_data.get("current_time", 0)
+        current_target = world_data.get("current_target", None)
+        nearby_enemies = world_data.get("nearby_enemies", [])
 
         # HP状態を確認
         current_hp = self.entity_data.get("health", 20.0)
@@ -119,30 +132,81 @@ class PlayerStyleBaseAI(BaseALifeAI):
         if self.is_retreating and hp_percent > self.retreat_hp_threshold + 0.2:
             self.is_retreating = False
 
-        if self.should_dodge(world_data):
+        # 周囲の敵の数をカウント（5ブロック以内）
+        nearby_enemy_count = self._count_nearby_enemies(nearby_enemies, self.surrounded_distance)
+        is_player_target = self._is_player_target(current_target)
+
+        # 複数の敵に囲まれている場合の判定（3体以上が5ブロック以内）
+        if nearby_enemy_count >= self.surrounded_threshold:
+            print(f"[PlayerStyleAI] 囲まれている！ 敵の数: {nearby_enemy_count}")
+
+            # HPが50%以下なら後退優先
+            if hp_percent < 0.5:
+                return self._execute_retreat(world_data)
+
+            # チャージ攻撃で複数を巻き込む（クールダウン2秒に短縮）
+            if current_time - self.last_charge_time >= 2.0:
+                return self._execute_charge_attack(world_data)
+
+        # 複数の敵がいる場合、最も危険な敵を優先（Mob相手のみ）
+        if nearby_enemy_count >= 2 and not is_player_target:
+            most_dangerous = self._find_most_dangerous_enemy(nearby_enemies)
+            if most_dangerous and most_dangerous != current_target:
+                print(f"[PlayerStyleAI] より危険な敵にターゲット変更")
+                # ターゲット変更をJava側に通知
+                return {
+                    "action": "change_target",
+                    "data": {
+                        "new_target": most_dangerous,
+                        "reason": "threat_assessment"
+                    }
+                }
+
+        # 回避判定（プレイヤー相手のときのみ）
+        if is_player_target and self.should_dodge(world_data):
             return self._execute_dodge(world_data)
 
         if current_time - self.last_combo_time > self.combo_reset_time:
             self.current_combo = 0
 
-        # 鞘装備時の特殊攻撃
+        # チャージ攻撃判定（3～10ブロック）
+        if 3.0 <= enemy_distance <= self.charge_attack_range:
+            if self._can_use_charge_attack(current_time):
+                # プレイヤー相手なら高確率、Mob相手なら低確率
+                chance = self.charge_attack_chance_vs_player if is_player_target else self.charge_attack_chance_vs_mob
+                if random.random() < chance * self._get_tactical_awareness():
+                    return self._execute_charge_attack(world_data)
+
+        # 武器スキル使用判定（プレイヤー相手のときのみ）
+        if is_player_target and enemy_distance < 5.0:
+            if self._can_use_skill(current_time):
+                if random.random() < self.skill_use_chance * self._get_tactical_awareness():
+                    return self._execute_weapon_skill(world_data)
+
+        # 鞘装備時のダッシュ攻撃
         if self.has_sheath:
             if 4.0 < enemy_distance <= self.dash_attack_range:
                 if self._can_use_dash_attack(current_time):
                     if random.random() < self.dash_attack_chance:
                         return self._execute_dash_attack(world_data)
 
-            if enemy_distance <= self.charge_attack_range:
-                if self._can_use_charge_attack(current_time):
-                    if random.random() < self.charge_attack_chance:
-                        return self._execute_charge_attack(world_data)
+        # 間合い調整はプレイヤー相手のときのみ
+        if is_player_target:
+            # プレイヤー相手：間合い調整あり
+            if enemy_distance > self.attack_range:
+                return self._move_towards_enemy(world_data.get("nearest_enemy_position"),
+                                               self.entity_data.get("position"))
 
-        if enemy_distance > self.attack_range:
-            return self._move_towards_enemy(world_data.get("nearest_enemy_position"),
-                                           self.entity_data.get("position"))
-
-        if enemy_distance <= self.attack_range:
-            return self._execute_normal_attack(world_data)
+            if enemy_distance <= self.attack_range:
+                return self._execute_normal_attack(world_data)
+        else:
+            # Mob相手：シンプルに追いかけて攻撃
+            if enemy_distance > self.attack_range:
+                # 直接追いかける（速度アップ）
+                return self._move_towards_enemy_fast(world_data.get("nearest_enemy_position"),
+                                                     self.entity_data.get("position"))
+            else:
+                return self._execute_normal_attack(world_data)
 
         return {"action": "idle", "data": {}}
 
@@ -208,9 +272,106 @@ class PlayerStyleBaseAI(BaseALifeAI):
     def _can_use_charge_attack(self, current_time: float) -> bool:
         return current_time - self.last_charge_time >= self.charge_cooldown
 
+    def _can_use_skill(self, current_time: float) -> bool:
+        """スキルが使用可能か"""
+        return current_time - self.last_skill_time >= self.skill_cooldown
+
     def _can_use_elemental_attack(self, current_time: float) -> bool:
         """属性攻撃が使用可能か"""
         return current_time - self.last_elemental_time >= self.elemental_cooldown
+
+    def _count_nearby_enemies(self, nearby_enemies: list, distance: float) -> int:
+        """指定距離内の敵の数をカウント"""
+        if not nearby_enemies:
+            return 0
+        current_pos = self.entity_data.get("position", (0, 0, 0))
+        count = 0
+        for enemy in nearby_enemies:
+            enemy_pos = enemy.get("position", (0, 0, 0))
+            dx = enemy_pos[0] - current_pos[0]
+            dz = enemy_pos[2] - current_pos[2]
+            dist = math.sqrt(dx**2 + dz**2)
+            if dist <= distance:
+                count += 1
+        return count
+
+    def _is_player_target(self, target) -> bool:
+        """ターゲットがプレイヤーかどうか"""
+        if not target:
+            return False
+        target_type = target.get("type", "")
+        return target_type == "player"
+
+    def _find_most_dangerous_enemy(self, nearby_enemies: list):
+        """最も危険な敵を見つける"""
+        if not nearby_enemies:
+            return None
+
+        current_pos = self.entity_data.get("position", (0, 0, 0))
+        most_dangerous = None
+        highest_threat = 0.0
+
+        for enemy in nearby_enemies:
+            threat = 0.0
+            enemy_pos = enemy.get("position", (0, 0, 0))
+
+            # 距離計算
+            dx = enemy_pos[0] - current_pos[0]
+            dz = enemy_pos[2] - current_pos[2]
+            dist = math.sqrt(dx**2 + dz**2)
+
+            # 距離が近いほど脅威度が高い
+            if dist <= 2.0:
+                threat += 10.0
+            elif dist <= 5.0:
+                threat += 5.0 / dist
+
+            # 体力が低い敵は優先的に倒す
+            enemy_hp = enemy.get("health", 20.0)
+            enemy_max_hp = enemy.get("max_health", 20.0)
+            health_ratio = enemy_hp / enemy_max_hp if enemy_max_hp > 0 else 1.0
+            if health_ratio < 0.5:
+                threat += 3.0
+
+            # プレイヤーは最優先
+            if enemy.get("type") == "player":
+                threat += 15.0
+
+            if threat > highest_threat:
+                highest_threat = threat
+                most_dangerous = enemy
+
+        return most_dangerous
+
+    def _get_tactical_awareness(self) -> float:
+        """ティアに応じた戦術認識度を取得"""
+        tier_awareness = {
+            1: 0.3,   # 一般兵
+            2: 0.5,   # エリート兵
+            3: 0.7,   # 特異点
+            4: 0.8,   # 英雄級
+            5: 0.9,   # 神話級
+            6: 0.95,  # 天使級
+            7: 1.0    # 神聖級
+        }
+        return tier_awareness.get(self.tier, 0.3)
+
+    def _move_towards_enemy_fast(self, enemy_pos: Optional[Tuple], current_pos: Tuple) -> Dict:
+        """敵に素早く接近（Mob相手用）"""
+        if not enemy_pos:
+            return {"action": "idle", "data": {}}
+        dx, dz = enemy_pos[0] - current_pos[0], enemy_pos[2] - current_pos[2]
+        distance = math.sqrt(dx**2 + dz**2)
+        if distance > 0:
+            return {
+                "action": "move_to_target",
+                "data": {
+                    "direction": (dx/distance, 0, dz/distance),
+                    "speed": 0.4,  # 通常より速く
+                    "look_at": enemy_pos
+                }
+            }
+        return {"action": "idle", "data": {}}
 
     def _execute_elemental_attack(self, world_data: Dict) -> Dict:
         """属性攻撃を実行"""
@@ -281,32 +442,37 @@ class PlayerStyleBaseAI(BaseALifeAI):
     def _execute_charge_attack(self, world_data: Dict) -> Dict:
         """チャージ攻撃"""
         current_time = world_data.get("current_time", 0)
+        self.last_charge_time = current_time
+        self.current_combo = 0
 
-        if not self.is_charging:
-            self.is_charging = True
-            self.charge_start_time = current_time
-            return {"action": "charge_start", "data": {"type": f"{self.weapon_type}_charge", "weapon": self.weapon_type}}
+        # ティアに応じたチャージ率を決定
+        tactical_awareness = self._get_tactical_awareness()
+        charge_percent = 0.5 + (tactical_awareness * 0.5)
+        charge_percent = min(charge_percent, 1.0)
 
-        self.charge_duration = current_time - self.charge_start_time
-
-        if self.charge_duration >= 1.0:
-            self.is_charging = False
-            self.last_charge_time = current_time
-            self.current_combo = 0
-            charge_level = min(self.charge_duration, 2.0)
-
-            return {
-                "action": "charge_release",
-                "data": {
-                    "type": f"{self.weapon_type}_charged",
-                    "weapon": self.weapon_type,
-                    "charge_level": charge_level,
-                    "damage_multiplier": self._get_charge_damage_multiplier(charge_level),
-                    "has_sheath": True
-                }
+        return {
+            "action": "charge_attack",
+            "data": {
+                "type": f"{self.weapon_type}_charge",
+                "weapon": self.weapon_type,
+                "charge_percent": charge_percent,
+                "damage_multiplier": 1.0 + charge_percent * 2.0,
+                "target": world_data.get("nearest_enemy_position")
             }
+        }
 
-        return {"action": "charging", "data": {"charge_duration": self.charge_duration}}
+    def _execute_weapon_skill(self, world_data: Dict) -> Dict:
+        """武器スキルを使用"""
+        current_time = world_data.get("current_time", 0)
+        self.last_skill_time = current_time
+
+        return {
+            "action": "use_weapon_skill",
+            "data": {
+                "skill_type": "guard",
+                "duration": 5.0
+            }
+        }
 
     def _execute_normal_attack(self, world_data: Dict) -> Dict:
         """通常攻撃"""
