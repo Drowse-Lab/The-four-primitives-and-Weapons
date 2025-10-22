@@ -74,13 +74,13 @@ public class MobWeaponAttackHandler {
         // 武器の種類を判定
         String weaponName = weapon.getItem().getClass().getSimpleName();
 
-        // 直刀の場合
-        if (isStraightSword(weapon)) {
-            performMobThrustAttack(attacker, target, world, lookVec, attackerPos);
-        }
-        // 刀の場合
-        else if (weaponName.contains("Katana") || weaponName.contains("katana")) {
+        // 刀の場合（Katanaを含むもの） - 先にチェック
+        if (weaponName.contains("Katana") || weaponName.contains("katana")) {
             performMobSlashAttack(attacker, target, world, lookVec, attackerPos);
+        }
+        // 直刀の場合（TyokutouやUtigatanaなど）
+        else if (isStraightSword(weapon)) {
+            performMobThrustAttack(attacker, target, world, lookVec, attackerPos);
         }
         // その他の剣
         else if (weapon.getItem() instanceof SwordItem) {

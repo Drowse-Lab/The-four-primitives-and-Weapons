@@ -10,26 +10,37 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.HumanoidModel;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.entity.CommonSoldierEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 一般兵エンティティのレンダラー
  *
  * プレイヤーモデル（Steve/Slim）を使用し、武器と防具を表示します
+ * slim/とwide/フォルダから動的にスキンを読み込み
  */
 public class CommonSoldierRenderer extends HumanoidMobRenderer<CommonSoldierEntity, PlayerModel<CommonSoldierEntity>> {
 
-    private final PlayerModel<CommonSoldierEntity> normalModel;  // Steve（太い腕）
-    private final PlayerModel<CommonSoldierEntity> slimModel;    // Alex（細い腕）
+    private final PlayerModel<CommonSoldierEntity> normalModel;  // Wide（太い腕）
+    private final PlayerModel<CommonSoldierEntity> slimModel;    // Slim（細い腕）
+
+    // スキンバリエーション（動的に読み込み）
+    private static List<ResourceLocation> wideSkins = new ArrayList<>();
+    private static List<ResourceLocation> slimSkins = new ArrayList<>();
+    private static boolean skinsInitialized = false;
 
     public CommonSoldierRenderer(EntityRendererProvider.Context context) {
         super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.5f);
 
-        // 通常モデル（Steve - 太い腕）
+        // 通常モデル（Wide - 太い腕）
         this.normalModel = new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false);
 
-        // スリムモデル（Alex - 細い腕）
+        // スリムモデル（Slim - 細い腕）
         this.slimModel = new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER_SLIM), true);
 
         // 防具レイヤーを追加（鉄の防具を表示）
@@ -41,13 +52,50 @@ public class CommonSoldierRenderer extends HumanoidMobRenderer<CommonSoldierEnti
 
         // 武器レイヤーを追加（手に持っている刀を表示）
         this.addLayer(new ItemInHandLayer<>(this, context.getItemInHandRenderer()));
+
+        // スキンを初期化
+        if (!skinsInitialized) {
+            initializeSkins();
+        }
+    }
+
+    /**
+     * slimとwideフォルダからスキンファイルを動的に読み込む
+     */
+    private static void initializeSkins() {
+        try {
+            // デフォルトスキンを追加
+            wideSkins.add(new ResourceLocation("textures/entity/steve.png"));
+            slimSkins.add(new ResourceLocation("textures/entity/alex.png"));
+
+            // wide フォルダから最大20個のスキンを読み込み
+            for (int i = 1; i <= 20; i++) {
+                ResourceLocation skin = new ResourceLocation("minecraft_armor_weapon",
+                    "textures/entity/wide/soldier_" + i + ".png");
+                wideSkins.add(skin);
+            }
+
+            // slim フォルダから最大20個のスキンを読み込み
+            for (int i = 1; i <= 20; i++) {
+                ResourceLocation skin = new ResourceLocation("minecraft_armor_weapon",
+                    "textures/entity/slim/soldier_" + i + ".png");
+                slimSkins.add(skin);
+            }
+
+            skinsInitialized = true;
+            System.out.println("[CommonSoldier] Initialized skins: " + wideSkins.size() + " wide, " + slimSkins.size() + " slim");
+        } catch (Exception e) {
+            System.err.println("[CommonSoldier] Error initializing skins: " + e.getMessage());
+            // デフォルトスキンは最低限追加されている
+        }
     }
 
     @Override
     public void render(CommonSoldierEntity entity, float entityYaw, float partialTicks,
                       PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         // UUID-based model selection - 各エンティティで一貫して同じモデルを使用
-        if (shouldUseSlimModel(entity)) {
+        boolean isSlim = shouldUseSlimModel(entity);
+        if (isSlim) {
             this.model = this.slimModel;
         } else {
             this.model = this.normalModel;
@@ -56,22 +104,74 @@ public class CommonSoldierRenderer extends HumanoidMobRenderer<CommonSoldierEnti
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
     }
 
+    @Override
+    protected void scale(CommonSoldierEntity entity, PoseStack poseStack, float partialTicks) {
+        // スリムモデルの場合、全体を少し細くする（よりスリムな体型に）
+        if (shouldUseSlimModel(entity)) {
+            // X軸（幅）を95%に縮小、Y軸（高さ）は維持、Z軸（奥行き）を95%に縮小
+            poseStack.scale(0.95f, 1.0f, 0.95f);
+        }
+
+        super.scale(entity, poseStack, partialTicks);
+    }
+
     /**
      * スリムモデル（Alex）を使用するかどうか
-     * UUIDの最下位ビットで決定（50%の確率で各モデル）
+     * NBTタグで指定されている場合はそれを使用、されていない場合はUUIDベースでランダム
      */
     private boolean shouldUseSlimModel(CommonSoldierEntity entity) {
-        // UUIDの最下位ビットが奇数ならSlim、偶数ならSteve
-        long leastSigBits = entity.getUUID().getLeastSignificantBits();
-        return (leastSigBits & 1) == 1;
+        int isSlimNBT = entity.getIsSlim();
+
+        // NBTタグで指定されている場合
+        if (isSlimNBT >= 0) {
+            return isSlimNBT == 1;
+        }
+
+        // NBTタグで指定されていない場合はUUIDベースでランダム（約30%の確率でSlimモデル）
+        long uuidBits = entity.getUUID().getMostSignificantBits();
+        int skinVariant = Math.abs((int)(uuidBits % 10));
+
+        // 0-2 = Slim (30%), 3-9 = Normal (70%)
+        return skinVariant < 3;
+    }
+
+    /**
+     * スキンのインデックスを取得
+     * NBTタグで指定されている場合はそれを使用、されていない場合はUUIDベースでランダム
+     */
+    private int getSkinIndex(CommonSoldierEntity entity, boolean isSlim) {
+        int skinIndexNBT = entity.getSkinIndex();
+
+        List<ResourceLocation> skins = isSlim ? slimSkins : wideSkins;
+        if (skins.isEmpty()) {
+            return 0;
+        }
+
+        // NBTタグで指定されている場合
+        if (skinIndexNBT >= 0) {
+            // 範囲外の場合は0に設定
+            return Math.min(skinIndexNBT, skins.size() - 1);
+        }
+
+        // NBTタグで指定されていない場合はUUIDベースでランダム
+        long uuidBits = entity.getUUID().getLeastSignificantBits();
+        return Math.abs((int)(uuidBits % skins.size()));
     }
 
     @Override
     public ResourceLocation getTextureLocation(CommonSoldierEntity entity) {
-        // モデルに合わせてテクスチャを選択
-        if (shouldUseSlimModel(entity)) {
-            return new ResourceLocation("textures/entity/alex.png");
+        boolean isSlim = shouldUseSlimModel(entity);
+        int skinIndex = getSkinIndex(entity, isSlim);
+
+        List<ResourceLocation> skins = isSlim ? slimSkins : wideSkins;
+
+        // スキンリストが空の場合はデフォルトを返す
+        if (skins.isEmpty()) {
+            return isSlim ?
+                new ResourceLocation("textures/entity/alex.png") :
+                new ResourceLocation("textures/entity/steve.png");
         }
-        return new ResourceLocation("textures/entity/steve.png");
+
+        return skins.get(skinIndex);
     }
 }

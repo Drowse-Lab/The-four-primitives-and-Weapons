@@ -40,6 +40,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.nbt.CompoundTag;
 
 import minecraftarmorweapon.ai.PlayerLikeAIGoal;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
@@ -47,6 +48,7 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Random;
 
 /**
  * 一般兵（CommonSoldier）エンティティ
@@ -68,6 +70,14 @@ public class CommonSoldierEntity extends PathfinderMob {
     private final Map<UUID, Boolean> playerCounterAttackUsed = new HashMap<>();
     // 戦闘モードに入ったプレイヤーのリスト（武器攻撃された場合）
     private final Map<UUID, Boolean> playerCombatMode = new HashMap<>();
+
+    // NBTタグキー
+    private static final String NBT_IS_SLIM = "IsSlim";
+    private static final String NBT_SKIN_INDEX = "SkinIndex";
+
+    // スキン設定（-1 = ランダム）
+    private int isSlim = -1;  // -1: ランダム, 0: 通常, 1: スリム
+    private int skinIndex = -1;  // -1: ランダム, 0以上: 指定されたインデックス
 
     public CommonSoldierEntity(EntityType<? extends PathfinderMob> type, Level world) {
         super(type, world);
@@ -314,6 +324,62 @@ public class CommonSoldierEntity extends PathfinderMob {
     @Override
     protected boolean isSunBurnTick() {
         return false;
+    }
+
+    /**
+     * NBTタグからデータを読み込み
+     */
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putInt(NBT_IS_SLIM, this.isSlim);
+        tag.putInt(NBT_SKIN_INDEX, this.skinIndex);
+    }
+
+    /**
+     * NBTタグにデータを保存
+     */
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (tag.contains(NBT_IS_SLIM)) {
+            this.isSlim = tag.getInt(NBT_IS_SLIM);
+        }
+        if (tag.contains(NBT_SKIN_INDEX)) {
+            this.skinIndex = tag.getInt(NBT_SKIN_INDEX);
+        }
+    }
+
+    /**
+     * スリムモデルかどうかを取得
+     * @return -1: ランダム（UUIDベース）, 0: 通常, 1: スリム
+     */
+    public int getIsSlim() {
+        return this.isSlim;
+    }
+
+    /**
+     * スリムモデルかどうかを設定
+     * @param value -1: ランダム（UUIDベース）, 0: 通常, 1: スリム
+     */
+    public void setIsSlim(int value) {
+        this.isSlim = value;
+    }
+
+    /**
+     * スキンインデックスを取得
+     * @return -1: ランダム（UUIDベース）, 0以上: 指定されたインデックス
+     */
+    public int getSkinIndex() {
+        return this.skinIndex;
+    }
+
+    /**
+     * スキンインデックスを設定
+     * @param value -1: ランダム（UUIDベース）, 0以上: 指定されたインデックス
+     */
+    public void setSkinIndex(int value) {
+        this.skinIndex = value;
     }
 
     public static void init() {

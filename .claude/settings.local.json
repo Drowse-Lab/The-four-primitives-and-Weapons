@@ -11,7 +11,8 @@
       "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
       "Bash(\"/mnt/c/Program Files/Java/jdk-17/bin/javac.exe\" -cp \"../../../build/tmp/compileJava/*:.\" minecraftarmorweapon/procedures/GuardNowProcedure.java)",
       "Bash(\"/mnt/c/Program Files/Java/jdk-17/bin/javac.exe\" -encoding UTF-8 -cp \"../../../build/tmp/compileJava/*:.\" minecraftarmorweapon/procedures/GuardNowProcedure.java)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
