@@ -1,0 +1,9 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "minecraft_armor_weapon:font:inknoise.ttf",
+
+    }
+  ]
+}
