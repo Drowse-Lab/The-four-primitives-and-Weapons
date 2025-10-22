@@ -16,7 +16,8 @@ Jeff Bell has produced fonts before, but this is the first one in over 10 years.
 
 For more information on Jeff Bell and his work can be found online:
 
-www.randombell.com
-www.damovieman.deviantart.com
-http://www.imdb.com/name/nm3983081/
-http://www.vimeo.com/user4004969/videos
+www.randombell.com  
+www.damovieman.deviantart.com  
+http://www.imdb.com/name/nm3983081/  
+http://www.vimeo.com/user4004969/videos  
+
