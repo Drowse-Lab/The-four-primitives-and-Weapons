@@ -3,9 +3,7 @@
     {
       "type": "ttf",
       "file": "minecraft_armor_weapon:font:inknoise.ttf",
-      "shift": [0, 0],
-      "size": 11.0,
-      "oversample": 2.0
+
     }
   ]
 }
