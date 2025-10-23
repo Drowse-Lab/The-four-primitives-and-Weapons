@@ -37,7 +37,7 @@ class CommonSoldierAI(PlayerStyleBaseAI):
         return 2.0 + charge_level
 
     def _get_move_speed(self) -> float:
-        return 0.3
+        return 2.0
 
     def _get_dodge_speed(self) -> float:
         return 0.6
