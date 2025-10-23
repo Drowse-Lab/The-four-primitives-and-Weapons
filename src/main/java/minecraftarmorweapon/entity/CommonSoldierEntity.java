@@ -85,6 +85,8 @@ public class CommonSoldierEntity extends PathfinderMob {
         // メインハンドに鉄の刀
         this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MinecraftArmorWeaponModItems.IRON_KATANA.get()));
         this.setDropChance(EquipmentSlot.MAINHAND, 0.05f);
+        this.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(MinecraftArmorWeaponModItems.SAYA.get()));
+        this.setDropChance(EquipmentSlot.OFFHAND, 0.05f);
 
         // 鉄のフル装備（ティア1）
         this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
