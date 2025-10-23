@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.List;
 import java.util.ArrayList;
 
+import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
+
 /**
  * ALife AIシステムとJavaの橋渡しクラス
  *
@@ -506,6 +508,12 @@ public class ALifeAIBridge {
         System.out.println("[ALifeAI] " + entity.getName().getString() + " の武器検出:");
         System.out.println("  - Item名: " + itemName);
         System.out.println("  - 表示名: " + displayName);
+
+        // 直接的なアイテム比較を最優先（IRON_KATANAなどの特定アイテム）
+        if (mainHand.getItem() == MinecraftArmorWeaponModItems.IRON_KATANA.get()) {
+            System.out.println("  → 武器タイプ: katana (直接比較: IRON_KATANA)");
+            return "katana";
+        }
 
         // katanaを最優先でチェック（swordより先に）
         if (itemName.contains("katana") || displayName.contains("katana") ||
