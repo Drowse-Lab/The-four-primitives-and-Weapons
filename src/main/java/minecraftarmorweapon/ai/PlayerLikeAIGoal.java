@@ -360,6 +360,12 @@ public class PlayerLikeAIGoal extends Goal {
     private void executeNormalAttack(ALifeAIBridge.AIAction action) {
         LivingEntity target = entity.getTarget();
         if (target != null && entity.distanceTo(target) <= 3.0) {
+            // デバッグログ
+            System.out.println("[PlayerLikeAI] executeNormalAttack:");
+            System.out.println("  - Entity: " + entity.getName().getString());
+            System.out.println("  - Attack Type: " + action.attackType);
+            System.out.println("  - Combo: " + action.combo);
+
             entity.doHurtTarget(target);
         }
     }

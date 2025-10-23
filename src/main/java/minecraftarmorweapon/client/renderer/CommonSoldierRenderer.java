@@ -68,24 +68,21 @@ public class CommonSoldierRenderer extends HumanoidMobRenderer<CommonSoldierEnti
             wideSkins.add(new ResourceLocation("textures/entity/steve.png"));
             slimSkins.add(new ResourceLocation("textures/entity/alex.png"));
 
-            // wide フォルダから最大20個のスキンを読み込み
-            for (int i = 1; i <= 20; i++) {
-                ResourceLocation skin = new ResourceLocation("minecraft_armor_weapon",
-                    "textures/entity/wide/soldier_" + i + ".png");
-                wideSkins.add(skin);
-            }
+            // slim フォルダから既知のスキンを追加
+            // 実際に存在するファイル名を使用
+            slimSkins.add(new ResourceLocation("minecraft_armor_weapon", "textures/entity/slim/37da0e0fbea5d2f3.png"));
+            slimSkins.add(new ResourceLocation("minecraft_armor_weapon", "textures/entity/slim/4cafd512b6f9b293.png"));
+            slimSkins.add(new ResourceLocation("minecraft_armor_weapon", "textures/entity/slim/c87054d6c91e47c2.png"));
+            slimSkins.add(new ResourceLocation("minecraft_armor_weapon", "textures/entity/slim/cb8323d05e90afdf.png"));
 
-            // slim フォルダから最大20個のスキンを読み込み
-            for (int i = 1; i <= 20; i++) {
-                ResourceLocation skin = new ResourceLocation("minecraft_armor_weapon",
-                    "textures/entity/slim/soldier_" + i + ".png");
-                slimSkins.add(skin);
-            }
+            // wideフォルダは現在空なのでデフォルトのみ
+            // 今後追加する場合はここに追加
 
             skinsInitialized = true;
             System.out.println("[CommonSoldier] Initialized skins: " + wideSkins.size() + " wide, " + slimSkins.size() + " slim");
         } catch (Exception e) {
             System.err.println("[CommonSoldier] Error initializing skins: " + e.getMessage());
+            e.printStackTrace();
             // デフォルトスキンは最低限追加されている
         }
     }

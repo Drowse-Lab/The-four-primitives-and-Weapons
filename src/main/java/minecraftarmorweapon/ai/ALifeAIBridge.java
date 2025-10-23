@@ -5,6 +5,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -488,6 +489,95 @@ public class ALifeAIBridge {
         return action;
     }
 
+    /**
+     * 武器タイプを検出
+     */
+    private String detectWeaponType() {
+        ItemStack mainHand = entity.getMainHandItem();
+        if (mainHand.isEmpty()) {
+            System.out.println("[ALifeAI] " + entity.getName().getString() + " の手持ちアイテムが空です");
+            return "sword";
+        }
+
+        // アイテムの完全な名前を取得
+        String itemName = mainHand.getItem().toString().toLowerCase();
+        String displayName = mainHand.getHoverName().getString().toLowerCase();
+
+        System.out.println("[ALifeAI] " + entity.getName().getString() + " の武器検出:");
+        System.out.println("  - Item名: " + itemName);
+        System.out.println("  - 表示名: " + displayName);
+
+        // katanaを最優先でチェック（swordより先に）
+        if (itemName.contains("katana") || displayName.contains("katana") ||
+            displayName.contains("刀") || displayName.contains("カタナ")) {
+            System.out.println("  → 武器タイプ: katana");
+            return "katana";
+        } else if (itemName.contains("spear") || displayName.contains("spear") ||
+                   displayName.contains("槍") || displayName.contains("ヤリ")) {
+            System.out.println("  → 武器タイプ: spear");
+            return "spear";
+        } else if (itemName.contains("lance") || displayName.contains("lance") ||
+                   displayName.contains("ランス")) {
+            System.out.println("  → 武器タイプ: lance");
+            return "lance";
+        } else if (itemName.contains("axe") || displayName.contains("axe") ||
+                   displayName.contains("斧") || displayName.contains("アックス")) {
+            System.out.println("  → 武器タイプ: axe");
+            return "axe";
+        } else if (itemName.contains("sword") || displayName.contains("sword") ||
+                   displayName.contains("剣") || displayName.contains("ソード")) {
+            System.out.println("  → 武器タイプ: sword");
+            return "sword";
+        }
+
+        System.out.println("  → 武器タイプ: sword (デフォルト)");
+        return "sword";
+    }
+
+    /**
+     * 武器タイプに応じた攻撃パターンを取得
+     */
+    private String getWeaponAttackPattern(String weaponType, int combo) {
+        switch (weaponType) {
+            case "katana":
+                switch (combo % 3) {
+                    case 0: return "iai_slash";       // 居合斬り
+                    case 1: return "downward_cut";    // 下段斬り
+                    case 2: return "quick_slash";     // 素早い斬撃
+                }
+                break;
+            case "sword":
+                switch (combo % 3) {
+                    case 0: return "slash";           // 斬撃
+                    case 1: return "thrust";          // 突き
+                    case 2: return "spin_slash";      // 回転斬り
+                }
+                break;
+            case "spear":
+                switch (combo % 3) {
+                    case 0: return "thrust";          // 突き
+                    case 1: return "sweep";           // 薙ぎ払い
+                    case 2: return "pierce";          // 貫通
+                }
+                break;
+            case "axe":
+                switch (combo % 3) {
+                    case 0: return "overhead_smash";  // 振り下ろし
+                    case 1: return "horizontal_swing";// 横薙ぎ
+                    case 2: return "cleave";          // 裂斬
+                }
+                break;
+            case "lance":
+                switch (combo % 3) {
+                    case 0: return "charge_thrust";   // チャージ突き
+                    case 1: return "guard_counter";   // ガードカウンター
+                    case 2: return "pierce";          // 貫通
+                }
+                break;
+        }
+        return "slash";
+    }
+
     private AIAction handleCombat(WorldData data) {
         if (currentTarget == null || !currentTarget.isAlive()) {
             return new AIAction("idle");
@@ -515,8 +605,17 @@ public class ALifeAIBridge {
                     comboCount = 0;
                 }
 
+                // 武器タイプを検出して適切な攻撃パターンを選択
+                String weaponType = detectWeaponType();
+                String attackPattern = getWeaponAttackPattern(weaponType, comboCount);
+
+                System.out.println("[ALifeAI] " + entity.getName().getString() + " の攻撃:");
+                System.out.println("  - 武器タイプ: " + weaponType);
+                System.out.println("  - コンボ: " + comboCount);
+                System.out.println("  - 攻撃パターン: " + attackPattern);
+
                 AIAction action = new AIAction("attack");
-                action.attackType = comboCount == 1 ? "slash" : "thrust";
+                action.attackType = attackPattern;
                 action.combo = comboCount;
                 return action;
             } else {

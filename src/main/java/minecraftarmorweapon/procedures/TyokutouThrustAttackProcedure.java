@@ -51,6 +51,11 @@ public class TyokutouThrustAttackProcedure {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
 
+        // 刀（曲刀）は直刀ではない - 明示的に除外
+        if (itemName.contains("Katana") || itemName.contains("katana")) {
+            return false;
+        }
+
         // BluepurgeItemの場合、custom_model_data=2の時は直刀
         if (itemName.equals("BluepurgeItem")) {
             if (stack.hasTag() && stack.getTag().contains("CustomModelData")) {
