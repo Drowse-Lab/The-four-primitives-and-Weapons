@@ -62,10 +62,19 @@ public class ALifeAIBridge {
         AIState newState = evaluateStateTransition(worldData);
         if (newState != currentState) {
             changeState(newState);
+            System.out.println("[ALifeAI] " + entity.getName().getString() + " 状態変更: " + currentState + " (距離: " + String.format("%.1f", worldData.nearestEnemyDistance) + ")");
         }
 
         // 現在の状態に応じた行動を実行
-        return executeCurrentState(worldData);
+        AIAction action = executeCurrentState(worldData);
+
+        // デバッグログ（アクションが空でない場合のみ）
+        if (action != null && !"idle".equals(action.action)) {
+            System.out.println("[ALifeAI] " + entity.getName().getString() + " アクション: " + action.action +
+                             " (速度: " + action.speed + ", スプリント: " + action.isSprinting + ")");
+        }
+
+        return action;
     }
 
     /**
@@ -74,39 +83,66 @@ public class ALifeAIBridge {
     private WorldData collectWorldData() {
         WorldData data = new WorldData();
 
-        // 現在の位置
-        data.position = entity.position();
-        data.health = entity.getHealth();
-        data.maxHealth = entity.getMaxHealth();
+        try {
+            // エンティティの生存確認
+            if (!entity.isAlive() || entity.level == null) {
+                data.nearbyEnemies = new java.util.ArrayList<>();
+                data.nearbyEnemyCount = 0;
+                data.nearestEnemyDistance = Double.MAX_VALUE;
+                data.currentTime = System.currentTimeMillis();
+                return data;
+            }
 
-        // 周囲の敵をすべて取得（クリエイティブ/スペクテーターを除外）
-        data.nearbyEnemies = entity.level.getEntitiesOfClass(
-            LivingEntity.class,
-            entity.getBoundingBox().inflate(16.0),
-            e -> e != entity &&
-                 e.isAlive() &&
-                 !e.isAlliedTo(entity) &&
-                 entity.canAttack(e) &&
-                 (!(e instanceof Player player) || (!player.isCreative() && !player.isSpectator()))
-        );
+            // 現在の位置
+            data.position = entity.position();
+            data.health = entity.getHealth();
+            data.maxHealth = entity.getMaxHealth();
 
-        // 近くの敵の数をカウント（5ブロック以内）
-        data.nearbyEnemyCount = (int) data.nearbyEnemies.stream()
-            .filter(e -> entity.distanceTo(e) <= 5.0)
-            .count();
+            // 周囲の敵をすべて取得（クリエイティブ/スペクテーターを除外）
+            data.nearbyEnemies = entity.level.getEntitiesOfClass(
+                LivingEntity.class,
+                entity.getBoundingBox().inflate(16.0),
+                e -> e != null &&
+                     e != entity &&
+                     e.isAlive() &&
+                     !e.isAlliedTo(entity) &&
+                     entity.canAttack(e) &&
+                     (!(e instanceof Player player) || (!player.isCreative() && !player.isSpectator()))
+            );
 
-        // 最も近い敵を探す
-        Optional<LivingEntity> nearestEnemy = findNearestEnemy();
-        if (nearestEnemy.isPresent()) {
-            LivingEntity enemy = nearestEnemy.get();
-            data.nearestEnemyPosition = enemy.position();
-            data.nearestEnemyDistance = entity.distanceTo(enemy);
-            currentTarget = enemy;
-        } else {
+            // 近くの敵の数をカウント（5ブロック以内）
+            data.nearbyEnemyCount = (int) data.nearbyEnemies.stream()
+                .filter(e -> e != null && entity.distanceTo(e) <= 5.0)
+                .count();
+
+            // 最も近い敵を探す
+            Optional<LivingEntity> nearestEnemy = findNearestEnemy();
+            if (nearestEnemy.isPresent()) {
+                LivingEntity enemy = nearestEnemy.get();
+                if (enemy != null && enemy.isAlive()) {
+                    data.nearestEnemyPosition = enemy.position();
+                    data.nearestEnemyDistance = entity.distanceTo(enemy);
+                    currentTarget = enemy;
+                } else {
+                    data.nearestEnemyDistance = Double.MAX_VALUE;
+                    currentTarget = null;
+                }
+            } else {
+                data.nearestEnemyDistance = Double.MAX_VALUE;
+                currentTarget = null;
+            }
+
+            data.currentTime = System.currentTimeMillis();
+
+        } catch (Exception e) {
+            System.err.println("[ALifeAI] Error collecting world data for " + entity.getName().getString() + ": " + e.getMessage());
+            e.printStackTrace();
+            // フォールバック
+            data.nearbyEnemies = new java.util.ArrayList<>();
+            data.nearbyEnemyCount = 0;
             data.nearestEnemyDistance = Double.MAX_VALUE;
+            data.currentTime = System.currentTimeMillis();
         }
-
-        data.currentTime = System.currentTimeMillis();
 
         return data;
     }
@@ -311,11 +347,13 @@ public class ALifeAIBridge {
                 return executeChargeAttack(data);
             }
 
-            // 攻撃範囲外なら速く接近（速度0.4）
+            // 攻撃範囲外なら速く接近（速度0.4、スプリント有効）
             if (distance > 3.0) {
                 AIAction action = new AIAction("move_to_target");
                 action.target = data.nearestEnemyPosition;
-                action.speed = 0.4f;  // Mob相手は速く動く
+                action.speed = 0.1f;  // 基本速度（プレイヤーと同じ）
+                // 5～15ブロック離れている場合はスプリント
+                action.isSprinting = (distance > 5.0 && distance <= 15.0);
                 return action;
             }
 
@@ -348,6 +386,12 @@ public class ALifeAIBridge {
      * チャージ攻撃すべきかを判定（プレイヤー vs Mob で確率が異なる）
      */
     private boolean shouldChargeAttack(WorldData data, long currentTime, double distance, boolean isPlayerTarget) {
+        // katanaを持っている場合はチャージ攻撃（突き系）を使わない
+        String weaponType = detectWeaponType();
+        if ("katana".equals(weaponType)) {
+            return false;
+        }
+
         // チャージ攻撃のクールダウン（3秒）
         if (!hasChargeTime) {
             lastChargeTime = 0;
@@ -480,15 +524,13 @@ public class ALifeAIBridge {
     }
 
     private AIAction handlePatrol(WorldData data) {
-        AIAction action = new AIAction("move");
-        action.speed = 0.3f;
-        return action;
+        // パトロール中は待機（敵が来るまで）
+        return new AIAction("idle");
     }
 
     private AIAction handleSearch(WorldData data) {
-        AIAction action = new AIAction("search");
-        action.speed = 0.4f;
-        return action;
+        // 探索中も待機（敵が来るまで）
+        return new AIAction("idle");
     }
 
     /**
@@ -593,11 +635,13 @@ public class ALifeAIBridge {
 
         double distance = data.nearestEnemyDistance;
 
-        // 攻撃範囲外なら接近
+        // 攻撃範囲外なら接近（スプリント対応）
         if (distance > 3.0) {
             AIAction action = new AIAction("move_to_target");
             action.target = data.nearestEnemyPosition;
-            action.speed = 0.3f;
+            action.speed = 0.1f;  // プレイヤーと同じ基本速度
+            // 5～15ブロック離れている場合はスプリント
+            action.isSprinting = (distance > 5.0 && distance <= 15.0);
             return action;
         }
 
@@ -640,9 +684,16 @@ public class ALifeAIBridge {
 
     private AIAction handleRetreat(WorldData data) {
         if (data.nearestEnemyPosition != null) {
-            AIAction action = new AIAction("move_away");
-            action.target = data.nearestEnemyPosition;
-            action.speed = 0.5f;
+            AIAction action = new AIAction("retreat");
+
+            // 敵から遠ざかる方向を計算
+            Vec3 entityPos = entity.position();
+            Vec3 enemyPos = data.nearestEnemyPosition;
+            Vec3 awayDirection = entityPos.subtract(enemyPos).normalize();
+
+            action.direction = awayDirection;
+            action.speed = 0.1f;  // 基本速度
+            action.isSprinting = true;  // 撤退時は常にスプリント
             return action;
         }
         return new AIAction("idle");
@@ -651,6 +702,7 @@ public class ALifeAIBridge {
     private AIAction handleDodge(WorldData data) {
         AIAction action = new AIAction("dodge");
         action.speed = 0.6f;
+        action.isSprinting = false;  // 回避中はスプリントしない
         return action;
     }
 
@@ -722,6 +774,7 @@ public class ALifeAIBridge {
         public float damageMultiplier;  // ダメージ倍率
         public String skillType;        // スキルタイプ
         public float duration;          // 持続時間
+        public boolean isSprinting;     // スプリント状態
 
         public AIAction(String action) {
             this.action = action;

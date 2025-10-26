@@ -22,19 +22,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.*;
-import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.monster.Skeleton;
-import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.Spider;
-import net.minecraft.world.entity.monster.Pillager;
-import net.minecraft.world.entity.monster.Vindicator;
-import net.minecraft.world.entity.monster.Ravager;
-import net.minecraft.world.entity.monster.Witch;
-import net.minecraft.world.entity.monster.Evoker;
-import net.minecraft.world.entity.monster.Vex;
-import net.minecraft.world.entity.monster.EnderMan;
-import net.minecraft.world.entity.monster.Blaze;
-import net.minecraft.world.entity.monster.WitherSkeleton;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
@@ -52,22 +39,22 @@ import minecraftarmorweapon.util.DamageCalculator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.Random;
 
 /**
- * 一般兵（CommonSoldier）エンティティ
+ * 精鋭兵（EliteSoldier）エンティティ
  *
- * ティア1のAIを持つ、プレイヤーのような動作をする敵対Mob
+ * ティア2のAIを持つ、プレイヤーのような動作をする強力な敵対Mob
  *
  * 特徴:
- * - 基本的な回避能力（成功率30%）
- * - チャージ攻撃を使用
- * - 鉄の刀を装備
- * - プレイヤーと同じような戦闘スタイル
+ * - 強化された回避能力（成功率50%）
+ * - より積極的なチャージ攻撃使用
+ * - ダイヤモンドフル装備
+ * - プレイヤーと同じような高度な戦闘スタイル
+ * - 属性攻撃（火・氷）を使用
  */
-public class CommonSoldierEntity extends PathfinderMob {
+public class EliteSoldierEntity extends PathfinderMob {
 
-    private static final int AI_TIER = 1;
+    private static final int AI_TIER = 2;
     private PlayerLikeAIGoal playerLikeAI;
 
     // プレイヤーへの反撃カウンター（素手攻撃の場合のみ1回だけ素手で反撃）
@@ -80,41 +67,41 @@ public class CommonSoldierEntity extends PathfinderMob {
     private static final String NBT_SKIN_INDEX = "SkinIndex";
 
     // スキン設定（-1 = ランダム）
-    private int isSlim = -1;  // -1: ランダム, 0: 通常, 1: スリム
-    private int skinIndex = -1;  // -1: ランダム, 0以上: 指定されたインデックス
+    private int isSlim = -1;
+    private int skinIndex = -1;
 
-    public CommonSoldierEntity(EntityType<? extends PathfinderMob> type, Level world) {
+    public EliteSoldierEntity(EntityType<? extends PathfinderMob> type, Level world) {
         super(type, world);
 
-        // メインハンドに鉄の刀
+        // メインハンドに鉄の刀（ティア2 - ティア1と同じ武器だが攻撃力が高い）
         this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MinecraftArmorWeaponModItems.IRON_KATANA.get()));
-        this.setDropChance(EquipmentSlot.MAINHAND, 0.05f);
+        this.setDropChance(EquipmentSlot.MAINHAND, 0.08f);
         this.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(MinecraftArmorWeaponModItems.SAYA.get()));
-        this.setDropChance(EquipmentSlot.OFFHAND, 0.05f);
+        this.setDropChance(EquipmentSlot.OFFHAND, 0.08f);
 
-        // 鉄のフル装備（ティア1）
-        this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
-        this.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.IRON_CHESTPLATE));
-        this.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.IRON_LEGGINGS));
-        this.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.IRON_BOOTS));
+        // ダイヤモンドのフル装備（ティア2）
+        this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.DIAMOND_HELMET));
+        this.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.DIAMOND_CHESTPLATE));
+        this.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.DIAMOND_LEGGINGS));
+        this.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.DIAMOND_BOOTS));
 
         // 防具のドロップ率を設定
-        this.setDropChance(EquipmentSlot.HEAD, 0.03f);
-        this.setDropChance(EquipmentSlot.CHEST, 0.02f);
-        this.setDropChance(EquipmentSlot.LEGS, 0.03f);
-        this.setDropChance(EquipmentSlot.FEET, 0.03f);
+        this.setDropChance(EquipmentSlot.HEAD, 0.05f);
+        this.setDropChance(EquipmentSlot.CHEST, 0.04f);
+        this.setDropChance(EquipmentSlot.LEGS, 0.05f);
+        this.setDropChance(EquipmentSlot.FEET, 0.05f);
 
-        this.xpReward = 10;
+        this.xpReward = 25;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
-            .add(Attributes.MAX_HEALTH, 20.0)
-            .add(Attributes.MOVEMENT_SPEED, 0.1)  // プレイヤーと同じ速度
-            .add(Attributes.ATTACK_DAMAGE, 5.0)
-            .add(Attributes.ARMOR, 4.0)
-            .add(Attributes.FOLLOW_RANGE, 32.0)
-            .add(Attributes.KNOCKBACK_RESISTANCE, 0.0);
+            .add(Attributes.MAX_HEALTH, 40.0)      // 一般兵20 → 40
+            .add(Attributes.MOVEMENT_SPEED, 0.1)   // プレイヤーと同じ速度
+            .add(Attributes.ATTACK_DAMAGE, 7.0)    // 一般兵5.0 → 7.0
+            .add(Attributes.ARMOR, 8.0)            // 一般兵4.0 → 8.0
+            .add(Attributes.FOLLOW_RANGE, 40.0)    // 一般兵32.0 → 40.0
+            .add(Attributes.KNOCKBACK_RESISTANCE, 0.2);  // 一般兵0.0 → 0.2
     }
 
     @Override
@@ -126,12 +113,12 @@ public class CommonSoldierEntity extends PathfinderMob {
         this.goalSelector.addGoal(1, this.playerLikeAI);
 
         // バニラのMeleeAttackGoalとWaterAvoidingRandomStrollGoalは削除（PlayerLikeAIGoalと競合するため）
-        // this.goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.0, false));
-        // this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8));
+        // this.goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.1, false));
+        // this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.9));
 
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0f));
         this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
-        
+
         // 敵対Mobに対しては攻撃されたら反撃（A-Lifeエンティティは除外）
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this,
             CommonSoldierEntity.class,
@@ -158,8 +145,6 @@ public class CommonSoldierEntity extends PathfinderMob {
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, EnderMan.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Blaze.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, WitherSkeleton.class, true));
-
-        // プレイヤーに対しては自発的に攻撃しない（攻撃されたらhurt()で処理）
     }
 
     @Override
@@ -176,26 +161,20 @@ public class CommonSoldierEntity extends PathfinderMob {
         if (source.getEntity() instanceof Player player && !this.level.isClientSide) {
             UUID playerUUID = player.getUUID();
 
-            // プレイヤーが武器を持っているかチェック
             boolean isUnarmedAttack = isPlayerUnarmed(player);
 
             if (isUnarmedAttack) {
-                // 素手攻撃の場合：1回だけ素手で反撃
                 if (!playerCounterAttackUsed.getOrDefault(playerUUID, false)) {
                     counterAttackPlayer(player);
                     playerCounterAttackUsed.put(playerUUID, true);
                     player.displayClientMessage(Component.literal("§e" + this.getName().getString() + "§7は素手で反撃した！"), true);
                 } else {
-                    // 2回目以降は警告メッセージのみ
                     player.displayClientMessage(Component.literal("§7" + this.getName().getString() + "はこれ以上反撃しない..."), true);
                 }
             } else {
-                // 武器攻撃の場合：戦闘モードに入る
                 if (!playerCombatMode.getOrDefault(playerUUID, false)) {
                     playerCombatMode.put(playerUUID, true);
                     player.displayClientMessage(Component.literal("§c" + this.getName().getString() + "§7が戦闘態勢に入った！"), true);
-
-                    // このプレイヤーをターゲットに設定
                     this.setTarget(player);
                 }
             }
@@ -206,30 +185,19 @@ public class CommonSoldierEntity extends PathfinderMob {
         return super.hurt(source, amount);
     }
 
-    /**
-     * プレイヤーが素手（武器なし）かどうか判定
-     */
     private boolean isPlayerUnarmed(Player player) {
         ItemStack mainHand = player.getMainHandItem();
-
-        // メインハンドが空
         if (mainHand.isEmpty()) {
             return true;
         }
-
-        // 武器かどうかチェック
         return !isWeapon(mainHand);
     }
 
-    /**
-     * アイテムが武器かどうか判定
-     */
     private boolean isWeapon(ItemStack stack) {
         if (stack.isEmpty()) {
             return false;
         }
 
-        // バニラの武器
         if (stack.getItem() instanceof SwordItem ||
             stack.getItem() instanceof AxeItem ||
             stack.getItem() instanceof TridentItem ||
@@ -238,7 +206,6 @@ public class CommonSoldierEntity extends PathfinderMob {
             return true;
         }
 
-        // カスタム武器（名前に"katana", "sword", "weapon"などが含まれる）
         String itemName = stack.getItem().toString().toLowerCase();
         return itemName.contains("katana") ||
                itemName.contains("sword") ||
@@ -250,20 +217,13 @@ public class CommonSoldierEntity extends PathfinderMob {
                itemName.contains("scythe");
     }
 
-    /**
-     * プレイヤーに素手で1回だけ反撃
-     */
     private void counterAttackPlayer(Player player) {
-        // 距離チェック
-        if (this.distanceTo(player) <= 3.0) {
-            // 素手での弱いダメージ（2.0 = ハート1個分）
-            player.hurt(DamageSource.mobAttack(this), 2.0f);
+        if (this.distanceTo(player) <= 3.5) {
+            player.hurt(DamageSource.mobAttack(this), 3.0f);
 
-            // パンチ音
             this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.PLAYER_ATTACK_WEAK, SoundSource.HOSTILE, 0.8f, 1.0f);
 
-            // パーティクル
             if (this.level instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(
                     ParticleTypes.CRIT,
@@ -274,19 +234,87 @@ public class CommonSoldierEntity extends PathfinderMob {
         }
     }
 
+    /**
+     * エンティティが攻撃する際にカスタムダメージ計算とエフェクトを適用
+     */
+    @Override
+    public boolean doHurtTarget(Entity target) {
+        if (target instanceof LivingEntity livingTarget) {
+            ItemStack weapon = this.getItemInHand(InteractionHand.MAIN_HAND);
+
+            float baseDamage = (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE);
+
+            // ティア2の強化ダメージ計算（1.3倍）
+            float actualDamage = DamageCalculator.calculateDamage(
+                this, livingTarget, baseDamage * 1.3f, weapon
+            );
+
+            boolean result = livingTarget.hurt(DamageSource.mobAttack(this), actualDamage);
+
+            if (result) {
+                DamageCalculator.applyWeaponEffects(
+                    this, livingTarget, actualDamage, weapon
+                );
+
+                // より強いノックバック
+                Vec3 knockback = livingTarget.position().subtract(this.position()).normalize().scale(0.5);
+                livingTarget.setDeltaMovement(livingTarget.getDeltaMovement().add(knockback.x, 0.15, knockback.z));
+
+                // 攻撃エフェクト（より派手）
+                if (!this.level.isClientSide && this.level instanceof ServerLevel serverLevel) {
+                    serverLevel.sendParticles(
+                        ParticleTypes.SWEEP_ATTACK,
+                        livingTarget.getX(), livingTarget.getY() + livingTarget.getBbHeight() / 2, livingTarget.getZ(),
+                        2, 0.1, 0.1, 0.1, 0
+                    );
+
+                    // 属性攻撃エフェクト（20%の確率）
+                    if (this.random.nextFloat() < 0.2f) {
+                        if (this.random.nextBoolean()) {
+                            // 火属性
+                            livingTarget.setSecondsOnFire(3);
+                            serverLevel.sendParticles(
+                                ParticleTypes.FLAME,
+                                livingTarget.getX(), livingTarget.getY() + 1, livingTarget.getZ(),
+                                10, 0.3, 0.3, 0.3, 0.05
+                            );
+                        } else {
+                            // 氷属性（移動速度低下）
+                            livingTarget.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                                net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 60, 1
+                            ));
+                            serverLevel.sendParticles(
+                                ParticleTypes.SNOWFLAKE,
+                                livingTarget.getX(), livingTarget.getY() + 1, livingTarget.getZ(),
+                                10, 0.3, 0.3, 0.3, 0.05
+                            );
+                        }
+                    }
+                }
+
+                this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+                    SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0f, 0.9f);
+            }
+
+            return result;
+        }
+
+        return super.doHurtTarget(target);
+    }
+
     @Override
     public void die(DamageSource cause) {
         super.die(cause);
         if (!this.level.isClientSide) {
             if (cause.getEntity() instanceof Player player) {
-                player.displayClientMessage(Component.literal("§7一般兵を倒した"), true);
+                player.displayClientMessage(Component.literal("§6精鋭兵を倒した"), true);
             }
         }
     }
 
     @Override
     public Component getName() {
-        return Component.literal("§f一般兵");
+        return Component.literal("§6精鋭兵");
     }
 
     @Override
@@ -306,24 +334,20 @@ public class CommonSoldierEntity extends PathfinderMob {
 
     @Override
     protected float getSoundVolume() {
-        return 0.8f;
+        return 0.9f;
     }
 
     @Override
     public boolean canAttack(net.minecraft.world.entity.LivingEntity target) {
-        // プレイヤーの場合
         if (target instanceof Player player) {
-            // クリエイティブ/スペクテーターモードのプレイヤーは攻撃しない
             if (player.isCreative() || player.isSpectator()) {
                 return false;
             }
 
-            // サバイバル/アドベンチャーモードで戦闘モードに入っている場合のみ攻撃可能
             UUID playerUUID = player.getUUID();
             return playerCombatMode.getOrDefault(playerUUID, false);
         }
 
-        // 敵対Mobは常に攻撃可能
         if (target instanceof Monster && !(target instanceof IronGolem)) {
             return true;
         }
@@ -335,63 +359,11 @@ public class CommonSoldierEntity extends PathfinderMob {
         return AI_TIER;
     }
 
-    /**
-     * エンティティが攻撃する際にカスタムダメージ計算とエフェクトを適用
-     */
-    @Override
-    public boolean doHurtTarget(Entity target) {
-        if (target instanceof LivingEntity livingTarget) {
-            ItemStack weapon = this.getItemInHand(InteractionHand.MAIN_HAND);
-
-            // DamageCalculatorを使用してダメージを計算
-            float baseDamage = (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE);
-
-            // プレイヤーと同じダメージ計算システムを使用
-            float actualDamage = DamageCalculator.calculateDamage(
-                this, livingTarget, baseDamage, weapon
-            );
-
-            // ダメージを与える
-            boolean result = livingTarget.hurt(DamageSource.mobAttack(this), actualDamage);
-
-            if (result) {
-                // 武器エフェクトを適用
-                DamageCalculator.applyWeaponEffects(
-                    this, livingTarget, actualDamage, weapon
-                );
-
-                // ノックバック
-                Vec3 knockback = livingTarget.position().subtract(this.position()).normalize().scale(0.4);
-                livingTarget.setDeltaMovement(livingTarget.getDeltaMovement().add(knockback.x, 0.1, knockback.z));
-
-                // 攻撃エフェクト
-                if (!this.level.isClientSide && this.level instanceof ServerLevel serverLevel) {
-                    serverLevel.sendParticles(
-                        ParticleTypes.SWEEP_ATTACK,
-                        livingTarget.getX(), livingTarget.getY() + livingTarget.getBbHeight() / 2, livingTarget.getZ(),
-                        1, 0, 0, 0, 0
-                    );
-                }
-
-                // 攻撃音
-                this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
-                    SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0f, 1.0f);
-            }
-
-            return result;
-        }
-
-        return super.doHurtTarget(target);
-    }
-
     @Override
     protected boolean isSunBurnTick() {
         return false;
     }
 
-    /**
-     * NBTタグからデータを読み込み
-     */
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
@@ -399,9 +371,6 @@ public class CommonSoldierEntity extends PathfinderMob {
         tag.putInt(NBT_SKIN_INDEX, this.skinIndex);
     }
 
-    /**
-     * NBTタグにデータを保存
-     */
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
@@ -413,34 +382,18 @@ public class CommonSoldierEntity extends PathfinderMob {
         }
     }
 
-    /**
-     * スリムモデルかどうかを取得
-     * @return -1: ランダム（UUIDベース）, 0: 通常, 1: スリム
-     */
     public int getIsSlim() {
         return this.isSlim;
     }
 
-    /**
-     * スリムモデルかどうかを設定
-     * @param value -1: ランダム（UUIDベース）, 0: 通常, 1: スリム
-     */
     public void setIsSlim(int value) {
         this.isSlim = value;
     }
 
-    /**
-     * スキンインデックスを取得
-     * @return -1: ランダム（UUIDベース）, 0以上: 指定されたインデックス
-     */
     public int getSkinIndex() {
         return this.skinIndex;
     }
 
-    /**
-     * スキンインデックスを設定
-     * @param value -1: ランダム（UUIDベース）, 0以上: 指定されたインデックス
-     */
     public void setSkinIndex(int value) {
         this.skinIndex = value;
     }

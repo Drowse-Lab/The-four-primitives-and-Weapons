@@ -64,20 +64,30 @@ public class PlayerLikeAIGoal extends Goal {
 
     @Override
     public void tick() {
-        // AIを更新してアクションを取得
-        currentAction = aiBridge.update();
-
-        // アクションを実行
-        if (currentAction != null) {
-            executeAction(currentAction);
+        // エンティティの生存確認
+        if (!entity.isAlive() || entity.isRemoved()) {
+            return;
         }
 
-        // 落下ダメージ無効時間のカウントダウン
-        if (fallDamageImmunityTicks > 0) {
-            fallDamageImmunityTicks--;
-        }
+        try {
+            // AIを更新してアクションを取得
+            currentAction = aiBridge.update();
 
-        actionTicks++;
+            // アクションを実行
+            if (currentAction != null) {
+                executeAction(currentAction);
+            }
+
+            // 落下ダメージ無効時間のカウントダウン
+            if (fallDamageImmunityTicks > 0) {
+                fallDamageImmunityTicks--;
+            }
+
+            actionTicks++;
+        } catch (Throwable e) {
+            System.err.println("[PlayerLikeAI] Critical error in tick for " + entity.getName().getString() + ": " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -374,9 +384,31 @@ public class PlayerLikeAIGoal extends Goal {
      * ターゲットに向かって移動
      */
     private void moveToTarget(ALifeAIBridge.AIAction action) {
-        if (action.target != null) {
-            entity.getNavigation().moveTo(action.target.x, action.target.y, action.target.z, action.speed);
-            entity.getLookControl().setLookAt(action.target.x, action.target.y, action.target.z);
+        if (action.target == null || entity.getNavigation() == null) {
+            return;
+        }
+
+        try {
+            // スプリント状態を設定
+            entity.setSprinting(action.isSprinting);
+
+            // 移動速度を設定（スプリント時は1.3倍）
+            float speed = action.speed;
+            if (action.isSprinting) {
+                speed *= 1.3f;
+            }
+
+            // Navigation APIを安全に呼び出す
+            if (entity.getNavigation() != null) {
+                entity.getNavigation().moveTo(action.target.x, action.target.y, action.target.z, speed);
+            }
+
+            // LookControlを安全に呼び出す
+            if (entity.getLookControl() != null) {
+                entity.getLookControl().setLookAt(action.target.x, action.target.y, action.target.z);
+            }
+        } catch (Exception e) {
+            System.err.println("[PlayerLikeAI] Error in moveToTarget: " + e.getMessage());
         }
     }
 
@@ -444,8 +476,15 @@ public class PlayerLikeAIGoal extends Goal {
             return;
         }
 
-        // 撤退方向に移動（通常より速く）
-        Vec3 retreatVec = action.direction.scale(action.speed);
+        // スプリント状態を設定（撤退時は常にスプリント）
+        entity.setSprinting(true);
+
+        // 撤退方向に移動（通常より速く、スプリント時はさらに速く）
+        float speed = action.speed;
+        if (action.isSprinting) {
+            speed *= 1.3f;
+        }
+        Vec3 retreatVec = action.direction.scale(speed);
         entity.setDeltaMovement(retreatVec.x, entity.getDeltaMovement().y, retreatVec.z);
 
         // 煙エフェクト

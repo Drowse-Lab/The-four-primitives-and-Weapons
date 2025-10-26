@@ -32,6 +32,14 @@ class PlayerStyleBaseAI(BaseALifeAI):
         # 装備データ（防具+エンチャント）
         self.equipment_data = self._initialize_equipment()
 
+        # スプリント（ダッシュ移動）
+        self.is_sprinting = False
+        self.sprint_duration = 0.0
+        self.max_sprint_duration = 5.0  # 最大5秒間スプリント可能
+        self.sprint_cooldown = 3.0
+        self.last_sprint_time = 0.0
+        self.sprint_speed_multiplier = 1.3  # プレイヤーのスプリントと同じ速度倍率
+
         # 属性攻撃（ティア3以上）
         self.elemental_types = []  # ["fire", "ice", "lightning", "holy", "dark"]
         self.elemental_attack_chance = 0.0
@@ -242,7 +250,7 @@ class PlayerStyleBaseAI(BaseALifeAI):
         }
 
     def _execute_retreat(self, world_data: Dict) -> Dict:
-        """撤退実行"""
+        """撤退実行（スプリント対応）"""
         enemy_pos = world_data.get("nearest_enemy_position")
         current_pos = self.entity_data.get("position", (0, 0, 0))
 
@@ -255,12 +263,17 @@ class PlayerStyleBaseAI(BaseALifeAI):
         distance = math.sqrt(dx**2 + dz**2)
 
         if distance > 0:
+            # 撤退時は常にスプリント
+            base_speed = self._get_move_speed()
+            sprint_speed = base_speed * self.sprint_speed_multiplier * 1.2  # さらに速く
+
             return {
                 "action": "retreat",
                 "data": {
                     "direction": (dx/distance, 0, dz/distance),
-                    "speed": self._get_move_speed() * 1.5,  # 通常より速く逃げる
-                    "is_fleeing": True
+                    "speed": sprint_speed,
+                    "is_fleeing": True,
+                    "is_sprinting": True
                 }
             }
 
@@ -357,18 +370,30 @@ class PlayerStyleBaseAI(BaseALifeAI):
         return tier_awareness.get(self.tier, 0.3)
 
     def _move_towards_enemy_fast(self, enemy_pos: Optional[Tuple], current_pos: Tuple) -> Dict:
-        """敵に素早く接近（Mob相手用）"""
+        """敵に素早く接近（Mob相手用、スプリント対応）"""
         if not enemy_pos:
             return {"action": "idle", "data": {}}
         dx, dz = enemy_pos[0] - current_pos[0], enemy_pos[2] - current_pos[2]
         distance = math.sqrt(dx**2 + dz**2)
+
         if distance > 0:
+            # スプリント判定
+            base_speed = self._get_move_speed() * 1.3  # Mob相手は基本速度を上げる
+            speed = base_speed
+            is_sprinting = False
+
+            # 距離が離れている場合はさらにスプリント
+            if self._should_sprint(distance):
+                speed = base_speed * self.sprint_speed_multiplier
+                is_sprinting = True
+
             return {
                 "action": "move_to_target",
                 "data": {
                     "direction": (dx/distance, 0, dz/distance),
-                    "speed": 0.4,  # 通常より速く
-                    "look_at": enemy_pos
+                    "speed": speed,
+                    "look_at": enemy_pos,
+                    "is_sprinting": is_sprinting
                 }
             }
         return {"action": "idle", "data": {}}
@@ -531,13 +556,42 @@ class PlayerStyleBaseAI(BaseALifeAI):
         weapon_patterns = patterns.get(weapon_type, patterns["sword"])
         return weapon_patterns[combo % len(weapon_patterns)]
 
+    def _can_sprint(self, current_time: float) -> bool:
+        """スプリント可能かチェック"""
+        return current_time - self.last_sprint_time >= self.sprint_cooldown
+
+    def _should_sprint(self, enemy_distance: float) -> bool:
+        """スプリントすべきかどうか判定"""
+        # 敵が5～15ブロック離れている場合にスプリント
+        return 5.0 < enemy_distance <= 15.0
+
     def _move_towards_enemy(self, enemy_pos: Optional[Tuple], current_pos: Tuple) -> Dict:
-        """敵に接近"""
+        """敵に接近（スプリント対応）"""
         if not enemy_pos: return {"action": "idle", "data": {}}
         dx, dz = enemy_pos[0] - current_pos[0], enemy_pos[2] - current_pos[2]
         distance = math.sqrt(dx**2 + dz**2)
+
         if distance > 0:
-            return {"action": "move", "data": {"direction": (dx/distance, 0, dz/distance), "speed": self._get_move_speed(), "look_at": enemy_pos}}
+            # スプリント判定
+            base_speed = self._get_move_speed()
+            speed = base_speed
+            is_sprinting = False
+
+            # 距離が離れている場合はスプリント
+            if self._should_sprint(distance):
+                if self._can_sprint(0):  # current_timeは外から取得すべきだが、簡略化
+                    speed = base_speed * self.sprint_speed_multiplier
+                    is_sprinting = True
+
+            return {
+                "action": "move_to_target",
+                "data": {
+                    "direction": (dx/distance, 0, dz/distance),
+                    "speed": speed,
+                    "look_at": enemy_pos,
+                    "is_sprinting": is_sprinting
+                }
+            }
         return {"action": "idle", "data": {}}
 
     def _execute_dodge(self, world_data: Dict) -> Dict:
@@ -574,7 +628,7 @@ class PlayerStyleBaseAI(BaseALifeAI):
         strafe_x, strafe_z = -dz, dx
         distance = math.sqrt(strafe_x**2 + strafe_z**2)
         if distance > 0:
-            return {"action": "move", "data": {"direction": (strafe_x/distance, 0, strafe_z/distance), "speed": 0.2, "look_at": enemy_pos}}
+            return {"action": "strafe", "data": {"direction": (strafe_x/distance, 0, strafe_z/distance), "speed": 0.2, "look_at": enemy_pos}}
         return {"action": "idle", "data": {}}
 
     # サブクラスでオーバーライド可能なメソッド

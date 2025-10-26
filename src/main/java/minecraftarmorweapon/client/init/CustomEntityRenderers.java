@@ -7,6 +7,9 @@ import net.minecraftforge.fml.common.Mod;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.client.renderer.CommonSoldierRenderer;
+import minecraftarmorweapon.client.renderer.EliteSoldierRenderer;
+import minecraftarmorweapon.client.renderer.SingularityRenderer;
+import minecraftarmorweapon.client.renderer.HeroicTierRenderer;
 import minecraftarmorweapon.client.renderer.DarkProjectileRenderer;
 import minecraftarmorweapon.client.renderer.TornadoRenderer;
 import minecraftarmorweapon.init.CustomEntityInit;
@@ -24,6 +27,11 @@ public class CustomEntityRenderers {
         // Register entity renderers
         event.registerEntityRenderer(MinecraftArmorWeaponModCustomEntities.TORNADO.get(), TornadoRenderer::new);
         event.registerEntityRenderer(MinecraftArmorWeaponModCustomEntities.DARK_PROJECTILE.get(), DarkProjectileRenderer::new);
+
+        // A-Life AI エンティティ
         event.registerEntityRenderer(CustomEntityInit.COMMON_SOLDIER.get(), CommonSoldierRenderer::new);
+        event.registerEntityRenderer(CustomEntityInit.ELITE_SOLDIER.get(), EliteSoldierRenderer::new);
+        event.registerEntityRenderer(CustomEntityInit.SINGULARITY.get(), SingularityRenderer::new);
+        event.registerEntityRenderer(CustomEntityInit.HEROIC_TIER.get(), HeroicTierRenderer::new);
     }
 }
