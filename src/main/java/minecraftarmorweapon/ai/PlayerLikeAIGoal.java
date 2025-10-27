@@ -392,15 +392,14 @@ public class PlayerLikeAIGoal extends Goal {
             // スプリント状態を設定
             entity.setSprinting(action.isSprinting);
 
-            // 移動速度を設定（スプリント時は1.3倍）
-            float speed = action.speed;
-            if (action.isSprinting) {
-                speed *= 1.3f;
-            }
+            // 移動速度係数を計算
+            // Navigation APIは基本速度に対する係数を期待する
+            // 通常移動: 1.0倍、スプリント: 1.3倍
+            float speedModifier = action.isSprinting ? 1.3f : 1.0f;
 
             // Navigation APIを安全に呼び出す
             if (entity.getNavigation() != null) {
-                entity.getNavigation().moveTo(action.target.x, action.target.y, action.target.z, speed);
+                entity.getNavigation().moveTo(action.target.x, action.target.y, action.target.z, speedModifier);
             }
 
             // LookControlを安全に呼び出す

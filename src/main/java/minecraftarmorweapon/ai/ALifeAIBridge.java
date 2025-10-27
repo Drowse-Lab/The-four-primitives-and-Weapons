@@ -648,7 +648,19 @@ public class ALifeAIBridge {
         // 攻撃範囲内なら攻撃
         if (distance <= 3.0) {
             long currentTime = data.currentTime;
-            long attackCooldown = 1500; // 1.5秒（ティア1）
+            // ティアに応じた攻撃速度（高ティアほど速い）
+            long attackCooldown;
+            if (tier == 1) {
+                attackCooldown = 800;  // 0.8秒
+            } else if (tier == 2) {
+                attackCooldown = 700;  // 0.7秒
+            } else if (tier == 3) {
+                attackCooldown = 600;  // 0.6秒
+            } else if (tier == 4) {
+                attackCooldown = 500;  // 0.5秒
+            } else {
+                attackCooldown = 800;  // デフォルト
+            }
 
             if (currentTime - lastAttackTime >= attackCooldown) {
                 lastAttackTime = currentTime;
