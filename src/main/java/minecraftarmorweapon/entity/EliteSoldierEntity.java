@@ -100,7 +100,7 @@ public class EliteSoldierEntity extends PathfinderMob {
             .add(Attributes.MOVEMENT_SPEED, 0.27)  // プレイヤーより速い移動速度
             .add(Attributes.ATTACK_DAMAGE, 7.0)    // 一般兵5.0 → 7.0
             .add(Attributes.ARMOR, 8.0)            // 一般兵4.0 → 8.0
-            .add(Attributes.FOLLOW_RANGE, 40.0)    // 一般兵32.0 → 40.0
+            .add(Attributes.FOLLOW_RANGE, 64.0)    // 遠くの敵も追いかける
             .add(Attributes.KNOCKBACK_RESISTANCE, 0.2);  // 一般兵0.0 → 0.2
     }
 

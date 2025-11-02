@@ -113,7 +113,7 @@ public class CommonSoldierEntity extends PathfinderMob {
             .add(Attributes.MOVEMENT_SPEED, 0.25)  // プレイヤーより速い移動速度
             .add(Attributes.ATTACK_DAMAGE, 5.0)
             .add(Attributes.ARMOR, 4.0)
-            .add(Attributes.FOLLOW_RANGE, 32.0)
+            .add(Attributes.FOLLOW_RANGE, 64.0)    // 遠くの敵も追いかける
             .add(Attributes.KNOCKBACK_RESISTANCE, 0.0);
     }
 

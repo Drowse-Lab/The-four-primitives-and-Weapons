@@ -155,7 +155,7 @@ public class HeroicTierEntity extends PathfinderMob {
                 .add(Attributes.ARMOR_TOUGHNESS, 3.0)    // 防御強度: 3（ネザライト装備）
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.2)  // ノックバック耐性: 20%
                 .add(Attributes.ATTACK_KNOCKBACK, 0.6)
-                .add(Attributes.FOLLOW_RANGE, 40.0);
+                .add(Attributes.FOLLOW_RANGE, 64.0);     // 遠くの敵も追いかける
     }
 
     @Override

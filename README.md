@@ -20,11 +20,13 @@ https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons
 ![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=Renkon65&show_icons=true&theme=dark)
 ![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=aya526dev&show_icons=true&theme=gotham)-->
 
-## [chuzume](https://github.com/Chuzume)さんのを参考にしたり
+## [chuzume](https://github.com/Chuzume)さんのを参考にしたりパクったり
 ### replica sword of light
 https://youtu.be/nA6a7O3jBJo?si=NzeW23jMIkDXOmv3  
 ### sword of night
 https://youtu.be/i-ItAsrIK7U?si=f5FXomJLYBK7GmQ9  
+### Loki the Trickster
+https://youtu.be/l7ddaDi7us4?si=5bAOtNbZWB36pALx  
 ### True-Crafter
 https://github.com/Chuzume/True-Crafter-Mode  
 https://youtu.be/7oI4bwtSQUQ  

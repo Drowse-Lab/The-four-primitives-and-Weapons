@@ -10,6 +10,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.Component;
+import minecraftarmorweapon.item.LokiTheTricksterItem;
 
 @Mod.EventBusSubscriber(modid = "minecraft_armor_weapon")
 public class SayaLeftClickHandler {
@@ -103,6 +105,14 @@ public class SayaLeftClickHandler {
 
                 // 抜刀音を再生
                 player.playSound(SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F);
+
+                // オフハンドに鞘を持っていて、かつLoki the Tricksterを抜刀した場合、モード切り替え
+                if (sheathHand == InteractionHand.OFF_HAND && weaponStack.getItem() instanceof LokiTheTricksterItem) {
+                    LokiTheTricksterItem.toggleMode(weaponStack);
+                    String newMode = LokiTheTricksterItem.getMode(weaponStack);
+                    String modeName = newMode.equals("disarm") ? "Disarm" : "Decoy";
+                    player.displayClientMessage(Component.literal("§b[抜刀] Loki Mode: " + modeName), true);
+                }
 
                 return true; // 抜刀成功
             }

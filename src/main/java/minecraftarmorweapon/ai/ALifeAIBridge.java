@@ -99,9 +99,10 @@ public class ALifeAIBridge {
             data.maxHealth = entity.getMaxHealth();
 
             // 周囲の敵をすべて取得（クリエイティブ/スペクテーターを除外）
+            // FOLLOW_RANGE分の範囲で敵を探す（64ブロック）
             data.nearbyEnemies = entity.level.getEntitiesOfClass(
                 LivingEntity.class,
-                entity.getBoundingBox().inflate(16.0),
+                entity.getBoundingBox().inflate(64.0),
                 e -> e != null &&
                      e != entity &&
                      e.isAlive() &&
@@ -154,7 +155,7 @@ public class ALifeAIBridge {
     private Optional<LivingEntity> findNearestEnemy() {
         // 優先度1: entity.getTarget()（攻撃されたMobを追いかける）
         LivingEntity target = entity.getTarget();
-        if (target != null && target.isAlive() && entity.distanceTo(target) < 32.0) {
+        if (target != null && target.isAlive() && entity.distanceTo(target) < 64.0) {
             // クリエイティブ/スペクテーターのプレイヤーの場合はターゲット解除
             if (target instanceof Player player) {
                 if (player.isCreative() || player.isSpectator()) {
@@ -166,9 +167,10 @@ public class ALifeAIBridge {
         }
 
         // 優先度2: 最も近い有効な敵（クリエイティブ/スペクテーターを除外）
+        // FOLLOW_RANGE分の範囲で敵を探す（64ブロック）
         return entity.level.getEntitiesOfClass(
             LivingEntity.class,
-            entity.getBoundingBox().inflate(16.0),
+            entity.getBoundingBox().inflate(64.0),
             e -> e != entity &&
                  e.isAlive() &&
                  !e.isAlliedTo(entity) &&
@@ -224,12 +226,12 @@ public class ALifeAIBridge {
             return AIState.RETREAT;
         }
 
-        // 敵が16ブロック以内なら戦闘
+        // 敵が16ブロック以内なら戦闘（敵対範囲）
         if (data.nearestEnemyDistance < 16.0) {
             return AIState.COMBAT;
         }
 
-        // 敵を見失ったら探索
+        // 敵を見失ったら探索（16ブロック以上離れたら）
         if (currentState == AIState.COMBAT && data.nearestEnemyDistance > 16.0) {
             return AIState.SEARCH;
         }

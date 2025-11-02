@@ -7,6 +7,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.Component;
+import minecraftarmorweapon.item.LokiTheTricksterItem;
 
 public class SayaRightclickedProcedure {
 	public static void execute(LevelAccessor world, Entity entity, ItemStack sheathStack, InteractionHand hand) {
@@ -34,19 +36,27 @@ public class SayaRightclickedProcedure {
 				CompoundTag katanaTag = new CompoundTag();
 				katanaItem.save(katanaTag);
 				tag.put("StoredKatana", katanaTag);
-				
+
 				// カスタムモデルデータを設定（刀が入った鞘の見た目）
 				int modelData = getModelDataForKatana(katanaItem);
 				tag.putInt("CustomModelData", modelData);
-				
+
 				// タグを確実にItemStackに適用
 				sheathStack.setTag(tag);
-				
+
 				// 反対の手から刀を削除
 				player.setItemInHand(otherHand, ItemStack.EMPTY);
-				
+
 				// 納刀音を再生
 				player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER, 1.0F, 0.8F);
+
+				// オフハンドに鞘を持っていて、かつLoki the Tricksterを納刀した場合、モード切り替え
+				if (hand == InteractionHand.OFF_HAND && katanaItem.getItem() instanceof LokiTheTricksterItem) {
+					LokiTheTricksterItem.toggleMode(katanaItem);
+					String newMode = LokiTheTricksterItem.getMode(katanaItem);
+					String modeName = newMode.equals("disarm") ? "Disarm" : "Decoy";
+					player.displayClientMessage(Component.literal("§6[納刀] Loki Mode: " + modeName), true);
+				}
 			}
 		}
 	}

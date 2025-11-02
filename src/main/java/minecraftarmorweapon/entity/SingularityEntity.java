@@ -154,7 +154,7 @@ public class SingularityEntity extends PathfinderMob {
                 .add(Attributes.ATTACK_DAMAGE, 10.0)     // 攻撃力: 10（ティア2: 7 → ティア3: 10、倍率1.6倍で16ダメージ）
                 .add(Attributes.ARMOR, 12.0)             // 防御力: 12（ダイヤ装備+エンチャント）
                 .add(Attributes.ATTACK_KNOCKBACK, 0.5)
-                .add(Attributes.FOLLOW_RANGE, 32.0);
+                .add(Attributes.FOLLOW_RANGE, 64.0);     // 遠くの敵も追いかける
     }
 
     @Override
