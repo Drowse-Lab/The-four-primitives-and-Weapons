@@ -180,40 +180,37 @@ public class ALifeAIBridge {
 
     /**
      * 最も危険な敵を見つける（脅威度評価）
+     * 最寄りの敵を優先的に倒すように変更
      */
     private LivingEntity findMostDangerousEnemy(WorldData data) {
-        LivingEntity mostDangerous = null;
-        double highestThreat = 0.0;
+        LivingEntity nearestEnemy = null;
+        double nearestDistance = Double.MAX_VALUE;
 
         for (LivingEntity enemy : data.nearbyEnemies) {
-            double threat = 0.0;
+            if (enemy == null || !enemy.isAlive()) {
+                continue;
+            }
+
             double dist = entity.distanceTo(enemy);
 
-            // 距離が近いほど脅威度が高い
-            if (dist <= 2.0) {
-                threat += 10.0;
-            } else if (dist <= 5.0) {
-                threat += 5.0 / dist;
-            }
-
-            // 体力が低い敵は優先的に倒す
-            float healthRatio = enemy.getHealth() / enemy.getMaxHealth();
-            if (healthRatio < 0.5f) {
-                threat += 3.0;
-            }
-
-            // プレイヤーは最優先
+            // プレイヤーは常に最優先
             if (enemy instanceof Player) {
-                threat += 15.0;
+                Player player = (Player) enemy;
+                // クリエイティブ/スペクテーターは除外
+                if (player.isCreative() || player.isSpectator()) {
+                    continue;
+                }
+                return enemy;
             }
 
-            if (threat > highestThreat) {
-                highestThreat = threat;
-                mostDangerous = enemy;
+            // 最も近い敵を選択
+            if (dist < nearestDistance) {
+                nearestDistance = dist;
+                nearestEnemy = enemy;
             }
         }
 
-        return mostDangerous;
+        return nearestEnemy;
     }
 
     /**
@@ -450,15 +447,37 @@ public class ALifeAIBridge {
 
         AIAction action = new AIAction("dodge");
 
-        // 敵から離れる方向に回避
+        // 敵の位置に基づいて、前方・後方・左・右のいずれかにランダムに回避
         if (data.nearestEnemyPosition != null) {
             Vec3 entityPos = entity.position();
             Vec3 enemyPos = data.nearestEnemyPosition;
-            Vec3 awayDirection = entityPos.subtract(enemyPos).normalize();
+            Vec3 toEnemy = enemyPos.subtract(entityPos).normalize();
 
-            action.direction = awayDirection;
+            // 4方向からランダムに選択
+            int direction = (int)(Math.random() * 4);
+            Vec3 dodgeDirection;
+
+            switch (direction) {
+                case 0: // 後方（敵から離れる）
+                    dodgeDirection = toEnemy.scale(-1.0);
+                    break;
+                case 1: // 前方（敵に向かう）
+                    dodgeDirection = toEnemy;
+                    break;
+                case 2: // 左方向（敵に対して左）
+                    dodgeDirection = new Vec3(-toEnemy.z, 0, toEnemy.x).normalize();
+                    break;
+                case 3: // 右方向（敵に対して右）
+                    dodgeDirection = new Vec3(toEnemy.z, 0, -toEnemy.x).normalize();
+                    break;
+                default:
+                    dodgeDirection = toEnemy.scale(-1.0);
+                    break;
+            }
+
+            action.direction = dodgeDirection;
         } else {
-            // ランダムな横方向に回避
+            // 敵がいない場合はランダムな方向に回避
             double angle = Math.random() * Math.PI * 2;
             action.direction = new Vec3(Math.cos(angle), 0, Math.sin(angle));
         }

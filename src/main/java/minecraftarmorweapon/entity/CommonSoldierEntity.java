@@ -110,7 +110,7 @@ public class CommonSoldierEntity extends PathfinderMob {
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
             .add(Attributes.MAX_HEALTH, 20.0)
-            .add(Attributes.MOVEMENT_SPEED, 0.1)  // プレイヤーと同じ速度
+            .add(Attributes.MOVEMENT_SPEED, 0.25)  // プレイヤーより速い移動速度
             .add(Attributes.ATTACK_DAMAGE, 5.0)
             .add(Attributes.ARMOR, 4.0)
             .add(Attributes.FOLLOW_RANGE, 32.0)

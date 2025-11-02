@@ -97,7 +97,7 @@ public class EliteSoldierEntity extends PathfinderMob {
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
             .add(Attributes.MAX_HEALTH, 40.0)      // 一般兵20 → 40
-            .add(Attributes.MOVEMENT_SPEED, 0.1)   // プレイヤーと同じ速度
+            .add(Attributes.MOVEMENT_SPEED, 0.27)  // プレイヤーより速い移動速度
             .add(Attributes.ATTACK_DAMAGE, 7.0)    // 一般兵5.0 → 7.0
             .add(Attributes.ARMOR, 8.0)            // 一般兵4.0 → 8.0
             .add(Attributes.FOLLOW_RANGE, 40.0)    // 一般兵32.0 → 40.0

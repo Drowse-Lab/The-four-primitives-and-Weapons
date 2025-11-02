@@ -365,18 +365,114 @@ public class PlayerLikeAIGoal extends Goal {
     }
 
     /**
-     * 通常攻撃を実行
+     * 通常攻撃を実行（武器タイプに応じたエフェクト付き）
      */
     private void executeNormalAttack(ALifeAIBridge.AIAction action) {
         LivingEntity target = entity.getTarget();
-        if (target != null && entity.distanceTo(target) <= 3.0) {
-            // デバッグログ
-            System.out.println("[PlayerLikeAI] executeNormalAttack:");
-            System.out.println("  - Entity: " + entity.getName().getString());
-            System.out.println("  - Attack Type: " + action.attackType);
-            System.out.println("  - Combo: " + action.combo);
+        if (target == null || entity.distanceTo(target) > 3.0) {
+            return;
+        }
 
-            entity.doHurtTarget(target);
+        // デバッグログ
+        System.out.println("[PlayerLikeAI] executeNormalAttack:");
+        System.out.println("  - Entity: " + entity.getName().getString());
+        System.out.println("  - Attack Type: " + action.attackType);
+        System.out.println("  - Combo: " + action.combo);
+
+        // 通常のダメージ処理
+        boolean hitSuccess = entity.doHurtTarget(target);
+
+        if (hitSuccess) {
+            Level world = entity.level;
+            Vec3 targetPos = target.position();
+
+            // 武器タイプに応じたエフェクトとノックバック
+            if (!world.isClientSide) {
+                ServerLevel serverWorld = (ServerLevel) world;
+
+                // 攻撃タイプに応じたパーティクルエフェクト
+                switch (action.attackType) {
+                    case "iai_slash":
+                    case "quick_slash":
+                    case "slash":
+                        // 斬撃エフェクト
+                        serverWorld.sendParticles(
+                            ParticleTypes.SWEEP_ATTACK,
+                            targetPos.x, targetPos.y + target.getBbHeight() / 2, targetPos.z,
+                            2, 0.3, 0.3, 0.3, 0
+                        );
+                        break;
+
+                    case "thrust":
+                    case "pierce":
+                    case "charge_thrust":
+                        // 突きエフェクト（火花）
+                        serverWorld.sendParticles(
+                            ParticleTypes.CRIT,
+                            targetPos.x, targetPos.y + target.getBbHeight() / 2, targetPos.z,
+                            8, 0.2, 0.2, 0.2, 0.1
+                        );
+                        // 強めのノックバック
+                        Vec3 knockback = target.position().subtract(entity.position()).normalize().scale(0.6);
+                        target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.15, knockback.z));
+                        break;
+
+                    case "overhead_smash":
+                    case "cleave":
+                        // 叩きつけエフェクト（爆発パーティクル）
+                        serverWorld.sendParticles(
+                            ParticleTypes.EXPLOSION,
+                            targetPos.x, targetPos.y, targetPos.z,
+                            1, 0, 0, 0, 0
+                        );
+                        // 非常に強いノックバック
+                        Vec3 smashKnockback = target.position().subtract(entity.position()).normalize().scale(0.8);
+                        target.setDeltaMovement(target.getDeltaMovement().add(smashKnockback.x, 0.3, smashKnockback.z));
+                        break;
+
+                    case "spin_slash":
+                    case "sweep":
+                        // 回転斬りエフェクト（複数回の斬撃）
+                        for (int i = 0; i < 3; i++) {
+                            serverWorld.sendParticles(
+                                ParticleTypes.SWEEP_ATTACK,
+                                targetPos.x, targetPos.y + target.getBbHeight() / 2, targetPos.z,
+                                1, 0.4, 0.4, 0.4, 0
+                            );
+                        }
+                        break;
+
+                    case "downward_cut":
+                        // 下段斬りエフェクト
+                        serverWorld.sendParticles(
+                            ParticleTypes.SWEEP_ATTACK,
+                            targetPos.x, targetPos.y + 0.5, targetPos.z,
+                            2, 0.3, 0.2, 0.3, 0
+                        );
+                        break;
+
+                    default:
+                        // デフォルトエフェクト
+                        serverWorld.sendParticles(
+                            ParticleTypes.SWEEP_ATTACK,
+                            targetPos.x, targetPos.y + target.getBbHeight() / 2, targetPos.z,
+                            1, 0.2, 0.2, 0.2, 0
+                        );
+                        break;
+                }
+
+                // 攻撃音（攻撃タイプに応じて変更）
+                if (action.attackType.contains("smash") || action.attackType.contains("cleave")) {
+                    world.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+                        SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.HOSTILE, 1.0f, 0.8f);
+                } else if (action.attackType.contains("thrust") || action.attackType.contains("pierce")) {
+                    world.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+                        SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.HOSTILE, 1.0f, 1.2f);
+                } else {
+                    world.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+                        SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0f, 1.0f);
+                }
+            }
         }
     }
 

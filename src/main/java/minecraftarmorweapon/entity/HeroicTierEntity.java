@@ -149,7 +149,7 @@ public class HeroicTierEntity extends PathfinderMob {
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 80.0)        // HP: 80（ティア3: 60 → ティア4: 80）
-                .add(Attributes.MOVEMENT_SPEED, 0.1)     // プレイヤーと同じ速度
+                .add(Attributes.MOVEMENT_SPEED, 0.3)     // プレイヤーより速い移動速度
                 .add(Attributes.ATTACK_DAMAGE, 12.0)     // 攻撃力: 12（ティア3: 10 → ティア4: 12、倍率2.0倍で24ダメージ）
                 .add(Attributes.ARMOR, 16.0)             // 防御力: 16（ネザライト装備+最強エンチャント）
                 .add(Attributes.ARMOR_TOUGHNESS, 3.0)    // 防御強度: 3（ネザライト装備）

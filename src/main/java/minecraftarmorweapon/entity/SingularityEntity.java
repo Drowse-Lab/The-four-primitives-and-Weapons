@@ -150,7 +150,7 @@ public class SingularityEntity extends PathfinderMob {
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 60.0)        // HP: 60（ティア2: 40 → ティア3: 60）
-                .add(Attributes.MOVEMENT_SPEED, 0.1)     // プレイヤーと同じ速度
+                .add(Attributes.MOVEMENT_SPEED, 0.29)    // プレイヤーより速い移動速度
                 .add(Attributes.ATTACK_DAMAGE, 10.0)     // 攻撃力: 10（ティア2: 7 → ティア3: 10、倍率1.6倍で16ダメージ）
                 .add(Attributes.ARMOR, 12.0)             // 防御力: 12（ダイヤ装備+エンチャント）
                 .add(Attributes.ATTACK_KNOCKBACK, 0.5)
