@@ -7,7 +7,8 @@
 後嫌なことがあると更新頻度が少し遅くなります  
 ***
 ## MIT License
-MIT Licenseやから発酵させてもいいし天日干しにしてもいいよでも使う時はuserID乗っけてくれると嬉しいよ  
+MIT Licenseやから発酵させてもいいし天日干しにしてもいいよでも使う時は  
+userID乗っけてくれると嬉しいよ   
 ***
 ## my mod link
 [![Link Check](https://github.com/hrmcngs/The-four-primitives-and-Weapons/blob/0afbf5c653e9fd2ea29179ea99e93ef791a0462c/src/main/resources/logo.png)](https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons/files)
