@@ -6,9 +6,8 @@
 改善点あったら教えていただけるとありがたいです  
 後嫌なことがあると更新頻度が少し遅くなります  
 ***
-## 参考リンク
-doragon Armorのtextureはここからダウンロードしました  
-[![Link Check](https://github.com/janosh/awesome-normalizing-flows/actions/workflows/link-check.yml/badge.svg)](https://github.com/GitPois1x/DragonLoot/tree/1.20/src/main/resources/assets/dragonloot/textures)
+## MIT License
+MIT Licenseやから発酵させてもいいし天日干しにしてもいいよでも使う時はuserID乗っけてくれると嬉しいよ  
 ***
 ## my mod link
 [![Link Check](https://github.com/hrmcngs/The-four-primitives-and-Weapons/blob/0afbf5c653e9fd2ea29179ea99e93ef791a0462c/src/main/resources/logo.png)](https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons/files)
@@ -19,7 +18,11 @@ https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons
 ![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=hrmcngs&show_icons=true&theme=dark)  
 ![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=Renkon65&show_icons=true&theme=dark)
 ![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=aya526dev&show_icons=true&theme=gotham)
-
+***
+## 参考リンク
+doragon Armorのtextureはここからダウンロードしました  
+[![Link Check](https://github.com/janosh/awesome-normalizing-flows/actions/workflows/link-check.yml/badge.svg)](https://github.com/GitPois1x/DragonLoot/tree/1.20/src/main/resources/assets/dragonloot/textures)
+***
 ## [chuzume](https://github.com/Chuzume)さんのを参考にしたり
 ### replica sword of light
 https://youtu.be/nA6a7O3jBJo?si=NzeW23jMIkDXOmv3  
