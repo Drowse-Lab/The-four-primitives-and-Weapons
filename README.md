@@ -1,4 +1,5 @@
 # [![Typing SVG](https://readme-typing-svg.demolab.com?font=Jacquard+12&size=60&pause=1000&color=513C90&background=C1FCFF00&center=true&vCenter=true&random=true&width=1000&height=115&lines=The-four-primitives-and-Weapons)](https://git.io/typing-svg)
+***
 ## リポジトリ管理者
 この作品は、今のところは、  
 数人の学生によって作られています  
@@ -32,3 +33,4 @@ https://youtu.be/i-ItAsrIK7U?si=f5FXomJLYBK7GmQ9
 ### True-Crafter
 https://github.com/Chuzume/True-Crafter-Mode  
 https://youtu.be/7oI4bwtSQUQ  
+***
