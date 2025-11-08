@@ -85,15 +85,26 @@ public class LokiTheTricksterItem extends SwordItem {
 	public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
 		ItemStack itemstack = player.getItemInHand(hand);
 
-		// スニーク中は右クリックでモード切り替え
+		// スニーク中は右クリックでモード切り替え（ただし、オフハンドに鞘がある場合は無効）
 		if (player.isShiftKeyDown()) {
-			if (!world.isClientSide()) {
-				toggleMode(itemstack);
-				String newMode = getMode(itemstack);
-				String modeName = newMode.equals(DISARM_MODE) ? "Disarm" : "Decoy";
-				player.displayClientMessage(Component.literal("Loki Mode: " + modeName), true);
+			// オフハンドをチェック
+			InteractionHand offHand = hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+			ItemStack offHandItem = player.getItemInHand(offHand);
+
+			// オフハンドに鞘がある場合はモード切り替えをスキップ（抜刀・納刀でモード切り替え）
+			boolean hasSayaInOffHand = !offHandItem.isEmpty() &&
+			                            offHandItem.getItem().getClass().getSimpleName().equals("SayaItem");
+
+			if (!hasSayaInOffHand) {
+				// 鞘を持っていない場合のみスニークでモード切り替え
+				if (!world.isClientSide()) {
+					toggleMode(itemstack);
+					String newMode = getMode(itemstack);
+					String modeName = newMode.equals(DISARM_MODE) ? "Disarm" : "Decoy";
+					player.displayClientMessage(Component.literal("§e[スニーク] Loki Mode: " + modeName), true);
+				}
+				return InteractionResultHolder.success(itemstack);
 			}
-			return InteractionResultHolder.success(itemstack);
 		}
 
 		// 右クリックチャージは無効化 - 左クリック長押しシステムを使用
