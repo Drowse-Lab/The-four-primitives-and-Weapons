@@ -53,7 +53,10 @@ import minecraftarmorweapon.network.AttackPacket;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.util.DamageCalculator;
 import minecraftarmorweapon.item.LokiTheTricksterItem;
+import minecraftarmorweapon.entity.LokiDecoydasuEntity;
+import minecraftarmorweapon.entity.LokiDisarmEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.util.RandomSource;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -1378,30 +1381,12 @@ public class ChargedAttackHandler {
             player.getFoodData().addExhaustion(DECOY_HUNGER_COST * 4.0f);
         }
 
-        // Decoy Ball召喚
-        Vec3 eyePos = player.getEyePosition(1.0f);
-        Vec3 lookVec = player.getLookAngle();
-
-        ArmorStand decoyBall = new ArmorStand(EntityType.ARMOR_STAND, player.level);
-        decoyBall.setPos(eyePos.x, eyePos.y, eyePos.z);
-        decoyBall.setInvisible(true);
-
-        // NBTでSmallを設定
-        CompoundTag entityData = new CompoundTag();
-        entityData.putBoolean("Small", true);
-        decoyBall.load(entityData);
-
-        CompoundTag nbt = decoyBall.getPersistentData();
-        nbt.putBoolean("LokiDecoyBall", true);
-        nbt.putDouble("MotionX", lookVec.x * 0.4);
-        nbt.putDouble("MotionY", lookVec.y * 0.4);
-        nbt.putDouble("MotionZ", lookVec.z * 0.4);
-
-        player.level.addFreshEntity(decoyBall);
+        // Decoy Ball発射（専用エンティティを使用）
+        LokiDecoydasuEntity.shoot(player.level, player, RandomSource.create(), 0.3f, 0, 0);
 
         // サウンド
         player.level.playSound(null, player.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0f, 0.0f);
-        player.displayClientMessage(Component.literal("§bDecoy発射! (Ball spawned)"), true);
+        player.displayClientMessage(Component.literal("§bDecoy発射!"), true);
     }
 
     /**
