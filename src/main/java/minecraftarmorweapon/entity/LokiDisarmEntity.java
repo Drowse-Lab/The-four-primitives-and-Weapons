@@ -31,6 +31,9 @@ import java.util.List;
 public class LokiDisarmEntity extends ThrowableItemProjectile {
 	private int tickCount = 0;
 	private boolean returning = false;
+	private boolean chasing = false;
+	private int chasingTicks = 0;
+	private LivingEntity chaseTarget = null;
 	private Entity shooter = null;
 
 	// 一時的にEntityType.SNOWBALLを使用（後でMCreatorでLOKI_DISARMを追加する必要がある）
@@ -72,7 +75,7 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 		super.onHitEntity(result);
 		Entity entity = result.getEntity();
 
-		if (!returning && entity != shooter) {
+		if (!returning && !chasing && entity != shooter) {
 			// 武装解除: MainHandとOffHandのアイテムをドロップさせる
 			if (entity instanceof LivingEntity livingEntity) {
 				ItemStack mainHandItem = livingEntity.getMainHandItem();
@@ -102,8 +105,9 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 					SoundSource.PLAYERS, 1.0f, 1.0f);
 			}
 
-			// 当たったら戻る
-			returning = true;
+			// エンティティに当たったらチェイスモードに入る
+			chasing = true;
+			chasingTicks = 0;
 		}
 	}
 
@@ -130,8 +134,60 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 			serverLevel.sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 1, 0.1, 0.1, 0.1, 0.01);
 		}
 
+		// チェイスモード処理
+		if (chasing) {
+			chasingTicks++;
+
+			// チェイス時間が終わったら戻る
+			if (chasingTicks > 40) { // 2秒間追跡
+				chasing = false;
+				returning = true;
+			} else {
+				// 近くのLivingEntityを探して追跡
+				List<LivingEntity> nearbyEntities = level.getEntitiesOfClass(
+					LivingEntity.class,
+					this.getBoundingBox().inflate(8.0),
+					entity -> entity != shooter && entity.isAlive()
+				);
+
+				if (!nearbyEntities.isEmpty()) {
+					// 最も近いエンティティを追跡
+					LivingEntity closestEntity = null;
+					double closestDistance = Double.MAX_VALUE;
+
+					for (LivingEntity entity : nearbyEntities) {
+						double distance = this.distanceToSqr(entity);
+						if (distance < closestDistance) {
+							closestDistance = distance;
+							closestEntity = entity;
+						}
+					}
+
+					if (closestEntity != null) {
+						chaseTarget = closestEntity;
+
+						// ターゲットに向かって飛ぶ
+						double dx = chaseTarget.getX() - this.getX();
+						double dy = (chaseTarget.getY() + chaseTarget.getEyeHeight() / 2.0) - this.getY();
+						double dz = chaseTarget.getZ() - this.getZ();
+						double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+						if (distance > 0.1) {
+							double speed = 0.6;
+							this.setDeltaMovement(dx / distance * speed, dy / distance * speed, dz / distance * speed);
+						}
+					}
+				} else {
+					// 近くにエンティティがいない場合は戻る
+					chasing = false;
+					returning = true;
+				}
+			}
+		}
+
 		// 一定時間経過後は強制的に戻る
-		if (tickCount > 60) {
+		if (tickCount > 100 && !returning) {
+			chasing = false;
 			returning = true;
 		}
 

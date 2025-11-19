@@ -1405,37 +1405,8 @@ public class ChargedAttackHandler {
             player.getFoodData().addExhaustion(DISARM_HUNGER_COST * 4.0f);
         }
 
-        // Disarm Wind召喚
-        Vec3 spawnPos = player.position().add(0, 1, 0).add(player.getLookAngle());
-        Vec3 lookVec = player.getLookAngle();
-
-        ArmorStand disarmWind = new ArmorStand(EntityType.ARMOR_STAND, player.level);
-        disarmWind.setPos(spawnPos.x, spawnPos.y, spawnPos.z);
-        disarmWind.setYRot(player.getYRot());
-        disarmWind.setXRot(player.getXRot());
-        disarmWind.setInvisible(true);
-        disarmWind.setNoGravity(true); // 重力無効化
-        disarmWind.setInvulnerable(true); // 無敵
-
-        // NBTでSmall、Marker、NoBasePlate、ShowArmsを設定
-        CompoundTag entityData = new CompoundTag();
-        entityData.putBoolean("Small", true);
-        entityData.putBoolean("Marker", true); // 完全に不可視のマーカーモード
-        entityData.putBoolean("NoBasePlate", true); // ベースプレートを非表示
-        entityData.putBoolean("ShowArms", false); // 腕を非表示
-        disarmWind.load(entityData);
-
-        CompoundTag nbt = disarmWind.getPersistentData();
-        nbt.putBoolean("LokiDisarmWind", true);
-        nbt.putInt("BulletRemain", 0);
-        nbt.putString("OwnerUUID", player.getUUID().toString());
-        nbt.putBoolean("Returning", false);
-        // プレイヤーの視線方向を保存
-        nbt.putDouble("LookX", lookVec.x);
-        nbt.putDouble("LookY", lookVec.y);
-        nbt.putDouble("LookZ", lookVec.z);
-
-        player.level.addFreshEntity(disarmWind);
+        // Disarm Wind発射（専用エンティティを使用）
+        LokiDisarmEntity.shoot(player.level, player, RandomSource.create(), 1.5f, 0, 0);
 
         // サウンド
         player.level.playSound(null, player.blockPosition(), SoundEvents.BAT_TAKEOFF, SoundSource.NEUTRAL, 2.0f, 1.0f);
