@@ -12,7 +12,11 @@ MIT Licenseやから発酵させてもいいし天日干しにしてもいいよ
 userID乗っけてくれると嬉しいよ   
 ***
 ## my mod link
-[![Link Check](https://github.com/hrmcngs/The-four-primitives-and-Weapons/blob/0afbf5c653e9fd2ea29179ea99e93ef791a0462c/src/main/resources/logo.png)](https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons/files)
+
+<a href="https://www.curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons/files" target="_blank">
+  <img src="https://github.com/hrmcngs/The-four-primitives-and-Weapons/blob/0afbf5c653e9fd2ea29179ea99e93ef791a0462c/src/main/resources/logo.png" alt="The four primitives and Weapons mod logo" style="width:100px; height:auto;">
+</a>
+
 https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons
 ***
 ## other
