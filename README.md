@@ -20,14 +20,19 @@ userID乗っけてくれると嬉しいよ
 https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons
 ***
 ## other
-![Customized Card](https://github-readme-stats.vercel.app/api/pin?username=hrmcngs&repo=The-four-primitives-and-Weapons&title_color=fff&icon_color=f9f9f9&text_color=9f9f9f&bg_color=151515)  
-![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=hrmcngs&show_icons=true&theme=dark)  
-![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=Renkon65&show_icons=true&theme=dark)
-![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=aya526dev&show_icons=true&theme=gotham)
+<img src="https://github-readme-stats.vercel.app/api/pin?username=hrmcngs&repo=The-four-primitives-and-Weapons&title_color=fff&icon_color=f9f9f9&text_color=9f9f9f&bg_color=151515" alt="Customized Card" style="width:250px; height:auto;">
+<img src="https://github-readme-stats.vercel.app/api?username=hrmcngs&show_icons=true&theme=dark" alt="Anurag's GitHub stats" style="width:250px; height:auto;">
+<img src="https://github-readme-stats.vercel.app/api?username=Renkon65&show_icons=true&theme=dark" alt="Anurag's GitHub stats" style="width:250px; height:auto;">
+<img src="https://github-readme-stats.vercel.app/api?username=aya526dev&show_icons=true&theme=gotham" alt="Anurag's GitHub stats" style="width:250px; height:auto;">
+
 ***
 ## 参考リンク
 doragon Armorのtextureはここからダウンロードしました  
-[![Link Check](https://github.com/janosh/awesome-normalizing-flows/actions/workflows/link-check.yml/badge.svg)](https://github.com/GitPois1x/DragonLoot/tree/1.20/src/main/resources/assets/dragonloot/textures)
+
+<a href="https://github.com/GitPois1x/DragonLoot/tree/1.20/src/main/resources/assets/dragonloot/textures" target="_blank">
+  <img src="https://github.com/janosh/awesome-normalizing-flows/actions/workflows/link-check.yml/badge.svg" alt="Link Check status badge" style="width:150px; height:auto;">
+</a>
+
 ***
 ## [chuzume](https://github.com/Chuzume)さんのを参考にしたり
 ### replica sword of light
