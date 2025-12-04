@@ -14,6 +14,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 属性ダメージを適用するForgeイベントハンドラー
@@ -21,6 +22,12 @@ import java.util.List;
  */
 @Mod.EventBusSubscriber(modid = "minecraft_armor_weapon")
 public class ElementalDamageEvent {
+
+    // データパック連携用タグ名
+    private static final String TAG_ICE_DAMAGE = "mh_rpgish.ice_damage";
+    private static final String TAG_ELECTRIC_DAMAGE = "mh_rpgish.electric_damage";
+    private static final String TAG_CORROSION_DAMAGE = "mh_rpgish.corrosion_damage";
+    private static final String TAG_HOLY_DAMAGE = "mh_rpgish.holy_damage";
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onLivingHurt(LivingHurtEvent event) {
@@ -48,21 +55,28 @@ public class ElementalDamageEvent {
         // 属性に応じてダメージを計算
         float modifiedDamage = originalDamage;
 
+        // 古いダメージタグをクリア
+        clearDamageTags(target);
+
         switch (elementType) {
             case ICE:
                 modifiedDamage = IceElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                target.addTag(TAG_ICE_DAMAGE);
                 break;
             case ELECTRIC:
                 // 電気属性の伝染処理は後で行う（再帰を避けるため）
                 modifiedDamage = ElectricElementDamageHandler.calculateDamage(target, originalDamage, elementLevel, event.getSource());
                 // 水中での伝染ダメージを処理
                 applyElectricChainDamage(target, attacker, originalDamage, elementLevel);
+                target.addTag(TAG_ELECTRIC_DAMAGE);
                 break;
             case CORROSION:
                 modifiedDamage = CorrosionElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                target.addTag(TAG_CORROSION_DAMAGE);
                 break;
             case HOLY:
                 modifiedDamage = HolyElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                target.addTag(TAG_HOLY_DAMAGE);
                 break;
             default:
                 break;
@@ -72,6 +86,16 @@ public class ElementalDamageEvent {
         if (modifiedDamage != originalDamage) {
             event.setAmount(modifiedDamage);
         }
+    }
+
+    /**
+     * エンティティから属性ダメージタグをクリア
+     */
+    private static void clearDamageTags(LivingEntity entity) {
+        entity.removeTag(TAG_ICE_DAMAGE);
+        entity.removeTag(TAG_ELECTRIC_DAMAGE);
+        entity.removeTag(TAG_CORROSION_DAMAGE);
+        entity.removeTag(TAG_HOLY_DAMAGE);
     }
 
     /**
