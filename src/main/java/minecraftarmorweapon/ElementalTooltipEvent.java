@@ -93,7 +93,7 @@ public class ElementalTooltipEvent {
         switch (type) {
             case ICE: return "#55FFFF";        // 水色
             case ELECTRIC: return "#FFFF55";   // 黄色
-            case CORROSION: return "#AA00AA";  // 暗紫
+            case CORROSION: return "#8B00FF";  // ピンク
             case HOLY: return "#FFAA00";       // 金色
             default: return "#AAAAAA";         // グレー
         }
