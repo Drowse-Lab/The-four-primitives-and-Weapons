@@ -24,10 +24,10 @@ import java.util.Set;
 public class ElementalDamageEvent {
 
     // データパック連携用タグ名
-    private static final String TAG_ICE_DAMAGE = "mh_rpgish.ice_damage";
-    private static final String TAG_ELECTRIC_DAMAGE = "mh_rpgish.electric_damage";
-    private static final String TAG_CORROSION_DAMAGE = "mh_rpgish.corrosion_damage";
-    private static final String TAG_HOLY_DAMAGE = "mh_rpgish.holy_damage";
+    private static final String TAG_ICE_DAMAGE = "minecraft_armor_weapon.mh_rpgish.ice_damage";
+    private static final String TAG_ELECTRIC_DAMAGE = "minecraft_armor_weapon.mh_rpgish.electric_damage";
+    private static final String TAG_CORROSION_DAMAGE = "minecraft_armor_weapon.mh_rpgish.corrosion_damage";
+    private static final String TAG_HOLY_DAMAGE = "minecraft_armor_weapon.mh_rpgish.holy_damage";
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onLivingHurt(LivingHurtEvent event) {
