@@ -2,7 +2,7 @@
 
 *.md linguist-detectable=true
 
-.calude/
+.claude/
 
 run/
 !run/**/*.nbt
