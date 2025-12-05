@@ -2,6 +2,8 @@
 
 *.md linguist-detectable=true
 
+.calude/
+
 run/
 !run/**/*.nbt
 !run/**/*.mcfunction
