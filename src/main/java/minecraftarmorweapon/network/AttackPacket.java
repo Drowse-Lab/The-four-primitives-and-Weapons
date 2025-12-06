@@ -8,7 +8,7 @@ import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import java.util.function.Supplier;
 
 public class AttackPacket {
-    private final int attackType; // 0 = normal, 1 = charged, 2 = falling
+    private final int attackType; // 0 = normal, 1 = charged, 2 = falling, 3 = Loki Decoy, 4 = Loki Disarm
     private final float chargePercent;
     
     static {
@@ -45,6 +45,12 @@ public class AttackPacket {
                 } else if (msg.attackType == 2) {
                     // 落下攻撃（特定アイテム専用のため一時的にコメントアウト）
                     // minecraftarmorweapon.events.ChargedAttackHandler.performFallingAttack(player, msg.chargePercent);
+                } else if (msg.attackType == 3) {
+                    // Loki Decoy
+                    minecraftarmorweapon.events.ChargedAttackHandler.executeLokiDecoy(player);
+                } else if (msg.attackType == 4) {
+                    // Loki Disarm
+                    minecraftarmorweapon.events.ChargedAttackHandler.executeLokiDisarm(player);
                 }
             }
         });

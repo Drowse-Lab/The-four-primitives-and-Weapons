@@ -16,6 +16,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.DustParticleOptions;
+import com.mojang.math.Vector3f;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -29,9 +31,10 @@ import java.util.Arrays;
 
 public class TyokutouThrustAttackProcedure {
 
-    // 直刀として扱うアイテムのリスト（曲線ビームを出すアイテム）
+    // 直刀として扱うアイテムのリスト
+    // 注意: 曲線ビームを使えるのはLunaItemのみ、他の直刀は高速突き攻撃のみ
     private static final List<String> STRAIGHT_SWORD_ITEMS = Arrays.asList(
-        "LunaItem",
+        "LunaItem",           // 曲線ビーム使用可能
         "BluepurgeTyokutouItem",
         "KaminariKurikarakenTyokutouItem",
         "KurikarakenutigatanaItem",
@@ -47,7 +50,31 @@ public class TyokutouThrustAttackProcedure {
     public static boolean isStraightSword(ItemStack stack) {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
+
+        // 刀（曲刀）は直刀ではない - 明示的に除外
+        if (itemName.contains("Katana") || itemName.contains("katana")) {
+            return false;
+        }
+
+        // BluepurgeItemの場合、custom_model_data=2の時は直刀
+        if (itemName.equals("BluepurgeItem")) {
+            if (stack.hasTag() && stack.getTag().contains("CustomModelData")) {
+                int customModelData = stack.getTag().getInt("CustomModelData");
+                return customModelData == 2;
+            }
+            return false;
+        }
+
         return STRAIGHT_SWORD_ITEMS.contains(itemName);
+    }
+
+    /**
+     * アイテムがLunaかどうかを判定（曲線ビームを使えるのはLunaのみ）
+     */
+    public static boolean isLunaItem(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        String itemName = stack.getItem().getClass().getSimpleName();
+        return itemName.equals("LunaItem");
     }
 
     /**
@@ -62,62 +89,55 @@ public class TyokutouThrustAttackProcedure {
         if (entity == null || !(entity instanceof Player player))
             return;
 
-        double range = 8.0;  // 6.0 → 8.0に増加
-        double damage = 35.0;  // 25.0 → 35.0に増加
+        double range = 7.0;  // 他の刀と同じ範囲
+        double damage = 18.0;  // 他の刀と同じダメージ
 
         Vec3 lookVec = player.getLookAngle();
         Vec3 startPos = player.position().add(0, player.getEyeHeight(), 0);
 
         // 突進エフェクト
         if (world instanceof ServerLevel serverLevel) {
-            for (int i = 0; i < 20; i++) {
-                double d = i * 0.3;
+            for (int i = 0; i < 10; i++) {
+                double d = i * 0.6;
                 serverLevel.sendParticles(
                     ParticleTypes.SWEEP_ATTACK,
                     startPos.x + lookVec.x * d,
                     startPos.y + lookVec.y * d,
                     startPos.z + lookVec.z * d,
-                    1, 0, 0, 0, 0
+                    2, 0, 0, 0, 0
                 );
 
                 if (i % 2 == 0) {
                     serverLevel.sendParticles(
-                        ParticleTypes.CRIT,
+                        ParticleTypes.CLOUD,
                         startPos.x + lookVec.x * d,
                         startPos.y + lookVec.y * d,
                         startPos.z + lookVec.z * d,
-                        3, 0.1, 0.1, 0.1, 0.02
+                        3, 0.3, 0, 0.3, 0.01
                     );
                 }
             }
         }
 
-        // 前方への強力な突進移動
-        player.setDeltaMovement(player.getDeltaMovement().add(lookVec.scale(3.5)));  // 2.5 → 3.5に増加
+        // 前方への突進移動（他の刀と同じ）
+        player.setDeltaMovement(player.getDeltaMovement().add(lookVec.scale(1.8)));
 
-        // 直線上の敵を検索
-        AABB searchArea = new AABB(
-            startPos.x - 1, startPos.y - 1, startPos.z - 1,
-            startPos.x + lookVec.x * range + 1,
-            startPos.y + lookVec.y * range + 1,
-            startPos.z + lookVec.z * range + 1
-        ).expandTowards(lookVec.scale(range));
+        // 前方の敵を検索（他の刀と同じ判定）
+        Vec3 playerPos = player.position();
+        Vec3 endPos = playerPos.add(lookVec.scale(range));
+        AABB searchArea = new AABB(playerPos.add(-2, -1, -2), endPos.add(2, 2, 2));
 
         List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
             target -> {
                 if (target == player) return false;
-
-                // 非常に狭い判定（ほぼ直線）
-                Vec3 toTarget = target.position().add(0, target.getBbHeight() / 2, 0)
-                    .subtract(startPos).normalize();
-                double dot = lookVec.dot(toTarget);
-
-                return dot > 0.95 && target.distanceTo(player) <= range;
+                // 前方180度の広い範囲で判定（他の刀と同じ）
+                Vec3 toEntity = target.position().subtract(playerPos).normalize();
+                double dot = lookVec.dot(toEntity);
+                return dot > -0.2 && target.distanceTo(player) <= range;
             });
 
-        // チャージ攻撃では貫通（全ての敵にダメージ）
+        // 敵にダメージ
         for (LivingEntity target : targets) {
-
             // ダメージ計算（エンチャントや効果を適用）
             float actualDamage = calculateDamage(player, target, (float)damage);
             target.hurt(DamageSource.playerAttack(player), actualDamage);
@@ -125,53 +145,26 @@ public class TyokutouThrustAttackProcedure {
             // 武器特殊効果を適用
             applyWeaponEffects(player, target, actualDamage);
 
-            // 貫通エフェクト
+            // ノックバック（他の刀と同じ）
+            target.setDeltaMovement(lookVec.scale(1.5).add(0, 0.4, 0));
+
+            // ヒットエフェクト
             if (world instanceof ServerLevel serverLevel) {
                 Vec3 targetPos = target.position().add(0, target.getBbHeight() / 2, 0);
-
                 serverLevel.sendParticles(
-                    ParticleTypes.DAMAGE_INDICATOR,
+                    ParticleTypes.CRIT,
                     targetPos.x, targetPos.y, targetPos.z,
-                    20, 0.3, 0.3, 0.3, 0.1
+                    8, 0.3, 0.3, 0.3, 0.05
                 );
-
-                serverLevel.sendParticles(
-                    ParticleTypes.SWEEP_ATTACK,
-                    targetPos.x, targetPos.y, targetPos.z,
-                    5, 0.4, 0.4, 0.4, 0
-                );
-
-                // 貫通ラインエフェクト
-                for (int i = 0; i < 10; i++) {
-                    Vec3 particlePos = targetPos.add(
-                        lookVec.x * (i - 5) * 0.3,
-                        lookVec.y * (i - 5) * 0.3,
-                        lookVec.z * (i - 5) * 0.3
-                    );
-                    serverLevel.sendParticles(
-                        ParticleTypes.ENCHANTED_HIT,
-                        particlePos.x, particlePos.y, particlePos.z,
-                        2, 0, 0, 0, 0
-                    );
-                }
-            }
-
-            // 超強力なノックバック（チャージ攻撃）
-            target.setDeltaMovement(lookVec.scale(4.0).add(0, 0.6, 0));  // ノックバック強化
-
-            // サウンド
-            if (world instanceof Level level) {
-                level.playSound(null, target.getX(), target.getY(), target.getZ(),
-                    SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.5f, 0.8f);
-                level.playSound(null, target.getX(), target.getY(), target.getZ(),
-                    SoundEvents.TRIDENT_HIT, SoundSource.PLAYERS, 1.2f, 1.0f);
             }
         }
 
-        // 突進音
+        // サウンド
         if (world instanceof Level level) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.3f, 1.5f);
+                SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.2f, 1.0f);
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 1.2f);
         }
     }
 
@@ -205,7 +198,7 @@ public class TyokutouThrustAttackProcedure {
         // チャージ率に応じてパラメータを強化
         double range = 16.0 + chargePercent * 8.0;  // 16.0～24.0（倍増）
         double damage = 35.0 + chargePercent * 20.0;  // 35.0～55.0
-        double thrustPower = 3.5 + chargePercent * 2.0;  // 3.5～5.5
+        double thrustPower = 0.8 + chargePercent * 0.4;  // 0.8～1.2（他の刀と同程度）
 
         Vec3 lookVec = player.getLookAngle();
         Vec3 startPos = player.position().add(0, player.getEyeHeight(), 0);
@@ -322,25 +315,32 @@ public class TyokutouThrustAttackProcedure {
             }
         }
 
-        // ビームエフェクト（常に曲線ビームを表示）
+        // ビームエフェクト（Lunaのみ曲線ビームを表示、他の直刀は突き攻撃のみ）
         if (world instanceof ServerLevel serverLevel) {
-            // 常に曲がるビームエフェクトを表示（クールダウン無視）
-            if (!targets.isEmpty()) {
-                // 各ターゲットに対してビームを発射
-                for (LivingEntity target : targets) {
-                    Vec3 targetPos = target.position().add(0, target.getBbHeight() / 2, 0);
-                    createCurvingBeamsToTarget(serverLevel, targetPos, lookVec, player, chargePercent);
-                }
-            } else {
-                // ターゲットがいない場合は視線方向の複数の地点に向けてビームを発射
-                createCurvingBeamsToDirection(serverLevel, lookVec, player, chargePercent, range);
-            }
+            // プレイヤーが持っているアイテムを取得
+            ItemStack heldItem = (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY);
 
-            // クールダウン中は追加で直線ビームも表示（オプション）
-            if (isCooldown && chargePercent < 0.5f) {
-                // 弱いチャージの時のみ直線ビーム追加
-                createStraightBeams(serverLevel, startPos, lookVec, player, chargePercent * 0.5f, range * 0.7);
+            // Lunaのみ曲線ビームを表示
+            if (isLunaItem(heldItem)) {
+                // 曲がるビームエフェクトを表示（クールダウン無視）
+                if (!targets.isEmpty()) {
+                    // 各ターゲットに対してビームを発射
+                    for (LivingEntity target : targets) {
+                        Vec3 targetPos = target.position().add(0, target.getBbHeight() / 2, 0);
+                        createCurvingBeamsToTarget(serverLevel, targetPos, lookVec, player, chargePercent);
+                    }
+                } else {
+                    // ターゲットがいない場合は視線方向の複数の地点に向けてビームを発射
+                    createCurvingBeamsToDirection(serverLevel, lookVec, player, chargePercent, range);
+                }
+
+                // クールダウン中は追加で直線ビームも表示（オプション）
+                if (isCooldown && chargePercent < 0.5f) {
+                    // 弱いチャージの時のみ直線ビーム追加
+                    createStraightBeams(serverLevel, startPos, lookVec, player, chargePercent * 0.5f, range * 0.7);
+                }
             }
+            // 他の直刀は曲線ビーム無し（高速突き攻撃のみ）
         }
 
         // 突進音（強化版）
@@ -367,16 +367,19 @@ public class TyokutouThrustAttackProcedure {
         Vec3 lookVec = player.getLookAngle();
         Vec3 startPos = player.position().add(0, player.getEyeHeight(), 0);
 
-        // エフェクト
+        // エフェクト（小さいDustパーティクル）
         if (world instanceof ServerLevel serverLevel) {
-            for (int i = 0; i < 8; i++) {
-                double d = i * 0.5;
+            // 白っぽい小さなDustパーティクル
+            DustParticleOptions dustOptions = new DustParticleOptions(new Vector3f(0.9f, 0.95f, 1.0f), 0.4f);
+
+            for (int i = 0; i < 12; i++) {
+                double d = i * 0.35;
                 serverLevel.sendParticles(
-                    ParticleTypes.SWEEP_ATTACK,
+                    dustOptions,
                     startPos.x + lookVec.x * d,
                     startPos.y + lookVec.y * d,
                     startPos.z + lookVec.z * d,
-                    1, 0, 0, 0, 0
+                    2, 0.05, 0.05, 0.05, 0
                 );
             }
         }

@@ -204,6 +204,7 @@ public class SayaVisualUpdateHandler {
         if (itemName.equals("MyTestIronKatanaItem")) return 12;
         if (itemName.equals("RiversOfBloodItem")) return 13;
         if (itemName.equals("KatanaNiguHumerusItem")) return 14;
+        if (itemName.equals("LokiTheTricksterItem")) return 15;
         
         return 0; // デフォルト（空の鞘）
     }

@@ -1,5 +1,8 @@
 package minecraftarmorweapon.events;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -19,6 +22,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -33,6 +38,7 @@ import net.minecraft.world.level.block.BambooBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.Items;
 
 import minecraftarmorweapon.skill.PlayerSkillData;
 import minecraftarmorweapon.skill.PlayerSkillData.WeaponType;
@@ -46,6 +52,11 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
 import minecraftarmorweapon.network.AttackPacket;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.util.DamageCalculator;
+import minecraftarmorweapon.item.LokiTheTricksterItem;
+import minecraftarmorweapon.entity.LokiDecoydasuEntity;
+import minecraftarmorweapon.entity.LokiDisarmEntity;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.util.RandomSource;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +65,8 @@ import java.util.List;
 
 @Mod.EventBusSubscriber(modid = "minecraft_armor_weapon")
 public class ChargedAttackHandler {
-    
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChargedAttackHandler.class);
+
     private static final Map<UUID, ChargeData> playerChargeData = new HashMap<>();
     private static final int MAX_CHARGE_TIME = 60; // 3秒 (20 ticks/秒 × 3)
     private static final int MIN_CHARGE_TIME = 20; // 最小チャージ時間 1秒
@@ -71,6 +83,11 @@ public class ChargedAttackHandler {
         int fallTime = 0; // 落下時間
         int chargeCooldown = 0; // チャージ攻撃後のクールダウン
 
+        // Loki the Trickster用フィールド
+        int lokiChargeTime = 0;
+        boolean lokiIsSneaking = false;
+        boolean lokiWasSneaking = false;
+
         void reset() {
             isCharging = false;
             chargeTime = 0;
@@ -79,7 +96,11 @@ public class ChargedAttackHandler {
             fallTime = 0;
             // クールダウンは維持
         }
-        
+
+        void resetLoki() {
+            lokiChargeTime = 0;
+        }
+
         void resetCombo() {
             comboCounter = 0;
         }
@@ -145,18 +166,31 @@ public class ChargedAttackHandler {
                 }
             }
         }
+
+        // Decoy/Disarm Wind更新（サーバー側のみ）
+        if (!player.level.isClientSide && player.tickCount % 1 == 0) {
+            updateLokiEntities(player.level);
+        }
     }
-    
+
     private static void checkMouseInput(Player player, ChargeData data) {
         // クライアント側でのみ実行
         if (!player.level.isClientSide) return;
-        
+
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != player) return;
-        
+
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-        
+
+        // デバッグ: 手に持っているアイテムを表示（1秒に1回のみ）
+        if (!mainHand.isEmpty() && player.tickCount % 20 == 0) {
+            String itemClass = mainHand.getItem().getClass().getSimpleName();
+            boolean isLoki = mainHand.getItem() instanceof LokiTheTricksterItem;
+            LOGGER.info("[LOKI DEBUG] MainHand: {} isLoki={}", itemClass, isLoki);
+            player.displayClientMessage(Component.literal("§b[DEBUG] MainHand: " + itemClass + " isLoki=" + isLoki), true);
+        }
+
         // 鞘を持っていて刀が納刀されている場合の落下中抜刀攻撃
         boolean hasSheathWithKatana = (isSaya(mainHand) && hasStoredKatana(mainHand)) || 
                                       (isSaya(offHand) && hasStoredKatana(offHand));
@@ -193,7 +227,23 @@ public class ChargedAttackHandler {
             data.wasLeftClickPressed = isLeftClickHeld;
             return;
         }
-        
+
+        // Loki the Trickster専用処理
+        if (mainHand.getItem() instanceof LokiTheTricksterItem) {
+            boolean isLeftClickHeld = mc.options.keyAttack.isDown();
+
+            // デバッグ: Loki処理が呼ばれているか確認
+            if (isLeftClickHeld && !data.wasLeftClickPressed) {
+                LOGGER.info("[LOKI DEBUG] Left click pressed!");
+                player.displayClientMessage(Component.literal("§c[DEBUG] Loki detected, left click pressed"), true);
+            }
+
+            // Lokiの専用処理を呼び出し（現在の左クリック状態を渡す）
+            handleLokiTheTrickster(player, data, isLeftClickHeld);
+            data.wasLeftClickPressed = isLeftClickHeld;
+            return;
+        }
+
         // 通常の武器を持っている場合
         if (isWeapon(mainHand)) {
             boolean isLeftClickHeld = mc.options.keyAttack.isDown();
@@ -1199,5 +1249,523 @@ public class ChargedAttackHandler {
     private static boolean hasStoredKatana(ItemStack stack) {
         return stack.hasTag() && (stack.getTag().contains("StoredKatana") || stack.getTag().contains("StoredSword"));
     }
-    
+
+    // ========================================
+    // Loki the Trickster 機能
+    // ========================================
+
+    // Loki設定
+    private static final int DECOY_CHARGE_TIME = 20; // 1秒
+    private static final int DECOY_HUNGER_COST = 3;
+    private static final int DISARM_CHARGE_TIME = 10; // 0.5秒
+    private static final int DISARM_HUNGER_COST = 3;
+
+    /**
+     * Loki the Trickster処理（左クリック長押しベース）
+     */
+    private static void handleLokiTheTrickster(Player player, ChargeData data, boolean isLeftClickHeld) {
+        Level level = player.level;
+        ItemStack mainHand = player.getMainHandItem();
+
+        // Loki the Tricksterを持っているかチェック
+        if (!(mainHand.getItem() instanceof LokiTheTricksterItem)) {
+            data.resetLoki();
+            return;
+        }
+
+        // デバッグ: handleLokiTheTricksterが呼ばれていることを確認（クライアント側）
+        if (level.isClientSide()) {
+            if (data.lokiChargeTime == 0 && isLeftClickHeld) {
+                LOGGER.info("[LOKI DEBUG] Handler started, held={}", isLeftClickHeld);
+                player.displayClientMessage(Component.literal("§d[DEBUG] Loki handler started, held=" + isLeftClickHeld), true);
+            }
+            if (data.lokiChargeTime > 0 && data.lokiChargeTime % 5 == 0) {
+                LOGGER.info("[LOKI DEBUG] Loki charge: {}", data.lokiChargeTime);
+                player.displayClientMessage(Component.literal("§d[DEBUG] Loki charge: " + data.lokiChargeTime), true);
+            }
+        }
+
+        // スニーク中は左クリックを無視してモード切り替えのみ
+        if (player.isShiftKeyDown()) {
+            // スニーク中は何もしない（スニーク時はアイテム使用でモード切り替え）
+            data.resetLoki();
+            return;
+        }
+
+        data.lokiWasSneaking = data.lokiIsSneaking;
+        data.lokiIsSneaking = isLeftClickHeld;
+
+        // デバッグ: 状態確認
+        if (level.isClientSide() && (data.lokiWasSneaking || data.lokiIsSneaking)) {
+            LOGGER.info("[LOKI DEBUG] State: was={} is={} held={} charge={}",
+                data.lokiWasSneaking, data.lokiIsSneaking, isLeftClickHeld, data.lokiChargeTime);
+        }
+
+        // 左クリック中: チャージ
+        if (data.lokiIsSneaking) {
+            data.lokiChargeTime++;
+
+            String mode = LokiTheTricksterItem.getMode(mainHand);
+            int requiredCharge = mode.equals("decoy") ? DECOY_CHARGE_TIME : DISARM_CHARGE_TIME;
+
+            // デバッグ: チャージ進行状況を5tickごとに表示
+            if (data.lokiChargeTime % 5 == 0) {
+                player.displayClientMessage(Component.literal("§7Charging: " + data.lokiChargeTime + "/" + requiredCharge), true);
+            }
+
+            if (data.lokiChargeTime == requiredCharge && !level.isClientSide()) {
+                // チャージ完了サウンド
+                level.playSound(null, player.blockPosition(), SoundEvents.GUARDIAN_DEATH, SoundSource.PLAYERS, 1.5f, 2.0f);
+                level.playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.5f, 1.0f);
+                player.displayClientMessage(Component.literal("§aCharge complete!"), true);
+            }
+
+            if (data.lokiChargeTime >= requiredCharge && !level.isClientSide()) {
+                // チャージ維持エフェクト
+                if (level instanceof ServerLevel serverLevel) {
+                    serverLevel.sendParticles(
+                        ParticleTypes.SMOKE,
+                        player.getX(), player.getY() + 1, player.getZ(),
+                        2, 0.25, 0.5, 0.25, 0.0
+                    );
+                }
+            }
+        }
+        // 左クリックを離した: 発動
+        else if (data.lokiWasSneaking && !data.lokiIsSneaking) {
+            LOGGER.info("[LOKI DEBUG] Left click RELEASED! Charge={}", data.lokiChargeTime);
+            String mode = LokiTheTricksterItem.getMode(mainHand);
+
+            // デバッグ: チャージ時間とモードを表示
+            LOGGER.info("[LOKI DEBUG] Release: charge={} mode={}", data.lokiChargeTime, mode);
+            player.displayClientMessage(Component.literal("§eCharge: " + data.lokiChargeTime + " Mode: " + mode), true);
+
+            // Decoyモード発動 - サーバーにパケット送信
+            LOGGER.info("[LOKI DEBUG] Checking conditions: mode={} charge={} decoyReq={} disarmReq={}",
+                mode, data.lokiChargeTime, DECOY_CHARGE_TIME, DISARM_CHARGE_TIME);
+
+            if (mode.equals("decoy") && data.lokiChargeTime >= DECOY_CHARGE_TIME) {
+                LOGGER.info("[LOKI DEBUG] Sending Decoy packet!");
+                player.displayClientMessage(Component.literal("§aSending Decoy packet!"), true);
+                MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new AttackPacket(3, 0)); // attackType=3: Loki Decoy
+            }
+            // Disarmモード発動 - サーバーにパケット送信
+            else if (mode.equals("disarm") && data.lokiChargeTime >= DISARM_CHARGE_TIME) {
+                LOGGER.info("[LOKI DEBUG] Sending Disarm packet!");
+                player.displayClientMessage(Component.literal("§aSending Disarm packet!"), true);
+                MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new AttackPacket(4, 0)); // attackType=4: Loki Disarm
+            } else {
+                // チャージ不足のメッセージ
+                LOGGER.info("[LOKI DEBUG] Charge insufficient! mode={} charge={}", mode, data.lokiChargeTime);
+                player.displayClientMessage(Component.literal("§cCharge insufficient! Need " +
+                    (mode.equals("decoy") ? DECOY_CHARGE_TIME : DISARM_CHARGE_TIME)), true);
+            }
+
+            data.resetLoki();
+        }
+    }
+
+    /**
+     * Loki Decoyモード発動
+     */
+    public static void executeLokiDecoy(Player player) {
+        // クリエイティブモードでない場合のみ満腹度チェック
+        if (!player.isCreative()) {
+            if (player.getFoodData().getFoodLevel() < DECOY_HUNGER_COST) {
+                player.level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_BASS, SoundSource.PLAYERS, 1.5f, 0.0f);
+                player.displayClientMessage(Component.literal("§c満腹度が足りません!"), true);
+                return;
+            }
+
+            // 満腹度消費
+            player.getFoodData().addExhaustion(DECOY_HUNGER_COST * 4.0f);
+        }
+
+        // Decoy Ball発射（専用エンティティを使用）
+        LokiDecoydasuEntity.shoot(player.level, player, RandomSource.create(), 0.3f, 0, 0);
+
+        // サウンド
+        player.level.playSound(null, player.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0f, 0.0f);
+        player.displayClientMessage(Component.literal("§bDecoy発射!"), true);
+    }
+
+    /**
+     * Loki Disarmモード発動
+     */
+    public static void executeLokiDisarm(Player player) {
+        // クリエイティブモードでない場合のみ満腹度チェック
+        if (!player.isCreative()) {
+            if (player.getFoodData().getFoodLevel() < DISARM_HUNGER_COST) {
+                player.level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_BASS, SoundSource.PLAYERS, 1.5f, 0.0f);
+                player.displayClientMessage(Component.literal("§c満腹度が足りません!"), true);
+                return;
+            }
+
+            // 満腹度消費
+            player.getFoodData().addExhaustion(DISARM_HUNGER_COST * 4.0f);
+        }
+
+        // Disarm Wind発射（専用エンティティを使用）
+        LokiDisarmEntity.shoot(player.level, player, RandomSource.create(), 1.5f, 0, 0);
+
+        // サウンド
+        player.level.playSound(null, player.blockPosition(), SoundEvents.BAT_TAKEOFF, SoundSource.NEUTRAL, 2.0f, 1.0f);
+        player.level.playSound(null, player.blockPosition(), SoundEvents.WITHER_SHOOT, SoundSource.PLAYERS, 2.0f, 2.0f);
+        player.displayClientMessage(Component.literal("§6Disarm発射!"), true);
+    }
+
+    /**
+     * Loki エンティティ更新
+     */
+    private static void updateLokiEntities(Level level) {
+        if (level.isClientSide()) return;
+
+        AABB searchBox = new AABB(-30000000, -64, -30000000, 30000000, 320, 30000000);
+        List<ArmorStand> armorStands = level.getEntitiesOfClass(ArmorStand.class, searchBox);
+
+        for (ArmorStand stand : armorStands) {
+            CompoundTag nbt = stand.getPersistentData();
+
+            // Decoy Ball処理
+            if (nbt.contains("LokiDecoyBall") && nbt.getBoolean("LokiDecoyBall")) {
+                updateLokiDecoyBall(stand, level, nbt);
+            }
+
+            // Decoy処理
+            if (nbt.contains("LokiDecoyLifetime")) {
+                updateLokiDecoy(stand, level, nbt);
+            }
+
+            // Disarm Wind処理
+            if (nbt.contains("LokiDisarmWind") && nbt.getBoolean("LokiDisarmWind")) {
+                updateLokiDisarmWind(stand, level, nbt);
+            }
+        }
+    }
+
+    /**
+     * Loki Decoy Ball更新
+     */
+    private static void updateLokiDecoyBall(ArmorStand ball, Level level, CompoundTag nbt) {
+        // パーティクル
+        if (level instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(ParticleTypes.SMOKE, ball.getX(), ball.getY(), ball.getZ(), 2, 0.1, 0.1, 0.1, 0.0);
+            serverLevel.sendParticles(ParticleTypes.CRIT, ball.getX(), ball.getY(), ball.getZ(), 1, 0.0, 0.0, 0.0, 0.0);
+        }
+
+        // 移動
+        double mx = nbt.getDouble("MotionX");
+        double my = nbt.getDouble("MotionY") - 0.05; // 重力
+        double mz = nbt.getDouble("MotionZ");
+
+        ball.setPos(ball.getX() + mx, ball.getY() + my, ball.getZ() + mz);
+        nbt.putDouble("MotionY", my);
+
+        // 地面着弾チェック
+        if (ball.isOnGround() || my < -1.0) {
+            if (level instanceof ServerLevel serverLevel) {
+                serverLevel.getServer().getPlayerList().getPlayers().forEach(p ->
+                    p.displayClientMessage(Component.literal("§7Ball landed, spawning decoy..."), true)
+                );
+            }
+            summonLokiDecoy(ball);
+            ball.discard();
+        }
+    }
+
+    /**
+     * Loki Decoy召喚
+     */
+    private static void summonLokiDecoy(ArmorStand ball) {
+        Level level = ball.level;
+        Vec3 pos = ball.position();
+
+        ArmorStand decoy = new ArmorStand(EntityType.ARMOR_STAND, level);
+        decoy.setPos(pos.x, pos.y, pos.z);
+        decoy.setInvulnerable(true);
+
+        // 見た目設定
+        CompoundTag nbt = decoy.getPersistentData();
+        nbt.putInt("LokiDecoyLifetime", 0);
+        nbt.putInt("Decoy_Spin", 0);
+
+        // 装備設定
+        decoy.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.PLAYER_HEAD));
+        decoy.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.LEATHER_CHESTPLATE));
+        decoy.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.LEATHER_LEGGINGS));
+        decoy.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.LEATHER_BOOTS));
+
+        level.addFreshEntity(decoy);
+
+        // デバッグ
+        if (level instanceof ServerLevel serverLevel) {
+            serverLevel.getServer().getPlayerList().getPlayers().forEach(p ->
+                p.displayClientMessage(Component.literal("§aDecoy summoned! Lifetime starts at 0"), true)
+            );
+        }
+    }
+
+    /**
+     * Loki Decoy更新
+     */
+    private static void updateLokiDecoy(ArmorStand decoy, Level level, CompoundTag nbt) {
+        int lifetime = nbt.getInt("LokiDecoyLifetime");
+        lifetime++;
+        nbt.putInt("LokiDecoyLifetime", lifetime);
+
+        // デバッグ: lifetimeを確認
+        final int currentLifetime = lifetime;
+        if (lifetime % 20 == 0 && level.getServer() != null) {
+            level.getServer().getPlayerList().getPlayers().forEach(p ->
+                p.displayClientMessage(Component.literal("§7Decoy lifetime: " + currentLifetime), true)
+            );
+        }
+
+        // 挑発処理
+        if (lifetime == 3) {
+            decoy.setInvulnerable(true);
+        }
+        if (lifetime == 59 || lifetime == 119) {
+            decoy.setInvulnerable(false);
+        }
+        if (lifetime == 60 || lifetime == 120) {
+            // 挑発発動: ジャンプ + 体の回転開始
+            tauntLokiMobs(decoy, level);
+            decoy.setInvulnerable(true);
+
+            // ジャンプ動作（上向きの速度を与える）
+            decoy.setDeltaMovement(0, 0.5, 0);
+
+            // 挑発時の回転フラグをセット
+            nbt.putBoolean("TauntRotating", true);
+            nbt.putInt("TauntRotationStart", lifetime);
+
+            // サウンド
+            level.playSound(null, decoy.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.NEUTRAL, 1.5f, 1.2f);
+        }
+        if (lifetime == 121) {
+            decoy.setInvulnerable(true);
+        }
+
+        // 挑発時の体回転（20tick間回転）
+        if (nbt.getBoolean("TauntRotating")) {
+            int rotationStart = nbt.getInt("TauntRotationStart");
+            int rotationDuration = lifetime - rotationStart;
+
+            if (rotationDuration < 20) {
+                // 20tick間回転（1秒間）
+                int currentSpin = nbt.getInt("Decoy_Spin");
+                currentSpin += 30; // 1tickあたり30度回転
+                if (currentSpin >= 360) currentSpin -= 360;
+                nbt.putInt("Decoy_Spin", currentSpin);
+                decoy.setYRot(currentSpin);
+
+                // パーティクル
+                if (level instanceof ServerLevel serverLevel) {
+                    serverLevel.sendParticles(ParticleTypes.CLOUD, decoy.getX(), decoy.getY() + 1, decoy.getZ(), 1, 0.3, 0.3, 0.3, 0.0);
+                }
+            } else {
+                // 回転終了
+                nbt.putBoolean("TauntRotating", false);
+            }
+        }
+
+        // 自爆カウント
+        if (lifetime == 150) {
+            nbt.putString("DecoySpinPhase", "phase1");
+            level.playSound(null, decoy.blockPosition(), SoundEvents.NOTE_BLOCK_PLING, SoundSource.MASTER, 2.0f, 1.0f);
+        }
+        if (lifetime >= 150 && level instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(ParticleTypes.SMOKE, decoy.getX(), decoy.getY() + 1.8, decoy.getZ(), 2, 0.0, 0.0, 0.0, 0.0);
+        }
+        if (lifetime == 160) {
+            nbt.putString("DecoySpinPhase", "phase2");
+            level.playSound(null, decoy.blockPosition(), SoundEvents.NOTE_BLOCK_PLING, SoundSource.MASTER, 2.0f, 1.5f);
+        }
+        if (lifetime == 170) {
+            nbt.putString("DecoySpinPhase", "phase3");
+            level.playSound(null, decoy.blockPosition(), SoundEvents.NOTE_BLOCK_PLING, SoundSource.MASTER, 2.0f, 2.0f);
+        }
+
+        // 回転
+        String spinPhase = nbt.getString("DecoySpinPhase");
+        if (!spinPhase.isEmpty()) {
+            int spinSpeed = spinPhase.equals("phase1") ? 20 : (spinPhase.equals("phase2") ? 40 : 60);
+            int currentSpin = nbt.getInt("Decoy_Spin");
+            currentSpin += spinSpeed;
+            if (currentSpin >= 360) currentSpin = 0;
+            nbt.putInt("Decoy_Spin", currentSpin);
+            decoy.setYRot(currentSpin);
+        }
+
+        // 爆発
+        if (lifetime >= 180) {
+            level.explode(null, decoy.getX(), decoy.getY(), decoy.getZ(), 4.0f, net.minecraft.world.level.Explosion.BlockInteraction.DESTROY);
+            decoy.discard();
+        }
+    }
+
+    /**
+     * Loki挑発処理
+     */
+    private static void tauntLokiMobs(ArmorStand decoy, Level level) {
+        AABB box = new AABB(
+            decoy.getX() - 5, decoy.getY() - 5, decoy.getZ() - 5,
+            decoy.getX() + 5, decoy.getY() + 5, decoy.getZ() + 5
+        );
+
+        List<net.minecraft.world.entity.Mob> mobs = level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, box, mob -> mob.isAlive());
+
+        for (net.minecraft.world.entity.Mob mob : mobs) {
+            mob.setTarget(decoy);
+
+            if (level instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.POOF, decoy.getX(), decoy.getY() + 1, decoy.getZ(), 25, 0.0, 0.0, 0.0, 0.25);
+            }
+        }
+
+        level.playSound(null, decoy.blockPosition(), SoundEvents.WITHER_SHOOT, SoundSource.NEUTRAL, 2.0f, 2.0f);
+        level.playSound(null, decoy.blockPosition(), SoundEvents.CHICKEN_EGG, SoundSource.NEUTRAL, 2.0f, 0.0f);
+    }
+
+    /**
+     * Loki Disarm Wind更新
+     */
+    private static void updateLokiDisarmWind(ArmorStand wind, Level level, CompoundTag nbt) {
+        int bulletRemain = nbt.getInt("BulletRemain");
+        bulletRemain++;
+        nbt.putInt("BulletRemain", bulletRemain);
+
+        boolean returning = nbt.getBoolean("Returning");
+
+        // サウンド・パーティクル（風の効果）
+        if (bulletRemain % 2 == 0) { // 2tickごとにサウンド
+            level.playSound(null, wind.blockPosition(), SoundEvents.ELYTRA_FLYING, SoundSource.NEUTRAL, 1.5f, 1.8f);
+        }
+
+        if (level instanceof ServerLevel serverLevel) {
+            // 回転する風のパーティクル
+            double angle = (bulletRemain * 20) % 360;
+            for (int i = 0; i < 3; i++) {
+                double rad = Math.toRadians(angle + i * 120);
+                double offsetX = Math.cos(rad) * 0.8;
+                double offsetZ = Math.sin(rad) * 0.8;
+
+                // 斬撃パーティクル（回転）
+                serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK,
+                    wind.getX() + offsetX, wind.getY(), wind.getZ() + offsetZ,
+                    1, 0.0, 0.0, 0.0, 0.0);
+            }
+
+            // 中央に雲パーティクル
+            serverLevel.sendParticles(ParticleTypes.CLOUD, wind.getX(), wind.getY(), wind.getZ(), 3, 0.3, 0.3, 0.3, 0.02);
+
+            // 風の軌跡
+            serverLevel.sendParticles(ParticleTypes.POOF, wind.getX(), wind.getY(), wind.getZ(), 1, 0.2, 0.2, 0.2, 0.0);
+        }
+
+        // 移動 or 戻る
+        if (!returning) {
+            // 前進 - NBTに保存された視線方向を使用
+            double lookX = nbt.getDouble("LookX");
+            double lookY = nbt.getDouble("LookY");
+            double lookZ = nbt.getDouble("LookZ");
+
+            wind.setPos(
+                wind.getX() + lookX * 0.5,
+                wind.getY() + lookY * 0.5,
+                wind.getZ() + lookZ * 0.5
+            );
+
+            // アイテム引き寄せ
+            AABB itemBox = new AABB(
+                wind.getX() - 2, wind.getY() - 2, wind.getZ() - 2,
+                wind.getX() + 2, wind.getY() + 2, wind.getZ() + 2
+            );
+            List<net.minecraft.world.entity.item.ItemEntity> items =
+                level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, itemBox);
+
+            for (net.minecraft.world.entity.item.ItemEntity item : items) {
+                item.teleportTo(wind.getX(), wind.getY(), wind.getZ());
+            }
+
+            // 武装解除
+            if (bulletRemain >= 5) {
+                AABB hitBox = new AABB(
+                    wind.getX() - 2, wind.getY() - 2, wind.getZ() - 2,
+                    wind.getX() + 2, wind.getY() + 2, wind.getZ() + 2
+                );
+
+                List<LivingEntity> targets = level.getEntitiesOfClass(
+                    LivingEntity.class, hitBox,
+                    e -> e.isAlive() && !(e instanceof ArmorStand)
+                );
+
+                for (LivingEntity target : targets) {
+                    disarmLokiEntity(target);
+                    target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 10));
+                    target.addEffect(new MobEffectInstance(MobEffects.WITHER, 20, 2));
+
+                    if (level instanceof ServerLevel serverLevel) {
+                        serverLevel.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(), target.getZ(), 5, 0.0, 0.0, 0.0, 0.5);
+                    }
+                }
+            }
+
+            // 戻る判定
+            if (bulletRemain >= 15) {
+                nbt.putBoolean("Returning", true);
+            }
+        } else {
+            // 戻る処理
+            String ownerUUID = nbt.getString("OwnerUUID");
+            try {
+                UUID uuid = UUID.fromString(ownerUUID);
+                Player owner = level.getPlayerByUUID(uuid);
+
+                if (owner != null) {
+                    double dx = owner.getX() - wind.getX();
+                    double dy = owner.getY() - wind.getY();
+                    double dz = owner.getZ() - wind.getZ();
+                    double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+                    if (dist < 1.25) {
+                        wind.discard();
+                        return;
+                    }
+
+                    wind.setPos(
+                        wind.getX() + dx / dist * 0.6,
+                        wind.getY() + dy / dist * 0.6,
+                        wind.getZ() + dz / dist * 0.6
+                    );
+                }
+            } catch (Exception e) {
+                wind.discard();
+            }
+        }
+    }
+
+    /**
+     * Loki武装解除
+     */
+    private static void disarmLokiEntity(LivingEntity target) {
+        ItemStack mainHandItem = target.getMainHandItem();
+
+        if (!mainHandItem.isEmpty()) {
+            // アイテムをドロップ
+            net.minecraft.world.entity.item.ItemEntity droppedItem =
+                new net.minecraft.world.entity.item.ItemEntity(
+                    target.level,
+                    target.getX(), target.getY(), target.getZ(),
+                    mainHandItem.copy()
+                );
+            droppedItem.setPickUpDelay(10);
+            target.level.addFreshEntity(droppedItem);
+
+            // 手持ちを空にする
+            target.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+        }
+    }
+
 }

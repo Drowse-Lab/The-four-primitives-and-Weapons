@@ -1,0 +1,18 @@
+{
+	"parent": "minecraft_armor_weapon:custom/tyokutoutousinnuki",
+	"overrides": [
+		{
+			"predicate": {
+				"custom_model_data": 0
+			},
+			"model": "minecraft_armor_weapon:custom/tyokutoutousinnuki"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 1
+			},
+			"model": "minecraft_armor_weapon:custom/saya_luna"
+		}
+		
+	]
+}

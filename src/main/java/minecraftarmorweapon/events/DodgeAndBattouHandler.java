@@ -234,13 +234,24 @@ public class DodgeAndBattouHandler {
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (event.isCanceled()) return;
-        
+
         Player player = event.getEntity();
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-        
-        // シフトキーが押されている場合はブロック操作を許可
+
+        // シフトキーが押されている場合は納刀処理をチェック
         if (player.isShiftKeyDown()) {
+            // 武器を持っていて鞘もある場合、納刀する
+            if (isWeapon(mainHand) && isSaya(offHand)) {
+                performSheathing(player, mainHand, offHand, InteractionHand.MAIN_HAND, InteractionHand.OFF_HAND);
+                event.setCanceled(true);
+                return;
+            } else if (isWeapon(offHand) && isSaya(mainHand)) {
+                performSheathing(player, offHand, mainHand, InteractionHand.OFF_HAND, InteractionHand.MAIN_HAND);
+                event.setCanceled(true);
+                return;
+            }
+            // それ以外の場合はブロック操作を許可
             return;
         }
         
@@ -306,19 +317,6 @@ public class DodgeAndBattouHandler {
             playerDodgeData.put(playerId, data);
         }
 
-        // 直刀の場合は突進攻撃を実行
-        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-
-        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
-            performStraightSwordThrust(player, mainHand);
-            return;
-        }
-        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(offHand)) {
-            performStraightSwordThrust(player, offHand);
-            return;
-        }
-        
         // クールダウン中は実行しない
         if (!data.canDashAttack()) {
             player.displayClientMessage(
@@ -515,20 +513,25 @@ public class DodgeAndBattouHandler {
     
     private static boolean isWeapon(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        
+
         // SwordItemまたはカタナ系アイテムかチェック
         if (stack.getItem() instanceof SwordItem) return true;
-        
+
         String itemName = stack.getItem().getClass().getSimpleName();
-        
+
         // Sayaアイテムの場合は、刀が入っているかチェック
         if (itemName.equals("SayaItem")) {
             // NBTタグを確認して、StoredKatanaが存在する場合のみtrue
             return stack.hasTag() && stack.getTag().contains("StoredKatana");
         }
-        
+
+        // 直刀の判定
+        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(stack)) {
+            return true;
+        }
+
         // その他の武器（大文字小文字を考慮）
-        return itemName.contains("Katana") || itemName.contains("Sword") || 
+        return itemName.contains("Katana") || itemName.contains("Sword") ||
                itemName.contains("Blade") || itemName.contains("katana") ||
                itemName.equals("RiversOfBloodItem") || itemName.equals("KatanaNiguHumerusItem");
     }
@@ -536,13 +539,13 @@ public class DodgeAndBattouHandler {
     private static boolean isSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
-        return itemName.equals("SayaItem") || itemName.equals("TyokutouSayaItem");
+        return itemName.equals("SayaItem") || itemName.equals("TyokutoSayaItem");
     }
 
     private static boolean isTyokutouSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
-        return itemName.equals("TyokutouSayaItem");
+        return itemName.equals("TyokutoSayaItem");
     }
     
     // 納刀処理
@@ -553,8 +556,17 @@ public class DodgeAndBattouHandler {
         // 直刀鞘の場合
         if (isTyokutouSaya(sheathStack)) {
             // 直刀のみ納刀可能
-            if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(weaponStack)) {
-                minecraftarmorweapon.item.TyokutouSayaItem.sheatheSword(
+            boolean isStraightSword = minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(weaponStack);
+            String weaponName = weaponStack.getItem().getClass().getSimpleName();
+
+            // デバッグメッセージ
+            player.displayClientMessage(
+                Component.literal("§7直刀判定: " + weaponName + " = " + isStraightSword),
+                false
+            );
+
+            if (isStraightSword) {
+                minecraftarmorweapon.item.TyokutoSayaItem.sheatheSword(
                     player, weaponStack, sheathStack, weaponHand, sheathHand
                 );
             } else {

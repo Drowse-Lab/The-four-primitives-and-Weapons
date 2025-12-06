@@ -137,8 +137,18 @@ public class TyokutouSayaItem extends Item {
 
         // 直刀ごとに異なるCustomModelDataを返す
         if (itemName.equals("LunaItem")) return 1;
-        // 他の直刀を追加する場合はここに
-        // if (itemName.equals("OtherStraightSwordItem")) return 2;
+        if (itemName.equals("BluepurgeTyokutouItem")) return 2;
+        if (itemName.equals("KaminariKurikarakenTyokutouItem")) return 3;
+
+        // BluepurgeItemの場合、custom_model_dataをチェック
+        if (itemName.equals("BluepurgeItem")) {
+            if (sword.hasTag() && sword.getTag().contains("CustomModelData")) {
+                int customModelData = sword.getTag().getInt("CustomModelData");
+                if (customModelData == 2) {
+                    return 2; // 直刀モデル
+                }
+            }
+        }
 
         return 0; // デフォルト（空の鞘）
     }

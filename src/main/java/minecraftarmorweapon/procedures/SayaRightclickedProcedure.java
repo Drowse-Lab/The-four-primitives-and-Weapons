@@ -7,6 +7,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.Component;
+import minecraftarmorweapon.item.LokiTheTricksterItem;
 
 public class SayaRightclickedProcedure {
 	public static void execute(LevelAccessor world, Entity entity, ItemStack sheathStack, InteractionHand hand) {
@@ -27,24 +29,32 @@ public class SayaRightclickedProcedure {
 			// 反対の手から刀を取得
 			InteractionHand otherHand = (hand == InteractionHand.MAIN_HAND) ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
 			ItemStack katanaItem = player.getItemInHand(otherHand);
-			
+
 			// 反対の手に刀を持っている場合
 			if (isKatana(katanaItem)) {
-				// 刀の情報を鞘に保存
+				// オフハンドに鞘を持っていて、かつLoki the Tricksterを納刀する場合、モード切り替え
+				if (hand == InteractionHand.OFF_HAND && katanaItem.getItem() instanceof LokiTheTricksterItem) {
+					LokiTheTricksterItem.toggleMode(katanaItem);
+					String newMode = LokiTheTricksterItem.getMode(katanaItem);
+					String modeName = newMode.equals("disarm") ? "Disarm" : "Decoy";
+					player.displayClientMessage(Component.literal("§6[納刀] Loki Mode: " + modeName), true);
+				}
+
+				// 刀の情報を鞘に保存（モード切り替え後）
 				CompoundTag katanaTag = new CompoundTag();
 				katanaItem.save(katanaTag);
 				tag.put("StoredKatana", katanaTag);
-				
+
 				// カスタムモデルデータを設定（刀が入った鞘の見た目）
 				int modelData = getModelDataForKatana(katanaItem);
 				tag.putInt("CustomModelData", modelData);
-				
+
 				// タグを確実にItemStackに適用
 				sheathStack.setTag(tag);
-				
+
 				// 反対の手から刀を削除
 				player.setItemInHand(otherHand, ItemStack.EMPTY);
-				
+
 				// 納刀音を再生
 				player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER, 1.0F, 0.8F);
 			}
@@ -74,7 +84,8 @@ public class SayaRightclickedProcedure {
 	private static boolean isKatana(ItemStack stack) {
 		if (stack.isEmpty()) return false;
 		String itemName = stack.getItem().getClass().getSimpleName();
-		return itemName.contains("Katana") || itemName.contains("katana") || itemName.equals("RiversOfBloodItem");
+		return itemName.contains("Katana") || itemName.contains("katana") ||
+		       itemName.equals("RiversOfBloodItem") || itemName.equals("LokiTheTricksterItem");
 	}
 	
 	private static int getModelDataForKatana(ItemStack katanaStack) {
@@ -96,7 +107,8 @@ public class SayaRightclickedProcedure {
 		if (itemName.equals("MyTestIronKatanaItem")) return 12;
 		if (itemName.equals("RiversOfBloodItem")) return 13;
 		if (itemName.equals("KatanaNiguHumerusItem")) return 14;
-		
+		if (itemName.equals("LokiTheTricksterItem")) return 15;
+
 		return 0; // Default (empty saya)
 	}
 }
