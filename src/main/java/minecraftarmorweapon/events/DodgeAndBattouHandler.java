@@ -557,13 +557,6 @@ public class DodgeAndBattouHandler {
         if (isTyokutouSaya(sheathStack)) {
             // 直刀のみ納刀可能
             boolean isStraightSword = minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(weaponStack);
-            String weaponName = weaponStack.getItem().getClass().getSimpleName();
-
-            // デバッグメッセージ
-            player.displayClientMessage(
-                Component.literal("§7直刀判定: " + weaponName + " = " + isStraightSword),
-                false
-            );
 
             if (isStraightSword) {
                 minecraftarmorweapon.item.TyokutoSayaItem.sheatheSword(

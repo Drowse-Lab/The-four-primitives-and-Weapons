@@ -114,13 +114,6 @@ public class TyokutoSayaItem extends Item {
             int modelData = getSwordModelData(swordStack);
             sheathTag.putInt("CustomModelData", modelData);
 
-            // デバッグメッセージ
-            String swordName = swordStack.getItem().getClass().getSimpleName();
-            player.displayClientMessage(
-                Component.literal("§7納刀: " + swordName + " (ModelData: " + modelData + ")"),
-                true
-            );
-
             // 鞘にタグを適用
             sheathStack.setTag(sheathTag);
 

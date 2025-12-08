@@ -183,14 +183,6 @@ public class ChargedAttackHandler {
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
 
-        // デバッグ: 手に持っているアイテムを表示（1秒に1回のみ）
-        if (!mainHand.isEmpty() && player.tickCount % 20 == 0) {
-            String itemClass = mainHand.getItem().getClass().getSimpleName();
-            boolean isLoki = mainHand.getItem() instanceof LokiTheTricksterItem;
-            LOGGER.info("[LOKI DEBUG] MainHand: {} isLoki={}", itemClass, isLoki);
-            player.displayClientMessage(Component.literal("§b[DEBUG] MainHand: " + itemClass + " isLoki=" + isLoki), true);
-        }
-
         // 鞘を持っていて刀が納刀されている場合の落下中抜刀攻撃
         boolean hasSheathWithKatana = (isSaya(mainHand) && hasStoredKatana(mainHand)) || 
                                       (isSaya(offHand) && hasStoredKatana(offHand));
@@ -231,12 +223,6 @@ public class ChargedAttackHandler {
         // Loki the Trickster専用処理
         if (mainHand.getItem() instanceof LokiTheTricksterItem) {
             boolean isLeftClickHeld = mc.options.keyAttack.isDown();
-
-            // デバッグ: Loki処理が呼ばれているか確認
-            if (isLeftClickHeld && !data.wasLeftClickPressed) {
-                LOGGER.info("[LOKI DEBUG] Left click pressed!");
-                player.displayClientMessage(Component.literal("§c[DEBUG] Loki detected, left click pressed"), true);
-            }
 
             // Lokiの専用処理を呼び出し（現在の左クリック状態を渡す）
             handleLokiTheTrickster(player, data, isLeftClickHeld);
@@ -1273,18 +1259,6 @@ public class ChargedAttackHandler {
             return;
         }
 
-        // デバッグ: handleLokiTheTricksterが呼ばれていることを確認（クライアント側）
-        if (level.isClientSide()) {
-            if (data.lokiChargeTime == 0 && isLeftClickHeld) {
-                LOGGER.info("[LOKI DEBUG] Handler started, held={}", isLeftClickHeld);
-                player.displayClientMessage(Component.literal("§d[DEBUG] Loki handler started, held=" + isLeftClickHeld), true);
-            }
-            if (data.lokiChargeTime > 0 && data.lokiChargeTime % 5 == 0) {
-                LOGGER.info("[LOKI DEBUG] Loki charge: {}", data.lokiChargeTime);
-                player.displayClientMessage(Component.literal("§d[DEBUG] Loki charge: " + data.lokiChargeTime), true);
-            }
-        }
-
         // スニーク中は左クリックを無視してモード切り替えのみ
         if (player.isShiftKeyDown()) {
             // スニーク中は何もしない（スニーク時はアイテム使用でモード切り替え）
@@ -1295,23 +1269,12 @@ public class ChargedAttackHandler {
         data.lokiWasSneaking = data.lokiIsSneaking;
         data.lokiIsSneaking = isLeftClickHeld;
 
-        // デバッグ: 状態確認
-        if (level.isClientSide() && (data.lokiWasSneaking || data.lokiIsSneaking)) {
-            LOGGER.info("[LOKI DEBUG] State: was={} is={} held={} charge={}",
-                data.lokiWasSneaking, data.lokiIsSneaking, isLeftClickHeld, data.lokiChargeTime);
-        }
-
         // 左クリック中: チャージ
         if (data.lokiIsSneaking) {
             data.lokiChargeTime++;
 
             String mode = LokiTheTricksterItem.getMode(mainHand);
             int requiredCharge = mode.equals("decoy") ? DECOY_CHARGE_TIME : DISARM_CHARGE_TIME;
-
-            // デバッグ: チャージ進行状況を5tickごとに表示
-            if (data.lokiChargeTime % 5 == 0) {
-                player.displayClientMessage(Component.literal("§7Charging: " + data.lokiChargeTime + "/" + requiredCharge), true);
-            }
 
             if (data.lokiChargeTime == requiredCharge && !level.isClientSide()) {
                 // チャージ完了サウンド
@@ -1333,32 +1296,15 @@ public class ChargedAttackHandler {
         }
         // 左クリックを離した: 発動
         else if (data.lokiWasSneaking && !data.lokiIsSneaking) {
-            LOGGER.info("[LOKI DEBUG] Left click RELEASED! Charge={}", data.lokiChargeTime);
             String mode = LokiTheTricksterItem.getMode(mainHand);
 
-            // デバッグ: チャージ時間とモードを表示
-            LOGGER.info("[LOKI DEBUG] Release: charge={} mode={}", data.lokiChargeTime, mode);
-            player.displayClientMessage(Component.literal("§eCharge: " + data.lokiChargeTime + " Mode: " + mode), true);
-
             // Decoyモード発動 - サーバーにパケット送信
-            LOGGER.info("[LOKI DEBUG] Checking conditions: mode={} charge={} decoyReq={} disarmReq={}",
-                mode, data.lokiChargeTime, DECOY_CHARGE_TIME, DISARM_CHARGE_TIME);
-
             if (mode.equals("decoy") && data.lokiChargeTime >= DECOY_CHARGE_TIME) {
-                LOGGER.info("[LOKI DEBUG] Sending Decoy packet!");
-                player.displayClientMessage(Component.literal("§aSending Decoy packet!"), true);
                 MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new AttackPacket(3, 0)); // attackType=3: Loki Decoy
             }
             // Disarmモード発動 - サーバーにパケット送信
             else if (mode.equals("disarm") && data.lokiChargeTime >= DISARM_CHARGE_TIME) {
-                LOGGER.info("[LOKI DEBUG] Sending Disarm packet!");
-                player.displayClientMessage(Component.literal("§aSending Disarm packet!"), true);
                 MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new AttackPacket(4, 0)); // attackType=4: Loki Disarm
-            } else {
-                // チャージ不足のメッセージ
-                LOGGER.info("[LOKI DEBUG] Charge insufficient! mode={} charge={}", mode, data.lokiChargeTime);
-                player.displayClientMessage(Component.literal("§cCharge insufficient! Need " +
-                    (mode.equals("decoy") ? DECOY_CHARGE_TIME : DISARM_CHARGE_TIME)), true);
             }
 
             data.resetLoki();
