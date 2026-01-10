@@ -19,24 +19,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * ELECTRIC 通電処理
- *
- * 仕様:
- * - 接触ブロックのみ伝播
- * - 連鎖は起点から半径10ブロック以内
- * - 半径外への伝播は完全遮断
+ * ELECTRIC 通電処理（最終版）
  */
 public final class ElectricConductBlock {
 
     private ElectricConductBlock() {}
 
-    /** 最大連鎖半径 */
     private static final int MAX_RADIUS = 10;
     private static final int MAX_RADIUS_SQR = MAX_RADIUS * MAX_RADIUS;
 
-    /* ===============================
-     * 現実的に電気が通るブロック
-     * =============================== */
     private static final Set<Block> CONDUCTIVE_BLOCKS = EnumSet.of(
             // 金属
             Blocks.IRON_BLOCK,
@@ -63,18 +54,6 @@ public final class ElectricConductBlock {
             Blocks.TALL_SEAGRASS
     );
 
-    /** 電気が通るブロックか */
-    private static boolean isConductive(Block block) {
-        return CONDUCTIVE_BLOCKS.contains(block);
-    }
-
-    /**
-     * 通電開始
-     *
-     * @param level  ワールド
-     * @param origin 起点ブロック
-     * @param damage ダメージ
-     */
     public static void conduct(Level level, BlockPos origin, double damage) {
 
         Deque<BlockPos> queue = new ArrayDeque<>();
@@ -87,22 +66,17 @@ public final class ElectricConductBlock {
             BlockPos current = queue.poll();
 
             // 半径制限（絶対条件）
-            if (current.distSqr(origin) > MAX_RADIUS_SQR) {
-                continue;
-            }
+            if (current.distSqr(origin) > MAX_RADIUS_SQR) continue;
 
             BlockState state = level.getBlockState(current);
-            if (!isConductive(state.getBlock())) continue;
+            if (!CONDUCTIVE_BLOCKS.contains(state.getBlock())) continue;
 
-            // 接触エンティティを感電
             shockEntities(level, current, damage);
 
-            // 隣接6方向のみ
+            // 接しているブロックのみ
             for (Direction dir : Direction.values()) {
                 BlockPos next = current.relative(dir);
                 if (visited.contains(next)) continue;
-
-                // 次が半径外なら即遮断
                 if (next.distSqr(origin) > MAX_RADIUS_SQR) continue;
 
                 visited.add(next);
@@ -111,11 +85,6 @@ public final class ElectricConductBlock {
         }
     }
 
-    /* ===============================
-     * 内部処理
-     * =============================== */
-
-    /** ブロックに触れているエンティティを感電 */
     private static void shockEntities(Level level, BlockPos pos, double damage) {
         AABB box = new AABB(pos).inflate(0.1);
 
