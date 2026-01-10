@@ -1,99 +1,105 @@
-package minecraftarmorweapon.block;
+package minecraftarmorweapon.skill;
 
+import minecraftarmorweapon.block.ElectricConductBlock;
 import minecraftarmorweapon.damage.ElementType;
 import minecraftarmorweapon.damage.ElectricElementDamageHandler;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
-import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 /**
- * 現実的な「通電」処理
- * ・再帰なし
- * ・接しているブロックのみ対象
+ * 放射型 ELECTRIC 放電バースト（最終版）
  */
-public final class ElectricConductBlock {
+public final class ElectricDischargeBurstSkill {
 
-    private ElectricConductBlock() {}
+    private static final Random RANDOM = new Random();
 
-    /* ===============================
-     * 現実的に電気が通るブロック
-     * =============================== */
-    private static final Set<Block> CONDUCTIVE_BLOCKS = EnumSet.of(
-            // 金属
-            net.minecraft.world.level.block.Blocks.IRON_BLOCK,
-            net.minecraft.world.level.block.Blocks.GOLD_BLOCK,
-            net.minecraft.world.level.block.Blocks.COPPER_BLOCK,
-            net.minecraft.world.level.block.Blocks.CUT_COPPER,
-            net.minecraft.world.level.block.Blocks.EXPOSED_COPPER,
-            net.minecraft.world.level.block.Blocks.WEATHERED_COPPER,
-            net.minecraft.world.level.block.Blocks.OXIDIZED_COPPER,
-            net.minecraft.world.level.block.Blocks.RAW_IRON_BLOCK,
-            net.minecraft.world.level.block.Blocks.RAW_COPPER_BLOCK,
-            net.minecraft.world.level.block.Blocks.ANVIL,
-            net.minecraft.world.level.block.Blocks.CHIPPED_ANVIL,
-            net.minecraft.world.level.block.Blocks.DAMAGED_ANVIL,
-            net.minecraft.world.level.block.Blocks.LIGHTNING_ROD,
-            net.minecraft.world.level.block.Blocks.CHAIN,
+    private static final int BRANCH_COUNT = 16; // 本数
+    private static final int MAX_STEP = 22;     // 距離
+    private static final double DAMAGE = 6.0;  // ダメージ
 
-            // 水・湿潤
-            net.minecraft.world.level.block.Blocks.WATER,
-            net.minecraft.world.level.block.Blocks.BUBBLE_COLUMN,
-            net.minecraft.world.level.block.Blocks.KELP,
-            net.minecraft.world.level.block.Blocks.KELP_PLANT,
-            net.minecraft.world.level.block.Blocks.SEAGRASS,
-            net.minecraft.world.level.block.Blocks.TALL_SEAGRASS
-    );
+    private ElectricDischargeBurstSkill() {}
 
-    /** 電気が通るブロックか */
-    public static boolean isConductive(Block block) {
-        return CONDUCTIVE_BLOCKS.contains(block);
-    }
+    public static void fire(Player player) {
+        if (player.level.isClientSide()) return;
 
-    /**
-     * 通電処理（接触ブロックのみ）
-     *
-     * @param level  ワールド
-     * @param origin 命中ブロック
-     * @param damage ダメージ
-     */
-    public static void conduct(Level level, BlockPos origin, double damage) {
+        ServerLevel level = (ServerLevel) player.level;
+        Vec3 origin = player.position().add(0, 1.0, 0);
 
-        // 命中ブロック自身
-        applyShock(level, origin, damage);
+        // 多段ヒット防止
+        Set<Integer> damagedEntities = new HashSet<>();
 
-        // 接している6方向のみ
-        for (Direction dir : Direction.values()) {
-            BlockPos neighbor = origin.relative(dir);
-            applyShock(level, neighbor, damage);
+        for (int i = 0; i < BRANCH_COUNT; i++) {
+            Vec3 direction = randomUnitVector();
+            dischargeBranch(level, origin, direction, damagedEntities);
         }
     }
 
-    /* ===============================
-     * 内部処理
-     * =============================== */
+    private static void dischargeBranch(
+            ServerLevel level,
+            Vec3 start,
+            Vec3 direction,
+            Set<Integer> damagedEntities
+    ) {
+        Vec3 pos = start;
 
-    private static void applyShock(Level level, BlockPos pos, double damage) {
-        BlockState state = level.getBlockState(pos);
-        if (!isConductive(state.getBlock())) return;
+        for (int step = 0; step < MAX_STEP; step++) {
 
-        AABB box = new AABB(pos).inflate(0.1);
+            // 雷っぽい揺らぎ
+            direction = direction.add(
+                    (RANDOM.nextDouble() - 0.5) * 0.3,
+                    (RANDOM.nextDouble() - 0.5) * 0.3,
+                    (RANDOM.nextDouble() - 0.5) * 0.3
+            ).normalize();
 
-        for (Entity entity : level.getEntities(null, box)) {
-            if (entity instanceof LivingEntity living && living.isAlive()) {
-                ElectricElementDamageHandler.apply(
-                        living,
-                        damage,
-                        ElementType.ELECTRIC
+            pos = pos.add(direction.scale(0.6));
+
+            // パーティクル間引き
+            if ((step & 1) == 0) {
+                level.sendParticles(
+                        ParticleTypes.END_ROD,
+                        pos.x, pos.y, pos.z,
+                        1, 0, 0, 0, 0
                 );
             }
+
+            // エンティティ感電（1回のみ）
+            for (LivingEntity entity : level.getEntitiesOfClass(
+                    LivingEntity.class,
+                    new AABB(pos, pos).inflate(0.6),
+                    LivingEntity::isAlive
+            )) {
+                if (damagedEntities.add(entity.getId())) {
+                    ElectricElementDamageHandler.apply(
+                            entity,
+                            DAMAGE,
+                            ElementType.ELECTRIC
+                    );
+                }
+            }
+
+            // ブロック通電（半径制限付き）
+            BlockPos blockPos = new BlockPos(pos);
+            ElectricConductBlock.conduct(level, blockPos, DAMAGE);
         }
+    }
+
+    private static Vec3 randomUnitVector() {
+        double theta = RANDOM.nextDouble() * Math.PI * 2;
+        double phi = RANDOM.nextDouble() * Math.PI;
+
+        return new Vec3(
+                Math.sin(phi) * Math.cos(theta),
+                Math.cos(phi),
+                Math.sin(phi) * Math.sin(theta)
+        );
     }
 }
