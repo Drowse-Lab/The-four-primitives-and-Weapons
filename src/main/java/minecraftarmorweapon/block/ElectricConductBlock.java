@@ -1,7 +1,7 @@
 package minecraftarmorweapon.block;
 
 import minecraftarmorweapon.damage.ElementType;
-import minecraftarmorweapon.damage.ElectricDamageHandler;
+import minecraftarmorweapon.damage.ElectricElementDamageHandler;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -14,12 +14,15 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * 現実的な「電気が通る」ブロック処理
+ */
 public final class ElectricConductBlock {
 
     private ElectricConductBlock() {}
 
     /* ===============================
-     * 現実的に電気が通るブロック
+     * 現実的に通電するブロック
      * =============================== */
     private static final Set<Material> CONDUCTIVE_BLOCKS = EnumSet.of(
             // 金属
@@ -49,18 +52,12 @@ public final class ElectricConductBlock {
             Material.TALL_SEAGRASS
     );
 
-    /* ===============================
-     * 外部API
-     * =============================== */
-
-    /** 現実的に電気が通るか */
+    /** 電気が通るか */
     public static boolean isConductive(Block block) {
         return CONDUCTIVE_BLOCKS.contains(block.getType());
     }
 
-    /**
-     * ELECTRICビームが命中したときの感電処理
-     */
+    /** 通電伝播 */
     public static void conduct(Block origin, double damage) {
         Set<Block> visited = new HashSet<>();
         propagate(origin, visited, damage);
@@ -70,7 +67,6 @@ public final class ElectricConductBlock {
      * 内部処理
      * =============================== */
 
-    /** 電気の伝播（現実寄り） */
     private static void propagate(
             Block block,
             Set<Block> visited,
@@ -81,29 +77,23 @@ public final class ElectricConductBlock {
 
         visited.add(block);
 
-        // 接触しているエンティティに感電
-        shockTouchingEntities(block, damage);
+        shockEntities(block, damage);
 
-        // 隣接ブロックへ電気が流れる
         for (BlockFace face : BlockFace.values()) {
             if (!face.isCartesian()) continue;
-
             propagate(block.getRelative(face), visited, damage);
         }
     }
 
-    /** ブロックに触れているエンティティを感電させる */
-    private static void shockTouchingEntities(
-            Block block,
-            double damage
-    ) {
+    /** 接触しているエンティティを感電させる */
+    private static void shockEntities(Block block, double damage) {
         World world = block.getWorld();
         Location center = block.getLocation().add(0.5, 0.5, 0.5);
 
         for (Entity entity : world.getNearbyEntities(center, 1.2, 1.2, 1.2)) {
             if (!(entity instanceof LivingEntity living)) continue;
 
-            ElectricDamageHandler.apply(
+            ElectricElementDamageHandler.apply(
                     living,
                     damage,
                     ElementType.ELECTRIC
