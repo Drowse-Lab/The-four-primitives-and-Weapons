@@ -2,102 +2,131 @@ package minecraftarmorweapon.block;
 
 import minecraftarmorweapon.damage.ElementType;
 import minecraftarmorweapon.damage.ElectricElementDamageHandler;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * 現実的な「電気が通る」ブロック処理
+ * ELECTRIC 通電処理
+ *
+ * 仕様:
+ * - 接触ブロックのみ伝播
+ * - 連鎖は起点から半径10ブロック以内
+ * - 半径外への伝播は完全遮断
  */
 public final class ElectricConductBlock {
 
     private ElectricConductBlock() {}
 
+    /** 最大連鎖半径 */
+    private static final int MAX_RADIUS = 10;
+    private static final int MAX_RADIUS_SQR = MAX_RADIUS * MAX_RADIUS;
+
     /* ===============================
-     * 現実的に通電するブロック
+     * 現実的に電気が通るブロック
      * =============================== */
-    private static final Set<Material> CONDUCTIVE_BLOCKS = EnumSet.of(
+    private static final Set<Block> CONDUCTIVE_BLOCKS = EnumSet.of(
             // 金属
-            Material.IRON_BLOCK,
-            Material.GOLD_BLOCK,
-            Material.COPPER_BLOCK,
-            Material.CUT_COPPER,
-            Material.CUT_COPPER_SLAB,
-            Material.CUT_COPPER_STAIRS,
-            Material.EXPOSED_COPPER,
-            Material.WEATHERED_COPPER,
-            Material.OXIDIZED_COPPER,
-            Material.RAW_IRON_BLOCK,
-            Material.RAW_COPPER_BLOCK,
-            Material.ANVIL,
-            Material.CHIPPED_ANVIL,
-            Material.DAMAGED_ANVIL,
-            Material.LIGHTNING_ROD,
-            Material.CHAIN,
+            Blocks.IRON_BLOCK,
+            Blocks.GOLD_BLOCK,
+            Blocks.COPPER_BLOCK,
+            Blocks.CUT_COPPER,
+            Blocks.EXPOSED_COPPER,
+            Blocks.WEATHERED_COPPER,
+            Blocks.OXIDIZED_COPPER,
+            Blocks.RAW_IRON_BLOCK,
+            Blocks.RAW_COPPER_BLOCK,
+            Blocks.ANVIL,
+            Blocks.CHIPPED_ANVIL,
+            Blocks.DAMAGED_ANVIL,
+            Blocks.LIGHTNING_ROD,
+            Blocks.CHAIN,
 
             // 水・湿潤
-            Material.WATER,
-            Material.BUBBLE_COLUMN,
-            Material.KELP,
-            Material.KELP_PLANT,
-            Material.SEAGRASS,
-            Material.TALL_SEAGRASS
+            Blocks.WATER,
+            Blocks.BUBBLE_COLUMN,
+            Blocks.KELP,
+            Blocks.KELP_PLANT,
+            Blocks.SEAGRASS,
+            Blocks.TALL_SEAGRASS
     );
 
-    /** 電気が通るか */
-    public static boolean isConductive(Block block) {
-        return CONDUCTIVE_BLOCKS.contains(block.getType());
+    /** 電気が通るブロックか */
+    private static boolean isConductive(Block block) {
+        return CONDUCTIVE_BLOCKS.contains(block);
     }
 
-    /** 通電伝播 */
-    public static void conduct(Block origin, double damage) {
-        Set<Block> visited = new HashSet<>();
-        propagate(origin, visited, damage);
+    /**
+     * 通電開始
+     *
+     * @param level  ワールド
+     * @param origin 起点ブロック
+     * @param damage ダメージ
+     */
+    public static void conduct(Level level, BlockPos origin, double damage) {
+
+        Deque<BlockPos> queue = new ArrayDeque<>();
+        Set<BlockPos> visited = new HashSet<>();
+
+        queue.add(origin);
+        visited.add(origin);
+
+        while (!queue.isEmpty()) {
+            BlockPos current = queue.poll();
+
+            // 半径制限（絶対条件）
+            if (current.distSqr(origin) > MAX_RADIUS_SQR) {
+                continue;
+            }
+
+            BlockState state = level.getBlockState(current);
+            if (!isConductive(state.getBlock())) continue;
+
+            // 接触エンティティを感電
+            shockEntities(level, current, damage);
+
+            // 隣接6方向のみ
+            for (Direction dir : Direction.values()) {
+                BlockPos next = current.relative(dir);
+                if (visited.contains(next)) continue;
+
+                // 次が半径外なら即遮断
+                if (next.distSqr(origin) > MAX_RADIUS_SQR) continue;
+
+                visited.add(next);
+                queue.add(next);
+            }
+        }
     }
 
     /* ===============================
      * 内部処理
      * =============================== */
 
-    private static void propagate(
-            Block block,
-            Set<Block> visited,
-            double damage
-    ) {
-        if (visited.contains(block)) return;
-        if (!isConductive(block)) return;
+    /** ブロックに触れているエンティティを感電 */
+    private static void shockEntities(Level level, BlockPos pos, double damage) {
+        AABB box = new AABB(pos).inflate(0.1);
 
-        visited.add(block);
-
-        shockEntities(block, damage);
-
-        for (BlockFace face : BlockFace.values()) {
-            if (!face.isCartesian()) continue;
-            propagate(block.getRelative(face), visited, damage);
-        }
-    }
-
-    /** 接触しているエンティティを感電させる */
-    private static void shockEntities(Block block, double damage) {
-        World world = block.getWorld();
-        Location center = block.getLocation().add(0.5, 0.5, 0.5);
-
-        for (Entity entity : world.getNearbyEntities(center, 1.2, 1.2, 1.2)) {
-            if (!(entity instanceof LivingEntity living)) continue;
-
-            ElectricElementDamageHandler.apply(
-                    living,
-                    damage,
-                    ElementType.ELECTRIC
-            );
+        for (Entity entity : level.getEntities(null, box)) {
+            if (entity instanceof LivingEntity living && living.isAlive()) {
+                ElectricElementDamageHandler.apply(
+                        living,
+                        damage,
+                        ElementType.ELECTRIC
+                );
+            }
         }
     }
 }
