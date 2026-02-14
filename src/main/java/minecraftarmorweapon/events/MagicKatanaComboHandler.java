@@ -12,8 +12,8 @@
 // import net.minecraft.world.entity.LivingEntity;
 // import net.minecraft.world.item.ItemStack;
 // import net.minecraft.world.InteractionHand;
-// import net.minecraft.server.level.ServerLevel;
-// import net.minecraft.world.level.Level;
+// import net.minecraft.server.level().ServerLevel;
+// import net.minecraft.world.level().Level;
 // import net.minecraft.core.particles.ParticleTypes;
 // import net.minecraft.sounds.SoundEvents;
 // import net.minecraft.sounds.SoundSource;
@@ -56,7 +56,7 @@
 //         LAST_ATTACK_TIME.put(playerId, currentTime);
 
 //         // コンボ攻撃を実行
-//         Level world = player.level;
+//         Level world = player.level();
 //         MagicKatanaComboSystemProcedure.executeComboAttack(
 //             world,
 //             player.getX(),
@@ -102,7 +102,7 @@
 //      * 特殊アクション（スニーク+右クリック）
 //      */
 //     private static void executeSpecialAction(Player player, ItemStack itemstack) {
-//         Level world = player.level;
+//         Level world = player.level();
 
 //         // 瞬間移動斬り
 //         if (world instanceof ServerLevel serverLevel) {

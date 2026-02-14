@@ -27,7 +27,7 @@ public class TissokuMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		TissokuehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level, entity);
+		TissokuehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity);
 	}
 
 	@Override

@@ -33,7 +33,7 @@ public class TokubetusounazangekiMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level, entity);
+		TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity);
 	}
 
 	@Override

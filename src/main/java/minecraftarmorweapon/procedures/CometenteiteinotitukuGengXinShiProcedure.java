@@ -3,12 +3,12 @@ package minecraftarmorweapon.procedures;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level().LevelAccessor;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.CommandSource;
@@ -51,16 +51,16 @@ public class CometenteiteinotitukuGengXinShiProcedure {
 										} else if (entity instanceof CometKillEntity) {
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s[tag=!NoKill]");
+															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s[tag=!NoKill]");
 												}
 											}
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
+															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
 												}
 											}
 										}
@@ -68,12 +68,12 @@ public class CometenteiteinotitukuGengXinShiProcedure {
 									if (entityiterator instanceof ItemEntity) {
 										{
 											Entity _ent = entityiterator;
-											if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+											if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 												_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-														_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s[tag=!NoKill]");
+														_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s[tag=!NoKill]");
 											}
 										}
-										if (!entityiterator.level.isClientSide())
+										if (!entityiterator.level().isClientSide())
 											entityiterator.discard();
 									}
 								}
@@ -84,7 +84,7 @@ public class CometenteiteinotitukuGengXinShiProcedure {
 			}
 		} else if (entity.isOnGround()) {
 			CometKillenteiteigaSiWangsitaShiProcedure.execute(world, x, y, z, entity);
-			if (!entity.level.isClientSide())
+			if (!entity.level().isClientSide())
 				entity.discard();
 			if (world instanceof ServerLevel _level)
 				_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
@@ -107,16 +107,16 @@ public class CometenteiteinotitukuGengXinShiProcedure {
 										} else if (entity instanceof CometKillEntity) {
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s[tag=!NoKill]");
+															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s[tag=!NoKill]");
 												}
 											}
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
+															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
 												}
 											}
 										}
@@ -125,12 +125,12 @@ public class CometenteiteinotitukuGengXinShiProcedure {
 								if (entityiterator instanceof ItemEntity) {
 									{
 										Entity _ent = entityiterator;
-										if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+										if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 											_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-													_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+													_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 										}
 									}
-									if (!entityiterator.level.isClientSide())
+									if (!entityiterator.level().isClientSide())
 										entityiterator.discard();
 								}
 							}

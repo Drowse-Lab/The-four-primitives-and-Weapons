@@ -25,7 +25,7 @@ public class LongRangeWeaponCutMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		LongRangeWeaponCutehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level, entity.getX(), entity.getY(), entity.getZ(), entity);
+		LongRangeWeaponCutehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity.getX(), entity.getY(), entity.getZ(), entity);
 	}
 
 	@Override

@@ -32,7 +32,7 @@ public class TobeMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		TobeposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.execute(entity.level, entity);
+		TobeposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.execute(entity.level(), entity);
 	}
 
 	@Override

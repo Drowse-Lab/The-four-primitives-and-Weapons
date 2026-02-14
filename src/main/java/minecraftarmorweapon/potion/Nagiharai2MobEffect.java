@@ -26,7 +26,7 @@ public class Nagiharai2MobEffect extends MobEffect {
 
 	@Override
 	public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
-		Nagiharai2posiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.execute(entity.level, entity);
+		Nagiharai2posiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.execute(entity.level(), entity);
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 package minecraftarmorweapon.ai;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -11,13 +11,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level().block.Blocks;
+import net.minecraft.world.level().block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.level().BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import minecraftarmorweapon.command.CustomDifficultyCommand;
@@ -58,12 +58,12 @@ public class TrueCrafterOverrideAI {
             return;
         }
         
-        if (monster.level == null || monster.level.isClientSide) {
+        if (monster.level() == null || monster.level().isClientSide) {
             return;
         }
         
         // 次のティックで処理（エンティティが完全に初期化された後）
-        monster.level.getServer().execute(() -> {
+        monster.level().getServer().execute(() -> {
             try {
                 if (monster instanceof Skeleton skeleton) {
                     overrideSkeleton(skeleton);
@@ -286,9 +286,9 @@ public class TrueCrafterOverrideAI {
                     BlockPos pos = zombie.blockPosition();
                     BlockPos placePos = pos.relative(zombie.getDirection());
                     
-                    if (zombie.level.getBlockState(placePos).isAir() && 
-                        zombie.level.getBlockState(placePos.below()).getMaterial().isSolid()) {
-                        zombie.level.setBlock(placePos, Blocks.COBBLESTONE.defaultBlockState(), 3);
+                    if (zombie.level().getBlockState(placePos).isAir() && 
+                        zombie.level().getBlockState(placePos.below()).getMaterial().isSolid()) {
+                        zombie.level().setBlock(placePos, Blocks.COBBLESTONE.defaultBlockState(), 3);
                         temporaryBlocks.put(placePos, new TemporaryBlockData(System.currentTimeMillis(), zombie.getUUID()));
                         blockPlaceCooldown = 20;
                     }
@@ -297,10 +297,10 @@ public class TrueCrafterOverrideAI {
                 // 橋を作る（谷や水を渡る）
                 BlockPos frontPos = zombie.blockPosition().relative(zombie.getDirection());
                 BlockPos belowFront = frontPos.below();
-                BlockState belowState = zombie.level.getBlockState(belowFront);
+                BlockState belowState = zombie.level().getBlockState(belowFront);
                 
                 if (belowState.isAir() || belowState.getMaterial().isLiquid()) {
-                    zombie.level.setBlock(belowFront, Blocks.COBBLESTONE.defaultBlockState(), 3);
+                    zombie.level().setBlock(belowFront, Blocks.COBBLESTONE.defaultBlockState(), 3);
                     temporaryBlocks.put(belowFront, new TemporaryBlockData(System.currentTimeMillis(), zombie.getUUID()));
                     blockPlaceCooldown = 15;
                 }
@@ -402,15 +402,15 @@ public class TrueCrafterOverrideAI {
             return;
         }
         
-        if (event.getEntity() instanceof Spider spider && !spider.level.isClientSide) {
+        if (event.getEntity() instanceof Spider spider && !spider.level().isClientSide) {
             LivingEntity target = spider.getTarget();
             if (target != null) {
                 // クモの巣設置
                 if (spider.getRandom().nextInt(100) == 0) {
                     BlockPos targetPos = target.blockPosition();
-                    if (spider.level.getBlockState(targetPos).isAir() && 
+                    if (spider.level().getBlockState(targetPos).isAir() && 
                         spider.distanceToSqr(target) < 16) {
-                        spider.level.setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
+                        spider.level().setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
                         temporaryBlocks.put(targetPos, new TemporaryBlockData(System.currentTimeMillis(), spider.getUUID()));
                     }
                 }

@@ -6,8 +6,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
 
-import net.minecraft.world.level.Level;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level().Level;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -140,8 +140,8 @@ public class FlyingAttackerEntity extends Monster {
     }
 
     public LivingEntity getTargetEntity() {
-        if (this.targetUUID != null && this.level instanceof ServerLevel) {
-            Entity entity = ((ServerLevel) this.level).getEntity(this.targetUUID);
+        if (this.targetUUID != null && this.level() instanceof ServerLevel) {
+            Entity entity = ((ServerLevel) this.level()).getEntity(this.targetUUID);
             if (entity instanceof LivingEntity) {
                 return (LivingEntity) entity;
             }
@@ -396,19 +396,19 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // ownerがnullの場合、ownerUUIDから復元を試みる
-        if (this.owner == null && this.ownerUUID != null && this.level instanceof ServerLevel) {
-            Entity entity = ((ServerLevel) this.level).getEntity(this.ownerUUID);
+        if (this.owner == null && this.ownerUUID != null && this.level() instanceof ServerLevel) {
+            Entity entity = ((ServerLevel) this.level()).getEntity(this.ownerUUID);
             if (entity instanceof LivingEntity) {
                 this.owner = (LivingEntity) entity;
             }
         }
         
         // ブロックにめり込んでいる場合の処理
-        if (this.level.getBlockState(this.blockPosition()).getMaterial().isSolid() ||
-            this.level.getBlockState(this.blockPosition().above()).getMaterial().isSolid()) {
+        if (this.level().getBlockState(this.blockPosition()).getMaterial().isSolid() ||
+            this.level().getBlockState(this.blockPosition().above()).getMaterial().isSolid()) {
             // 空いている方向を探して移動
             for (int i = 1; i <= 3; i++) {
-                if (!this.level.getBlockState(this.blockPosition().above(i)).getMaterial().isSolid()) {
+                if (!this.level().getBlockState(this.blockPosition().above(i)).getMaterial().isSolid()) {
                     this.setPos(this.getX(), this.blockPosition().getY() + i, this.getZ());
                     break;
                 }
@@ -478,7 +478,7 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // 剣モードの近接攻撃処理
-        if (!this.getPersistentData().getBoolean("ArrowShootMode") && !this.level.isClientSide) {
+        if (!this.getPersistentData().getBoolean("ArrowShootMode") && !this.level().isClientSide) {
             LivingEntity target = this.getTarget();
             if (target == null && this.targetUUID != null) {
                 target = this.getTargetEntity();
@@ -516,7 +516,7 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // 矢射撃モードのチェック
-        if (this.getPersistentData().getBoolean("ArrowShootMode") && !this.level.isClientSide) {
+        if (this.getPersistentData().getBoolean("ArrowShootMode") && !this.level().isClientSide) {
             if (arrowShootCooldown > 0) {
                 arrowShootCooldown--;
             }
@@ -536,7 +536,7 @@ public class FlyingAttackerEntity extends Monster {
                     this.targetUUID = target.getUUID();
                 } else {
                     // 周囲の敵を検索
-                    List<LivingEntity> nearbyEntities = this.level.getEntitiesOfClass(
+                    List<LivingEntity> nearbyEntities = this.level().getEntitiesOfClass(
                         LivingEntity.class, 
                         this.getBoundingBox().inflate(16.0D),
                         e -> e != this && e != this.owner && e.isAlive() && 
@@ -635,7 +635,7 @@ public class FlyingAttackerEntity extends Monster {
         
         // 半径20ブロック以内の飛び道具を検知（検出範囲を拡大）
         double detectionRange = 20.0D;
-        List<Entity> nearbyEntities = this.level.getEntities(this, 
+        List<Entity> nearbyEntities = this.level().getEntities(this, 
             this.getBoundingBox().inflate(detectionRange));
         
         // nullチェックを追加
@@ -761,8 +761,8 @@ public class FlyingAttackerEntity extends Monster {
             // カスタム発射体の場合、NBTデータからOwnerをチェック
             if (projectile.getPersistentData().contains("Owner")) {
                 UUID ownerUUID = projectile.getPersistentData().getUUID("Owner");
-                if (this.level instanceof ServerLevel) {
-                    shooter = ((ServerLevel) this.level).getEntity(ownerUUID);
+                if (this.level() instanceof ServerLevel) {
+                    shooter = ((ServerLevel) this.level()).getEntity(ownerUUID);
                 }
             }
             
@@ -866,8 +866,8 @@ public class FlyingAttackerEntity extends Monster {
             this.lookAt(EntityAnchorArgument.Anchor.EYES, projectilePos);
             
             // 移動軌跡のエフェクト（瞬間移動の軌跡を表示）
-            if (this.level instanceof ServerLevel) {
-                ServerLevel serverLevel = (ServerLevel) this.level;
+            if (this.level() instanceof ServerLevel) {
+                ServerLevel serverLevel = (ServerLevel) this.level();
                 // 元の位置から迎撃位置への軌跡にパーティクルを表示
                 Vec3 startPos = this.position();
                 Vec3 particleDir = interceptPos.subtract(startPos);
@@ -928,8 +928,8 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // エフェクトとサウンド
-        if (this.level instanceof ServerLevel) {
-            ServerLevel serverLevel = (ServerLevel) this.level;
+        if (this.level() instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel) this.level();
             
             // パーティクルエフェクト
             serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.ENCHANTED_HIT,
@@ -937,7 +937,7 @@ public class FlyingAttackerEntity extends Monster {
                 20, 0.3, 0.3, 0.3, 0.2);
             
             // 剣の弾き音
-            this.level.playSound(null, projectilePos.x, projectilePos.y, projectilePos.z,
+            this.level().playSound(null, projectilePos.x, projectilePos.y, projectilePos.z,
                 SoundEvents.SHIELD_BLOCK, SoundSource.HOSTILE, 1.0F, 1.2F);
         }
         
@@ -967,8 +967,8 @@ public class FlyingAttackerEntity extends Monster {
             // カスタム発射体の場合、NBTデータからOwnerを取得
             if (projectile.getPersistentData().contains("Owner")) {
                 UUID ownerUUID = projectile.getPersistentData().getUUID("Owner");
-                if (this.level instanceof ServerLevel) {
-                    originalOwner = ((ServerLevel) this.level).getEntity(ownerUUID);
+                if (this.level() instanceof ServerLevel) {
+                    originalOwner = ((ServerLevel) this.level()).getEntity(ownerUUID);
                 }
             }
         }
@@ -1025,8 +1025,8 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // エフェクトとサウンド
-        if (this.level instanceof ServerLevel) {
-            ServerLevel serverLevel = (ServerLevel) this.level;
+        if (this.level() instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel) this.level();
             
             // ガラスが割れるようなパーティクルエフェクト
             serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.ITEM_SNOWBALL,
@@ -1039,9 +1039,9 @@ public class FlyingAttackerEntity extends Monster {
                 1, 0, 0, 0, 0);
             
             // ガラスが割れる音と剣の音
-            this.level.playSound(null, potionPos.x, potionPos.y, potionPos.z,
+            this.level().playSound(null, potionPos.x, potionPos.y, potionPos.z,
                 SoundEvents.GLASS_BREAK, SoundSource.HOSTILE, 0.8F, 1.0F);
-            this.level.playSound(null, potionPos.x, potionPos.y, potionPos.z,
+            this.level().playSound(null, potionPos.x, potionPos.y, potionPos.z,
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 0.8F, 1.2F);
         }
         
@@ -1127,8 +1127,8 @@ public class FlyingAttackerEntity extends Monster {
                         return (Entity) value;
                     } else if (value instanceof UUID) {
                         // UUIDの場合はエンティティを取得
-                        if (this.level instanceof ServerLevel) {
-                            return ((ServerLevel) this.level).getEntity((UUID) value);
+                        if (this.level() instanceof ServerLevel) {
+                            return ((ServerLevel) this.level()).getEntity((UUID) value);
                         }
                     }
                 } catch (NoSuchFieldException e) {
@@ -1148,8 +1148,8 @@ public class FlyingAttackerEntity extends Monster {
                         if (value instanceof Entity) {
                             return (Entity) value;
                         } else if (value instanceof UUID) {
-                            if (this.level instanceof ServerLevel) {
-                                return ((ServerLevel) this.level).getEntity((UUID) value);
+                            if (this.level() instanceof ServerLevel) {
+                                return ((ServerLevel) this.level()).getEntity((UUID) value);
                             }
                         }
                     } catch (NoSuchFieldException e) {
@@ -1261,7 +1261,7 @@ public class FlyingAttackerEntity extends Monster {
                     float sweepRatio = sweepingLevel / 3.0F; // レベル1=33%, レベル2=66%, レベル3=100%
                     float sweepDamage = 1.0F + sweepRatio * baseDamage;
                     // 周囲の敵にダメージ
-                    List<LivingEntity> nearbyTargets = this.level.getEntitiesOfClass(LivingEntity.class,
+                    List<LivingEntity> nearbyTargets = this.level().getEntitiesOfClass(LivingEntity.class,
                             target.getBoundingBox().inflate(1.0D, 0.25D, 1.0D));
                     if (nearbyTargets != null) {
                         for (LivingEntity nearbyEntity : nearbyTargets) {
@@ -1278,8 +1278,8 @@ public class FlyingAttackerEntity extends Monster {
                         }
                     }
                     // スイープエフェクト
-                    if (this.level instanceof ServerLevel) {
-                        ServerLevel serverLevel = (ServerLevel) this.level;
+                    if (this.level() instanceof ServerLevel) {
+                        ServerLevel serverLevel = (ServerLevel) this.level();
                         serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.SWEEP_ATTACK,
                             target.getX(), target.getY() + target.getBbHeight() * 0.5, target.getZ(),
                             1, 0, 0, 0, 0);
@@ -1288,15 +1288,15 @@ public class FlyingAttackerEntity extends Monster {
             }
 
             // 攻撃エフェクト
-            this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0F, 1.0F);
 
             // クリティカルエフェクト
             if (isCritical) {
-                this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+                this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                     SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.HOSTILE, 1.0F, 1.0F);
-                if (this.level instanceof ServerLevel) {
-                    ServerLevel serverLevel = (ServerLevel) this.level;
+                if (this.level() instanceof ServerLevel) {
+                    ServerLevel serverLevel = (ServerLevel) this.level();
                     serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.CRIT,
                         target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                         15, 0.2, 0.2, 0.2, 0.1);
@@ -1328,16 +1328,16 @@ public class FlyingAttackerEntity extends Monster {
         AbstractArrow arrow;
         
         if (arrowItem.getItem() == Items.SPECTRAL_ARROW) {
-            arrow = new SpectralArrow(this.level, this);
+            arrow = new SpectralArrow(this.level(), this);
         } else if (arrowItem.getItem() == Items.ARROW || arrowItem.getItem() == Items.TIPPED_ARROW) {
-            arrow = new Arrow(this.level, this);
+            arrow = new Arrow(this.level(), this);
             if (arrowItem.getItem() == Items.TIPPED_ARROW) {
                 ((Arrow)arrow).setEffectsFromItem(arrowItem);
             }
         } else {
             // カスタム矢の場合はKatanaTobuEntityを使用
             KatanaTobuEntity customArrow = new KatanaTobuEntity(MinecraftArmorWeaponModEntities.KATANA_TOBU.get(), 
-                this, this.level);
+                this, this.level());
             arrow = customArrow;
         }
 
@@ -1360,10 +1360,10 @@ public class FlyingAttackerEntity extends Monster {
         }
 
         // サウンド再生
-        this.level.playSound(null, this.getX(), this.getY(), this.getZ(), 
+        this.level().playSound(null, this.getX(), this.getY(), this.getZ(), 
             SoundEvents.SKELETON_SHOOT, SoundSource.HOSTILE, 1.0F, 1.0F / (this.random.nextFloat() * 0.4F + 0.8F));
 
-        this.level.addFreshEntity(arrow);
+        this.level().addFreshEntity(arrow);
         
         // 矢を撃った後にkillエンチャントフラグをクリア
         this.getPersistentData().remove("minecraft_armor_weapon:killentity");
@@ -1403,8 +1403,8 @@ public class FlyingAttackerEntity extends Monster {
         if (compound.hasUUID("OwnerUUID")) {
             this.ownerUUID = compound.getUUID("OwnerUUID");
             // ワールド再参加時にownerを復元
-            if (this.level instanceof ServerLevel) {
-                Entity entity = ((ServerLevel) this.level).getEntity(this.ownerUUID);
+            if (this.level() instanceof ServerLevel) {
+                Entity entity = ((ServerLevel) this.level()).getEntity(this.ownerUUID);
                 if (entity instanceof LivingEntity) {
                     this.owner = (LivingEntity) entity;
                 }

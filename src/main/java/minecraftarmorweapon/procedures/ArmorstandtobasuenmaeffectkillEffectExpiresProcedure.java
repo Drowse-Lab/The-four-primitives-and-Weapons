@@ -8,7 +8,7 @@ public class ArmorstandtobasuenmaeffectkillEffectExpiresProcedure {
 		if (entity == null)
 			return;
 		if (!(entity instanceof Player)) {
-			if (!entity.level.isClientSide())
+			if (!entity.level().isClientSide())
 				entity.discard();
 		}
 	}

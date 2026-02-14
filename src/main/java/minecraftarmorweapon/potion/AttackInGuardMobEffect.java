@@ -26,7 +26,7 @@ public class AttackInGuardMobEffect extends MobEffect {
 
 	@Override
 	public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
-		AttackInGuardposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.execute(entity.level, entity);
+		AttackInGuardposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.execute(entity.level(), entity);
 	}
 
 	@Override

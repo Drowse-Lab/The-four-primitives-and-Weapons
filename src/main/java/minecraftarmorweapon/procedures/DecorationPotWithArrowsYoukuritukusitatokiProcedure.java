@@ -1,6 +1,6 @@
 package minecraftarmorweapon.procedures;
 
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level().Level;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -19,7 +19,7 @@ public class DecorationPotWithArrowsYoukuritukusitatokiProcedure {
 		for (int index0 = 0; index0 < 50; index0++) {
 			{
 				Entity _shootFrom = entity;
-				Level projectileLevel = _shootFrom.level;
+				Level projectileLevel = _shootFrom.level();
 				if (!projectileLevel.isClientSide()) {
 					Projectile _entityToSpawn = new Object() {
 						public Projectile getArrow(Level level, Entity shooter, float damage, int knockback) {

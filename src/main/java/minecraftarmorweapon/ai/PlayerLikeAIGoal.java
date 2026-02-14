@@ -5,18 +5,18 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level().Level;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level().block.Blocks;
+import net.minecraft.world.level().block.state.BlockState;
 import net.minecraft.core.BlockPos;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModMobEffects;
@@ -157,7 +157,7 @@ public class PlayerLikeAIGoal extends Goal {
             return;
         }
 
-        Level world = entity.level;
+        Level world = entity.level();
         Vec3 lookVec = target.position().subtract(entity.position()).normalize();
         Vec3 entityPos = entity.position();
 
@@ -268,7 +268,7 @@ public class PlayerLikeAIGoal extends Goal {
         fallDamageImmunityTicks = 30;
 
         // エフェクト
-        Level world = entity.level;
+        Level world = entity.level();
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
             Vec3 pos = entity.position();
@@ -325,7 +325,7 @@ public class PlayerLikeAIGoal extends Goal {
             rangeMultiplier = 0.5;
         }
 
-        Level world = entity.level;
+        Level world = entity.level();
         Vec3 entityPos = entity.position();
 
         // 攻撃方向を計算
@@ -430,7 +430,7 @@ public class PlayerLikeAIGoal extends Goal {
      * 回転斬りチャージ攻撃（ChargedAttackHandler.performSpinSlashと同じ）
      */
     private void executeSpinSlash(ALifeAIBridge.AIAction action) {
-        Level world = entity.level;
+        Level world = entity.level();
         Vec3 entityPos = entity.position();
 
         float chargePercent = action.chargePercent;
@@ -551,7 +551,7 @@ public class PlayerLikeAIGoal extends Goal {
             }
 
             // エフェクト
-            Level world = entity.level;
+            Level world = entity.level();
             if (!world.isClientSide) {
                 ServerLevel serverWorld = (ServerLevel) world;
                 serverWorld.sendParticles(
@@ -604,7 +604,7 @@ public class PlayerLikeAIGoal extends Goal {
      * 刀のコンボ攻撃（ChargedAttackHandler.performKatanaComboと同じ）
      */
     private void executeKatanaCombo(LivingEntity target) {
-        Level world = entity.level;
+        Level world = entity.level();
         Vec3 entityPos = entity.position();
         Vec3 lookVec = target.position().subtract(entityPos).normalize();
 
@@ -711,7 +711,7 @@ public class PlayerLikeAIGoal extends Goal {
         boolean hitSuccess = entity.doHurtTarget(target);
 
         if (hitSuccess) {
-            Level world = entity.level;
+            Level world = entity.level();
             Vec3 targetPos = target.position();
 
             // 武器タイプに応じたエフェクトとノックバック
@@ -876,7 +876,7 @@ public class PlayerLikeAIGoal extends Goal {
         entity.heal(healAmount);
 
         // 回復エフェクト
-        Level world = entity.level;
+        Level world = entity.level();
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
             serverWorld.sendParticles(
@@ -911,7 +911,7 @@ public class PlayerLikeAIGoal extends Goal {
         entity.setDeltaMovement(retreatVec.x, entity.getDeltaMovement().y, retreatVec.z);
 
         // 煙エフェクト
-        Level world = entity.level;
+        Level world = entity.level();
         if (!world.isClientSide && random.nextInt(5) == 0) {
             ServerLevel serverWorld = (ServerLevel) world;
             serverWorld.sendParticles(
@@ -936,7 +936,7 @@ public class PlayerLikeAIGoal extends Goal {
         }
 
         // ガードエフェクト
-        Level world = entity.level;
+        Level world = entity.level();
         if (!world.isClientSide && actionTicks % 10 == 0) {
             ServerLevel serverWorld = (ServerLevel) world;
             serverWorld.sendParticles(
@@ -958,7 +958,7 @@ public class PlayerLikeAIGoal extends Goal {
      * 攻撃経路上の竹を破壊する（DodgeAndBattouHandler.breakBambooInPathと同じ）
      */
     private void breakBambooInPath(Vec3 startPos, Vec3 direction, double range) {
-        Level world = entity.level;
+        Level world = entity.level();
         if (world.isClientSide) return;
 
         // 攻撃経路に沿って竹をチェック

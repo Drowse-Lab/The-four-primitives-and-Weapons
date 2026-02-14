@@ -10,11 +10,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level().Level;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.LivingEntity;
@@ -29,8 +29,8 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.MobType;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level().block.Blocks;
+import net.minecraft.world.level().block.state.BlockState;
 import net.minecraft.core.BlockPos;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
@@ -93,8 +93,8 @@ public class DodgeAndBattouHandler {
             data.dodgeTimer--;
             
             // ダッシュ攻撃可能時の視覚的フィードバック
-            if (data.hasDodged && !player.level.isClientSide && data.dodgeTimer % 4 == 0) {
-                ServerLevel serverWorld = (ServerLevel) player.level;
+            if (data.hasDodged && !player.level().isClientSide && data.dodgeTimer % 4 == 0) {
+                ServerLevel serverWorld = (ServerLevel) player.level();
                 serverWorld.sendParticles(
                     ParticleTypes.ELECTRIC_SPARK,
                     player.getX(), player.getY() + 1, player.getZ(),
@@ -112,7 +112,7 @@ public class DodgeAndBattouHandler {
             data.cooldownTimer--;
             
             // クールダウン中は視覚的フィードバック
-            if (player.level.isClientSide && data.cooldownTimer % 10 == 0) {
+            if (player.level().isClientSide && data.cooldownTimer % 10 == 0) {
                 float percent = (float)data.cooldownTimer / DODGE_COOLDOWN;
                 player.displayClientMessage(
                     Component.literal(String.format("§7回避CD: %.1f秒", percent * 2.0f)), 
@@ -126,8 +126,8 @@ public class DodgeAndBattouHandler {
             data.fallDamageImmunityTimer--;
             
             // 落下ダメージ無効中のエフェクト
-            if (!player.level.isClientSide && data.fallDamageImmunityTimer % 5 == 0) {
-                ServerLevel serverWorld = (ServerLevel) player.level;
+            if (!player.level().isClientSide && data.fallDamageImmunityTimer % 5 == 0) {
+                ServerLevel serverWorld = (ServerLevel) player.level();
                 serverWorld.sendParticles(
                     ParticleTypes.PORTAL,
                     player.getX(), player.getY(), player.getZ(),
@@ -147,12 +147,12 @@ public class DodgeAndBattouHandler {
         }
         
         // クライアント側で同時押しを検出（通常のダッシュ攻撃用）
-        if (player.level.isClientSide) {
+        if (player.level().isClientSide) {
             checkSimultaneousInput(player, data);
         }
         
         // クライアント側で左クリックを検出（回避後のダッシュ攻撃用）
-        if (player.level.isClientSide && data.hasDodged && data.dodgeTimer > 0) {
+        if (player.level().isClientSide && data.hasDodged && data.dodgeTimer > 0) {
             checkDashAttackInput(player, data);
         }
     }
@@ -337,7 +337,7 @@ public class DodgeAndBattouHandler {
             data.airDashCount++;
         }
         
-        Level world = player.level;
+        Level world = player.level();
         Vec3 lookVec = player.getLookAngle();
         Vec3 playerPos = player.position();
         
@@ -427,7 +427,7 @@ public class DodgeAndBattouHandler {
     
     // 回避処理
     private static void performDodge(Player player) {
-        Level world = player.level;
+        Level world = player.level();
         Vec3 lookVec = player.getLookAngle();
         
         // 垂直方向の視線を制限（真上や真下を向いている場合の対処）
@@ -641,8 +641,8 @@ public class DodgeAndBattouHandler {
                 event.setCanceled(true);
                 
                 // エフェクトと通知
-                if (!player.level.isClientSide) {
-                    ServerLevel serverWorld = (ServerLevel) player.level;
+                if (!player.level().isClientSide) {
+                    ServerLevel serverWorld = (ServerLevel) player.level();
                     serverWorld.sendParticles(
                         ParticleTypes.HAPPY_VILLAGER,
                         player.getX(), player.getY(), player.getZ(),
@@ -716,13 +716,13 @@ public class DodgeAndBattouHandler {
             damage *= 1.5f;
             
             // クリティカルエフェクト
-            if (player.level instanceof ServerLevel serverLevel) {
+            if (player.level() instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ParticleTypes.CRIT,
                     target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                     10, 0.3, 0.3, 0.3, 0.1);
             }
             
-            player.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+            player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                 SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
         }
         
@@ -733,7 +733,7 @@ public class DodgeAndBattouHandler {
     private static void performStraightSwordThrust(Player player, ItemStack weapon) {
         // 直刀の突進攻撃を実行
         minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.execute(
-            player.level, player.getX(), player.getY(), player.getZ(), player
+            player.level(), player.getX(), player.getY(), player.getZ(), player
         );
 
         // クールダウン設定

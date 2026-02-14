@@ -1,7 +1,7 @@
 package minecraftarmorweapon.damage;
 
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -65,7 +65,7 @@ public class IceElementDamageHandler {
         target.setTicksFrozen(Math.min(target.getTicksFrozen() + 140, target.getTicksRequiredToFreeze() + 100));
 
         // 氷のパーティクルエフェクト
-        if (target.level instanceof ServerLevel serverLevel) {
+        if (target.level() instanceof ServerLevel serverLevel) {
             // 氷の結晶パーティクル
             serverLevel.sendParticles(ParticleTypes.SNOWFLAKE,
                 target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),

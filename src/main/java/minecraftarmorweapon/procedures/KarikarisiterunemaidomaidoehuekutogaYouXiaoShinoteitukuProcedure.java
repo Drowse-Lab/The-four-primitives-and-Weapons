@@ -2,13 +2,13 @@ package minecraftarmorweapon.procedures;
 
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level().LevelAccessor;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Mth;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 
@@ -63,7 +63,7 @@ public class KarikarisiterunemaidomaidoehuekutogaYouXiaoShinoteitukuProcedure {
 			for (Entity entityiterator : _entfound) {
 				if (entityiterator instanceof Mob) {
 					entityiterator.hurt(DamageSource.GENERIC, 5);
-					if (!entity.level.isClientSide())
+					if (!entity.level().isClientSide())
 						entity.discard();
 				}
 			}

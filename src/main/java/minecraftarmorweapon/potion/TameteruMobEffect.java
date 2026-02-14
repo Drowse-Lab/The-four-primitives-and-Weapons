@@ -28,18 +28,18 @@ public class TameteruMobEffect extends MobEffect {
 
 	@Override
 	public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
-		TameteruposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.execute(entity.level, entity);
+		TameteruposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.execute(entity.level(), entity);
 	}
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		TameteruehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level, entity.getX(), entity.getY(), entity.getZ(), entity);
+		TameteruehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity.getX(), entity.getY(), entity.getZ(), entity);
 	}
 
 	@Override
 	public void removeAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
 		super.removeAttributeModifiers(entity, attributeMap, amplifier);
-		TameteruposiyonXiaoGuogaQieretaShiProcedure.execute(entity.level, entity);
+		TameteruposiyonXiaoGuogaQieretaShiProcedure.execute(entity.level(), entity);
 	}
 
 	@Override

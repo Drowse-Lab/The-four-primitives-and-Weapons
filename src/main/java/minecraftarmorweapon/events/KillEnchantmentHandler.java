@@ -12,7 +12,7 @@ import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.CommandSource;
 
@@ -31,7 +31,7 @@ public class KillEnchantmentHandler {
             Entity directAttacker = event.getSource().getDirectEntity();
             LivingEntity target = event.getEntity();
 
-            if (target.level.isClientSide())
+            if (target.level().isClientSide())
                 return;
 
             boolean hasKillEnchant = false;
@@ -96,11 +96,11 @@ public class KillEnchantmentHandler {
                                 CommandSource.NULL,
                                 target.position(),
                                 target.getRotationVector(),
-                                target.level instanceof ServerLevel ? (ServerLevel) target.level : null,
+                                target.level() instanceof ServerLevel ? (ServerLevel) target.level() : null,
                                 4,
                                 target.getName().getString(),
                                 target.getDisplayName(),
-                                target.level.getServer(),
+                                target.level().getServer(),
                                 target
                             ),
                             "kill @s"

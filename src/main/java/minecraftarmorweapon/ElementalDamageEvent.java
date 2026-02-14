@@ -2,7 +2,7 @@ package minecraftarmorweapon;
 
 import minecraftarmorweapon.damage.*;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -118,14 +118,14 @@ public class ElementalDamageEvent {
             target.getZ() + radius
         );
 
-        List<LivingEntity> nearbyEntities = target.level.getEntitiesOfClass(
+        List<LivingEntity> nearbyEntities = target.level().getEntitiesOfClass(
             LivingEntity.class, searchBox,
             e -> e != target && e != attacker && (e.isInWaterOrRain() || e.isInWaterRainOrBubble())
         );
 
         for (LivingEntity nearby : nearbyEntities) {
             // 電気の光線が伝染するパーティクルエフェクト
-            if (target.level instanceof ServerLevel serverLevel) {
+            if (target.level() instanceof ServerLevel serverLevel) {
                 Vec3 start = target.position().add(0, target.getBbHeight() / 2, 0);
                 Vec3 end = nearby.position().add(0, nearby.getBbHeight() / 2, 0);
                 Vec3 direction = end.subtract(start).normalize();

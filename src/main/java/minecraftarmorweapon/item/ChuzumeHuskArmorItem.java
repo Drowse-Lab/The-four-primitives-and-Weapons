@@ -4,7 +4,7 @@ package minecraftarmorweapon.item;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level().Level;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;

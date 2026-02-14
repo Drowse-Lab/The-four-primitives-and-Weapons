@@ -8,7 +8,7 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level().Level;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -41,7 +41,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
 
@@ -166,14 +166,14 @@ public class CommonSoldierEntity extends PathfinderMob {
     public boolean hurt(DamageSource source, float amount) {
         // 落下ダメージ無効化
         if (source == DamageSource.FALL && playerLikeAI != null && playerLikeAI.isFallDamageImmune()) {
-            if (!this.level.isClientSide) {
-                this.level.broadcastEntityEvent(this, (byte) 2);
+            if (!this.level().isClientSide) {
+                this.level().broadcastEntityEvent(this, (byte) 2);
             }
             return false;
         }
 
         // プレイヤーから攻撃された場合の特別処理
-        if (source.getEntity() instanceof Player player && !this.level.isClientSide) {
+        if (source.getEntity() instanceof Player player && !this.level().isClientSide) {
             UUID playerUUID = player.getUUID();
 
             // プレイヤーが武器を持っているかチェック
@@ -260,11 +260,11 @@ public class CommonSoldierEntity extends PathfinderMob {
             player.hurt(DamageSource.mobAttack(this), 2.0f);
 
             // パンチ音
-            this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.PLAYER_ATTACK_WEAK, SoundSource.HOSTILE, 0.8f, 1.0f);
 
             // パーティクル
-            if (this.level instanceof ServerLevel serverLevel) {
+            if (this.level() instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(
                     ParticleTypes.CRIT,
                     player.getX(), player.getY() + 1, player.getZ(),
@@ -277,7 +277,7 @@ public class CommonSoldierEntity extends PathfinderMob {
     @Override
     public void die(DamageSource cause) {
         super.die(cause);
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide) {
             if (cause.getEntity() instanceof Player player) {
                 player.displayClientMessage(Component.literal("§7一般兵を倒した"), true);
             }
@@ -365,7 +365,7 @@ public class CommonSoldierEntity extends PathfinderMob {
                 livingTarget.setDeltaMovement(livingTarget.getDeltaMovement().add(knockback.x, 0.1, knockback.z));
 
                 // 攻撃エフェクト
-                if (!this.level.isClientSide && this.level instanceof ServerLevel serverLevel) {
+                if (!this.level().isClientSide && this.level() instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(
                         ParticleTypes.SWEEP_ATTACK,
                         livingTarget.getX(), livingTarget.getY() + livingTarget.getBbHeight() / 2, livingTarget.getZ(),
@@ -374,7 +374,7 @@ public class CommonSoldierEntity extends PathfinderMob {
                 }
 
                 // 攻撃音
-                this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+                this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                     SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0f, 1.0f);
             }
 

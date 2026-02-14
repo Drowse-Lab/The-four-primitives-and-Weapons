@@ -1,7 +1,7 @@
 package minecraftarmorweapon.network;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level().ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 

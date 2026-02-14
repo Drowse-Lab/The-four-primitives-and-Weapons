@@ -27,13 +27,13 @@ public class BloodTpMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		BloodTpehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level, entity.getX(), entity.getY(), entity.getZ(), entity);
+		BloodTpehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity.getX(), entity.getY(), entity.getZ(), entity);
 	}
 
 	@Override
 	public void removeAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
 		super.removeAttributeModifiers(entity, attributeMap, amplifier);
-		BloodTpposiyonXiaoGuogaQieretaShiProcedure.execute(entity.level, entity.getX(), entity.getY(), entity.getZ(), entity);
+		BloodTpposiyonXiaoGuogaQieretaShiProcedure.execute(entity.level(), entity.getX(), entity.getY(), entity.getZ(), entity);
 	}
 
 	@Override

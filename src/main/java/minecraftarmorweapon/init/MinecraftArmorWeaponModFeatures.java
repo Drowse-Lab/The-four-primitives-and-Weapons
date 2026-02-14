@@ -9,7 +9,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.fml.common.Mod;
 
-import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level().levelgen.feature.Feature;
 
 import minecraftarmorweapon.world.features.plants.RoseFeature;
 import minecraftarmorweapon.world.features.OutpostSiteFeature;

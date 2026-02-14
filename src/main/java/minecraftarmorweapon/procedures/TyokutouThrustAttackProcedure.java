@@ -2,8 +2,8 @@ package minecraftarmorweapon.procedures;
 
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level().LevelAccessor;
+import net.minecraft.world.level().Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.entity.player.Player;
@@ -12,7 +12,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
@@ -500,13 +500,13 @@ public class TyokutouThrustAttackProcedure {
             damage *= 1.5f;
 
             // クリティカルエフェクト
-            if (player.level instanceof ServerLevel serverLevel) {
+            if (player.level() instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ParticleTypes.CRIT,
                     target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                     15, 0.2, 0.2, 0.2, 0.1);
             }
 
-            player.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+            player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                 SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
         }
 
@@ -553,13 +553,13 @@ public class TyokutouThrustAttackProcedure {
             if (Math.random() < 0.03) { // 3%の確率で即死
                 target.hurt(DamageSource.MAGIC, target.getMaxHealth() * 2);
 
-                if (player.level instanceof ServerLevel serverLevel) {
+                if (player.level() instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(ParticleTypes.SMOKE,
                         target.getX(), target.getY() + 1, target.getZ(),
                         20, 0.5, 0.5, 0.5, 0.1);
                 }
 
-                player.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+                player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                     SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 0.5f, 2.0f);
             }
         }

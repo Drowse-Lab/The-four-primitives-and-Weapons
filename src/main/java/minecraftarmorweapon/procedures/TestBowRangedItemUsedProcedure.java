@@ -1,8 +1,8 @@
 package minecraftarmorweapon.procedures;
 
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.GameType;
+import net.minecraft.world.level().LevelAccessor;
+import net.minecraft.world.level().Level;
+import net.minecraft.world.level().GameType;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.Items;
@@ -18,8 +18,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerPlayer;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.CommandSource;
@@ -54,7 +54,7 @@ public class TestBowRangedItemUsedProcedure {
 						&& (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == Items.ARROW) {
 					{
 						Entity _shootFrom = entity;
-						Level projectileLevel = _shootFrom.level;
+						Level projectileLevel = _shootFrom.level();
 						if (!projectileLevel.isClientSide()) {
 							Projectile _entityToSpawn = new Object() {
 								public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -75,7 +75,7 @@ public class TestBowRangedItemUsedProcedure {
 						public boolean checkGamemode(Entity _ent) {
 							if (_ent instanceof ServerPlayer _serverPlayer) {
 								return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-							} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+							} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 								return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 										&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 							}
@@ -91,7 +91,7 @@ public class TestBowRangedItemUsedProcedure {
 						&& (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == Items.SPECTRAL_ARROW) {
 					{
 						Entity _shootFrom = entity;
-						Level projectileLevel = _shootFrom.level;
+						Level projectileLevel = _shootFrom.level();
 						if (!projectileLevel.isClientSide()) {
 							Projectile _entityToSpawn = new Object() {
 								public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -112,7 +112,7 @@ public class TestBowRangedItemUsedProcedure {
 						public boolean checkGamemode(Entity _ent) {
 							if (_ent instanceof ServerPlayer _serverPlayer) {
 								return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-							} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+							} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 								return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 										&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 							}
@@ -128,7 +128,7 @@ public class TestBowRangedItemUsedProcedure {
 					public boolean checkGamemode(Entity _ent) {
 						if (_ent instanceof ServerPlayer _serverPlayer) {
 							return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-						} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+						} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 							return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 									&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 						}
@@ -145,7 +145,7 @@ public class TestBowRangedItemUsedProcedure {
 										&& (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == Items.SPECTRAL_ARROW)) {
 					{
 						Entity _shootFrom = entity;
-						Level projectileLevel = _shootFrom.level;
+						Level projectileLevel = _shootFrom.level();
 						if (!projectileLevel.isClientSide()) {
 							Projectile _entityToSpawn = new Object() {
 								public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -171,17 +171,17 @@ public class TestBowRangedItemUsedProcedure {
 				if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 					{
 						Entity _ent = entity;
-						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4,
-									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "function minecraft_armor_weapon:test_bow_kill_start");
+						if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+									_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "function minecraft_armor_weapon:test_bow_kill_start");
 						}
 					}
 				} else {
 					{
 						Entity _ent = entity;
-						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4,
-									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "function minecraft_armor_weapon:test_bow_start");
+						if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+									_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "function minecraft_armor_weapon:test_bow_start");
 						}
 					}
 				}
@@ -190,7 +190,7 @@ public class TestBowRangedItemUsedProcedure {
 						public boolean checkGamemode(Entity _ent) {
 							if (_ent instanceof ServerPlayer _serverPlayer) {
 								return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-							} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+							} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 								return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 										&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 							}
@@ -207,7 +207,7 @@ public class TestBowRangedItemUsedProcedure {
 						public boolean checkGamemode(Entity _ent) {
 							if (_ent instanceof ServerPlayer _serverPlayer) {
 								return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-							} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+							} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 								return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 										&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 							}
@@ -226,7 +226,7 @@ public class TestBowRangedItemUsedProcedure {
 				}
 			}
 			if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 4) {
-				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+				if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.ONAZITAKASA_ARROW.get(), 40, 1, true, false));
 				if (entity instanceof Player _player)
 					_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 40);
@@ -237,7 +237,7 @@ public class TestBowRangedItemUsedProcedure {
 					if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 						{
 							Entity _shootFrom = entity;
-							Level projectileLevel = _shootFrom.level;
+							Level projectileLevel = _shootFrom.level();
 							if (!projectileLevel.isClientSide()) {
 								Projectile _entityToSpawn = new Object() {
 									public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -257,7 +257,7 @@ public class TestBowRangedItemUsedProcedure {
 						for (int index0 = 0; index0 < (int) (5 + EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY))); index0++) {
 							{
 								Entity _shootFrom = entity;
-								Level projectileLevel = _shootFrom.level;
+								Level projectileLevel = _shootFrom.level();
 								if (!projectileLevel.isClientSide()) {
 									Projectile _entityToSpawn = new Object() {
 										public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -279,7 +279,7 @@ public class TestBowRangedItemUsedProcedure {
 					} else {
 						{
 							Entity _shootFrom = entity;
-							Level projectileLevel = _shootFrom.level;
+							Level projectileLevel = _shootFrom.level();
 							if (!projectileLevel.isClientSide()) {
 								Projectile _entityToSpawn = new Object() {
 									public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -299,7 +299,7 @@ public class TestBowRangedItemUsedProcedure {
 						for (int index1 = 0; index1 < 5; index1++) {
 							{
 								Entity _shootFrom = entity;
-								Level projectileLevel = _shootFrom.level;
+								Level projectileLevel = _shootFrom.level();
 								if (!projectileLevel.isClientSide()) {
 									Projectile _entityToSpawn = new Object() {
 										public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -323,7 +323,7 @@ public class TestBowRangedItemUsedProcedure {
 						public boolean checkGamemode(Entity _ent) {
 							if (_ent instanceof ServerPlayer _serverPlayer) {
 								return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-							} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+							} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 								return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 										&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 							}
@@ -340,7 +340,7 @@ public class TestBowRangedItemUsedProcedure {
 					if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 						{
 							Entity _shootFrom = entity;
-							Level projectileLevel = _shootFrom.level;
+							Level projectileLevel = _shootFrom.level();
 							if (!projectileLevel.isClientSide()) {
 								Projectile _entityToSpawn = new Object() {
 									public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -360,7 +360,7 @@ public class TestBowRangedItemUsedProcedure {
 						for (int index2 = 0; index2 < (int) (5 + EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY))); index2++) {
 							{
 								Entity _shootFrom = entity;
-								Level projectileLevel = _shootFrom.level;
+								Level projectileLevel = _shootFrom.level();
 								if (!projectileLevel.isClientSide()) {
 									Projectile _entityToSpawn = new Object() {
 										public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -382,7 +382,7 @@ public class TestBowRangedItemUsedProcedure {
 					} else {
 						{
 							Entity _shootFrom = entity;
-							Level projectileLevel = _shootFrom.level;
+							Level projectileLevel = _shootFrom.level();
 							if (!projectileLevel.isClientSide()) {
 								Projectile _entityToSpawn = new Object() {
 									public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -402,7 +402,7 @@ public class TestBowRangedItemUsedProcedure {
 						for (int index3 = 0; index3 < 5; index3++) {
 							{
 								Entity _shootFrom = entity;
-								Level projectileLevel = _shootFrom.level;
+								Level projectileLevel = _shootFrom.level();
 								if (!projectileLevel.isClientSide()) {
 									Projectile _entityToSpawn = new Object() {
 										public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -426,7 +426,7 @@ public class TestBowRangedItemUsedProcedure {
 						public boolean checkGamemode(Entity _ent) {
 							if (_ent instanceof ServerPlayer _serverPlayer) {
 								return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-							} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+							} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 								return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 										&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 							}
@@ -442,7 +442,7 @@ public class TestBowRangedItemUsedProcedure {
 					public boolean checkGamemode(Entity _ent) {
 						if (_ent instanceof ServerPlayer _serverPlayer) {
 							return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-						} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+						} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 							return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 									&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 						}
@@ -460,7 +460,7 @@ public class TestBowRangedItemUsedProcedure {
 					if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 						{
 							Entity _shootFrom = entity;
-							Level projectileLevel = _shootFrom.level;
+							Level projectileLevel = _shootFrom.level();
 							if (!projectileLevel.isClientSide()) {
 								Projectile _entityToSpawn = new Object() {
 									public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -480,7 +480,7 @@ public class TestBowRangedItemUsedProcedure {
 						for (int index4 = 0; index4 < (int) (5 + EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY))); index4++) {
 							{
 								Entity _shootFrom = entity;
-								Level projectileLevel = _shootFrom.level;
+								Level projectileLevel = _shootFrom.level();
 								if (!projectileLevel.isClientSide()) {
 									Projectile _entityToSpawn = new Object() {
 										public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -502,7 +502,7 @@ public class TestBowRangedItemUsedProcedure {
 					} else {
 						{
 							Entity _shootFrom = entity;
-							Level projectileLevel = _shootFrom.level;
+							Level projectileLevel = _shootFrom.level();
 							if (!projectileLevel.isClientSide()) {
 								Projectile _entityToSpawn = new Object() {
 									public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -522,7 +522,7 @@ public class TestBowRangedItemUsedProcedure {
 						for (int index5 = 0; index5 < 5; index5++) {
 							{
 								Entity _shootFrom = entity;
-								Level projectileLevel = _shootFrom.level;
+								Level projectileLevel = _shootFrom.level();
 								if (!projectileLevel.isClientSide()) {
 									Projectile _entityToSpawn = new Object() {
 										public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -553,7 +553,7 @@ public class TestBowRangedItemUsedProcedure {
 						&& (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == Items.ARROW) {
 					{
 						Entity _shootFrom = entity;
-						Level projectileLevel = _shootFrom.level;
+						Level projectileLevel = _shootFrom.level();
 						if (!projectileLevel.isClientSide()) {
 							Projectile _entityToSpawn = new Object() {
 								public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -574,7 +574,7 @@ public class TestBowRangedItemUsedProcedure {
 						public boolean checkGamemode(Entity _ent) {
 							if (_ent instanceof ServerPlayer _serverPlayer) {
 								return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-							} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+							} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 								return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 										&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 							}
@@ -590,7 +590,7 @@ public class TestBowRangedItemUsedProcedure {
 						&& (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == Items.SPECTRAL_ARROW) {
 					{
 						Entity _shootFrom = entity;
-						Level projectileLevel = _shootFrom.level;
+						Level projectileLevel = _shootFrom.level();
 						if (!projectileLevel.isClientSide()) {
 							Projectile _entityToSpawn = new Object() {
 								public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -611,7 +611,7 @@ public class TestBowRangedItemUsedProcedure {
 						public boolean checkGamemode(Entity _ent) {
 							if (_ent instanceof ServerPlayer _serverPlayer) {
 								return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-							} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+							} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 								return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 										&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 							}
@@ -627,7 +627,7 @@ public class TestBowRangedItemUsedProcedure {
 					public boolean checkGamemode(Entity _ent) {
 						if (_ent instanceof ServerPlayer _serverPlayer) {
 							return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-						} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+						} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 							return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 									&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 						}
@@ -644,7 +644,7 @@ public class TestBowRangedItemUsedProcedure {
 										&& (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == Items.SPECTRAL_ARROW)) {
 					{
 						Entity _shootFrom = entity;
-						Level projectileLevel = _shootFrom.level;
+						Level projectileLevel = _shootFrom.level();
 						if (!projectileLevel.isClientSide()) {
 							Projectile _entityToSpawn = new Object() {
 								public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -766,7 +766,7 @@ public class TestBowRangedItemUsedProcedure {
 						public boolean checkGamemode(Entity _ent) {
 							if (_ent instanceof ServerPlayer _serverPlayer) {
 								return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-							} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+							} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 								return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 										&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 							}
@@ -783,7 +783,7 @@ public class TestBowRangedItemUsedProcedure {
 						public boolean checkGamemode(Entity _ent) {
 							if (_ent instanceof ServerPlayer _serverPlayer) {
 								return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-							} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+							} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 								return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 										&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 							}
@@ -797,7 +797,7 @@ public class TestBowRangedItemUsedProcedure {
 					}
 				}
 			}
-			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.KILL_EFFECT_TRUE_OR_FALSE.get(), 120, 1, true, false));
 		}
 	}

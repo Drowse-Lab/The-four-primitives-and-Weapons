@@ -1,7 +1,7 @@
 package minecraftarmorweapon.ai;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -23,8 +23,8 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ArmorMaterials;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level().block.Blocks;
+import net.minecraft.world.level().block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
@@ -314,7 +314,7 @@ public class SafeTrueCrafterAI {
             return;
         }
         
-        if (monster.level == null || monster.level.isClientSide) {
+        if (monster.level() == null || monster.level().isClientSide) {
             return;
         }
         
@@ -326,7 +326,7 @@ public class SafeTrueCrafterAI {
         }
         
         // サーバーの次のティックで処理（エンティティが完全に初期化された後）
-        if (monster.level instanceof ServerLevel serverLevel) {
+        if (monster.level() instanceof ServerLevel serverLevel) {
             serverLevel.getServer().execute(() -> {
                 try {
                     enhanceMonster(monster);
@@ -698,7 +698,7 @@ public class SafeTrueCrafterAI {
             return;
         }
         
-        if (monster.level == null || monster.level.isClientSide) {
+        if (monster.level() == null || monster.level().isClientSide) {
             return;
         }
         
@@ -791,17 +791,17 @@ public class SafeTrueCrafterAI {
                         BlockPos frontPos = zombiePos.relative(zombie.getDirection());
                         
                         // 前方にブロックを設置して登る
-                        if (zombie.level.getBlockState(frontPos).isAir() && 
-                            !zombie.level.getBlockState(frontPos.below()).isAir()) {
-                            zombie.level.setBlock(frontPos, Blocks.COBBLESTONE.defaultBlockState(), 3);
+                        if (zombie.level().getBlockState(frontPos).isAir() && 
+                            !zombie.level().getBlockState(frontPos.below()).isAir()) {
+                            zombie.level().setBlock(frontPos, Blocks.COBBLESTONE.defaultBlockState(), 3);
                             data.blockPlaceCooldown = 40; // 2秒のクールダウン
                             
                             // 一時ブロックとして記録（15秒後に削除）
                             temporaryBlocks.put(frontPos, System.currentTimeMillis());
                         }
                         // 足元にブロックを設置して階段を作る
-                        else if (zombie.level.getBlockState(zombiePos.below()).isAir()) {
-                            zombie.level.setBlock(zombiePos.below(), Blocks.COBBLESTONE.defaultBlockState(), 3);
+                        else if (zombie.level().getBlockState(zombiePos.below()).isAir()) {
+                            zombie.level().setBlock(zombiePos.below(), Blocks.COBBLESTONE.defaultBlockState(), 3);
                             data.blockPlaceCooldown = 30;
                             temporaryBlocks.put(zombiePos.below(), System.currentTimeMillis());
                         }
@@ -810,10 +810,10 @@ public class SafeTrueCrafterAI {
                     // 谷や水を渡るための橋を作る
                     BlockPos frontPos = zombie.blockPosition().relative(zombie.getDirection());
                     BlockPos belowFront = frontPos.below();
-                    BlockState belowState = zombie.level.getBlockState(belowFront);
+                    BlockState belowState = zombie.level().getBlockState(belowFront);
                     
                     if (belowState.isAir() || belowState.getMaterial().isLiquid()) {
-                        zombie.level.setBlock(belowFront, Blocks.COBBLESTONE.defaultBlockState(), 3);
+                        zombie.level().setBlock(belowFront, Blocks.COBBLESTONE.defaultBlockState(), 3);
                         data.blockPlaceCooldown = 20;
                         temporaryBlocks.put(belowFront, System.currentTimeMillis());
                     }
@@ -848,8 +848,8 @@ public class SafeTrueCrafterAI {
                 double distance = spider.distanceToSqr(target);
                 if (distance < 16.0 && spider.getRandom().nextFloat() < 0.1f) {
                     BlockPos targetPos = target.blockPosition();
-                    if (spider.level.getBlockState(targetPos).isAir()) {
-                        spider.level.setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
+                    if (spider.level().getBlockState(targetPos).isAir()) {
+                        spider.level().setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
                         data.blockPlaceCooldown = 100; // 5秒のクールダウン
                         temporaryBlocks.put(targetPos, System.currentTimeMillis());
                     }
@@ -860,7 +860,7 @@ public class SafeTrueCrafterAI {
         // 回避行動（全モンスター共通）
         if (data.dodgeCooldown == 0 && monster.getTarget() != null) {
             // 矢を検知して回避
-            List<AbstractArrow> arrows = monster.level.getEntitiesOfClass(
+            List<AbstractArrow> arrows = monster.level().getEntitiesOfClass(
                 AbstractArrow.class, 
                 monster.getBoundingBox().inflate(3.0),
                 arrow -> arrow.getOwner() != monster && !arrow.isNoGravity()
@@ -925,7 +925,7 @@ public class SafeTrueCrafterAI {
             }
             
             // ダメージを受けたかチェック
-            if (this.skeleton.getLastHurtByMob() != null && this.skeleton.getLastHurtByMobTimestamp() + 20 > this.skeleton.level.getGameTime()) {
+            if (this.skeleton.getLastHurtByMob() != null && this.skeleton.getLastHurtByMobTimestamp() + 20 > this.skeleton.level().getGameTime()) {
                 wasHurt = true;
             }
             
@@ -1118,8 +1118,8 @@ public class SafeTrueCrafterAI {
             // ウェブ設置（プレイヤーの足元）
             if (distance < 64.0 && this.spider.getRandom().nextInt(100) == 0) {
                 BlockPos targetPos = target.blockPosition();
-                if (this.spider.level.getBlockState(targetPos).isAir()) {
-                    this.spider.level.setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
+                if (this.spider.level().getBlockState(targetPos).isAir()) {
+                    this.spider.level().setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
                     webCooldown = 100; // 5秒のクールダウン
                 }
             }

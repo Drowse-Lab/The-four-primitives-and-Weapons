@@ -33,7 +33,7 @@ public class GyetonzangekiMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		GyetonzangekiehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level, entity);
+		GyetonzangekiehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity);
 	}
 
 	@Override

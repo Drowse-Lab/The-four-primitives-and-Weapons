@@ -25,7 +25,7 @@ public class OtiruyooMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		OtiruyooehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level, entity);
+		OtiruyooehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity);
 	}
 
 	@Override

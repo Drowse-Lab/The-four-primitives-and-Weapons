@@ -6,7 +6,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level().Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.core.BlockPos;
@@ -67,7 +67,7 @@ public class SmithingTableGui2SlotMessage {
 	}
 
 	public static void handleSlotAction(Player entity, int slotID, int changeType, int meta, int x, int y, int z) {
-		Level world = entity.level;
+		Level world = entity.level();
 		HashMap guistate = SmithingTableGui2Menu.guistate;
 		// security measure to prevent arbitrary chunk generation
 		if (!world.hasChunkAt(new BlockPos(x, y, z)))

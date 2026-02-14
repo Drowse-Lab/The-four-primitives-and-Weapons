@@ -10364,7 +10364,7 @@
       "geckolib",
       "jei"
     ],
-    "currentGenerator": "forge-1.19.2",
+    "currentGenerator": "forge-1.20.1",
     "credits": "nemui",
     "modElementsPackage": "minecraftarmorweapon",
     "lockBaseModFiles": true

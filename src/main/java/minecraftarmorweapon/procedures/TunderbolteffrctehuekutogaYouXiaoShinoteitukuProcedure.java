@@ -2,7 +2,7 @@ package minecraftarmorweapon.procedures;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 
 public class TunderbolteffrctehuekutogaYouXiaoShinoteitukuProcedure {
@@ -11,7 +11,7 @@ public class TunderbolteffrctehuekutogaYouXiaoShinoteitukuProcedure {
 			return;
 
 		// 毎tick FLASHパーティクルを表示（雷が来る予兆）
-		if (entity.level instanceof ServerLevel serverLevel) {
+		if (entity.level() instanceof ServerLevel serverLevel) {
 			// FLASHパーティクル（白い閃光）
 			serverLevel.sendParticles(ParticleTypes.FLASH,
 				entity.getX(),

@@ -16,10 +16,10 @@ import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.common.ForgeMod;
 
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level().block.state.BlockState;
+import net.minecraft.world.level().ServerLevelAccessor;
+import net.minecraft.world.level().LevelReader;
+import net.minecraft.world.level().Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.projectile.ThrownPotion;
 import net.minecraft.world.entity.player.Player;
@@ -173,13 +173,13 @@ public class BlackholeEntity extends PathfinderMob implements IAnimatable {
 	@Override
 	public InteractionResult mobInteract(Player sourceentity, InteractionHand hand) {
 		ItemStack itemstack = sourceentity.getItemInHand(hand);
-		InteractionResult retval = InteractionResult.sidedSuccess(this.level.isClientSide());
+		InteractionResult retval = InteractionResult.sidedSuccess(this.level().isClientSide());
 		super.mobInteract(sourceentity, hand);
 		double x = this.getX();
 		double y = this.getY();
 		double z = this.getZ();
 		Entity entity = this;
-		Level world = this.level;
+		Level world = this.level();
 
 		BlackholeenteiteiwoYoukuritukusitaShiProcedure.execute(entity, sourceentity);
 		return retval;
@@ -188,7 +188,7 @@ public class BlackholeEntity extends PathfinderMob implements IAnimatable {
 	@Override
 	public void baseTick() {
 		super.baseTick();
-		BlackholeenteiteinotitukuGengXinShiProcedure.execute(this.level, this.getX(), this.getY(), this.getZ(), this);
+		BlackholeenteiteinotitukuGengXinShiProcedure.execute(this.level(), this.getX(), this.getY(), this.getZ(), this);
 		this.refreshDimensions();
 	}
 
@@ -267,7 +267,7 @@ public class BlackholeEntity extends PathfinderMob implements IAnimatable {
 
 	private <E extends IAnimatable> PlayState procedurePredicate(AnimationEvent<E> event) {
 		Entity entity = this;
-		Level world = entity.level;
+		Level world = entity.level();
 		boolean loop = false;
 		double x = entity.getX();
 		double y = entity.getY();

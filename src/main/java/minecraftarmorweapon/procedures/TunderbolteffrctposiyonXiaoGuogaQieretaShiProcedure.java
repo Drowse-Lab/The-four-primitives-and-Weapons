@@ -4,7 +4,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -16,7 +16,7 @@ public class TunderbolteffrctposiyonXiaoGuogaQieretaShiProcedure {
 			return;
 
 		// エフェクトが切れた時（5秒経過後）に雷を落とす
-		if (entity.level instanceof ServerLevel serverLevel) {
+		if (entity.level() instanceof ServerLevel serverLevel) {
 			// 大量のFLASHパーティクル（雷が来る直前）
 			serverLevel.sendParticles(ParticleTypes.FLASH,
 				entity.getX(),

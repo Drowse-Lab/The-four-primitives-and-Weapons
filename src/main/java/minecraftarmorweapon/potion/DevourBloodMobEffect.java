@@ -25,7 +25,7 @@ public class DevourBloodMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		DevourBloodehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level, entity);
+		DevourBloodehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity);
 	}
 
 	@Override

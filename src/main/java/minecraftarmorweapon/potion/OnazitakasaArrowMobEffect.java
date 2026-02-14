@@ -32,7 +32,7 @@ public class OnazitakasaArrowMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		OnazitakasaArrowehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level, entity);
+		OnazitakasaArrowehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity);
 	}
 
 	@Override

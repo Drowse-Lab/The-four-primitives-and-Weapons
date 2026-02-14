@@ -9,8 +9,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level().block.Blocks;
+import net.minecraft.world.level().block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -56,7 +56,7 @@ public class TrueCrafterSafeAI {
             return;
         }
         
-        if (monster.level == null || monster.level.isClientSide) {
+        if (monster.level() == null || monster.level().isClientSide) {
             return;
         }
         
@@ -87,7 +87,7 @@ public class TrueCrafterSafeAI {
             return;
         }
         
-        if (monster.level == null || monster.level.isClientSide) {
+        if (monster.level() == null || monster.level().isClientSide) {
             return;
         }
         
@@ -234,9 +234,9 @@ public class TrueCrafterSafeAI {
                 BlockPos pos = zombie.blockPosition();
                 BlockPos placePos = pos.relative(zombie.getDirection());
                 
-                if (zombie.level.getBlockState(placePos).isAir() && 
-                    zombie.level.getBlockState(placePos.below()).getMaterial().isSolid()) {
-                    zombie.level.setBlock(placePos, Blocks.COBBLESTONE.defaultBlockState(), 3);
+                if (zombie.level().getBlockState(placePos).isAir() && 
+                    zombie.level().getBlockState(placePos.below()).getMaterial().isSolid()) {
+                    zombie.level().setBlock(placePos, Blocks.COBBLESTONE.defaultBlockState(), 3);
                     temporaryBlocks.put(placePos, System.currentTimeMillis());
                     state.blockPlaceCooldown = 30;
                 }
@@ -312,8 +312,8 @@ public class TrueCrafterSafeAI {
             double distance = spider.distanceTo(target);
             if (distance < 4) {
                 BlockPos targetPos = target.blockPosition();
-                if (spider.level.getBlockState(targetPos).isAir()) {
-                    spider.level.setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
+                if (spider.level().getBlockState(targetPos).isAir()) {
+                    spider.level().setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
                     temporaryBlocks.put(targetPos, System.currentTimeMillis());
                     state.blockPlaceCooldown = 100;
                 }

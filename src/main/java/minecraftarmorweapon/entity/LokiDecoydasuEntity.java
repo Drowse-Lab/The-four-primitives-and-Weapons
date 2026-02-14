@@ -8,8 +8,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.api.distmarker.Dist;
 
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level().block.Blocks;
+import net.minecraft.world.level().Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -67,7 +67,7 @@ public class LokiDecoydasuEntity extends AbstractArrow implements ItemSupplier {
 	@Override
 	public void onHitBlock(BlockHitResult blockHitResult) {
 		super.onHitBlock(blockHitResult);
-		LokiDecoydasuFeibiDaoJugaburotukuniDangtatutatokiProcedure.execute(this.level, blockHitResult.getBlockPos().getX(), blockHitResult.getBlockPos().getY(), blockHitResult.getBlockPos().getZ(), this.getOwner());
+		LokiDecoydasuFeibiDaoJugaburotukuniDangtatutatokiProcedure.execute(this.level(), blockHitResult.getBlockPos().getX(), blockHitResult.getBlockPos().getY(), blockHitResult.getBlockPos().getZ(), this.getOwner());
 	}
 
 	@Override
@@ -90,7 +90,7 @@ public class LokiDecoydasuEntity extends AbstractArrow implements ItemSupplier {
 	}
 
 	public static LokiDecoydasuEntity shoot(LivingEntity entity, LivingEntity target) {
-		LokiDecoydasuEntity entityarrow = new LokiDecoydasuEntity(MinecraftArmorWeaponModEntities.LOKI_DECOYDASU.get(), entity, entity.level);
+		LokiDecoydasuEntity entityarrow = new LokiDecoydasuEntity(MinecraftArmorWeaponModEntities.LOKI_DECOYDASU.get(), entity, entity.level());
 		double dx = target.getX() - entity.getX();
 		double dy = target.getY() + target.getEyeHeight() - 1.1;
 		double dz = target.getZ() - entity.getZ();
@@ -99,8 +99,8 @@ public class LokiDecoydasuEntity extends AbstractArrow implements ItemSupplier {
 		entityarrow.setBaseDamage(0);
 		entityarrow.setKnockback(0);
 		entityarrow.setCritArrow(true);
-		entity.level.addFreshEntity(entityarrow);
-		entity.level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("")), SoundSource.PLAYERS, 1, 1f / (RandomSource.create().nextFloat() * 0.5f + 1));
+		entity.level().addFreshEntity(entityarrow);
+		entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("")), SoundSource.PLAYERS, 1, 1f / (RandomSource.create().nextFloat() * 0.5f + 1));
 		return entityarrow;
 	}
 }

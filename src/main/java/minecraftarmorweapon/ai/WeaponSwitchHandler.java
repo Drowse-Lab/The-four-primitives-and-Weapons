@@ -52,7 +52,7 @@ public class WeaponSwitchHandler {
         LivingEntity entity = event.getEntity();
         
         // クライアントサイドでは処理しない
-        if (entity.level.isClientSide) {
+        if (entity.level().isClientSide) {
             return;
         }
         

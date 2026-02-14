@@ -1,7 +1,7 @@
 package minecraftarmorweapon.procedures;
 
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level().LevelAccessor;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -23,7 +23,7 @@ public class OtiruyoenteiteigasuponsitaShiProcedure {
 			}
 		}
 		MinecraftArmorWeaponMod.queueServerWork(2, () -> {
-			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.OTIRO.get(), 2, 1, true, false));
 		});
 	}

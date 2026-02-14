@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 
 import minecraftarmorweapon.util.DamageCalculator;
 
@@ -33,7 +33,7 @@ public class FireballHitHandler {
         if (!tag.contains("OwnerUUID")) return;
 
         // プレイヤーを取得
-        if (!(fireball.level instanceof ServerLevel serverLevel)) return;
+        if (!(fireball.level() instanceof ServerLevel serverLevel)) return;
 
         UUID ownerUUID = UUID.fromString(tag.getString("OwnerUUID"));
         Player player = serverLevel.getPlayerByUUID(ownerUUID);

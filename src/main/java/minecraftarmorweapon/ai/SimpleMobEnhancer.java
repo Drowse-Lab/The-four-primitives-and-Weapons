@@ -38,7 +38,7 @@ public class SimpleMobEnhancer {
         }
         
         // レベルがnullなら無視
-        if (monster.level == null) {
+        if (monster.level() == null) {
             return;
         }
         

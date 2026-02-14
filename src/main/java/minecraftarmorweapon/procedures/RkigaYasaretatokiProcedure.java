@@ -1,6 +1,6 @@
 package minecraftarmorweapon.procedures;
 
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level().LevelAccessor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,7 +20,7 @@ public class RkigaYasaretatokiProcedure {
 		if (entity == null)
 			return;
 
-		LevelAccessor world = entity.level;
+		LevelAccessor world = entity.level();
 		double x = entity.getX();
 		double y = entity.getY();
 		double z = entity.getZ();
@@ -77,7 +77,7 @@ public class RkigaYasaretatokiProcedure {
 				}
 
 				// Add speed boost
-				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide()) {
+				if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide()) {
 					_entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 60, 1, false, false));
 				}
 			}
@@ -132,7 +132,7 @@ public class RkigaYasaretatokiProcedure {
 				}
 
 				// Add speed boost for dramatic effect
-				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide()) {
+				if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide()) {
 					_entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 60, 1, false, false));
 				}
 			}

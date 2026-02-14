@@ -11,8 +11,8 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level.Level;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level().Level;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.sounds.SoundEvents;
@@ -65,7 +65,7 @@ public class MobWeaponAttackHandler {
      */
     private static void enhanceMobWeaponAttack(LivingEntity attacker, LivingEntity target,
                                                ItemStack weapon, LivingAttackEvent event) {
-        Level world = attacker.level;
+        Level world = attacker.level();
         if (world.isClientSide()) return;
 
         Vec3 attackerPos = attacker.position();

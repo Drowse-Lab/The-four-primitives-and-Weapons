@@ -3,8 +3,8 @@ package minecraftarmorweapon.procedures;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.GameType;
+import net.minecraft.world.level().LevelAccessor;
+import net.minecraft.world.level().GameType;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
@@ -16,8 +16,8 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.Difficulty;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerPlayer;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.CommandSource;
@@ -121,7 +121,7 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 											public boolean checkGamemode(Entity _ent) {
 												if (_ent instanceof ServerPlayer _serverPlayer) {
 													return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-												} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+												} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 													return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 															&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 												}
@@ -131,7 +131,7 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 											public boolean checkGamemode(Entity _ent) {
 												if (_ent instanceof ServerPlayer _serverPlayer) {
 													return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.SPECTATOR;
-												} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+												} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 													return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 															&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.SPECTATOR;
 												}
@@ -144,16 +144,16 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 										if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 												}
 											}
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
+															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
 												}
 											}
 										} else {
@@ -174,21 +174,21 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.BUBBLESHOT.get()) {
 														entityiterator.hurt(DamageSource.GENERIC, 5);
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()) {
 														entityiterator.hurt(DamageSource.GENERIC, 6);
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get()
 															|| (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KATANA_NIGU_HUMERUS.get()) {
 														if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()) {
 															entityiterator.hurt(DamageSource.GENERIC, 10);
-															if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+															if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 																_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
-															if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+															if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 																_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
 														}
 													}
@@ -200,20 +200,20 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 													&& (entityiterator instanceof LivingEntity _livEnt ? _livEnt.getMobType() == MobType.UNDEAD : false)) {
 												entityiterator.hurt(DamageSource.GENERIC, 10);
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()) {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 100, 2, true, false));
 												}
 											}
 											if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WITHER_KATANA.get()) {
-												if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+												if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 													_entity.addEffect(new MobEffectInstance(MobEffects.WITHER, 120, 2, false, false));
 											}
 											if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.DARKNESS_KATANA.get()) {
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.DARKNESS.get()) {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.DARKNESS_ATTACK_EFFECT.get(), 100, 2, true, false));
 												} else {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.DARKNESS_ATTACK_EFFECT.get(), 100, 1, true, false));
 												}
 											}
@@ -279,7 +279,7 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 											public boolean checkGamemode(Entity _ent) {
 												if (_ent instanceof ServerPlayer _serverPlayer) {
 													return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-												} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+												} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 													return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 															&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 												}
@@ -289,7 +289,7 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 											public boolean checkGamemode(Entity _ent) {
 												if (_ent instanceof ServerPlayer _serverPlayer) {
 													return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.SPECTATOR;
-												} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+												} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 													return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 															&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.SPECTATOR;
 												}
@@ -302,16 +302,16 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 										if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 												}
 											}
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
+															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
 												}
 											}
 										} else {
@@ -332,21 +332,21 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.BUBBLESHOT.get()) {
 														entityiterator.hurt(DamageSource.GENERIC, 5);
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()) {
 														entityiterator.hurt(DamageSource.GENERIC, 6);
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get()
 															|| (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KATANA_NIGU_HUMERUS.get()) {
 														if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()) {
 															entityiterator.hurt(DamageSource.GENERIC, 10);
-															if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+															if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 																_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
-															if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+															if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 																_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
 														}
 													}
@@ -358,20 +358,20 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 													&& (entityiterator instanceof LivingEntity _livEnt ? _livEnt.getMobType() == MobType.UNDEAD : false)) {
 												entityiterator.hurt(DamageSource.GENERIC, 10);
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()) {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 100, 2, true, false));
 												}
 											}
 											if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WITHER_KATANA.get()) {
-												if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+												if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 													_entity.addEffect(new MobEffectInstance(MobEffects.WITHER, 120, 2, false, false));
 											}
 											if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.DARKNESS_KATANA.get()) {
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.DARKNESS.get()) {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.DARKNESS_ATTACK_EFFECT.get(), 100, 2, true, false));
 												} else {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.DARKNESS_ATTACK_EFFECT.get(), 100, 1, true, false));
 												}
 											}
@@ -437,7 +437,7 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 											public boolean checkGamemode(Entity _ent) {
 												if (_ent instanceof ServerPlayer _serverPlayer) {
 													return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.CREATIVE;
-												} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+												} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 													return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 															&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.CREATIVE;
 												}
@@ -447,7 +447,7 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 											public boolean checkGamemode(Entity _ent) {
 												if (_ent instanceof ServerPlayer _serverPlayer) {
 													return _serverPlayer.gameMode.getGameModeForPlayer() == GameType.SPECTATOR;
-												} else if (_ent.level.isClientSide() && _ent instanceof Player _player) {
+												} else if (_ent.level().isClientSide() && _ent instanceof Player _player) {
 													return Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()) != null
 															&& Minecraft.getInstance().getConnection().getPlayerInfo(_player.getGameProfile().getId()).getGameMode() == GameType.SPECTATOR;
 												}
@@ -460,16 +460,16 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 										if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 												}
 											}
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															_ent.level instanceof ServerLevel ? (ServerLevel) _ent.level : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
+															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
 												}
 											}
 										} else {
@@ -490,21 +490,21 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.BUBBLESHOT.get()) {
 														entityiterator.hurt(DamageSource.GENERIC, 5);
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()) {
 														entityiterator.hurt(DamageSource.GENERIC, 6);
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get()
 															|| (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KATANA_NIGU_HUMERUS.get()) {
 														if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()) {
 															entityiterator.hurt(DamageSource.GENERIC, 10);
-															if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+															if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 																_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
-															if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+															if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 																_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
 														}
 													}
@@ -516,20 +516,20 @@ public class KaitenehuekutogaYouXiaoShinoteitukuProcedure {
 													&& (entityiterator instanceof LivingEntity _livEnt ? _livEnt.getMobType() == MobType.UNDEAD : false)) {
 												entityiterator.hurt(DamageSource.GENERIC, 10);
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()) {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 100, 2, true, false));
 												}
 											}
 											if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WITHER_KATANA.get()) {
-												if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+												if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 													_entity.addEffect(new MobEffectInstance(MobEffects.WITHER, 120, 2, false, false));
 											}
 											if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.DARKNESS_KATANA.get()) {
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.DARKNESS.get()) {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.DARKNESS_ATTACK_EFFECT.get(), 100, 2, true, false));
 												} else {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.DARKNESS_ATTACK_EFFECT.get(), 100, 1, true, false));
 												}
 											}

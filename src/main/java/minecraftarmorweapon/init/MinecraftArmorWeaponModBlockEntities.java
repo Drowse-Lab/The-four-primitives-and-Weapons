@@ -8,8 +8,8 @@ import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.DeferredRegister;
 
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level().block.entity.BlockEntityType;
+import net.minecraft.world.level().block.Block;
 
 import minecraftarmorweapon.block.entity.ItemStanBlockEntity;
 import minecraftarmorweapon.block.entity.CustomCrafterCraftingBlockEntity;

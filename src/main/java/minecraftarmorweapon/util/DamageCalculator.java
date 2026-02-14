@@ -13,7 +13,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -99,13 +99,13 @@ public class DamageCalculator {
                 damage *= 1.5f;
 
                 // クリティカルエフェクト
-                if (player.level instanceof ServerLevel serverLevel) {
+                if (player.level() instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(ParticleTypes.CRIT,
                         target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                         15, 0.2, 0.2, 0.2, 0.1);
                 }
 
-                player.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+                player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                     SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
             }
         }
@@ -158,11 +158,11 @@ public class DamageCalculator {
                             CommandSource.NULL,
                             target.position(),
                             target.getRotationVector(),
-                            target.level instanceof ServerLevel ? (ServerLevel) target.level : null,
+                            target.level() instanceof ServerLevel ? (ServerLevel) target.level() : null,
                             4,
                             target.getName().getString(),
                             target.getDisplayName(),
-                            target.level.getServer(),
+                            target.level().getServer(),
                             target
                         ),
                         "kill @s"
@@ -173,7 +173,7 @@ public class DamageCalculator {
                 target.setHealth(0f);
 
                 // 即死エフェクト
-                if (attacker.level instanceof ServerLevel serverLevel) {
+                if (attacker.level() instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(ParticleTypes.SMOKE,
                         target.getX(), target.getY() + 1, target.getZ(),
                         20, 0.5, 0.5, 0.5, 0.1);
@@ -185,9 +185,9 @@ public class DamageCalculator {
                 }
 
                 // より強力な音を再生
-                attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+                attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                     SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 1.0f, 0.5f);
-                attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+                attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                     SoundEvents.WITHER_DEATH, SoundSource.PLAYERS, 0.5f, 2.0f);
             }
         }
@@ -257,13 +257,13 @@ public class DamageCalculator {
         }
 
         // 血のエフェクト
-        if (attacker.level instanceof ServerLevel serverLevel) {
+        if (attacker.level() instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.DAMAGE_INDICATOR,
                 target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                 10, 0.3, 0.3, 0.3, 0.1);
         }
 
-        attacker.level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
+        attacker.level().playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
             SoundEvents.GENERIC_DRINK, SoundSource.PLAYERS, 0.5f, 1.2f);
     }
 
@@ -278,7 +278,7 @@ public class DamageCalculator {
             target.hurt(DamageSource.WITHER, damage * 0.5f);
 
             // 闇のオーラエフェクト
-            if (attacker.level instanceof ServerLevel serverLevel) {
+            if (attacker.level() instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ParticleTypes.SOUL,
                     target.getX(), target.getY() + 1, target.getZ(),
                     15, 0.5, 0.5, 0.5, 0.05);
@@ -289,7 +289,7 @@ public class DamageCalculator {
         }
 
         // ウィザーサウンド
-        attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+        attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
             SoundEvents.WITHER_HURT, SoundSource.PLAYERS, 0.5f, 1.0f);
     }
 
@@ -302,7 +302,7 @@ public class DamageCalculator {
         target.hurt(DamageSource.MAGIC, damage * 0.2f);
 
         // 暗黒エフェクト
-        if (attacker.level instanceof ServerLevel serverLevel) {
+        if (attacker.level() instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.SMOKE,
                 target.getX(), target.getY() + 1, target.getZ(),
                 20, 0.5, 0.5, 0.5, 0.1);
@@ -311,7 +311,7 @@ public class DamageCalculator {
                 10, 0.3, 0.3, 0.3, 0.05);
         }
 
-        attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+        attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
             SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 0.5f, 0.5f);
     }
 
@@ -320,7 +320,7 @@ public class DamageCalculator {
         target.hurt(DamageSource.MAGIC, damage * 0.3f);
 
         // 魔法エフェクト
-        if (attacker.level instanceof ServerLevel serverLevel) {
+        if (attacker.level() instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
                 target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                 20, 0.5, 0.5, 0.5, 0.1);
@@ -329,7 +329,7 @@ public class DamageCalculator {
                 10, 0.3, 0.3, 0.3, 0.05);
         }
 
-        attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+        attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
             SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.5f, 1.2f);
     }
 }

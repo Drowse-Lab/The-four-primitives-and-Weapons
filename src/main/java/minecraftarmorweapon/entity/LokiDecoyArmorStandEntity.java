@@ -3,10 +3,10 @@ package minecraftarmorweapon.entity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level().Level;
+import net.minecraft.world.level().Explosion;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -42,7 +42,7 @@ public class LokiDecoyArmorStandEntity extends ArmorStand {
     public void tick() {
         super.tick();
 
-        if (this.level.isClientSide()) {
+        if (this.level().isClientSide()) {
             return;
         }
 
@@ -75,7 +75,7 @@ public class LokiDecoyArmorStandEntity extends ArmorStand {
             this.getX() + TAUNT_RADIUS, this.getY() + TAUNT_RADIUS, this.getZ() + TAUNT_RADIUS
         );
 
-        List<Mob> mobs = this.level.getEntitiesOfClass(Mob.class, box, mob -> {
+        List<Mob> mobs = this.level().getEntitiesOfClass(Mob.class, box, mob -> {
             return mob.isAlive() && !mob.getUUID().equals(this.getUUID());
         });
 
@@ -130,7 +130,7 @@ public class LokiDecoyArmorStandEntity extends ArmorStand {
      * パーティクル生成
      */
     private void spawnParticles() {
-        if (this.level instanceof ServerLevel serverLevel) {
+        if (this.level() instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(
                 ParticleTypes.SMOKE,
                 this.getX(), this.getY() + 1.8, this.getZ(),
@@ -143,15 +143,15 @@ public class LokiDecoyArmorStandEntity extends ArmorStand {
      * 爆発処理
      */
     private void explode() {
-        if (!this.level.isClientSide()) {
-            this.level.explode(
+        if (!this.level().isClientSide()) {
+            this.level().explode(
                 null,
                 this.getX(), this.getY(), this.getZ(),
                 4.0f,
                 Explosion.BlockInteraction.DESTROY
             );
 
-            this.level.playSound(
+            this.level().playSound(
                 null,
                 this.blockPosition(),
                 SoundEvents.GENERIC_EXPLODE,
@@ -165,7 +165,7 @@ public class LokiDecoyArmorStandEntity extends ArmorStand {
      * サウンド再生（publicメソッド）
      */
     public void playSoundEffect(net.minecraft.sounds.SoundEvent sound, float volume, float pitch) {
-        this.level.playSound(
+        this.level().playSound(
             null,
             this.blockPosition(),
             sound,

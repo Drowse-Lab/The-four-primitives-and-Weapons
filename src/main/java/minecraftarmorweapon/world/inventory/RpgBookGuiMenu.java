@@ -4,7 +4,7 @@ package minecraftarmorweapon.world.inventory;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.IItemHandler;
 
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level().Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -33,7 +33,7 @@ public class RpgBookGuiMenu extends AbstractContainerMenu implements Supplier<Ma
 	public RpgBookGuiMenu(int id, Inventory inv, FriendlyByteBuf extraData) {
 		super(MinecraftArmorWeaponModMenus.RPG_BOOK_GUI.get(), id);
 		this.entity = inv.player;
-		this.world = inv.player.level;
+		this.world = inv.player.level();
 		this.internal = new ItemStackHandler(0);
 		BlockPos pos = null;
 		if (extraData != null) {

@@ -5,7 +5,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level().ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -99,7 +99,7 @@ public class ElectricElementDamageHandler {
         }
 
         // 電気のパーティクルエフェクト（ターゲット本体）
-        if (target.level instanceof ServerLevel serverLevel) {
+        if (target.level() instanceof ServerLevel serverLevel) {
             // 電気スパーク
             serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
                 target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),

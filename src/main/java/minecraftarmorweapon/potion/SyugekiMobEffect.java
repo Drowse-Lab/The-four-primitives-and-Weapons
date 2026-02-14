@@ -31,7 +31,7 @@ public class SyugekiMobEffect extends MobEffect {
 
 	@Override
 	public void applyInstantenousEffect(Entity source, Entity indirectSource, LivingEntity entity, int amplifier, double health) {
-		SyugekiOnEffectActiveTickProcedure.execute(entity.level, entity.getY(), entity);
+		SyugekiOnEffectActiveTickProcedure.execute(entity.level(), entity.getY(), entity);
 	}
 
 	@Override

@@ -41,7 +41,7 @@ public class TpAttackMobEffect extends MobEffect {
 	@Override
 	public void removeAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
 		super.removeAttributeModifiers(entity, attributeMap, amplifier);
-		TpAttackposiyonXiaoGuogaQieretaShiProcedure.execute(entity.level, entity.getX(), entity.getY(), entity.getZ(), entity);
+		TpAttackposiyonXiaoGuogaQieretaShiProcedure.execute(entity.level(), entity.getX(), entity.getY(), entity.getZ(), entity);
 	}
 
 	@Override

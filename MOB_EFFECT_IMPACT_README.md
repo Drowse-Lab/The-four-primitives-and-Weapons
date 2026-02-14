@@ -305,7 +305,7 @@ private void executeDodge(ALifeAIBridge.AIAction action) {
 
 ## 互換性
 
-- **Minecraft**: 1.19.2
+- **Minecraft**: 1.20.1
 - **Forge**: 43.x.x
 - **他のMod**: バニラのステータス効果システムを使用しているため、他のModと互換性があります
 
@@ -328,5 +328,5 @@ private void executeDodge(ALifeAIBridge.AIAction action) {
 ---
 
 **作成日**: 2025年10月14日
-**Minecraft バージョン**: 1.19.2
+**Minecraft バージョン**: 1.20.1
 **Forge バージョン**: 43.x.x

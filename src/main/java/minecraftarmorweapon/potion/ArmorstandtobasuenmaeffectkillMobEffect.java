@@ -27,7 +27,7 @@ public class ArmorstandtobasuenmaeffectkillMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		ArmorstandtobasuenmaeffectkillOnEffectActiveTickProcedure.execute(entity.level, entity.getX(), entity.getY(), entity.getZ(), entity);
+		ArmorstandtobasuenmaeffectkillOnEffectActiveTickProcedure.execute(entity.level(), entity.getX(), entity.getY(), entity.getZ(), entity);
 	}
 
 	@Override

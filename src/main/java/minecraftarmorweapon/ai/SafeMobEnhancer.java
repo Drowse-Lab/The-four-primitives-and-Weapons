@@ -47,7 +47,7 @@ public class SafeMobEnhancer {
         }
         
         // レベルがnullなら無視
-        if (monster.level == null || monster.level.isClientSide) {
+        if (monster.level() == null || monster.level().isClientSide) {
             return;
         }
         
