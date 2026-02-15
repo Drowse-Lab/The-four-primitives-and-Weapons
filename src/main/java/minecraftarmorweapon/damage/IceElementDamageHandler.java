@@ -1,7 +1,7 @@
 package minecraftarmorweapon.damage;
 
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;

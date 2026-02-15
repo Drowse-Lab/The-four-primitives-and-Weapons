@@ -1,6 +1,13 @@
-def compileModsDir = 'compile-mods-1.19.2'
+// Default: 1.20.1 with Java 17
+// For 1.19.2 (optional): ./gradlew build -DMC_VERSION=1.19.2 -DMAPPING_VERSION=1.19.2 -DFORGE_VERSION=1.19.2-43.X.X
+def mc_version = project.findProperty('MC_VERSION') ?: System.getProperty('MC_VERSION') ?: '1.20.1'
+def compileModsDirBase = mc_version.startsWith('1.19') ? 'compile-mods-1.19.2' : 'compile-mods-1.20.1'
+
+println("mcreator.gradle: Using compile-mods for version ${mc_version}")
+
+def compileModsDir = compileModsDirBase
 	task addnewfoldersmods(type: DefaultTask){
-		ant.mkdir(dir: 'compile-mods-1.19.2/');
+		ant.mkdir(dir: "${compileModsDir}/");
     }
     repositories {
     	flatDir {
@@ -18,36 +25,6 @@ def compileModsDir = 'compile-mods-1.19.2'
     	def version = basename.substring(versionSep + 1)
     	implementation fg.deobf("compile-mods:$artifactId:$version")}
     }
-    	minecraft {
-    		mappings channel: 'official', version: '1.20.1'
-    			accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-    		runs {
-    			client {
-    				workingDirectory project.file('run')
-    				property 'forge.logging.markers', 'REGISTRIES'
-    				property 'forge.logging.console.level', 'debug'
-    				property 'mixin.env.remapRefMap', 'true'
-    				property 'mixin.env.refMapRemappingFile', "${buildDir}/build/createSrgToMcp/output.srg"
-    				mods {
-    					examplemod {
-    						source sourceSets.main
-    					}
-    				}
-    			}
-    			server {
-    				workingDirectory project.file('run')
-    				property 'forge.logging.markers', 'REGISTRIES'
-    				property 'forge.logging.console.level', 'debug'
-    				property 'mixin.env.remapRefMap', 'true'
-    				property 'mixin.env.refMapRemappingFile', "${buildDir}/build/createSrgToMcp/output.srg"
-    				mods {
-    					examplemod {
-    						source sourceSets.main
-                    }
-                }
-    		}
-    	}
-    }
 
 repositories {
 maven {
@@ -56,8 +33,14 @@ maven {
 }
 
 dependencies {
+	if (mc_version.startsWith('1.19')) {
 		runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.19.2-5.1.1.0")
 		compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.19.2-5.1.1.0:api")
+	} else if (mc_version.startsWith('1.20')) {
+		// Note: For 1.20.1, use deobf to get source variants
+		runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.20.1-5.3.7.0:deobf")
+		compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.20.1-5.3.7.0:deobf@jar")
+	}
 }
 
 repositories {
@@ -67,7 +50,12 @@ repositories {
 }
 
 dependencies {
-	implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.19:3.1.40')
+	if (mc_version.startsWith('1.19')) {
+		implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.19:3.1.40')
+	} else if (mc_version.startsWith('1.20')) {
+		// GeckoLib 4.x for 1.20.1
+		implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20:4.4.7')
+	}
 }
 
 repositories {
@@ -84,8 +72,15 @@ repositories {
 }
 
 dependencies {
-	compileOnly fg.deobf("mezz.jei:jei-1.19.2-common-api:11.4.0.286")
-	compileOnly fg.deobf("mezz.jei:jei-1.19.2-forge-api:11.4.0.286")
-	runtimeOnly fg.deobf("mezz.jei:jei-1.19.2-forge:11.4.0.286")
+	if (mc_version.startsWith('1.19')) {
+		compileOnly fg.deobf("mezz.jei:jei-1.19.2-common-api:11.4.0.286")
+		compileOnly fg.deobf("mezz.jei:jei-1.19.2-forge-api:11.4.0.286")
+		runtimeOnly fg.deobf("mezz.jei:jei-1.19.2-forge:11.4.0.286")
+	} else if (mc_version.startsWith('1.20')) {
+		// JEI 15.x for 1.20.1
+		compileOnly fg.deobf("mezz.jei:jei-1.20.1-common-api:14.6.13.56")
+		compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge-api:14.6.13.56")
+		runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:14.6.13.56")
+	}
 }
 

@@ -7,7 +7,7 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.Level;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 
@@ -54,7 +54,7 @@ public class ZeroDegreeFireSwordItem extends SwordItem {
     
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        if (!target.level().isClientSide()) {
+        if (!target.level.isClientSide()) {
             // 零度の炎エフェクトを適用（8秒間、レベル1）
             FreezingFireEffectProcedure.execute(target.level(), target, attacker, 160, 0);
         }

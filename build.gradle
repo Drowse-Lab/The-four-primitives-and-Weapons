@@ -16,8 +16,16 @@ archivesBaseName = 'minecraft_armor_weapon'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
+// Default: 1.20.1 with Java 17
+// For 1.19.2 (optional): ./gradlew build -DMC_VERSION=1.19.2 -DMAPPING_VERSION=1.19.2 -DFORGE_VERSION=1.19.2-43.X.X
+def mc_version = project.findProperty('MC_VERSION') ?: System.getProperty('MC_VERSION') ?: '1.20.1'
+def mapping_version = project.findProperty('MAPPING_VERSION') ?: System.getProperty('MAPPING_VERSION') ?: '1.20.1'
+def forge_version = project.findProperty('FORGE_VERSION') ?: System.getProperty('FORGE_VERSION') ?: '1.20.1-47.1.0'
+
+println("Building for Minecraft ${mc_version} with Forge ${forge_version}")
+
 minecraft {
-    mappings channel: 'official', version: '1.20.1'
+    mappings channel: 'official', version: mapping_version
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -53,7 +61,7 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.20.1-47.1.0'
+    minecraft "net.minecraftforge:forge:${forge_version}"
 }
 
 tasks.withType(JavaCompile).configureEach {

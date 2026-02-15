@@ -13,7 +13,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -105,7 +105,7 @@ public class DamageCalculator {
                         15, 0.2, 0.2, 0.2, 0.1);
                 }
 
-                player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                player.level.playSound(null, target.getX(), target.getY(), target.getZ(),
                     SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
             }
         }
@@ -162,7 +162,7 @@ public class DamageCalculator {
                             4,
                             target.getName().getString(),
                             target.getDisplayName(),
-                            target.level().getServer(),
+                            target.level.getServer(),
                             target
                         ),
                         "kill @s"
@@ -185,9 +185,9 @@ public class DamageCalculator {
                 }
 
                 // より強力な音を再生
-                attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
                     SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 1.0f, 0.5f);
-                attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
                     SoundEvents.WITHER_DEATH, SoundSource.PLAYERS, 0.5f, 2.0f);
             }
         }
@@ -263,7 +263,7 @@ public class DamageCalculator {
                 10, 0.3, 0.3, 0.3, 0.1);
         }
 
-        attacker.level().playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
+        attacker.level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
             SoundEvents.GENERIC_DRINK, SoundSource.PLAYERS, 0.5f, 1.2f);
     }
 
@@ -289,7 +289,7 @@ public class DamageCalculator {
         }
 
         // ウィザーサウンド
-        attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+        attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
             SoundEvents.WITHER_HURT, SoundSource.PLAYERS, 0.5f, 1.0f);
     }
 
@@ -311,7 +311,7 @@ public class DamageCalculator {
                 10, 0.3, 0.3, 0.3, 0.05);
         }
 
-        attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+        attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
             SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 0.5f, 0.5f);
     }
 
@@ -329,7 +329,7 @@ public class DamageCalculator {
                 10, 0.3, 0.3, 0.3, 0.05);
         }
 
-        attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+        attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
             SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.5f, 1.2f);
     }
 }

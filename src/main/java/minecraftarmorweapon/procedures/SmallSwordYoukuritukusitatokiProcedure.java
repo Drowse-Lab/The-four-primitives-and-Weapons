@@ -3,7 +3,7 @@ package minecraftarmorweapon.procedures;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level().LevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
@@ -13,7 +13,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.BlockPos;
@@ -60,7 +60,7 @@ public class SmallSwordYoukuritukusitatokiProcedure {
 		double dis = 0;
 		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.SMALL_SWORD.get()) {
 			if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 2) {
-				if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
+				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
 					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.KAITEN.get(), 1, 1, true, false));
 				if (!(entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.KURUTIMENASI.get()) : false)) {
 					if (entity instanceof Player _player)
@@ -75,7 +75,7 @@ public class SmallSwordYoukuritukusitatokiProcedure {
 				entity.getPersistentData().putDouble("Ypos", y);
 				entity.getPersistentData().putDouble("yaw", (entity.getYRot()));
 				entity.getPersistentData().putDouble("distance", 3);
-				if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
+				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
 					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.NAGIHARAI_2.get(), 2, 1, true, false));
 				if (!(entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.KURUTIMENASI.get()) : false)) {
 					if (entity instanceof Player _player)
@@ -111,16 +111,16 @@ public class SmallSwordYoukuritukusitatokiProcedure {
 												if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 													{
 														Entity _ent = entityiterator;
-														if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+														if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 															_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																	_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
+																	_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
 														}
 													}
 													{
 														Entity _ent = entityiterator;
-														if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+														if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 															_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																	_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
+																	_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
 																	"/deta merge entity @s (Health:0)");
 														}
 													}
@@ -147,16 +147,16 @@ public class SmallSwordYoukuritukusitatokiProcedure {
 												if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 													{
 														Entity _ent = entityiterator;
-														if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+														if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 															_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																	_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
+																	_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
 														}
 													}
 													{
 														Entity _ent = entityiterator;
-														if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+														if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 															_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																	_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
+																	_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
 																	"/deta merge entity @s (Health:0)");
 														}
 													}
@@ -202,16 +202,16 @@ public class SmallSwordYoukuritukusitatokiProcedure {
 											entity.getPersistentData().putBoolean("enchantmagickatanadamege", true);
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
+															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
 												}
 											}
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
+															_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
 												}
 											}
 										} else {
@@ -225,25 +225,25 @@ public class SmallSwordYoukuritukusitatokiProcedure {
 													entityiterator.setSecondsOnFire(30);
 												}
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WIND_STEP.get()) {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 														_entity.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 20, 1, true, false));
 													entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
 												}
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()) {
 													entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 2));
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 1, true, false));
 												}
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.BUBBLESHOT.get()) {
 													entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 1, true, false));
 												}
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()) {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 1, true, false));
 													entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 1, true, false));
 												}
 											} else {
@@ -344,16 +344,16 @@ public class SmallSwordYoukuritukusitatokiProcedure {
 												entity.getPersistentData().putBoolean("enchantmagickatanadamege", true);
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
+																_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
 													}
 												}
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
+																_ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
 																"/deta merge entity @s (Health:0)");
 													}
 												}
@@ -372,19 +372,19 @@ public class SmallSwordYoukuritukusitatokiProcedure {
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.BUBBLESHOT.get()) {
 														entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()) {
 														entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 2));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()) {
 														entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
 													}
 												} else {
@@ -400,7 +400,7 @@ public class SmallSwordYoukuritukusitatokiProcedure {
 					loop = loop + Math.toRadians(5);
 					Y_pos = Y_pos - 0.0555555555555556;
 				}
-				if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
+				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
 					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.ZOKUSEIZANNGEKI.get(), 30, 1, true, false));
 				if (entity instanceof Player _player)
 					_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 50);

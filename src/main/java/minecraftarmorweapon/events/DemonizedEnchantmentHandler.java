@@ -6,7 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -112,7 +112,7 @@ public class DemonizedEnchantmentHandler {
 
                 // 吸収サウンド（レベルに応じてピッチ変化）
                 float pitch = 1.0f + (demonizedLevel * 0.05f); // レベル10で1.5
-                attacker.level().playSound(
+                attacker.level.playSound(
                     null,
                     attacker.getX(), attacker.getY(), attacker.getZ(),
                     SoundEvents.PLAYER_HURT_DROWN,
@@ -123,7 +123,7 @@ public class DemonizedEnchantmentHandler {
 
                 // 高レベル時は追加サウンド
                 if (demonizedLevel >= 5) {
-                    attacker.level().playSound(
+                    attacker.level.playSound(
                         null,
                         attacker.getX(), attacker.getY(), attacker.getZ(),
                         SoundEvents.SOUL_ESCAPE,

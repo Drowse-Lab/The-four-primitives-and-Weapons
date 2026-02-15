@@ -220,7 +220,7 @@ public class PythonALifeAIBridge {
      * 最も近い敵を探す
      */
     private Optional<LivingEntity> findNearestEnemy() {
-        return entity.level().getEntitiesOfClass(
+        return entity.level.getEntitiesOfClass(
             LivingEntity.class,
             entity.getBoundingBox().inflate(16.0),
             e -> e != entity &&

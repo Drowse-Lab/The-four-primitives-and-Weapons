@@ -9,7 +9,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.api.distmarker.Dist;
 
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.client.Minecraft;
 

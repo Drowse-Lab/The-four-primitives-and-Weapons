@@ -2,8 +2,8 @@ package minecraftarmorweapon.procedures;
 
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level().LevelAccessor;
-import net.minecraft.world.level().GameType;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +18,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.server.level().ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModMobEffects;
@@ -118,7 +118,7 @@ public class HardentityehuekutogaYouXiaoShinoteitukuProcedure {
 				if (nearestPlayer instanceof ServerPlayer _serverPlayer) {
 					GameType gameType = _serverPlayer.gameMode.getGameModeForPlayer();
 					isCreativeOrSpectator = (gameType == GameType.CREATIVE || gameType == GameType.SPECTATOR);
-				} else if (nearestPlayer.level().isClientSide()) {
+				} else if (nearestPlayer.level.isClientSide()) {
 					try {
 						var connection = Minecraft.getInstance().getConnection();
 						if (connection != null) {

@@ -4,7 +4,7 @@ package minecraftarmorweapon.item;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.api.distmarker.Dist;
 
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TooltipFlag;
@@ -110,7 +110,7 @@ public class OldKatanaItem extends SwordItem {
 			}
 			
 			// 納刀中の場合、SliceGuard効果を付与
-			if (isSheathed && !player.level().isClientSide()) {
+			if (isSheathed && !player.level.isClientSide()) {
 				player.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SLICE_GUARD.get(), 60, 1, true, false));
 			}
 		}

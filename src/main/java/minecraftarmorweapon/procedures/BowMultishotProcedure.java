@@ -7,7 +7,7 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level().LevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.Items;

@@ -100,7 +100,7 @@ public class ALifeAIBridge {
 
             // 周囲の敵をすべて取得（クリエイティブ/スペクテーターを除外）
             // FOLLOW_RANGE分の範囲で敵を探す（64ブロック）
-            data.nearbyEnemies = entity.level().getEntitiesOfClass(
+            data.nearbyEnemies = entity.level.getEntitiesOfClass(
                 LivingEntity.class,
                 entity.getBoundingBox().inflate(64.0),
                 e -> e != null &&
@@ -168,7 +168,7 @@ public class ALifeAIBridge {
 
         // 優先度2: 最も近い有効な敵（クリエイティブ/スペクテーターを除外）
         // FOLLOW_RANGE分の範囲で敵を探す（64ブロック）
-        return entity.level().getEntitiesOfClass(
+        return entity.level.getEntitiesOfClass(
             LivingEntity.class,
             entity.getBoundingBox().inflate(64.0),
             e -> e != entity &&

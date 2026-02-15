@@ -6,15 +6,15 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 
-import net.minecraft.world.level().block.entity.BlockEntity;
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.server.level().ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.core.BlockPos;
 
@@ -66,7 +66,7 @@ public class CustomCrafterCraftingguiMenu extends AbstractContainerMenu implemen
 						this.bound = true;
 					});
 			} else { // might be bound to block
-				BlockEntity ent = inv.player != null ? inv.player.level().getBlockEntity(pos) : null;
+				BlockEntity ent = inv.player != null ? inv.player.level.getBlockEntity(pos) : null;
 				if (ent != null) {
 					ent.getCapability(ForgeCapabilities.ITEM_HANDLER, null).ifPresent(capability -> {
 						this.internal = capability;

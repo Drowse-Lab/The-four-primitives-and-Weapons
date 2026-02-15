@@ -12,7 +12,7 @@ public class BlackholeenteiteiwoYoukuritukusitaShiProcedure {
 			return;
 		if ((sourceentity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.DESPORN_KENTI.get()
 				|| (sourceentity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get()) {
-			if (!entity.level().isClientSide())
+			if (!entity.level.isClientSide())
 				entity.discard();
 		}
 	}

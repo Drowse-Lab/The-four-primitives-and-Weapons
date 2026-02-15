@@ -11,7 +11,7 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.Level;
 
 import java.util.List;
 

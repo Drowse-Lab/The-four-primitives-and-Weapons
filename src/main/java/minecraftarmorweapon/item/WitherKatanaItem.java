@@ -1,7 +1,7 @@
 
 package minecraftarmorweapon.item;
 
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.SwordItem;
@@ -16,7 +16,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
@@ -70,7 +70,7 @@ public class WitherKatanaItem extends SwordItem {
 	
 	@Override
 	public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-		if (!attacker.level().isClientSide) {
+		if (!attacker.level.isClientSide) {
 			// ターゲットが呪われているかチェック（既にウィザー効果があるかカスタムNBTタグ）
 			boolean isCursed = target.hasEffect(MobEffects.WITHER) || 
 							   (target.getPersistentData().contains("Feyn") && 
@@ -126,7 +126,7 @@ public class WitherKatanaItem extends SwordItem {
 			}
 			
 			// ウィザーのサウンド効果
-			attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+			attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
 				SoundEvents.WITHER_SKELETON_HURT, SoundSource.PLAYERS, 0.7f, 0.8f);
 			
 			// 呪われた敵には高確率（30%）、通常は低確率（10%）で追加のウィザー爆発
@@ -143,7 +143,7 @@ public class WitherKatanaItem extends SwordItem {
 				target.hurt(DamageSource.WITHER, 4.0f);
 				
 				// 爆発音
-				attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+				attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
 					SoundEvents.WITHER_SHOOT, SoundSource.PLAYERS, 0.5f, 1.0f);
 			}
 		}

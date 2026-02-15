@@ -5,7 +5,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -25,17 +25,17 @@ public class WindStepYoukuritukusitatokiProcedure {
 			return;
 		}
 
-		minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("WindStep: Entity: {}, Client side: {}", entity, entity.level().isClientSide);
+		minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("WindStep: Entity: {}, Client side: {}", entity, entity.level.isClientSide);
 
 		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WIND_STEP.get()
 				|| (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WIND_STEP.get()) {
 			minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("WindStep: Item check passed!");
 
-			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
+			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.WIND_STEP_EFFECT.get(), 100, 1, true, false));
 
 			// 竜巻エンティティの召喚
-			if (!entity.level().isClientSide && entity instanceof Player player) {
+			if (!entity.level.isClientSide && entity instanceof Player player) {
 				Level level = entity.level();
 				ItemStack mainHandItem = player.getMainHandItem();
 

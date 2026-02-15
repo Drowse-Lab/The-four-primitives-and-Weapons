@@ -1,7 +1,7 @@
 package minecraftarmorweapon.procedures;
 
-import net.minecraft.world.level().block.Blocks;
-import net.minecraft.world.level().LevelAccessor;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.core.BlockPos;
 

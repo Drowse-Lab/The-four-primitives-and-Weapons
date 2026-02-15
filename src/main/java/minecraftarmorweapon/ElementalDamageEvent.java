@@ -2,7 +2,7 @@ package minecraftarmorweapon;
 
 import minecraftarmorweapon.damage.*;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -118,7 +118,7 @@ public class ElementalDamageEvent {
             target.getZ() + radius
         );
 
-        List<LivingEntity> nearbyEntities = target.level().getEntitiesOfClass(
+        List<LivingEntity> nearbyEntities = target.level.getEntitiesOfClass(
             LivingEntity.class, searchBox,
             e -> e != target && e != attacker && (e.isInWaterOrRain() || e.isInWaterRainOrBubble())
         );

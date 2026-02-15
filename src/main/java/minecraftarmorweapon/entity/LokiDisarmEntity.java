@@ -8,8 +8,8 @@ import net.minecraftforge.api.distmarker.Dist;
 
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.level().block.Blocks;
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.entity.projectile.ItemSupplier;
@@ -20,7 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.util.RandomSource;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.core.particles.ParticleTypes;
@@ -255,8 +255,8 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 		double dy = target.getY() + target.getEyeHeight() - 1.1;
 		double dz = target.getZ() - entity.getZ();
 		entityProjectile.shoot(dx, dy - entityProjectile.getY() + Math.hypot(dx, dz) * 0.2F, dz, 1.5f, 12.0F);
-		entity.level().addFreshEntity(entityProjectile);
-		entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+		entity.level.addFreshEntity(entityProjectile);
+		entity.level.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
 			ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("entity.snowball.throw")),
 			SoundSource.PLAYERS, 1, 1f / (RandomSource.create().nextFloat() * 0.5f + 1));
 		return entityProjectile;

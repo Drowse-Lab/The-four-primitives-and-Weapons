@@ -6,9 +6,9 @@ import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.common.ForgeMod;
 
-import net.minecraft.world.level().pathfinder.BlockPathTypes;
-import net.minecraft.world.level().LevelReader;
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.projectile.ThrownPotion;
@@ -142,7 +142,7 @@ public class SkeltonMobEntity extends PathfinderMob {
 	@Override
 	public InteractionResult mobInteract(Player sourceentity, InteractionHand hand) {
 		ItemStack itemstack = sourceentity.getItemInHand(hand);
-		InteractionResult retval = InteractionResult.sidedSuccess(this.level().isClientSide());
+		InteractionResult retval = InteractionResult.sidedSuccess(this.level.isClientSide());
 		super.mobInteract(sourceentity, hand);
 		double x = this.getX();
 		double y = this.getY();

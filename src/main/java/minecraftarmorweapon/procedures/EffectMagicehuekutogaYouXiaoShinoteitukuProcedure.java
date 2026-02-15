@@ -2,7 +2,7 @@ package minecraftarmorweapon.procedures;
 
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level().LevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.entity.projectile.ThrownEgg;
 import net.minecraft.world.entity.projectile.SpectralArrow;

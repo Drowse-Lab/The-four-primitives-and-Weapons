@@ -1,7 +1,7 @@
 
 package minecraftarmorweapon.item;
 
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.SwordItem;
@@ -18,7 +18,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -73,7 +73,7 @@ public class RiversOfBloodItem extends SwordItem {
 	
 	@Override
 	public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-		if (!attacker.level().isClientSide && attacker instanceof Player player) {
+		if (!attacker.level.isClientSide && attacker instanceof Player player) {
 			// 基本のライフスティール量（ダメージの20%）
 			float damageDealt = this.getDamage();
 			float healAmount = damageDealt * 0.2f;
@@ -115,7 +115,7 @@ public class RiversOfBloodItem extends SwordItem {
 				target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
 				
 				// 特殊サウンド
-				attacker.level().playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
+				attacker.level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
 					SoundEvents.WITHER_HURT, SoundSource.PLAYERS, 0.5f, 0.8f);
 			} else {
 				// 通常の血のエフェクト
@@ -137,7 +137,7 @@ public class RiversOfBloodItem extends SwordItem {
 			// }
 			
 			// 吸血サウンド
-			attacker.level().playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
+			attacker.level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
 				SoundEvents.GENERIC_DRINK, SoundSource.PLAYERS, 0.5f, 1.2f);
 		}
 		

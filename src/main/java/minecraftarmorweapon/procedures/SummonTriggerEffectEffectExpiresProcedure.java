@@ -1,7 +1,7 @@
 package minecraftarmorweapon.procedures;
 
 import net.minecraft.world.entity.Entity;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import java.util.UUID;
 import java.util.List;
 

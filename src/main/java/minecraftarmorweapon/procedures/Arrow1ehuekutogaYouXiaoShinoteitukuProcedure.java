@@ -4,8 +4,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.level().LevelAccessor;
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.entity.projectile.ThrownEgg;
 import net.minecraft.world.entity.projectile.SpectralArrow;
@@ -18,7 +18,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Mth;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.BlockPos;
@@ -76,23 +76,23 @@ public class Arrow1ehuekutogaYouXiaoShinoteitukuProcedure {
 								world.addParticle(ParticleTypes.SWEEP_ATTACK, (entityiterator.getX()), (entityiterator.getY() + Mth.nextDouble(RandomSource.create(), -0.1, 0.5)), (entityiterator.getZ()), 0, 1, 0);
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "kill");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "kill");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
 									}
 								}
 							} else {
@@ -114,23 +114,23 @@ public class Arrow1ehuekutogaYouXiaoShinoteitukuProcedure {
 								world.addParticle(ParticleTypes.SWEEP_ATTACK, (entityiterator.getX()), (entityiterator.getY() + Mth.nextDouble(RandomSource.create(), -0.1, 0.5)), (entityiterator.getZ()), 0, 1, 0);
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "kill");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "kill");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
 									}
 								}
 							}
@@ -174,23 +174,23 @@ public class Arrow1ehuekutogaYouXiaoShinoteitukuProcedure {
 								world.addParticle(ParticleTypes.SWEEP_ATTACK, (entityiterator.getX()), (entityiterator.getY() + Mth.nextDouble(RandomSource.create(), -0.1, 0.5)), (entityiterator.getZ()), 0, 1, 0);
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "kill");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "kill");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
 									}
 								}
 							} else {
@@ -212,23 +212,23 @@ public class Arrow1ehuekutogaYouXiaoShinoteitukuProcedure {
 								world.addParticle(ParticleTypes.SWEEP_ATTACK, (entityiterator.getX()), (entityiterator.getY() + Mth.nextDouble(RandomSource.create(), -0.1, 0.5)), (entityiterator.getZ()), 0, 1, 0);
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "kill");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "kill");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
 									}
 								}
 							}
@@ -272,23 +272,23 @@ public class Arrow1ehuekutogaYouXiaoShinoteitukuProcedure {
 								world.addParticle(ParticleTypes.SWEEP_ATTACK, (entityiterator.getX()), (entityiterator.getY() + Mth.nextDouble(RandomSource.create(), -0.1, 0.5)), (entityiterator.getZ()), 0, 1, 0);
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "kill");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "kill");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
 									}
 								}
 							} else {
@@ -310,23 +310,23 @@ public class Arrow1ehuekutogaYouXiaoShinoteitukuProcedure {
 								world.addParticle(ParticleTypes.SWEEP_ATTACK, (entityiterator.getX()), (entityiterator.getY() + Mth.nextDouble(RandomSource.create(), -0.1, 0.5)), (entityiterator.getZ()), 0, 1, 0);
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "kill");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "kill");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
 									}
 								}
 							}
@@ -370,23 +370,23 @@ public class Arrow1ehuekutogaYouXiaoShinoteitukuProcedure {
 								world.addParticle(ParticleTypes.SWEEP_ATTACK, (entityiterator.getX()), (entityiterator.getY() + Mth.nextDouble(RandomSource.create(), -0.1, 0.5)), (entityiterator.getZ()), 0, 1, 0);
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "kill");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "kill");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
 									}
 								}
 							} else {
@@ -408,23 +408,23 @@ public class Arrow1ehuekutogaYouXiaoShinoteitukuProcedure {
 								world.addParticle(ParticleTypes.SWEEP_ATTACK, (entityiterator.getX()), (entityiterator.getY() + Mth.nextDouble(RandomSource.create(), -0.1, 0.5)), (entityiterator.getZ()), 0, 1, 0);
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "kill @s");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "kill @s");
 									}
 								}
 								{
 									Entity _ent = entityiterator;
-									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
 									}
 								}
 							}
@@ -466,23 +466,23 @@ public class Arrow1ehuekutogaYouXiaoShinoteitukuProcedure {
 						world.addParticle(ParticleTypes.SWEEP_ATTACK, (entityiterator.getX()), (entityiterator.getY() + Mth.nextDouble(RandomSource.create(), -0.1, 0.5)), (entityiterator.getZ()), 0, 1, 0);
 						{
 							Entity _ent = entityiterator;
-							if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+							if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 								_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
-										_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
+										_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/particle dust 0.639 0.169 0.169 1 ~ ~0.5 ~ 0.3 0.1 0.3 0.1 10 force");
 							}
 						}
 						{
 							Entity _ent = entityiterator;
-							if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+							if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 								_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
-										_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "kill");
+										_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "kill");
 							}
 						}
 						{
 							Entity _ent = entityiterator;
-							if (!_ent.level().isClientSide() && _ent.getServer() != null) {
+							if (!_ent.level.isClientSide() && _ent.getServer() != null) {
 								_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
-										_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
+										_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
 							}
 						}
 					}

@@ -6,8 +6,8 @@ import net.minecraftforge.eventbus.api.Event;
 
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.level().LevelAccessor;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.commands.CommandSourceStack;
@@ -21,7 +21,7 @@ import java.util.Optional;
 @Mod.EventBusSubscriber
 public class SkinOfDragonWorldLoadProcedure {
 	@SubscribeEvent
-	public static void onWorldLoad(net.minecraftforge.event.level().LevelEvent.Load event) {
+	public static void onWorldLoad(net.minecraftforge.event.level.LevelEvent.Load event) {
 		execute(event, event.getLevel());
 	}
 

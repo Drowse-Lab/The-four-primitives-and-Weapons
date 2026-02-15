@@ -37,7 +37,7 @@ public class GuardNowProcedure {
 		}
 
 		if (sourceentity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.GUARD.get()) : false) {
-			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
+			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.ATTACK_IN_GUARD.get(), 60, 1, false, false));
 		}
 	}

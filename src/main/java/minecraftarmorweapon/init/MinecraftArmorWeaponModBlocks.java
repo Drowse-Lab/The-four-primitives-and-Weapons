@@ -12,7 +12,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.api.distmarker.Dist;
 
-import net.minecraft.world.level().block.Block;
+import net.minecraft.world.level.block.Block;
 
 import minecraftarmorweapon.block.WitherSkeletonSpawnerBlock;
 import minecraftarmorweapon.block.StoneKatanaBlockBlock;

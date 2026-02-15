@@ -1,6 +1,6 @@
 package minecraftarmorweapon.procedures;
 
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
@@ -13,7 +13,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level().ClipContext;
+import net.minecraft.world.level.ClipContext;
 
 import minecraftarmorweapon.entity.FlyingAttackerEntity;
 import minecraftarmorweapon.entity.KatanaTobuEntity;
@@ -264,7 +264,7 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 		Vec3 endPos = eyePos.add(lookVec.x * range, lookVec.y * range, lookVec.z * range);
 		
 		// レイキャストで最も近いエンティティを取得
-		HitResult hitResult = player.level().clip(new ClipContext(eyePos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
+		HitResult hitResult = player.level.clip(new ClipContext(eyePos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
 		Vec3 actualEndPos = hitResult.getLocation();
 		
 		// エンティティを検索
@@ -272,7 +272,7 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 		double closestDistance = range * range;
 		LivingEntity closestEntity = null;
 		
-		for (Entity entity : player.level().getEntities(player, searchBox)) {
+		for (Entity entity : player.level.getEntities(player, searchBox)) {
 			if (entity instanceof LivingEntity && entity.isAlive()) {
 				AABB entityBox = entity.getBoundingBox().inflate(0.3D);
 				if (entityBox.clip(eyePos, actualEndPos).isPresent()) {
@@ -295,7 +295,7 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 		Vec3 endPos = eyePos.add(lookVec.x * range, lookVec.y * range, lookVec.z * range);
 		
 		// レイキャストで最も近いエンティティを取得
-		HitResult hitResult = mob.level().clip(new ClipContext(eyePos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, mob));
+		HitResult hitResult = mob.level.clip(new ClipContext(eyePos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, mob));
 		Vec3 actualEndPos = hitResult.getLocation();
 		
 		// エンティティを検索
@@ -303,7 +303,7 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 		double closestDistance = range * range;
 		LivingEntity closestEntity = null;
 		
-		for (Entity entity : mob.level().getEntities(mob, searchBox)) {
+		for (Entity entity : mob.level.getEntities(mob, searchBox)) {
 			if (entity instanceof LivingEntity && entity.isAlive() && entity != mob) {
 				AABB entityBox = entity.getBoundingBox().inflate(0.3D);
 				if (entityBox.clip(eyePos, actualEndPos).isPresent()) {

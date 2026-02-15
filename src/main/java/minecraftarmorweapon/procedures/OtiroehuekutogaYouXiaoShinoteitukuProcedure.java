@@ -13,11 +13,11 @@ public class OtiroehuekutogaYouXiaoShinoteitukuProcedure {
 			return;
 		entity.setDeltaMovement(new Vec3(0, (-1), 0));
 		if (!entity.isOnGround()) {
-			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
+			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.OTIRO.get(), 2, 1, true, false));
 		}
 		if (entity.isOnGround()) {
-			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
+			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.OTITA.get(), 2, 1, true, false));
 		}
 	}

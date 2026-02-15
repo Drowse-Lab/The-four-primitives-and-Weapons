@@ -40,7 +40,7 @@ public class FeynEffectHandlerClient {
     // @SubscribeEvent
     // public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
     //     Player player = event.player;
-    //     if (player == null || player.level().isClientSide) return;
+    //     if (player == null || player.level.isClientSide) return;
 
     //     ItemStack item = player.getMainHandItem();
     //     if (!item.isDamageableItem() || !item.hasTag()) return;

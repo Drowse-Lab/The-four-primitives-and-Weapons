@@ -8,8 +8,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.api.distmarker.Dist;
 
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.level().block.Blocks;
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -99,8 +99,8 @@ public class LokiDecoydasuEntity extends AbstractArrow implements ItemSupplier {
 		entityarrow.setBaseDamage(0);
 		entityarrow.setKnockback(0);
 		entityarrow.setCritArrow(true);
-		entity.level().addFreshEntity(entityarrow);
-		entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("")), SoundSource.PLAYERS, 1, 1f / (RandomSource.create().nextFloat() * 0.5f + 1));
+		entity.level.addFreshEntity(entityarrow);
+		entity.level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("")), SoundSource.PLAYERS, 1, 1f / (RandomSource.create().nextFloat() * 0.5f + 1));
 		return entityarrow;
 	}
 }

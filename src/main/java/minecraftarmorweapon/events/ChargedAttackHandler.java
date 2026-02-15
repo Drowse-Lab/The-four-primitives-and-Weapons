@@ -13,11 +13,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.Level;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,9 +33,9 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.MobType;
-import net.minecraft.world.level().block.Blocks;
-import net.minecraft.world.level().block.BambooBlock;
-import net.minecraft.world.level().block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BambooBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Items;
@@ -128,7 +128,7 @@ public class ChargedAttackHandler {
         }
 
         // クライアント側で左クリックの状態を検出
-        if (player.level().isClientSide) {
+        if (player.level.isClientSide) {
             checkMouseInput(player, data);
         }
 
@@ -143,7 +143,7 @@ public class ChargedAttackHandler {
             
             // Sword of Nightの場合、ターゲットを発光させる
             String itemName = data.chargingItem.getItem().getClass().getSimpleName();
-            if (itemName.equals("SwordOfNightItem") && !player.level().isClientSide) {
+            if (itemName.equals("SwordOfNightItem") && !player.level.isClientSide) {
                 SwordOfNightChargingGlowProcedure.execute(
                     player.level(), 
                     player.getX(), 
@@ -157,7 +157,7 @@ public class ChargedAttackHandler {
             // 最大チャージ到達
             if (data.chargeTime >= MAX_CHARGE_TIME) {
                 // player.displayClientMessage(Component.literal("§e最大チャージ！"), true);
-                if (!player.level().isClientSide) {
+                if (!player.level.isClientSide) {
                     ((ServerLevel) player.level()).sendParticles(
                         ParticleTypes.ELECTRIC_SPARK,
                         player.getX(), player.getY() + 1, player.getZ(),
@@ -168,14 +168,14 @@ public class ChargedAttackHandler {
         }
 
         // Decoy/Disarm Wind更新（サーバー側のみ）
-        if (!player.level().isClientSide && player.tickCount % 1 == 0) {
+        if (!player.level.isClientSide && player.tickCount % 1 == 0) {
             updateLokiEntities(player.level());
         }
     }
 
     private static void checkMouseInput(Player player, ChargeData data) {
         // クライアント側でのみ実行
-        if (!player.level().isClientSide) return;
+        if (!player.level.isClientSide) return;
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != player) return;
@@ -278,7 +278,7 @@ public class ChargedAttackHandler {
     private static void releaseChargedAttack(Player player, ChargeData data) {
         // Sword of Nightの場合、発光を解除
         String itemName = data.chargingItem.getItem().getClass().getSimpleName();
-        if (itemName.equals("SwordOfNightItem") && !player.level().isClientSide) {
+        if (itemName.equals("SwordOfNightItem") && !player.level.isClientSide) {
             SwordOfNightChargingGlowProcedure.execute(
                 player.level(),
                 player.getX(),
@@ -833,7 +833,7 @@ public class ChargedAttackHandler {
     }
     
     private static void displayChargeEffect(Player player, int chargeTime) {
-        if (player.level().isClientSide) return;
+        if (player.level.isClientSide) return;
         
         ServerLevel world = (ServerLevel) player.level();
         float chargePercent = Math.min((float) chargeTime / MAX_CHARGE_TIME, 1.0f);
@@ -930,7 +930,7 @@ public class ChargedAttackHandler {
                     10, 0.3, 0.3, 0.3, 0.1);
             }
             
-            player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+            player.level.playSound(null, target.getX(), target.getY(), target.getZ(),
                 SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
         }
         
@@ -1091,7 +1091,7 @@ public class ChargedAttackHandler {
     }
 
     // private static void displayFallingChargeEffect(Player player, int fallTime) {
-    //     if (player.level().isClientSide) return;
+    //     if (player.level.isClientSide) return;
     //
     //     ServerLevel serverWorld = (ServerLevel) player.level();
     //     double radius = Math.min(fallTime / 20.0, 2.0);
@@ -1318,7 +1318,7 @@ public class ChargedAttackHandler {
         // クリエイティブモードでない場合のみ満腹度チェック
         if (!player.isCreative()) {
             if (player.getFoodData().getFoodLevel() < DECOY_HUNGER_COST) {
-                player.level().playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_BASS, SoundSource.PLAYERS, 1.5f, 0.0f);
+                player.level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_BASS, SoundSource.PLAYERS, 1.5f, 0.0f);
                 player.displayClientMessage(Component.literal("§c満腹度が足りません!"), true);
                 return;
             }
@@ -1331,7 +1331,7 @@ public class ChargedAttackHandler {
         LokiDecoydasuEntity.shoot(player.level(), player, RandomSource.create(), 0.3f, 0, 0);
 
         // サウンド
-        player.level().playSound(null, player.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0f, 0.0f);
+        player.level.playSound(null, player.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0f, 0.0f);
         player.displayClientMessage(Component.literal("§bDecoy発射!"), true);
     }
 
@@ -1342,7 +1342,7 @@ public class ChargedAttackHandler {
         // クリエイティブモードでない場合のみ満腹度チェック
         if (!player.isCreative()) {
             if (player.getFoodData().getFoodLevel() < DISARM_HUNGER_COST) {
-                player.level().playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_BASS, SoundSource.PLAYERS, 1.5f, 0.0f);
+                player.level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_BASS, SoundSource.PLAYERS, 1.5f, 0.0f);
                 player.displayClientMessage(Component.literal("§c満腹度が足りません!"), true);
                 return;
             }
@@ -1355,8 +1355,8 @@ public class ChargedAttackHandler {
         LokiDisarmEntity.shoot(player.level(), player, RandomSource.create(), 1.5f, 0, 0);
 
         // サウンド
-        player.level().playSound(null, player.blockPosition(), SoundEvents.BAT_TAKEOFF, SoundSource.NEUTRAL, 2.0f, 1.0f);
-        player.level().playSound(null, player.blockPosition(), SoundEvents.WITHER_SHOOT, SoundSource.PLAYERS, 2.0f, 2.0f);
+        player.level.playSound(null, player.blockPosition(), SoundEvents.BAT_TAKEOFF, SoundSource.NEUTRAL, 2.0f, 1.0f);
+        player.level.playSound(null, player.blockPosition(), SoundEvents.WITHER_SHOOT, SoundSource.PLAYERS, 2.0f, 2.0f);
         player.displayClientMessage(Component.literal("§6Disarm発射!"), true);
     }
 
@@ -1546,7 +1546,7 @@ public class ChargedAttackHandler {
 
         // 爆発
         if (lifetime >= 180) {
-            level.explode(null, decoy.getX(), decoy.getY(), decoy.getZ(), 4.0f, net.minecraft.world.level().Explosion.BlockInteraction.DESTROY);
+            level.explode(null, decoy.getX(), decoy.getY(), decoy.getZ(), 4.0f, net.minecraft.world.level.Explosion.BlockInteraction.DESTROY);
             decoy.discard();
         }
     }
@@ -1707,7 +1707,7 @@ public class ChargedAttackHandler {
                     mainHandItem.copy()
                 );
             droppedItem.setPickUpDelay(10);
-            target.level().addFreshEntity(droppedItem);
+            target.level.addFreshEntity(droppedItem);
 
             // 手持ちを空にする
             target.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);

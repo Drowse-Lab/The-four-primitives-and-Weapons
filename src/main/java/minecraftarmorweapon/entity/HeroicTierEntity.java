@@ -8,7 +8,7 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -21,7 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level().ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -229,7 +229,7 @@ public class HeroicTierEntity extends PathfinderMob {
                             livingTarget.setSecondsOnFire(4);
 
                             // パーティクル
-                            if (!this.level().isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                            if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
                                 serverLevel.sendParticles(
                                     ParticleTypes.FLAME,
                                     livingTarget.getX(), livingTarget.getY() + 1, livingTarget.getZ(),
@@ -245,7 +245,7 @@ public class HeroicTierEntity extends PathfinderMob {
                             ));
 
                             // パーティクル
-                            if (!this.level().isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                            if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
                                 serverLevel.sendParticles(
                                     ParticleTypes.SNOWFLAKE,
                                     livingTarget.getX(), livingTarget.getY() + 1, livingTarget.getZ(),
@@ -264,7 +264,7 @@ public class HeroicTierEntity extends PathfinderMob {
                             livingTarget.hurt(DamageSource.mobAttack(this), actualDamage * 0.3f);
 
                             // パーティクル
-                            if (!this.level().isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                            if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
                                 serverLevel.sendParticles(
                                     ParticleTypes.ELECTRIC_SPARK,
                                     livingTarget.getX(), livingTarget.getY() + 1, livingTarget.getZ(),
@@ -280,7 +280,7 @@ public class HeroicTierEntity extends PathfinderMob {
                 livingTarget.setDeltaMovement(livingTarget.getDeltaMovement().add(knockback.x, 0.2, knockback.z));
 
                 // 攻撃エフェクト（複数）
-                if (!this.level().isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(
                         ParticleTypes.SWEEP_ATTACK,
                         livingTarget.getX(), livingTarget.getY() + livingTarget.getBbHeight() / 2, livingTarget.getZ(),
@@ -296,7 +296,7 @@ public class HeroicTierEntity extends PathfinderMob {
                 }
 
                 // 攻撃音（非常に重い音）
-                this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
+                this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
                     SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.HOSTILE, 1.5f, 0.8f);
             }
 

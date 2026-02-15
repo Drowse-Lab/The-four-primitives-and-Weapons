@@ -5,7 +5,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -25,15 +25,15 @@ public class StormYoukuritukusitatokiProcedure {
 			return;
 		}
 
-		minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("Storm: Entity: {}, Client side: {}", entity, entity.level().isClientSide);
+		minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("Storm: Entity: {}, Client side: {}", entity, entity.level.isClientSide);
 		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()
 				|| (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()) {
 			minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("Storm: Item check passed!");
-			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
+			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.STORM_EFFECT.get(), 100, 2, true, false));
 
 			// 竜巻エンティティの召喚（感電効果付き）
-			if (!entity.level().isClientSide && entity instanceof Player player) {
+			if (!entity.level.isClientSide && entity instanceof Player player) {
 				Level level = entity.level();
 				ItemStack mainHandItem = player.getMainHandItem();
 

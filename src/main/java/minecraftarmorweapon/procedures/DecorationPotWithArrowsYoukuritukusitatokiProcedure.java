@@ -1,6 +1,6 @@
 package minecraftarmorweapon.procedures;
 
-import net.minecraft.world.level().Level;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.AbstractArrow;

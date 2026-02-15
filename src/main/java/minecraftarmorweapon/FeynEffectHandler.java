@@ -5,7 +5,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.server.level().ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.TickEvent;
@@ -23,7 +23,7 @@ public class FeynEffectHandler {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         Player player = event.player;
-        if (player == null || player.level().isClientSide) return;
+        if (player == null || player.level.isClientSide) return;
 
         boolean hasCursedItem = hasCursedFeyn(player.getMainHandItem()) || hasCursedFeyn(player.getOffhandItem());
 
