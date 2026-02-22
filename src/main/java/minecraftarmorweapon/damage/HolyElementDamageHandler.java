@@ -1,5 +1,7 @@
 package minecraftarmorweapon.damage;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -66,7 +68,7 @@ public class HolyElementDamageHandler {
             target.setGlowingTag(true);
 
             // 聖なる光のパーティクル（アンデッド専用の強化版）
-            if (target.level() instanceof ServerLevel serverLevel) {
+            if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {
                 // エンチャントの輝き（金色）
                 serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
                     target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
@@ -86,7 +88,7 @@ public class HolyElementDamageHandler {
             }
         } else {
             // 通常の聖属性エフェクト
-            if (target.level() instanceof ServerLevel serverLevel) {
+            if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {
                 // 軽い光のエフェクト
                 serverLevel.sendParticles(ParticleTypes.WAX_ON,
                     target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),

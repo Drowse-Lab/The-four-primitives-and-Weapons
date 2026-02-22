@@ -1,5 +1,7 @@
 package minecraftarmorweapon.procedures;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
@@ -20,7 +22,7 @@ public class RkigaYasaretatokiProcedure {
 		if (entity == null)
 			return;
 
-		LevelAccessor world = entity.level();
+		LevelAccessor world = VersionHelper.getLevel(entity);
 		double x = entity.getX();
 		double y = entity.getY();
 		double z = entity.getZ();

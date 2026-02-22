@@ -1,5 +1,7 @@
 package minecraftarmorweapon.procedures;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -49,8 +51,8 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 	}
 	
 	public static void execute(Entity entity, int effectLevel) {
-		if (entity == null || !(entity.level() instanceof ServerLevel)) return;
-		ServerLevel world = (ServerLevel) entity.level();
+		if (entity == null || !(VersionHelper.getLevel(entity) instanceof ServerLevel)) return;
+		ServerLevel world = (ServerLevel) VersionHelper.getLevel(entity);
 		
 		// エフェクトレベルに基づいて召喚数を決定（レベル0なら1体、レベル1なら2体、など）
 		int spawnCount = effectLevel + 1;
@@ -62,7 +64,7 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 			List<UUID> spawnedList = spawnedEntitiesMap.get(entityUUID);
 			int aliveCount = 0;
 			for (UUID spawnedUUID : spawnedList) {
-				Entity spawnedEntity = ((ServerLevel) entity.level()).getEntity(spawnedUUID);
+				Entity spawnedEntity = ((ServerLevel) VersionHelper.getLevel(entity)).getEntity(spawnedUUID);
 				if (spawnedEntity != null && spawnedEntity.isAlive()) {
 					aliveCount++;
 				}

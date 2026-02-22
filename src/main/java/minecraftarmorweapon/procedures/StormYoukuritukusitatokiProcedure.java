@@ -1,5 +1,7 @@
 package minecraftarmorweapon.procedures;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
@@ -34,7 +36,7 @@ public class StormYoukuritukusitatokiProcedure {
 
 			// 竜巻エンティティの召喚（感電効果付き）
 			if (!entity.level.isClientSide && entity instanceof Player player) {
-				Level level = entity.level();
+				Level level = VersionHelper.getLevel(entity);
 				ItemStack mainHandItem = player.getMainHandItem();
 
 				// デバッグ: エンティティタイプの確認

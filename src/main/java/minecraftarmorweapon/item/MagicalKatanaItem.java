@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.item;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.api.distmarker.Dist;
 
@@ -54,7 +56,7 @@ public class MagicalKatanaItem extends SwordItem {
 	@Override
 	public boolean hurtEnemy(ItemStack itemstack, LivingEntity entity, LivingEntity sourceentity) {
 		boolean retval = super.hurtEnemy(itemstack, entity, sourceentity);
-		MagicalKatanamobugaturudeGongJisaretatokiProcedure.execute(entity.level(), entity, sourceentity);
+		MagicalKatanamobugaturudeGongJisaretatokiProcedure.execute(VersionHelper.getLevel(entity), entity, sourceentity);
 		return retval;
 	}
 

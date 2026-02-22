@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
@@ -84,7 +86,7 @@ public class TestBowEntity extends AbstractArrow implements ItemSupplier {
 	}
 
 	public static TestBowEntity shoot(LivingEntity entity, LivingEntity target) {
-		TestBowEntity entityarrow = new TestBowEntity(MinecraftArmorWeaponModEntities.TEST_BOW.get(), entity, entity.level());
+		TestBowEntity entityarrow = new TestBowEntity(MinecraftArmorWeaponModEntities.TEST_BOW.get(), entity, VersionHelper.getLevel(entity));
 		double dx = target.getX() - entity.getX();
 		double dy = target.getY() + target.getEyeHeight() - 1.1;
 		double dz = target.getZ() - entity.getZ();

@@ -1,5 +1,7 @@
 package minecraftarmorweapon.damage;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import com.mojang.math.Vector3f;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -99,7 +101,7 @@ public class ElectricElementDamageHandler {
         }
 
         // 電気のパーティクルエフェクト（ターゲット本体）
-        if (target.level() instanceof ServerLevel serverLevel) {
+        if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {
             // 電気スパーク
             serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
                 target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
@@ -113,6 +115,16 @@ public class ElectricElementDamageHandler {
         }
 
         return originalDamage * damageMultiplier;
+    }
+
+    /**
+     * 電気属性ダメージを簡易適用する
+     * @param target ターゲットエンティティ
+     * @param damage ダメージ量
+     * @param type 属性タイプ
+     */
+    public static void apply(LivingEntity target, double damage, ElementType type) {
+        applyElectricDamage(target, (float) damage, null, 1);
     }
 
     /**

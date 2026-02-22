@@ -1,5 +1,7 @@
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -229,7 +231,7 @@ public class HeroicTierEntity extends PathfinderMob {
                             livingTarget.setSecondsOnFire(4);
 
                             // パーティクル
-                            if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                            if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                                 serverLevel.sendParticles(
                                     ParticleTypes.FLAME,
                                     livingTarget.getX(), livingTarget.getY() + 1, livingTarget.getZ(),
@@ -245,7 +247,7 @@ public class HeroicTierEntity extends PathfinderMob {
                             ));
 
                             // パーティクル
-                            if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                            if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                                 serverLevel.sendParticles(
                                     ParticleTypes.SNOWFLAKE,
                                     livingTarget.getX(), livingTarget.getY() + 1, livingTarget.getZ(),
@@ -264,7 +266,7 @@ public class HeroicTierEntity extends PathfinderMob {
                             livingTarget.hurt(DamageSource.mobAttack(this), actualDamage * 0.3f);
 
                             // パーティクル
-                            if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                            if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                                 serverLevel.sendParticles(
                                     ParticleTypes.ELECTRIC_SPARK,
                                     livingTarget.getX(), livingTarget.getY() + 1, livingTarget.getZ(),
@@ -280,7 +282,7 @@ public class HeroicTierEntity extends PathfinderMob {
                 livingTarget.setDeltaMovement(livingTarget.getDeltaMovement().add(knockback.x, 0.2, knockback.z));
 
                 // 攻撃エフェクト（複数）
-                if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(
                         ParticleTypes.SWEEP_ATTACK,
                         livingTarget.getX(), livingTarget.getY() + livingTarget.getBbHeight() / 2, livingTarget.getZ(),

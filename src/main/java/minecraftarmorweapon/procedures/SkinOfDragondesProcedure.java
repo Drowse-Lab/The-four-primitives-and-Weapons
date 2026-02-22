@@ -1,5 +1,7 @@
 package minecraftarmorweapon.procedures;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -58,7 +60,7 @@ public class SkinOfDragondesProcedure {
 					{
 						Entity _ent = entity;
 						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
 									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/summon minecraft:item 0 69 0 {Item:{id:\"minecraft_armor_weapon:skin_of_dragon\",Count:3b},Glowing:1b,NoGravity:1b}");
 						}
 					}
@@ -67,7 +69,7 @@ public class SkinOfDragondesProcedure {
 					{
 						Entity _ent = entity;
 						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
 									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/summon minecraft:item 0 69 0 {Item:{id:\"minecraft_armor_weapon:skin_of_dragon\",Count:3b},Glowing:1b,NoGravity:1b}");
 						}
 					}
@@ -76,7 +78,7 @@ public class SkinOfDragondesProcedure {
 					{
 						Entity _ent = entity;
 						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
 									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/summon minecraft:item 0 69 0 {Item:{id:\"minecraft_armor_weapon:skin_of_dragon\",Count:2b},Glowing:1b,NoGravity:1b}");
 						}
 					}
@@ -85,7 +87,7 @@ public class SkinOfDragondesProcedure {
 					{
 						Entity _ent = entity;
 						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
 									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/summon minecraft:item 0 69 0 {Item:{id:\"minecraft_armor_weapon:skin_of_dragon\",Count:2b},Glowing:1b,NoGravity:1b}");
 						}
 					}
@@ -94,7 +96,7 @@ public class SkinOfDragondesProcedure {
 					{
 						Entity _ent = entity;
 						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
 									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/summon minecraft:item 0 69 0 {Item:{id:\"minecraft_armor_weapon:skin_of_dragon\",Count:2b},Glowing:1b,NoGravity:1b}");
 						}
 					}
@@ -103,7 +105,7 @@ public class SkinOfDragondesProcedure {
 					{
 						Entity _ent = entity;
 						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
 									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/summon minecraft:item 0 69 0 {Item:{id:\"minecraft_armor_weapon:skin_of_dragon\",Count:1b},Glowing:1b,NoGravity:1b}");
 						}
 					}
@@ -112,7 +114,7 @@ public class SkinOfDragondesProcedure {
 					{
 						Entity _ent = entity;
 						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
 									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/summon minecraft:item 0 69 0 {Item:{id:\"minecraft_armor_weapon:skin_of_dragon\",Count:1b},Glowing:1b,NoGravity:1b}");
 						}
 					}
@@ -121,7 +123,7 @@ public class SkinOfDragondesProcedure {
 					{
 						Entity _ent = entity;
 						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
 									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/summon minecraft:item 0 69 0 {Item:{id:\"minecraft_armor_weapon:skin_of_dragon\",Count:1b},Glowing:1b,NoGravity:1b}");
 						}
 					}
@@ -130,7 +132,7 @@ public class SkinOfDragondesProcedure {
 					{
 						Entity _ent = entity;
 						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
 									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/summon minecraft:item 0 69 0 {Item:{id:\"minecraft_armor_weapon:skin_of_dragon\",Count:1b},Glowing:1b,NoGravity:1b}");
 						}
 					}
@@ -139,7 +141,7 @@ public class SkinOfDragondesProcedure {
 					{
 						Entity _ent = entity;
 						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
 									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/summon minecraft:item 0 69 0 {Item:{id:\"minecraft_armor_weapon:skin_of_dragon\",Count:1b},Glowing:1b,NoGravity:1b}");
 						}
 					}

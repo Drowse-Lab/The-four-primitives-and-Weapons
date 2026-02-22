@@ -1,5 +1,7 @@
 package minecraftarmorweapon;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import minecraftarmorweapon.damage.*;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -125,7 +127,7 @@ public class ElementalDamageEvent {
 
         for (LivingEntity nearby : nearbyEntities) {
             // 電気の光線が伝染するパーティクルエフェクト
-            if (target.level() instanceof ServerLevel serverLevel) {
+            if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {
                 Vec3 start = target.position().add(0, target.getBbHeight() / 2, 0);
                 Vec3 end = nearby.position().add(0, nearby.getBbHeight() / 2, 0);
                 Vec3 direction = end.subtract(start).normalize();

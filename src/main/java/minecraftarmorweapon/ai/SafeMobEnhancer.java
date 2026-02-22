@@ -1,5 +1,7 @@
 package minecraftarmorweapon.ai;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.*;
@@ -47,7 +49,7 @@ public class SafeMobEnhancer {
         }
         
         // レベルがnullなら無視
-        if (monster.level() == null || monster.level.isClientSide) {
+        if (VersionHelper.getLevel(monster) == null || monster.level.isClientSide) {
             return;
         }
         

@@ -1,5 +1,7 @@
 package minecraftarmorweapon.procedures;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.GameType;
@@ -54,7 +56,7 @@ public class TestBowRangedItemUsedProcedure {
 						&& (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == Items.ARROW) {
 					{
 						Entity _shootFrom = entity;
-						Level projectileLevel = _shootFrom.level();
+						Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 						if (!projectileLevel.isClientSide()) {
 							Projectile _entityToSpawn = new Object() {
 								public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -91,7 +93,7 @@ public class TestBowRangedItemUsedProcedure {
 						&& (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == Items.SPECTRAL_ARROW) {
 					{
 						Entity _shootFrom = entity;
-						Level projectileLevel = _shootFrom.level();
+						Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 						if (!projectileLevel.isClientSide()) {
 							Projectile _entityToSpawn = new Object() {
 								public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -145,7 +147,7 @@ public class TestBowRangedItemUsedProcedure {
 										&& (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == Items.SPECTRAL_ARROW)) {
 					{
 						Entity _shootFrom = entity;
-						Level projectileLevel = _shootFrom.level();
+						Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 						if (!projectileLevel.isClientSide()) {
 							Projectile _entityToSpawn = new Object() {
 								public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -172,7 +174,7 @@ public class TestBowRangedItemUsedProcedure {
 					{
 						Entity _ent = entity;
 						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
 									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "function minecraft_armor_weapon:test_bow_kill_start");
 						}
 					}
@@ -180,7 +182,7 @@ public class TestBowRangedItemUsedProcedure {
 					{
 						Entity _ent = entity;
 						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
-							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), _ent.level() instanceof ServerLevel ? (ServerLevel) _ent.level() : null, 4,
+							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
 									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "function minecraft_armor_weapon:test_bow_start");
 						}
 					}
@@ -237,7 +239,7 @@ public class TestBowRangedItemUsedProcedure {
 					if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 						{
 							Entity _shootFrom = entity;
-							Level projectileLevel = _shootFrom.level();
+							Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 							if (!projectileLevel.isClientSide()) {
 								Projectile _entityToSpawn = new Object() {
 									public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -257,7 +259,7 @@ public class TestBowRangedItemUsedProcedure {
 						for (int index0 = 0; index0 < (int) (5 + EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY))); index0++) {
 							{
 								Entity _shootFrom = entity;
-								Level projectileLevel = _shootFrom.level();
+								Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 								if (!projectileLevel.isClientSide()) {
 									Projectile _entityToSpawn = new Object() {
 										public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -279,7 +281,7 @@ public class TestBowRangedItemUsedProcedure {
 					} else {
 						{
 							Entity _shootFrom = entity;
-							Level projectileLevel = _shootFrom.level();
+							Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 							if (!projectileLevel.isClientSide()) {
 								Projectile _entityToSpawn = new Object() {
 									public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -299,7 +301,7 @@ public class TestBowRangedItemUsedProcedure {
 						for (int index1 = 0; index1 < 5; index1++) {
 							{
 								Entity _shootFrom = entity;
-								Level projectileLevel = _shootFrom.level();
+								Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 								if (!projectileLevel.isClientSide()) {
 									Projectile _entityToSpawn = new Object() {
 										public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -340,7 +342,7 @@ public class TestBowRangedItemUsedProcedure {
 					if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 						{
 							Entity _shootFrom = entity;
-							Level projectileLevel = _shootFrom.level();
+							Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 							if (!projectileLevel.isClientSide()) {
 								Projectile _entityToSpawn = new Object() {
 									public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -360,7 +362,7 @@ public class TestBowRangedItemUsedProcedure {
 						for (int index2 = 0; index2 < (int) (5 + EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY))); index2++) {
 							{
 								Entity _shootFrom = entity;
-								Level projectileLevel = _shootFrom.level();
+								Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 								if (!projectileLevel.isClientSide()) {
 									Projectile _entityToSpawn = new Object() {
 										public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -382,7 +384,7 @@ public class TestBowRangedItemUsedProcedure {
 					} else {
 						{
 							Entity _shootFrom = entity;
-							Level projectileLevel = _shootFrom.level();
+							Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 							if (!projectileLevel.isClientSide()) {
 								Projectile _entityToSpawn = new Object() {
 									public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -402,7 +404,7 @@ public class TestBowRangedItemUsedProcedure {
 						for (int index3 = 0; index3 < 5; index3++) {
 							{
 								Entity _shootFrom = entity;
-								Level projectileLevel = _shootFrom.level();
+								Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 								if (!projectileLevel.isClientSide()) {
 									Projectile _entityToSpawn = new Object() {
 										public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -460,7 +462,7 @@ public class TestBowRangedItemUsedProcedure {
 					if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 						{
 							Entity _shootFrom = entity;
-							Level projectileLevel = _shootFrom.level();
+							Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 							if (!projectileLevel.isClientSide()) {
 								Projectile _entityToSpawn = new Object() {
 									public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -480,7 +482,7 @@ public class TestBowRangedItemUsedProcedure {
 						for (int index4 = 0; index4 < (int) (5 + EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY))); index4++) {
 							{
 								Entity _shootFrom = entity;
-								Level projectileLevel = _shootFrom.level();
+								Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 								if (!projectileLevel.isClientSide()) {
 									Projectile _entityToSpawn = new Object() {
 										public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -502,7 +504,7 @@ public class TestBowRangedItemUsedProcedure {
 					} else {
 						{
 							Entity _shootFrom = entity;
-							Level projectileLevel = _shootFrom.level();
+							Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 							if (!projectileLevel.isClientSide()) {
 								Projectile _entityToSpawn = new Object() {
 									public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -522,7 +524,7 @@ public class TestBowRangedItemUsedProcedure {
 						for (int index5 = 0; index5 < 5; index5++) {
 							{
 								Entity _shootFrom = entity;
-								Level projectileLevel = _shootFrom.level();
+								Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 								if (!projectileLevel.isClientSide()) {
 									Projectile _entityToSpawn = new Object() {
 										public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -553,7 +555,7 @@ public class TestBowRangedItemUsedProcedure {
 						&& (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == Items.ARROW) {
 					{
 						Entity _shootFrom = entity;
-						Level projectileLevel = _shootFrom.level();
+						Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 						if (!projectileLevel.isClientSide()) {
 							Projectile _entityToSpawn = new Object() {
 								public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -590,7 +592,7 @@ public class TestBowRangedItemUsedProcedure {
 						&& (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == Items.SPECTRAL_ARROW) {
 					{
 						Entity _shootFrom = entity;
-						Level projectileLevel = _shootFrom.level();
+						Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 						if (!projectileLevel.isClientSide()) {
 							Projectile _entityToSpawn = new Object() {
 								public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {
@@ -644,7 +646,7 @@ public class TestBowRangedItemUsedProcedure {
 										&& (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == Items.SPECTRAL_ARROW)) {
 					{
 						Entity _shootFrom = entity;
-						Level projectileLevel = _shootFrom.level();
+						Level projectileLevel = VersionHelper.getLevel(_shootFrom);
 						if (!projectileLevel.isClientSide()) {
 							Projectile _entityToSpawn = new Object() {
 								public Projectile getArrow(Level level, Entity shooter, float damage, int knockback, byte piercing) {

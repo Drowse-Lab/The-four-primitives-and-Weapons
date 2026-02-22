@@ -1,5 +1,7 @@
 package minecraftarmorweapon.ai;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -85,7 +87,7 @@ public class ALifeAIBridge {
 
         try {
             // エンティティの生存確認
-            if (!entity.isAlive() || entity.level() == null) {
+            if (!entity.isAlive() || VersionHelper.getLevel(entity) == null) {
                 data.nearbyEnemies = new java.util.ArrayList<>();
                 data.nearbyEnemyCount = 0;
                 data.nearestEnemyDistance = Double.MAX_VALUE;

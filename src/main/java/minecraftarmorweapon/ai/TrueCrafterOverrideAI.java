@@ -1,5 +1,7 @@
 package minecraftarmorweapon.ai;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -58,7 +60,7 @@ public class TrueCrafterOverrideAI {
             return;
         }
         
-        if (monster.level() == null || monster.level.isClientSide) {
+        if (VersionHelper.getLevel(monster) == null || monster.level.isClientSide) {
             return;
         }
         

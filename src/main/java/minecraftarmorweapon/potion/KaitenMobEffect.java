@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.potion;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -34,7 +36,7 @@ public class KaitenMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		KaitenehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity.getX(), entity.getY(), entity.getZ(), entity);
+		KaitenehuekutogaYouXiaoShinoteitukuProcedure.execute(VersionHelper.getLevel(entity), entity.getX(), entity.getY(), entity.getZ(), entity);
 	}
 
 	@Override

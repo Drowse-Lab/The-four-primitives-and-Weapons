@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.potion;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -27,7 +29,7 @@ public class ArmorStandTobasuEffectMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		ArmorStandTobasuEffectehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity.getX(), entity.getY(), entity.getZ(), entity);
+		ArmorStandTobasuEffectehuekutogaYouXiaoShinoteitukuProcedure.execute(VersionHelper.getLevel(entity), entity.getX(), entity.getY(), entity.getZ(), entity);
 	}
 
 	@Override

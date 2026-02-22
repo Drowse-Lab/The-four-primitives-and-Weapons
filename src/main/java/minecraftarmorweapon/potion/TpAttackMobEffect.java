@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.potion;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -41,7 +43,7 @@ public class TpAttackMobEffect extends MobEffect {
 	@Override
 	public void removeAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
 		super.removeAttributeModifiers(entity, attributeMap, amplifier);
-		TpAttackposiyonXiaoGuogaQieretaShiProcedure.execute(entity.level(), entity.getX(), entity.getY(), entity.getZ(), entity);
+		TpAttackposiyonXiaoGuogaQieretaShiProcedure.execute(VersionHelper.getLevel(entity), entity.getX(), entity.getY(), entity.getZ(), entity);
 	}
 
 	@Override

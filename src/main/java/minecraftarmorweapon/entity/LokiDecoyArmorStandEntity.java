@@ -1,5 +1,7 @@
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -130,7 +132,7 @@ public class LokiDecoyArmorStandEntity extends ArmorStand {
      * パーティクル生成
      */
     private void spawnParticles() {
-        if (this.level() instanceof ServerLevel serverLevel) {
+        if (VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(
                 ParticleTypes.SMOKE,
                 this.getX(), this.getY() + 1.8, this.getZ(),

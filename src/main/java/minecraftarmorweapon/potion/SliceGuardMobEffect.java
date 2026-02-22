@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.potion;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -27,12 +29,12 @@ public class SliceGuardMobEffect extends MobEffect {
 
 	@Override
 	public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
-		SliceGuardEffectStartedappliedProcedure.execute(entity.level(), entity);
+		SliceGuardEffectStartedappliedProcedure.execute(VersionHelper.getLevel(entity), entity);
 	}
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		SliceGuardOnEffectActiveTickProcedure.execute(entity.level(), entity.getX(), entity.getY(), entity.getZ(), entity);
+		SliceGuardOnEffectActiveTickProcedure.execute(VersionHelper.getLevel(entity), entity.getX(), entity.getY(), entity.getZ(), entity);
 	}
 
 	@Override

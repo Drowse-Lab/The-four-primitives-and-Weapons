@@ -1,5 +1,7 @@
 package minecraftarmorweapon.events;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -65,7 +67,7 @@ public class MobWeaponAttackHandler {
      */
     private static void enhanceMobWeaponAttack(LivingEntity attacker, LivingEntity target,
                                                ItemStack weapon, LivingAttackEvent event) {
-        Level world = attacker.level();
+        Level world = VersionHelper.getLevel(attacker);
         if (world.isClientSide()) return;
 
         Vec3 attackerPos = attacker.position();

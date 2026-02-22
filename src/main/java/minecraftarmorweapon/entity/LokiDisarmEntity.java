@@ -1,5 +1,7 @@
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
@@ -249,7 +251,7 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 
 	public static LokiDisarmEntity shoot(LivingEntity entity, LivingEntity target) {
 		// 一時的にLOKI_DECOYDASUを使用
-		LokiDisarmEntity entityProjectile = new LokiDisarmEntity(EntityType.SNOWBALL, entity, entity.level());
+		LokiDisarmEntity entityProjectile = new LokiDisarmEntity(EntityType.SNOWBALL, entity, VersionHelper.getLevel(entity));
 		entityProjectile.shooter = entity;
 		double dx = target.getX() - entity.getX();
 		double dy = target.getY() + target.getEyeHeight() - 1.1;

@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
@@ -67,7 +69,7 @@ public class LokiDecoydasuEntity extends AbstractArrow implements ItemSupplier {
 	@Override
 	public void onHitBlock(BlockHitResult blockHitResult) {
 		super.onHitBlock(blockHitResult);
-		LokiDecoydasuFeibiDaoJugaburotukuniDangtatutatokiProcedure.execute(this.level(), blockHitResult.getBlockPos().getX(), blockHitResult.getBlockPos().getY(), blockHitResult.getBlockPos().getZ(), this.getOwner());
+		LokiDecoydasuFeibiDaoJugaburotukuniDangtatutatokiProcedure.execute(VersionHelper.getLevel(this), blockHitResult.getBlockPos().getX(), blockHitResult.getBlockPos().getY(), blockHitResult.getBlockPos().getZ(), this.getOwner());
 	}
 
 	@Override
@@ -90,7 +92,7 @@ public class LokiDecoydasuEntity extends AbstractArrow implements ItemSupplier {
 	}
 
 	public static LokiDecoydasuEntity shoot(LivingEntity entity, LivingEntity target) {
-		LokiDecoydasuEntity entityarrow = new LokiDecoydasuEntity(MinecraftArmorWeaponModEntities.LOKI_DECOYDASU.get(), entity, entity.level());
+		LokiDecoydasuEntity entityarrow = new LokiDecoydasuEntity(MinecraftArmorWeaponModEntities.LOKI_DECOYDASU.get(), entity, VersionHelper.getLevel(entity));
 		double dx = target.getX() - entity.getX();
 		double dy = target.getY() + target.getEyeHeight() - 1.1;
 		double dz = target.getZ() - entity.getZ();

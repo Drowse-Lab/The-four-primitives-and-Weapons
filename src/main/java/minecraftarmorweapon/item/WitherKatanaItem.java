@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.item;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.Tier;
@@ -98,7 +100,7 @@ public class WitherKatanaItem extends SwordItem {
 			}
 			
 			// ウィザースケルトンのような暗黒パーティクル
-			if (attacker.level() instanceof ServerLevel serverLevel) {
+			if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
 				// 呪われた敵にはより強力なエフェクト
 				int particleCount = isCursed ? 30 : 15;
 				
@@ -132,7 +134,7 @@ public class WitherKatanaItem extends SwordItem {
 			// 呪われた敵には高確率（30%）、通常は低確率（10%）で追加のウィザー爆発
 			double explosionChance = isCursed ? 0.3 : 0.1;
 			if (Math.random() < explosionChance) {
-				if (attacker.level() instanceof ServerLevel serverLevel) {
+				if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
 					// ウィザー爆発エフェクト
 					serverLevel.sendParticles(ParticleTypes.EXPLOSION,
 						target.getX(), target.getY() + 1, target.getZ(),

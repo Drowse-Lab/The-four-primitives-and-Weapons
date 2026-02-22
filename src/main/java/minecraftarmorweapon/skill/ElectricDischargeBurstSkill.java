@@ -1,5 +1,7 @@
 package minecraftarmorweapon.skill;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import minecraftarmorweapon.block.ElectricConductBlock;
 import minecraftarmorweapon.damage.ElementType;
 import minecraftarmorweapon.damage.ElectricElementDamageHandler;
@@ -31,7 +33,7 @@ public final class ElectricDischargeBurstSkill {
     public static void fire(Player player) {
         if (player.level.isClientSide()) return;
 
-        ServerLevel level = (ServerLevel) player.level();
+        ServerLevel level = (ServerLevel) VersionHelper.getLevel(player);
         Vec3 origin = player.position().add(0, 1.0, 0);
 
         // 多段ヒット防止

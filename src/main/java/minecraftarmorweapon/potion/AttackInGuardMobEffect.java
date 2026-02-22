@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.potion;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -26,7 +28,7 @@ public class AttackInGuardMobEffect extends MobEffect {
 
 	@Override
 	public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
-		AttackInGuardposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.execute(entity.level(), entity);
+		AttackInGuardposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.execute(VersionHelper.getLevel(entity), entity);
 	}
 
 	@Override

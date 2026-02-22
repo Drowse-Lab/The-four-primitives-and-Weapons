@@ -1,5 +1,7 @@
 package minecraftarmorweapon.procedures;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.effect.MobEffects;
@@ -13,7 +15,7 @@ public static void execute(Entity entity) {
 	if (entity == null)
 		return;
 
-	if (entity instanceof ServerPlayer _plr0 && _plr0.level() instanceof ServerLevel
+	if (entity instanceof ServerPlayer _plr0 && VersionHelper.getLevel(_plr0) instanceof ServerLevel
 			&& _plr0.getAdvancements().getOrStartProgress(_plr0.server.getAdvancements().getAdvancement(
 					new ResourceLocation("minecraft_armor_weapon:you_have_become_a_vampire"))).isDone()) {
 

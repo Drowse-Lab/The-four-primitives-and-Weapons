@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.world.inventory;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -36,7 +38,7 @@ public class CustomCrafterCraftingguiMenu extends AbstractContainerMenu implemen
 	public CustomCrafterCraftingguiMenu(int id, Inventory inv, FriendlyByteBuf extraData) {
 		super(MinecraftArmorWeaponModMenus.CUSTOM_CRAFTER_CRAFTINGGUI.get(), id);
 		this.entity = inv.player;
-		this.world = inv.player.level();
+		this.world = VersionHelper.getLevel(inv.player);
 		this.internal = new ItemStackHandler(9);
 		BlockPos pos = null;
 		if (extraData != null) {

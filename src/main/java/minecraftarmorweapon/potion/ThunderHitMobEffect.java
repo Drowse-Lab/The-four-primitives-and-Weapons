@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.potion;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
 import net.minecraft.world.entity.LivingEntity;
@@ -25,7 +27,7 @@ public class ThunderHitMobEffect extends MobEffect {
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		ThunderHitehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity);
+		ThunderHitehuekutogaYouXiaoShinoteitukuProcedure.execute(VersionHelper.getLevel(entity), entity);
 	}
 
 	@Override

@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.potion;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -27,12 +29,12 @@ public class KaminariyadeMobEffect extends MobEffect {
 
 	@Override
 	public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
-		KaminariyadeposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.execute(entity.level(), entity);
+		KaminariyadeposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.execute(VersionHelper.getLevel(entity), entity);
 	}
 
 	@Override
 	public void applyEffectTick(LivingEntity entity, int amplifier) {
-		KaminariyadeehuekutogaYouXiaoShinoteitukuProcedure.execute(entity.level(), entity);
+		KaminariyadeehuekutogaYouXiaoShinoteitukuProcedure.execute(VersionHelper.getLevel(entity), entity);
 	}
 
 	@Override

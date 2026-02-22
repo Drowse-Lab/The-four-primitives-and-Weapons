@@ -1,5 +1,7 @@
 package minecraftarmorweapon.events;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -96,7 +98,7 @@ public class KillEnchantmentHandler {
                                 CommandSource.NULL,
                                 target.position(),
                                 target.getRotationVector(),
-                                target.level() instanceof ServerLevel ? (ServerLevel) target.level() : null,
+                                VersionHelper.getLevel(target) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(target) : null,
                                 4,
                                 target.getName().getString(),
                                 target.getDisplayName(),

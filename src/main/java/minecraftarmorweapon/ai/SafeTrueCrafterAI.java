@@ -1,5 +1,7 @@
 package minecraftarmorweapon.ai;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -314,7 +316,7 @@ public class SafeTrueCrafterAI {
             return;
         }
         
-        if (monster.level() == null || monster.level.isClientSide) {
+        if (VersionHelper.getLevel(monster) == null || monster.level.isClientSide) {
             return;
         }
         
@@ -326,7 +328,7 @@ public class SafeTrueCrafterAI {
         }
         
         // サーバーの次のティックで処理（エンティティが完全に初期化された後）
-        if (monster.level() instanceof ServerLevel serverLevel) {
+        if (VersionHelper.getLevel(monster) instanceof ServerLevel serverLevel) {
             serverLevel.getServer().execute(() -> {
                 try {
                     enhanceMonster(monster);
@@ -698,7 +700,7 @@ public class SafeTrueCrafterAI {
             return;
         }
         
-        if (monster.level() == null || monster.level.isClientSide) {
+        if (VersionHelper.getLevel(monster) == null || monster.level.isClientSide) {
             return;
         }
         

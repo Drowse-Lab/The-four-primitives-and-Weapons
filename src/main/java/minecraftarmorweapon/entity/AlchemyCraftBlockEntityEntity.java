@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
@@ -68,7 +70,7 @@ public class AlchemyCraftBlockEntityEntity extends Monster {
 	@Override
 	public void baseTick() {
 		super.baseTick();
-		AlchemyCraftBlockEntityOnEntityTickUpdateProcedure.execute(this.level(), this.getX(), this.getY(), this.getZ(), this);
+		AlchemyCraftBlockEntityOnEntityTickUpdateProcedure.execute(VersionHelper.getLevel(this), this.getX(), this.getY(), this.getZ(), this);
 	}
 
 	public static void init() {

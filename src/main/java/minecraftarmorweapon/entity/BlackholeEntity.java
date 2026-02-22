@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import software.bernie.geckolib3.util.GeckoLibUtil;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 import software.bernie.geckolib3.core.manager.AnimationData;
@@ -179,7 +181,7 @@ public class BlackholeEntity extends PathfinderMob implements IAnimatable {
 		double y = this.getY();
 		double z = this.getZ();
 		Entity entity = this;
-		Level world = this.level();
+		Level world = VersionHelper.getLevel(this);
 
 		BlackholeenteiteiwoYoukuritukusitaShiProcedure.execute(entity, sourceentity);
 		return retval;
@@ -188,7 +190,7 @@ public class BlackholeEntity extends PathfinderMob implements IAnimatable {
 	@Override
 	public void baseTick() {
 		super.baseTick();
-		BlackholeenteiteinotitukuGengXinShiProcedure.execute(this.level(), this.getX(), this.getY(), this.getZ(), this);
+		BlackholeenteiteinotitukuGengXinShiProcedure.execute(VersionHelper.getLevel(this), this.getX(), this.getY(), this.getZ(), this);
 		this.refreshDimensions();
 	}
 
@@ -267,7 +269,7 @@ public class BlackholeEntity extends PathfinderMob implements IAnimatable {
 
 	private <E extends IAnimatable> PlayState procedurePredicate(AnimationEvent<E> event) {
 		Entity entity = this;
-		Level world = entity.level();
+		Level world = VersionHelper.getLevel(entity);
 		boolean loop = false;
 		double x = entity.getX();
 		double y = entity.getY();

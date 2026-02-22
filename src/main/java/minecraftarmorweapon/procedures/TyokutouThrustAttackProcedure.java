@@ -1,5 +1,7 @@
 package minecraftarmorweapon.procedures;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.LevelAccessor;
@@ -500,7 +502,7 @@ public class TyokutouThrustAttackProcedure {
             damage *= 1.5f;
 
             // クリティカルエフェクト
-            if (player.level() instanceof ServerLevel serverLevel) {
+            if (VersionHelper.getLevel(player) instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ParticleTypes.CRIT,
                     target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                     15, 0.2, 0.2, 0.2, 0.1);
@@ -553,7 +555,7 @@ public class TyokutouThrustAttackProcedure {
             if (Math.random() < 0.03) { // 3%の確率で即死
                 target.hurt(DamageSource.MAGIC, target.getMaxHealth() * 2);
 
-                if (player.level() instanceof ServerLevel serverLevel) {
+                if (VersionHelper.getLevel(player) instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(ParticleTypes.SMOKE,
                         target.getX(), target.getY() + 1, target.getZ(),
                         20, 0.5, 0.5, 0.5, 0.1);

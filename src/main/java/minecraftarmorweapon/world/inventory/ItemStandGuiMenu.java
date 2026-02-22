@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.world.inventory;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -36,7 +38,7 @@ public class ItemStandGuiMenu extends AbstractContainerMenu implements Supplier<
 	public ItemStandGuiMenu(int id, Inventory inv, FriendlyByteBuf extraData) {
 		super(MinecraftArmorWeaponModMenus.ITEM_STAND_GUI.get(), id);
 		this.entity = inv.player;
-		this.world = inv.player.level();
+		this.world = VersionHelper.getLevel(inv.player);
 		this.internal = new ItemStackHandler(1);
 		BlockPos pos = null;
 		if (extraData != null) {

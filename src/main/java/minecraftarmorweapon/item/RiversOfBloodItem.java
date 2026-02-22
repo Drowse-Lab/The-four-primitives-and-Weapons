@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.item;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.Tier;
@@ -91,7 +93,7 @@ public class RiversOfBloodItem extends SwordItem {
 				target.hurt(DamageSource.MAGIC, damageDealt * 0.3f);
 				
 				// 特殊エフェクト
-				if (attacker.level() instanceof ServerLevel serverLevel) {
+				if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
 					// 血のパーティクル
 					for (int i = 0; i < 20; i++) {
 						double offsetX = (Math.random() - 0.5) * 2;
@@ -119,7 +121,7 @@ public class RiversOfBloodItem extends SwordItem {
 					SoundEvents.WITHER_HURT, SoundSource.PLAYERS, 0.5f, 0.8f);
 			} else {
 				// 通常の血のエフェクト
-				if (attacker.level() instanceof ServerLevel serverLevel) {
+				if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
 					serverLevel.sendParticles(ParticleTypes.DAMAGE_INDICATOR,
 						target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
 						5, 0.3, 0.3, 0.3, 0.1);
@@ -130,7 +132,7 @@ public class RiversOfBloodItem extends SwordItem {
 			player.heal(healAmount);
 			
 			// 回復エフェクト
-			// if (attacker.level() instanceof ServerLevel serverLevel) {
+			// if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
 			// 	serverLevel.sendParticles(ParticleTypes.HEART,
 			// 		player.getX(), player.getY() + 1, player.getZ(),
 			// 		3, 0.3, 0.3, 0.3, 0);

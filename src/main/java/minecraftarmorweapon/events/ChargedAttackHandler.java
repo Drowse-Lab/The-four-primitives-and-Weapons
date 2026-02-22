@@ -1,5 +1,7 @@
 package minecraftarmorweapon.events;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,7 +147,7 @@ public class ChargedAttackHandler {
             String itemName = data.chargingItem.getItem().getClass().getSimpleName();
             if (itemName.equals("SwordOfNightItem") && !player.level.isClientSide) {
                 SwordOfNightChargingGlowProcedure.execute(
-                    player.level(), 
+                    VersionHelper.getLevel(player), 
                     player.getX(), 
                     player.getY(), 
                     player.getZ(), 
@@ -158,7 +160,7 @@ public class ChargedAttackHandler {
             if (data.chargeTime >= MAX_CHARGE_TIME) {
                 // player.displayClientMessage(Component.literal("§e最大チャージ！"), true);
                 if (!player.level.isClientSide) {
-                    ((ServerLevel) player.level()).sendParticles(
+                    ((ServerLevel) VersionHelper.getLevel(player)).sendParticles(
                         ParticleTypes.ELECTRIC_SPARK,
                         player.getX(), player.getY() + 1, player.getZ(),
                         10, 0.5, 0.5, 0.5, 0.1
@@ -169,7 +171,7 @@ public class ChargedAttackHandler {
 
         // Decoy/Disarm Wind更新（サーバー側のみ）
         if (!player.level.isClientSide && player.tickCount % 1 == 0) {
-            updateLokiEntities(player.level());
+            updateLokiEntities(VersionHelper.getLevel(player));
         }
     }
 
@@ -280,7 +282,7 @@ public class ChargedAttackHandler {
         String itemName = data.chargingItem.getItem().getClass().getSimpleName();
         if (itemName.equals("SwordOfNightItem") && !player.level.isClientSide) {
             SwordOfNightChargingGlowProcedure.execute(
-                player.level(),
+                VersionHelper.getLevel(player),
                 player.getX(),
                 player.getY(), 
                 player.getZ(),
@@ -309,7 +311,7 @@ public class ChargedAttackHandler {
     }
 
     public static void performChargedAttack(Player player, float chargePercent, boolean isCooldown) {
-        Level world = player.level();
+        Level world = VersionHelper.getLevel(player);
         Vec3 playerPos = player.position();
         Vec3 lookVec = player.getLookAngle();
 
@@ -565,7 +567,7 @@ public class ChargedAttackHandler {
     }
     
     public static void performNormalAttack(Player player) {
-        Level world = player.level();
+        Level world = VersionHelper.getLevel(player);
         Vec3 lookVec = player.getLookAngle();
         Vec3 playerPos = player.position();
 
@@ -835,7 +837,7 @@ public class ChargedAttackHandler {
     private static void displayChargeEffect(Player player, int chargeTime) {
         if (player.level.isClientSide) return;
         
-        ServerLevel world = (ServerLevel) player.level();
+        ServerLevel world = (ServerLevel) VersionHelper.getLevel(player);
         float chargePercent = Math.min((float) chargeTime / MAX_CHARGE_TIME, 1.0f);
         
         // チャージレベルに応じたパーティクル
@@ -924,7 +926,7 @@ public class ChargedAttackHandler {
             damage *= 1.5f;
             
             // クリティカルエフェクト
-            if (player.level() instanceof ServerLevel serverLevel) {
+            if (VersionHelper.getLevel(player) instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ParticleTypes.CRIT,
                     target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                     10, 0.3, 0.3, 0.3, 0.1);
@@ -953,7 +955,7 @@ public class ChargedAttackHandler {
     // @deprecated Use DamageCalculator.applyWeaponEffects instead
     @Deprecated
     private static void applyWeaponEffects(Player player, LivingEntity target, float damage) {
-        Level world = player.level();
+        Level world = VersionHelper.getLevel(player);
         ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
         String weaponName = weapon.getItem().getClass().getSimpleName();
         
@@ -1093,7 +1095,7 @@ public class ChargedAttackHandler {
     // private static void displayFallingChargeEffect(Player player, int fallTime) {
     //     if (player.level.isClientSide) return;
     //
-    //     ServerLevel serverWorld = (ServerLevel) player.level();
+    //     ServerLevel serverWorld = (ServerLevel) VersionHelper.getLevel(player);
     //     double radius = Math.min(fallTime / 20.0, 2.0);
     //
     //     // 落下中の円形エフェクト
@@ -1111,7 +1113,7 @@ public class ChargedAttackHandler {
 
     // 落下攻撃の実行（特定アイテム専用のため一時的にコメントアウト）
     // public static void performFallingAttack(Player player, float fallPower) {
-    //     Level world = player.level();
+    //     Level world = VersionHelper.getLevel(player);
     //     Vec3 playerPos = player.position();
 
     //     // 抜刀処理（鞘から刀を抜く）
@@ -1250,7 +1252,7 @@ public class ChargedAttackHandler {
      * Loki the Trickster処理（左クリック長押しベース）
      */
     private static void handleLokiTheTrickster(Player player, ChargeData data, boolean isLeftClickHeld) {
-        Level level = player.level();
+        Level level = VersionHelper.getLevel(player);
         ItemStack mainHand = player.getMainHandItem();
 
         // Loki the Tricksterを持っているかチェック
@@ -1328,7 +1330,7 @@ public class ChargedAttackHandler {
         }
 
         // Decoy Ball発射（専用エンティティを使用）
-        LokiDecoydasuEntity.shoot(player.level(), player, RandomSource.create(), 0.3f, 0, 0);
+        LokiDecoydasuEntity.shoot(VersionHelper.getLevel(player), player, RandomSource.create(), 0.3f, 0, 0);
 
         // サウンド
         player.level.playSound(null, player.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0f, 0.0f);
@@ -1352,7 +1354,7 @@ public class ChargedAttackHandler {
         }
 
         // Disarm Wind発射（専用エンティティを使用）
-        LokiDisarmEntity.shoot(player.level(), player, RandomSource.create(), 1.5f, 0, 0);
+        LokiDisarmEntity.shoot(VersionHelper.getLevel(player), player, RandomSource.create(), 1.5f, 0, 0);
 
         // サウンド
         player.level.playSound(null, player.blockPosition(), SoundEvents.BAT_TAKEOFF, SoundSource.NEUTRAL, 2.0f, 1.0f);
@@ -1423,7 +1425,7 @@ public class ChargedAttackHandler {
      * Loki Decoy召喚
      */
     private static void summonLokiDecoy(ArmorStand ball) {
-        Level level = ball.level();
+        Level level = VersionHelper.getLevel(ball);
         Vec3 pos = ball.position();
 
         ArmorStand decoy = new ArmorStand(EntityType.ARMOR_STAND, level);
@@ -1702,7 +1704,7 @@ public class ChargedAttackHandler {
             // アイテムをドロップ
             net.minecraft.world.entity.item.ItemEntity droppedItem =
                 new net.minecraft.world.entity.item.ItemEntity(
-                    target.level(),
+                    VersionHelper.getLevel(target),
                     target.getX(), target.getY(), target.getZ(),
                     mainHandItem.copy()
                 );

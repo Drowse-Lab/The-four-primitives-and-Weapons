@@ -17,10 +17,10 @@ archivesBaseName = 'minecraft_armor_weapon'
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 // Default: 1.20.1 with Java 17
-// For 1.19.2 (optional): ./gradlew build -DMC_VERSION=1.19.2 -DMAPPING_VERSION=1.19.2 -DFORGE_VERSION=1.19.2-43.X.X
-def mc_version = project.findProperty('MC_VERSION') ?: System.getProperty('MC_VERSION') ?: '1.20.1'
-def mapping_version = project.findProperty('MAPPING_VERSION') ?: System.getProperty('MAPPING_VERSION') ?: '1.20.1'
-def forge_version = project.findProperty('FORGE_VERSION') ?: System.getProperty('FORGE_VERSION') ?: '1.20.1-47.1.0'
+// For 1.19.2: ./gradlew build -PMC_VERSION=1.19.2 -PMAPPING_VERSION=1.19.2 -PFORGE_VERSION=1.19.2-43.3.13
+def mc_version = project.findProperty('MC_VERSION') ?: '1.20.1'
+def mapping_version = project.findProperty('MAPPING_VERSION') ?: '1.20.1'
+def forge_version = project.findProperty('FORGE_VERSION') ?: '1.20.1-47.1.0'
 
 println("Building for Minecraft ${mc_version} with Forge ${forge_version}")
 
@@ -62,6 +62,13 @@ minecraft {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${forge_version}"
+}
+
+processResources {
+    inputs.property 'mc_version', mc_version
+    filesMatching('META-INF/mods.toml') {
+        expand 'mc_version': mc_version
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {

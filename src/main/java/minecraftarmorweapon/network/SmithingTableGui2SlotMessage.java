@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.network;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -67,7 +69,7 @@ public class SmithingTableGui2SlotMessage {
 	}
 
 	public static void handleSlotAction(Player entity, int slotID, int changeType, int meta, int x, int y, int z) {
-		Level world = entity.level();
+		Level world = VersionHelper.getLevel(entity);
 		HashMap guistate = SmithingTableGui2Menu.guistate;
 		// security measure to prevent arbitrary chunk generation
 		if (!world.hasChunkAt(new BlockPos(x, y, z)))

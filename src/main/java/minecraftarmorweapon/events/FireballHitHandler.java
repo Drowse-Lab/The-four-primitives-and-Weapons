@@ -1,5 +1,7 @@
 package minecraftarmorweapon.events;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -33,7 +35,7 @@ public class FireballHitHandler {
         if (!tag.contains("OwnerUUID")) return;
 
         // プレイヤーを取得
-        if (!(fireball.level() instanceof ServerLevel serverLevel)) return;
+        if (!(VersionHelper.getLevel(fireball) instanceof ServerLevel serverLevel)) return;
 
         UUID ownerUUID = UUID.fromString(tag.getString("OwnerUUID"));
         Player player = serverLevel.getPlayerByUUID(ownerUUID);

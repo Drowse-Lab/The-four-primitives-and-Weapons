@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
@@ -148,7 +150,7 @@ public class SkeltonMobEntity extends PathfinderMob {
 		double y = this.getY();
 		double z = this.getZ();
 		Entity entity = this;
-		Level world = this.level();
+		Level world = VersionHelper.getLevel(this);
 
 		SkeltonMobenteiteiwoYoukuritukusitaShiProcedure.execute(world, x, y, z, entity);
 		return retval;

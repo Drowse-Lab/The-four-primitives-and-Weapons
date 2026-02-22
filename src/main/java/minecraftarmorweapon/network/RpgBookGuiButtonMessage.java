@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.network;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -66,7 +68,7 @@ public class RpgBookGuiButtonMessage {
 	}
 
 	public static void handleButtonAction(Player entity, int buttonID, int x, int y, int z) {
-		Level world = entity.level();
+		Level world = VersionHelper.getLevel(entity);
 		HashMap guistate = RpgBookGuiMenu.guistate;
 		// security measure to prevent arbitrary chunk generation
 		if (!world.hasChunkAt(new BlockPos(x, y, z)))

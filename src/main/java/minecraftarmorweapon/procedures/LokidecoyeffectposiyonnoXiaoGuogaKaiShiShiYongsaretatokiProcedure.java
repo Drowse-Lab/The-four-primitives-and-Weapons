@@ -1,5 +1,7 @@
 package minecraftarmorweapon.procedures;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerLevel;
@@ -11,8 +13,8 @@ public class LokidecoyeffectposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 		if (entity == null)
 			return;
 		// Decoy召喚時にスコアボードを初期化
-		if (!entity.level.isClientSide() && entity.level() instanceof ServerLevel) {
-			ServerLevel serverLevel = (ServerLevel) entity.level();
+		if (!entity.level.isClientSide() && VersionHelper.getLevel(entity) instanceof ServerLevel) {
+			ServerLevel serverLevel = (ServerLevel) VersionHelper.getLevel(entity);
 			serverLevel.getServer().getCommands().performPrefixedCommand(
 				new CommandSourceStack(CommandSource.NULL, entity.position(), entity.getRotationVector(),
 					serverLevel, 4, entity.getName().getString(), entity.getDisplayName(),

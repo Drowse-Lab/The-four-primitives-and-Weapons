@@ -1,5 +1,5 @@
 // Default: 1.20.1 with Java 17
-// For 1.19.2 (optional): ./gradlew build -DMC_VERSION=1.19.2 -DMAPPING_VERSION=1.19.2 -DFORGE_VERSION=1.19.2-43.X.X
+// For 1.19.2: ./gradlew build -PMC_VERSION=1.19.2 -PMAPPING_VERSION=1.19.2 -PFORGE_VERSION=1.19.2-43.3.13
 def mc_version = project.findProperty('MC_VERSION') ?: System.getProperty('MC_VERSION') ?: '1.20.1'
 def compileModsDirBase = mc_version.startsWith('1.19') ? 'compile-mods-1.19.2' : 'compile-mods-1.20.1'
 
@@ -37,9 +37,8 @@ dependencies {
 		runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.19.2-5.1.1.0")
 		compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.19.2-5.1.1.0:api")
 	} else if (mc_version.startsWith('1.20')) {
-		// Note: For 1.20.1, use deobf to get source variants
-		runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.20.1-5.3.7.0:deobf")
-		compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.20.1-5.3.7.0:deobf@jar")
+		runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.10.0+1.20.1")
+		compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.10.0+1.20.1:api")
 	}
 }
 
@@ -54,7 +53,7 @@ dependencies {
 		implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.19:3.1.40')
 	} else if (mc_version.startsWith('1.20')) {
 		// GeckoLib 4.x for 1.20.1
-		implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20:4.4.7')
+		implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20.1:4.7.3')
 	}
 }
 
@@ -78,9 +77,9 @@ dependencies {
 		runtimeOnly fg.deobf("mezz.jei:jei-1.19.2-forge:11.4.0.286")
 	} else if (mc_version.startsWith('1.20')) {
 		// JEI 15.x for 1.20.1
-		compileOnly fg.deobf("mezz.jei:jei-1.20.1-common-api:14.6.13.56")
-		compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge-api:14.6.13.56")
-		runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:14.6.13.56")
+		compileOnly fg.deobf("mezz.jei:jei-1.20.1-common-api:15.20.0.129")
+		compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge-api:15.20.0.129")
+		runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.20.0.129")
 	}
 }
 

@@ -1,5 +1,7 @@
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
@@ -63,7 +65,7 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
         }
 
         // パーティクルエフェクト
-        if (this.level() instanceof ServerLevel serverLevel) {
+        if (VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
             // 闇のパーティクル
             serverLevel.sendParticles(ParticleTypes.SOUL,
                 this.getX(), this.getY(), this.getZ(),
@@ -134,7 +136,7 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
             }
 
             // ヒットエフェクト
-            if (this.level() instanceof ServerLevel serverLevel) {
+            if (VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
                     livingEntity.getX(), livingEntity.getY() + livingEntity.getBbHeight() / 2, livingEntity.getZ(),
                     20, 0.5, 0.5, 0.5, 0.1);
@@ -155,7 +157,7 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
     @Override
     protected void onHitBlock(BlockHitResult result) {
         // ブロックに当たった時のエフェクト
-        if (this.level() instanceof ServerLevel serverLevel) {
+        if (VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.SMOKE,
                 result.getLocation().x, result.getLocation().y, result.getLocation().z,
                 10, 0.3, 0.3, 0.3, 0.05);

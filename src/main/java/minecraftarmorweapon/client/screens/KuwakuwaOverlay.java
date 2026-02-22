@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.client.screens;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import org.checkerframework.checker.units.qual.h;
 
 import net.minecraftforge.fml.common.Mod;
@@ -34,7 +36,7 @@ public class KuwakuwaOverlay {
 		double z = 0;
 		Player entity = Minecraft.getInstance().player;
 		if (entity != null) {
-			world = entity.level();
+			world = VersionHelper.getLevel(entity);
 			x = entity.getX();
 			y = entity.getY();
 			z = entity.getZ();

@@ -1,5 +1,7 @@
 package minecraftarmorweapon.procedures;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerLevel;
@@ -11,7 +13,7 @@ public class TunderbolteffrctehuekutogaYouXiaoShinoteitukuProcedure {
 			return;
 
 		// 毎tick FLASHパーティクルを表示（雷が来る予兆）
-		if (entity.level() instanceof ServerLevel serverLevel) {
+		if (VersionHelper.getLevel(entity) instanceof ServerLevel serverLevel) {
 			// FLASHパーティクル（白い閃光）
 			serverLevel.sendParticles(ParticleTypes.FLASH,
 				entity.getX(),

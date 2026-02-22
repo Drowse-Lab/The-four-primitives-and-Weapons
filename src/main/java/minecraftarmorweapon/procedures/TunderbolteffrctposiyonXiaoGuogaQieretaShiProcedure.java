@@ -1,5 +1,7 @@
 package minecraftarmorweapon.procedures;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -16,7 +18,7 @@ public class TunderbolteffrctposiyonXiaoGuogaQieretaShiProcedure {
 			return;
 
 		// エフェクトが切れた時（5秒経過後）に雷を落とす
-		if (entity.level() instanceof ServerLevel serverLevel) {
+		if (VersionHelper.getLevel(entity) instanceof ServerLevel serverLevel) {
 			// 大量のFLASHパーティクル（雷が来る直前）
 			serverLevel.sendParticles(ParticleTypes.FLASH,
 				entity.getX(),

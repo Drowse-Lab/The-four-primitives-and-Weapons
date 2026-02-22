@@ -1,5 +1,7 @@
 package minecraftarmorweapon.util;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -99,7 +101,7 @@ public class DamageCalculator {
                 damage *= 1.5f;
 
                 // クリティカルエフェクト
-                if (player.level() instanceof ServerLevel serverLevel) {
+                if (VersionHelper.getLevel(player) instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(ParticleTypes.CRIT,
                         target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                         15, 0.2, 0.2, 0.2, 0.1);
@@ -158,7 +160,7 @@ public class DamageCalculator {
                             CommandSource.NULL,
                             target.position(),
                             target.getRotationVector(),
-                            target.level() instanceof ServerLevel ? (ServerLevel) target.level() : null,
+                            VersionHelper.getLevel(target) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(target) : null,
                             4,
                             target.getName().getString(),
                             target.getDisplayName(),
@@ -173,7 +175,7 @@ public class DamageCalculator {
                 target.setHealth(0f);
 
                 // 即死エフェクト
-                if (attacker.level() instanceof ServerLevel serverLevel) {
+                if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(ParticleTypes.SMOKE,
                         target.getX(), target.getY() + 1, target.getZ(),
                         20, 0.5, 0.5, 0.5, 0.1);
@@ -257,7 +259,7 @@ public class DamageCalculator {
         }
 
         // 血のエフェクト
-        if (attacker.level() instanceof ServerLevel serverLevel) {
+        if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.DAMAGE_INDICATOR,
                 target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                 10, 0.3, 0.3, 0.3, 0.1);
@@ -278,7 +280,7 @@ public class DamageCalculator {
             target.hurt(DamageSource.WITHER, damage * 0.5f);
 
             // 闇のオーラエフェクト
-            if (attacker.level() instanceof ServerLevel serverLevel) {
+            if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ParticleTypes.SOUL,
                     target.getX(), target.getY() + 1, target.getZ(),
                     15, 0.5, 0.5, 0.5, 0.05);
@@ -302,7 +304,7 @@ public class DamageCalculator {
         target.hurt(DamageSource.MAGIC, damage * 0.2f);
 
         // 暗黒エフェクト
-        if (attacker.level() instanceof ServerLevel serverLevel) {
+        if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.SMOKE,
                 target.getX(), target.getY() + 1, target.getZ(),
                 20, 0.5, 0.5, 0.5, 0.1);
@@ -320,7 +322,7 @@ public class DamageCalculator {
         target.hurt(DamageSource.MAGIC, damage * 0.3f);
 
         // 魔法エフェクト
-        if (attacker.level() instanceof ServerLevel serverLevel) {
+        if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
                 target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                 20, 0.5, 0.5, 0.5, 0.1);

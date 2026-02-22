@@ -1,5 +1,7 @@
 package minecraftarmorweapon.damage;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -58,7 +60,7 @@ public class CorrosionElementDamageHandler {
         }
 
         // 侵食/闇のパーティクルエフェクト
-        if (target.level() instanceof ServerLevel serverLevel) {
+        if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {
             // ウィザーの暗黒パーティクル
             serverLevel.sendParticles(ParticleTypes.SMOKE,
                 target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),

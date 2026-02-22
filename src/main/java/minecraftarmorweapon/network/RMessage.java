@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.network;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -44,7 +46,7 @@ public class RMessage {
 	}
 
 	public static void pressAction(Player entity, int type, int pressedms) {
-		Level world = entity.level();
+		Level world = VersionHelper.getLevel(entity);
 		double x = entity.getX();
 		double y = entity.getY();
 		double z = entity.getZ();

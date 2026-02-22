@@ -1,5 +1,7 @@
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -225,7 +227,7 @@ public class SingularityEntity extends PathfinderMob {
                         livingTarget.setSecondsOnFire(3);
 
                         // パーティクル
-                        if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                        if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                             serverLevel.sendParticles(
                                 ParticleTypes.FLAME,
                                 livingTarget.getX(), livingTarget.getY() + 1, livingTarget.getZ(),
@@ -239,7 +241,7 @@ public class SingularityEntity extends PathfinderMob {
                         ));
 
                         // パーティクル
-                        if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                        if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                             serverLevel.sendParticles(
                                 ParticleTypes.SNOWFLAKE,
                                 livingTarget.getX(), livingTarget.getY() + 1, livingTarget.getZ(),
@@ -254,7 +256,7 @@ public class SingularityEntity extends PathfinderMob {
                 livingTarget.setDeltaMovement(livingTarget.getDeltaMovement().add(knockback.x, 0.15, knockback.z));
 
                 // 攻撃エフェクト
-                if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(
                         ParticleTypes.SWEEP_ATTACK,
                         livingTarget.getX(), livingTarget.getY() + livingTarget.getBbHeight() / 2, livingTarget.getZ(),

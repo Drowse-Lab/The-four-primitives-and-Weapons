@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.world.inventory;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.IItemHandler;
 
@@ -31,7 +33,7 @@ public class QuestscreenMenu extends AbstractContainerMenu implements Supplier<M
 	public QuestscreenMenu(int id, Inventory inv, FriendlyByteBuf extraData) {
 		super(MinecraftArmorWeaponModMenus.QUESTSCREEN.get(), id);
 		this.entity = inv.player;
-		this.world = inv.player.level();
+		this.world = VersionHelper.getLevel(inv.player);
 		this.internal = new ItemStackHandler(0);
 		BlockPos pos = null;
 		if (extraData != null) {

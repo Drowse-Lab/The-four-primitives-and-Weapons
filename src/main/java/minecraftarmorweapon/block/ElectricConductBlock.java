@@ -14,7 +14,6 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,7 +27,7 @@ public final class ElectricConductBlock {
     private static final int MAX_RADIUS = 10;
     private static final int MAX_RADIUS_SQR = MAX_RADIUS * MAX_RADIUS;
 
-    private static final Set<Block> CONDUCTIVE_BLOCKS = EnumSet.of(
+    private static final Set<Block> CONDUCTIVE_BLOCKS = Set.of(
             // 金属
             Blocks.IRON_BLOCK,
             Blocks.GOLD_BLOCK,

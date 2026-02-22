@@ -1,5 +1,7 @@
 package minecraftarmorweapon.item;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.Tier;
@@ -56,7 +58,7 @@ public class ZeroDegreeFireSwordItem extends SwordItem {
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if (!target.level.isClientSide()) {
             // 零度の炎エフェクトを適用（8秒間、レベル1）
-            FreezingFireEffectProcedure.execute(target.level(), target, attacker, 160, 0);
+            FreezingFireEffectProcedure.execute(VersionHelper.getLevel(target), target, attacker, 160, 0);
         }
         return super.hurtEnemy(stack, target, attacker);
     }

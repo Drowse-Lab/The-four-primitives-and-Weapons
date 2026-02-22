@@ -1,5 +1,7 @@
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -264,7 +266,7 @@ public class CommonSoldierEntity extends PathfinderMob {
                 SoundEvents.PLAYER_ATTACK_WEAK, SoundSource.HOSTILE, 0.8f, 1.0f);
 
             // パーティクル
-            if (this.level() instanceof ServerLevel serverLevel) {
+            if (VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(
                     ParticleTypes.CRIT,
                     player.getX(), player.getY() + 1, player.getZ(),
@@ -365,7 +367,7 @@ public class CommonSoldierEntity extends PathfinderMob {
                 livingTarget.setDeltaMovement(livingTarget.getDeltaMovement().add(knockback.x, 0.1, knockback.z));
 
                 // 攻撃エフェクト
-                if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(
                         ParticleTypes.SWEEP_ATTACK,
                         livingTarget.getX(), livingTarget.getY() + livingTarget.getBbHeight() / 2, livingTarget.getZ(),

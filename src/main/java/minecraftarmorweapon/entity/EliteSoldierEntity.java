@@ -1,5 +1,7 @@
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -224,7 +226,7 @@ public class EliteSoldierEntity extends PathfinderMob {
             this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.PLAYER_ATTACK_WEAK, SoundSource.HOSTILE, 0.8f, 1.0f);
 
-            if (this.level() instanceof ServerLevel serverLevel) {
+            if (VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(
                     ParticleTypes.CRIT,
                     player.getX(), player.getY() + 1, player.getZ(),
@@ -261,7 +263,7 @@ public class EliteSoldierEntity extends PathfinderMob {
                 livingTarget.setDeltaMovement(livingTarget.getDeltaMovement().add(knockback.x, 0.15, knockback.z));
 
                 // 攻撃エフェクト（より派手）
-                if (!this.level.isClientSide && this.level() instanceof ServerLevel serverLevel) {
+                if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(
                         ParticleTypes.SWEEP_ATTACK,
                         livingTarget.getX(), livingTarget.getY() + livingTarget.getBbHeight() / 2, livingTarget.getZ(),

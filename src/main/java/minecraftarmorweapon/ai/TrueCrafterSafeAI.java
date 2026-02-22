@@ -1,5 +1,7 @@
 package minecraftarmorweapon.ai;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -56,7 +58,7 @@ public class TrueCrafterSafeAI {
             return;
         }
         
-        if (monster.level() == null || monster.level.isClientSide) {
+        if (VersionHelper.getLevel(monster) == null || monster.level.isClientSide) {
             return;
         }
         
@@ -87,7 +89,7 @@ public class TrueCrafterSafeAI {
             return;
         }
         
-        if (monster.level() == null || monster.level.isClientSide) {
+        if (VersionHelper.getLevel(monster) == null || monster.level.isClientSide) {
             return;
         }
         

@@ -1,5 +1,7 @@
 package minecraftarmorweapon.events;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -70,7 +72,7 @@ public class DemonizedEnchantmentHandler {
                 ));
 
                 // 吸収エフェクト（体力を吸い取る視覚効果）
-                if (attacker.level() instanceof ServerLevel serverLevel) {
+                if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
                     // ターゲットから攻撃者に向かうパーティクル（血を吸収）
                     for (int i = 0; i < 5 + demonizedLevel; i++) {
                         double t = i / (5.0 + demonizedLevel);

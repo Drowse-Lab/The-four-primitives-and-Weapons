@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.world.inventory;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -46,7 +48,7 @@ public class SmithingTableGui2Menu extends AbstractContainerMenu implements Supp
 	public SmithingTableGui2Menu(int id, Inventory inv, FriendlyByteBuf extraData) {
 		super(MinecraftArmorWeaponModMenus.SMITHING_TABLE_GUI_2.get(), id);
 		this.entity = inv.player;
-		this.world = inv.player.level();
+		this.world = VersionHelper.getLevel(inv.player);
 		this.internal = new ItemStackHandler(4);
 		BlockPos pos = null;
 		if (extraData != null) {
@@ -258,7 +260,7 @@ public class SmithingTableGui2Menu extends AbstractContainerMenu implements Supp
 	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
 		Player entity = event.player;
 		if (event.phase == TickEvent.Phase.END && entity.containerMenu instanceof SmithingTableGui2Menu) {
-			Level world = entity.level();
+			Level world = VersionHelper.getLevel(entity);
 			double x = entity.getX();
 			double y = entity.getY();
 			double z = entity.getZ();

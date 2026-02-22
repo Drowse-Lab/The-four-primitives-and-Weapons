@@ -1,5 +1,7 @@
 package minecraftarmorweapon.procedures;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerLevel;
 import java.util.UUID;
@@ -13,8 +15,8 @@ public class SummonTriggerEffectEffectExpiresProcedure {
 		
 		// スポーン済みリストから削除
 		List<UUID> spawnedList = SummonTriggerEffectEffectStartedappliedProcedure.getSpawnedEntities(entityUUID);
-		if (spawnedList != null && entity.level() instanceof ServerLevel) {
-			ServerLevel world = (ServerLevel) entity.level();
+		if (spawnedList != null && VersionHelper.getLevel(entity) instanceof ServerLevel) {
+			ServerLevel world = (ServerLevel) VersionHelper.getLevel(entity);
 			
 			// スポーンしたエンティティを全て削除
 			for (UUID spawnedUUID : spawnedList) {

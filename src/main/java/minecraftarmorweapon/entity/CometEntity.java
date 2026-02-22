@@ -1,6 +1,8 @@
 
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
@@ -127,7 +129,7 @@ public class CometEntity extends PathfinderMob {
 	@Override
 	public void baseTick() {
 		super.baseTick();
-		CometenteiteinotitukuGengXinShiProcedure.execute(this.level(), this.getX(), this.getY(), this.getZ(), this);
+		CometenteiteinotitukuGengXinShiProcedure.execute(VersionHelper.getLevel(this), this.getX(), this.getY(), this.getZ(), this);
 	}
 
 	@Override

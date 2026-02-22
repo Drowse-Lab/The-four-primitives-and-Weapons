@@ -56,7 +56,7 @@
 //         LAST_ATTACK_TIME.put(playerId, currentTime);
 
 //         // コンボ攻撃を実行
-//         Level world = player.level();
+//         Level world = VersionHelper.getLevel(player);
 //         MagicKatanaComboSystemProcedure.executeComboAttack(
 //             world,
 //             player.getX(),
@@ -102,7 +102,7 @@
 //      * 特殊アクション（スニーク+右クリック）
 //      */
 //     private static void executeSpecialAction(Player player, ItemStack itemstack) {
-//         Level world = player.level();
+//         Level world = VersionHelper.getLevel(player);
 
 //         // 瞬間移動斬り
 //         if (world instanceof ServerLevel serverLevel) {

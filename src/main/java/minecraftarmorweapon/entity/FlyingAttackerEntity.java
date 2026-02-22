@@ -2,6 +2,8 @@
 
 package minecraftarmorweapon.entity;
 
+import minecraftarmorweapon.util.VersionHelper;
+
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
@@ -140,8 +142,8 @@ public class FlyingAttackerEntity extends Monster {
     }
 
     public LivingEntity getTargetEntity() {
-        if (this.targetUUID != null && this.level() instanceof ServerLevel) {
-            Entity entity = ((ServerLevel) this.level()).getEntity(this.targetUUID);
+        if (this.targetUUID != null && VersionHelper.getLevel(this) instanceof ServerLevel) {
+            Entity entity = ((ServerLevel) VersionHelper.getLevel(this)).getEntity(this.targetUUID);
             if (entity instanceof LivingEntity) {
                 return (LivingEntity) entity;
             }
@@ -396,8 +398,8 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // ownerがnullの場合、ownerUUIDから復元を試みる
-        if (this.owner == null && this.ownerUUID != null && this.level() instanceof ServerLevel) {
-            Entity entity = ((ServerLevel) this.level()).getEntity(this.ownerUUID);
+        if (this.owner == null && this.ownerUUID != null && VersionHelper.getLevel(this) instanceof ServerLevel) {
+            Entity entity = ((ServerLevel) VersionHelper.getLevel(this)).getEntity(this.ownerUUID);
             if (entity instanceof LivingEntity) {
                 this.owner = (LivingEntity) entity;
             }
@@ -761,8 +763,8 @@ public class FlyingAttackerEntity extends Monster {
             // カスタム発射体の場合、NBTデータからOwnerをチェック
             if (projectile.getPersistentData().contains("Owner")) {
                 UUID ownerUUID = projectile.getPersistentData().getUUID("Owner");
-                if (this.level() instanceof ServerLevel) {
-                    shooter = ((ServerLevel) this.level()).getEntity(ownerUUID);
+                if (VersionHelper.getLevel(this) instanceof ServerLevel) {
+                    shooter = ((ServerLevel) VersionHelper.getLevel(this)).getEntity(ownerUUID);
                 }
             }
             
@@ -866,8 +868,8 @@ public class FlyingAttackerEntity extends Monster {
             this.lookAt(EntityAnchorArgument.Anchor.EYES, projectilePos);
             
             // 移動軌跡のエフェクト（瞬間移動の軌跡を表示）
-            if (this.level() instanceof ServerLevel) {
-                ServerLevel serverLevel = (ServerLevel) this.level();
+            if (VersionHelper.getLevel(this) instanceof ServerLevel) {
+                ServerLevel serverLevel = (ServerLevel) VersionHelper.getLevel(this);
                 // 元の位置から迎撃位置への軌跡にパーティクルを表示
                 Vec3 startPos = this.position();
                 Vec3 particleDir = interceptPos.subtract(startPos);
@@ -928,8 +930,8 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // エフェクトとサウンド
-        if (this.level() instanceof ServerLevel) {
-            ServerLevel serverLevel = (ServerLevel) this.level();
+        if (VersionHelper.getLevel(this) instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel) VersionHelper.getLevel(this);
             
             // パーティクルエフェクト
             serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.ENCHANTED_HIT,
@@ -967,8 +969,8 @@ public class FlyingAttackerEntity extends Monster {
             // カスタム発射体の場合、NBTデータからOwnerを取得
             if (projectile.getPersistentData().contains("Owner")) {
                 UUID ownerUUID = projectile.getPersistentData().getUUID("Owner");
-                if (this.level() instanceof ServerLevel) {
-                    originalOwner = ((ServerLevel) this.level()).getEntity(ownerUUID);
+                if (VersionHelper.getLevel(this) instanceof ServerLevel) {
+                    originalOwner = ((ServerLevel) VersionHelper.getLevel(this)).getEntity(ownerUUID);
                 }
             }
         }
@@ -1025,8 +1027,8 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // エフェクトとサウンド
-        if (this.level() instanceof ServerLevel) {
-            ServerLevel serverLevel = (ServerLevel) this.level();
+        if (VersionHelper.getLevel(this) instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel) VersionHelper.getLevel(this);
             
             // ガラスが割れるようなパーティクルエフェクト
             serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.ITEM_SNOWBALL,
@@ -1127,8 +1129,8 @@ public class FlyingAttackerEntity extends Monster {
                         return (Entity) value;
                     } else if (value instanceof UUID) {
                         // UUIDの場合はエンティティを取得
-                        if (this.level() instanceof ServerLevel) {
-                            return ((ServerLevel) this.level()).getEntity((UUID) value);
+                        if (VersionHelper.getLevel(this) instanceof ServerLevel) {
+                            return ((ServerLevel) VersionHelper.getLevel(this)).getEntity((UUID) value);
                         }
                     }
                 } catch (NoSuchFieldException e) {
@@ -1148,8 +1150,8 @@ public class FlyingAttackerEntity extends Monster {
                         if (value instanceof Entity) {
                             return (Entity) value;
                         } else if (value instanceof UUID) {
-                            if (this.level() instanceof ServerLevel) {
-                                return ((ServerLevel) this.level()).getEntity((UUID) value);
+                            if (VersionHelper.getLevel(this) instanceof ServerLevel) {
+                                return ((ServerLevel) VersionHelper.getLevel(this)).getEntity((UUID) value);
                             }
                         }
                     } catch (NoSuchFieldException e) {
@@ -1278,8 +1280,8 @@ public class FlyingAttackerEntity extends Monster {
                         }
                     }
                     // スイープエフェクト
-                    if (this.level() instanceof ServerLevel) {
-                        ServerLevel serverLevel = (ServerLevel) this.level();
+                    if (VersionHelper.getLevel(this) instanceof ServerLevel) {
+                        ServerLevel serverLevel = (ServerLevel) VersionHelper.getLevel(this);
                         serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.SWEEP_ATTACK,
                             target.getX(), target.getY() + target.getBbHeight() * 0.5, target.getZ(),
                             1, 0, 0, 0, 0);
@@ -1295,8 +1297,8 @@ public class FlyingAttackerEntity extends Monster {
             if (isCritical) {
                 this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
                     SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.HOSTILE, 1.0F, 1.0F);
-                if (this.level() instanceof ServerLevel) {
-                    ServerLevel serverLevel = (ServerLevel) this.level();
+                if (VersionHelper.getLevel(this) instanceof ServerLevel) {
+                    ServerLevel serverLevel = (ServerLevel) VersionHelper.getLevel(this);
                     serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.CRIT,
                         target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                         15, 0.2, 0.2, 0.2, 0.1);
@@ -1328,16 +1330,16 @@ public class FlyingAttackerEntity extends Monster {
         AbstractArrow arrow;
         
         if (arrowItem.getItem() == Items.SPECTRAL_ARROW) {
-            arrow = new SpectralArrow(this.level(), this);
+            arrow = new SpectralArrow(VersionHelper.getLevel(this), this);
         } else if (arrowItem.getItem() == Items.ARROW || arrowItem.getItem() == Items.TIPPED_ARROW) {
-            arrow = new Arrow(this.level(), this);
+            arrow = new Arrow(VersionHelper.getLevel(this), this);
             if (arrowItem.getItem() == Items.TIPPED_ARROW) {
                 ((Arrow)arrow).setEffectsFromItem(arrowItem);
             }
         } else {
             // カスタム矢の場合はKatanaTobuEntityを使用
             KatanaTobuEntity customArrow = new KatanaTobuEntity(MinecraftArmorWeaponModEntities.KATANA_TOBU.get(), 
-                this, this.level());
+                this, VersionHelper.getLevel(this));
             arrow = customArrow;
         }
 
@@ -1403,8 +1405,8 @@ public class FlyingAttackerEntity extends Monster {
         if (compound.hasUUID("OwnerUUID")) {
             this.ownerUUID = compound.getUUID("OwnerUUID");
             // ワールド再参加時にownerを復元
-            if (this.level() instanceof ServerLevel) {
-                Entity entity = ((ServerLevel) this.level()).getEntity(this.ownerUUID);
+            if (VersionHelper.getLevel(this) instanceof ServerLevel) {
+                Entity entity = ((ServerLevel) VersionHelper.getLevel(this)).getEntity(this.ownerUUID);
                 if (entity instanceof LivingEntity) {
                     this.owner = (LivingEntity) entity;
                 }
