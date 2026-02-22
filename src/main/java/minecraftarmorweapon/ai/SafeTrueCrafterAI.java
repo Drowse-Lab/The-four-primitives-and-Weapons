@@ -723,11 +723,16 @@ public class SafeTrueCrafterAI {
             data.blockPlaceCooldown--;
         }
         
+        // 全強化モンスター共通: ターゲットを見る
+        LivingEntity commonTarget = monster.getTarget();
+        if (commonTarget != null && commonTarget.isAlive()) {
+            monster.getLookControl().setLookAt(commonTarget, 30.0f, 30.0f);
+        }
+
         // スケルトンの武器切り替え処理（AIゴールを追加せずに直接処理）
         if (monster instanceof Skeleton skeleton) {
             // 武器データが初期化されていない場合は初期化
             if (data.meleeWeapon.isEmpty() || data.rangedWeapon.isEmpty()) {
-                // デフォルト武器を設定
                 if (data.rangedWeapon.isEmpty()) {
                     data.rangedWeapon = skeleton.getMainHandItem().copy();
                     if (data.rangedWeapon.isEmpty()) {
@@ -738,38 +743,52 @@ public class SafeTrueCrafterAI {
                     data.meleeWeapon = new ItemStack(Items.IRON_SWORD);
                 }
             }
-            
+
+            LivingEntity target = skeleton.getTarget();
+
             // 武器切り替え処理
-            if (data.weaponSwitchCooldown == 0) {
-                LivingEntity target = skeleton.getTarget();
-                if (target != null) {
-                    double distance = skeleton.distanceToSqr(target);
-                    ItemStack currentWeapon = skeleton.getMainHandItem();
-                    
-                    // 近距離（4ブロック以内）なら剣に切り替え
-                    if (distance < 16.0) {
-                        if (!currentWeapon.is(data.meleeWeapon.getItem())) {
-                            skeleton.setItemSlot(EquipmentSlot.MAINHAND, data.meleeWeapon.copy());
-                            data.weaponSwitchCooldown = 40; // 2秒のクールダウン
-                            skeleton.setAggressive(true);
-                        }
+            if (data.weaponSwitchCooldown == 0 && target != null) {
+                double distance = skeleton.distanceToSqr(target);
+                ItemStack currentWeapon = skeleton.getMainHandItem();
+
+                // 近距離（4ブロック以内）なら剣に切り替え
+                if (distance < 16.0) {
+                    if (!currentWeapon.is(data.meleeWeapon.getItem())) {
+                        skeleton.setItemSlot(EquipmentSlot.MAINHAND, data.meleeWeapon.copy());
+                        data.weaponSwitchCooldown = 40;
+                        skeleton.setAggressive(true);
                     }
-                    // 遠距離（4ブロック以上）なら弓に切り替え
-                    else if (distance >= 25.0) { // 5ブロック以上
-                        if (!currentWeapon.is(data.rangedWeapon.getItem())) {
-                            skeleton.setItemSlot(EquipmentSlot.MAINHAND, data.rangedWeapon.copy());
-                            data.weaponSwitchCooldown = 40;
-                            skeleton.setAggressive(false);
-                        }
+                }
+                // 遠距離（5ブロック以上）なら弓に切り替え
+                else if (distance >= 25.0) {
+                    if (!currentWeapon.is(data.rangedWeapon.getItem())) {
+                        skeleton.setItemSlot(EquipmentSlot.MAINHAND, data.rangedWeapon.copy());
+                        data.weaponSwitchCooldown = 40;
+                        skeleton.setAggressive(false);
                     }
                 }
             }
-            
-            // 盾防御処理（AIゴールを使わずに直接処理）
+
+            // 剣装備時: ターゲットに向かって移動+近接攻撃
+            if (target != null && target.isAlive()) {
+                ItemStack currentWeapon = skeleton.getMainHandItem();
+                boolean hasMelee = currentWeapon.getItem() instanceof SwordItem || currentWeapon.getItem() instanceof AxeItem;
+                if (hasMelee) {
+                    double distSq = skeleton.distanceToSqr(target);
+                    // ターゲットに向かってナビゲーション
+                    if (distSq > 4.0) {
+                        skeleton.getNavigation().moveTo(target, 1.2);
+                    }
+                    // 近接攻撃範囲内
+                    if (distSq <= 4.0 && skeleton.tickCount % 15 == 0) {
+                        skeleton.doHurtTarget(target);
+                    }
+                }
+            }
+
+            // 盾防御処理
             if (!skeleton.getOffhandItem().isEmpty() && skeleton.getOffhandItem().is(Items.SHIELD)) {
-                LivingEntity target = skeleton.getTarget();
                 if (target != null && skeleton.distanceToSqr(target) < 16.0) {
-                    // 近距離で20%の確率で盾を構える
                     if (skeleton.getRandom().nextFloat() < 0.2f && !skeleton.isUsingItem()) {
                         skeleton.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
                     }
@@ -783,39 +802,60 @@ public class SafeTrueCrafterAI {
             if (target != null) {
                 double distance = zombie.distanceToSqr(target);
                 
-                // ブロック設置処理（lunatic以上の難易度で有効）
+                // ブロック設置処理（nightmare以上の難易度で有効）
                 if (data.blockPlaceCooldown == 0 && CustomDifficultyCommand.isTrueCrafterEnabled()) {
-                    // ターゲットが高い位置にいる場合
-                    if (target.getY() > zombie.getY() + 1.5) {
-                        BlockPos zombiePos = zombie.blockPosition();
-                        BlockPos frontPos = zombiePos.relative(zombie.getDirection());
-                        
-                        // 前方にブロックを設置して登る
-                        if (zombie.level.getBlockState(frontPos).isAir() && 
+                    BlockPos zombiePos = zombie.blockPosition();
+                    BlockPos frontPos = zombiePos.relative(zombie.getDirection());
+
+                    // ターゲットが高い位置にいる場合（0.5ブロック以上）
+                    if (target.getY() > zombie.getY() + 0.5) {
+                        // 前方にブロックを設置して登る（階段作成）
+                        if (zombie.level.getBlockState(frontPos).isAir() &&
                             !zombie.level.getBlockState(frontPos.below()).isAir()) {
                             zombie.level.setBlock(frontPos, Blocks.COBBLESTONE.defaultBlockState(), 3);
-                            data.blockPlaceCooldown = 40; // 2秒のクールダウン
-                            
-                            // 一時ブロックとして記録（15秒後に削除）
+                            data.blockPlaceCooldown = 25;
                             temporaryBlocks.put(frontPos, System.currentTimeMillis());
                         }
-                        // 足元にブロックを設置して階段を作る
-                        else if (zombie.level.getBlockState(zombiePos.below()).isAir()) {
+                        // 足元にブロック設置＋ジャンプで塔を作る
+                        else if (zombie.isOnGround() && zombie.level.getBlockState(zombiePos.above()).isAir()
+                                 && zombie.level.getBlockState(zombiePos.above().above()).isAir()) {
+                            zombie.setDeltaMovement(zombie.getDeltaMovement().add(0, 0.42, 0));
+                            zombie.hasImpulse = true;
+                            // 少し遅れてブロック設置（次ティックで足元に置く）
+                            data.blockPlaceCooldown = 4;
+                        }
+                        // ジャンプ中に足元にブロック設置
+                        else if (!zombie.isOnGround() && zombie.getDeltaMovement().y > 0
+                                 && zombie.level.getBlockState(zombiePos).isAir()
+                                 && !zombie.level.getBlockState(zombiePos.below()).isAir()) {
+                            // 既にブロックの上にいる時のみ
+                        } else if (!zombie.isOnGround() && zombie.getDeltaMovement().y < 0
+                                 && zombie.level.getBlockState(zombiePos.below()).isAir()) {
                             zombie.level.setBlock(zombiePos.below(), Blocks.COBBLESTONE.defaultBlockState(), 3);
-                            data.blockPlaceCooldown = 30;
+                            data.blockPlaceCooldown = 8;
                             temporaryBlocks.put(zombiePos.below(), System.currentTimeMillis());
                         }
                     }
-                    
+
+                    // 前方の壁を越える: 前にブロックがあり上は空いている場合
+                    if (data.blockPlaceCooldown == 0
+                        && !zombie.level.getBlockState(frontPos).isAir()
+                        && zombie.level.getBlockState(frontPos.above()).isAir()
+                        && zombie.isOnGround()) {
+                        // ジャンプして壁を越える
+                        zombie.setDeltaMovement(zombie.getDeltaMovement().add(0, 0.42, 0));
+                        zombie.hasImpulse = true;
+                    }
+
                     // 谷や水を渡るための橋を作る
-                    BlockPos frontPos = zombie.blockPosition().relative(zombie.getDirection());
-                    BlockPos belowFront = frontPos.below();
-                    BlockState belowState = zombie.level.getBlockState(belowFront);
-                    
-                    if (belowState.isAir() || belowState.getMaterial().isLiquid()) {
-                        zombie.level.setBlock(belowFront, Blocks.COBBLESTONE.defaultBlockState(), 3);
-                        data.blockPlaceCooldown = 20;
-                        temporaryBlocks.put(belowFront, System.currentTimeMillis());
+                    if (data.blockPlaceCooldown == 0) {
+                        BlockPos belowFront = frontPos.below();
+                        BlockState belowState = zombie.level.getBlockState(belowFront);
+                        if (belowState.isAir() || belowState.getMaterial().isLiquid()) {
+                            zombie.level.setBlock(belowFront, Blocks.COBBLESTONE.defaultBlockState(), 3);
+                            data.blockPlaceCooldown = 15;
+                            temporaryBlocks.put(belowFront, System.currentTimeMillis());
+                        }
                     }
                 }
                 
@@ -859,269 +899,55 @@ public class SafeTrueCrafterAI {
         
         // 回避行動（全モンスター共通）
         if (data.dodgeCooldown == 0 && monster.getTarget() != null) {
-            // 矢を検知して回避
+            LivingEntity dodgeTarget = monster.getTarget();
+
+            // 矢を検知して回避（検知範囲を5ブロックに拡大）
             List<AbstractArrow> arrows = monster.level.getEntitiesOfClass(
-                AbstractArrow.class, 
-                monster.getBoundingBox().inflate(3.0),
+                AbstractArrow.class,
+                monster.getBoundingBox().inflate(5.0),
                 arrow -> arrow.getOwner() != monster && !arrow.isNoGravity()
             );
-            
+
             if (!arrows.isEmpty()) {
-                // 横に回避
-                Vec3 dodgeVec = new Vec3(
-                    monster.getRandom().nextGaussian() * 0.5,
-                    0.2,
-                    monster.getRandom().nextGaussian() * 0.5
-                );
-                monster.setDeltaMovement(monster.getDeltaMovement().add(dodgeVec));
-                data.dodgeCooldown = 20; // 1秒のクールダウン
-            }
-        }
-    }
-    
-    // カスタムAIゴール - スケルトンの盾防御（攻撃を妨げないように改良）
-    private static class SkeletonShieldGoal extends Goal {
-        private final Skeleton skeleton;
-        private int blockingTime = 0;
-        private int blockCooldown = 0;
-        private boolean wasHurt = false;
-        
-        public SkeletonShieldGoal(Skeleton skeleton) {
-            this.skeleton = skeleton;
-            // 攻撃AIと競合しないようにフラグを設定しない
-            this.setFlags(EnumSet.noneOf(Goal.Flag.class));
-        }
-        
-        @Override
-        public boolean canUse() {
-            // 盾を持っていて、ターゲットがいて、弓を使用中でない場合のみ
-            return !this.skeleton.getOffhandItem().isEmpty() 
-                && this.skeleton.getOffhandItem().getItem() == Items.SHIELD 
-                && this.skeleton.getTarget() != null
-                && !this.skeleton.isUsingItem(); // 弓を使用中は盾を使わない
-        }
-        
-        @Override
-        public void start() {
-            blockingTime = 0;
-            wasHurt = false;
-        }
-        
-        @Override
-        public void tick() {
-            // 弓を使用中なら盾は使わない
-            if (this.skeleton.getMainHandItem().getItem() == Items.BOW && this.skeleton.isUsingItem()) {
-                return;
-            }
-            
-            if (blockCooldown > 0) {
-                blockCooldown--;
-                return;
-            }
-            
-            LivingEntity target = this.skeleton.getTarget();
-            if (target == null) {
-                return;
-            }
-            
-            // ダメージを受けたかチェック
-            if (this.skeleton.getLastHurtByMob() != null && this.skeleton.getLastHurtByMobTimestamp() + 20 > this.skeleton.level.getGameTime()) {
-                wasHurt = true;
-            }
-            
-            double distance = this.skeleton.distanceToSqr(target);
-            
-            // 非常に近距離（3ブロック以内）またはダメージを受けた後のみ防御
-            if ((distance < 9.0 || wasHurt) && distance < 25.0) {
-                // ターゲットがこちらを向いている場合
-                Vec3 targetLook = target.getLookAngle();
-                Vec3 toSkeleton = this.skeleton.position().subtract(target.position()).normalize();
-                double dot = targetLook.dot(toSkeleton);
-                
-                // 非常に近いか、ダメージを受けた後で相手がこちらを向いている
-                if (distance < 4.0 || (wasHurt && dot > 0.3)) {
-                    // 盾を構える（オフハンドのみ）
-                    this.skeleton.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
-                    blockingTime++;
-                    
-                    // 0.5秒（10tick）防御したら一旦解除
-                    if (blockingTime > 10) {
-                        this.skeleton.stopUsingItem();
-                        blockCooldown = 60; // 3秒のクールダウン
-                        blockingTime = 0;
-                        wasHurt = false;
-                    }
+                // 矢の進行方向に対して垂直に回避
+                AbstractArrow nearestArrow = arrows.get(0);
+                Vec3 arrowDir = nearestArrow.getDeltaMovement().normalize();
+                Vec3 dodgeVec;
+                if (monster.getRandom().nextBoolean()) {
+                    dodgeVec = new Vec3(-arrowDir.z, 0.2, arrowDir.x);
                 } else {
-                    // 条件を満たさない場合は盾を下げる
-                    this.skeleton.stopUsingItem();
-                    blockingTime = 0;
+                    dodgeVec = new Vec3(arrowDir.z, 0.2, -arrowDir.x);
                 }
-            } else {
-                // 遠距離では盾を使わない
-                blockingTime = 0;
+                monster.setDeltaMovement(monster.getDeltaMovement().add(dodgeVec.scale(0.6)));
+                monster.hasImpulse = true;
+                data.dodgeCooldown = 15;
             }
-        }
-        
-        @Override
-        public void stop() {
-            this.skeleton.stopUsingItem();
-            blockingTime = 0;
-            wasHurt = false;
-        }
-        
-        @Override
-        public boolean canContinueToUse() {
-            // 弓を使用中なら継続しない
-            if (this.skeleton.getMainHandItem().getItem() == Items.BOW && this.skeleton.isUsingItem()) {
-                return false;
-            }
-            return this.skeleton.getTarget() != null;
-        }
-    }
-    
-    // カスタムAIゴール - ゾンビ用
-    private static class EnhancedZombieGoal extends Goal {
-        private final Zombie zombie;
-        private int leapCooldown = 0;
-        
-        public EnhancedZombieGoal(Zombie zombie) {
-            this.zombie = zombie;
-            this.setFlags(EnumSet.of(Goal.Flag.JUMP));
-        }
-        
-        @Override
-        public boolean canUse() {
-            return this.zombie.getTarget() != null;
-        }
-        
-        @Override
-        public void tick() {
-            if (leapCooldown > 0) {
-                leapCooldown--;
-                return;
-            }
-            
-            LivingEntity target = this.zombie.getTarget();
-            if (target == null) {
-                return;
-            }
-            
-            double distance = this.zombie.distanceToSqr(target);
-            
-            // リープアタック（距離が離れている時）
-            if (distance > 9.0 && distance < 36.0 && this.zombie.isOnGround()) {
-                Vec3 leapVec = target.position().subtract(this.zombie.position()).normalize();
-                this.zombie.setDeltaMovement(
-                    leapVec.x * 0.8, 
-                    0.4, 
-                    leapVec.z * 0.8
-                );
-                leapCooldown = 60; // 3秒のクールダウン
-            }
-        }
-    }
-    
-    // カスタムAIゴール - ゾンビの盾防御
-    private static class ZombieShieldGoal extends Goal {
-        private final Zombie zombie;
-        private int blockingTime = 0;
-        private int blockCooldown = 0;
-        
-        public ZombieShieldGoal(Zombie zombie) {
-            this.zombie = zombie;
-            this.setFlags(EnumSet.noneOf(Goal.Flag.class));
-        }
-        
-        @Override
-        public boolean canUse() {
-            return !this.zombie.getOffhandItem().isEmpty() 
-                && this.zombie.getOffhandItem().getItem() == Items.SHIELD 
-                && this.zombie.getTarget() != null;
-        }
-        
-        @Override
-        public void tick() {
-            if (blockCooldown > 0) {
-                blockCooldown--;
-                this.zombie.stopUsingItem();
-                return;
-            }
-            
-            LivingEntity target = this.zombie.getTarget();
-            if (target == null) {
-                this.zombie.stopUsingItem();
-                return;
-            }
-            
-            double distance = this.zombie.distanceToSqr(target);
-            
-            // 近距離で防御
-            if (distance < 16.0) {
-                Vec3 targetLook = target.getLookAngle();
-                Vec3 toZombie = this.zombie.position().subtract(target.position()).normalize();
-                double dot = targetLook.dot(toZombie);
-                
-                if (dot > 0.3 || distance < 4.0) {
-                    this.zombie.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
-                    blockingTime++;
-                    
-                    if (blockingTime > 30) {
-                        this.zombie.stopUsingItem();
-                        blockCooldown = 30;
-                        blockingTime = 0;
+            // 近接攻撃の回避: ターゲットが近距離で攻撃モーション中
+            else if (dodgeTarget.distanceToSqr(monster) < 6.25 && dodgeTarget.swinging) {
+                if (monster.getRandom().nextFloat() < 0.3f) {
+                    Vec3 toTarget = dodgeTarget.position().subtract(monster.position()).normalize();
+                    Vec3 dodgeVec;
+                    if (monster.getRandom().nextBoolean()) {
+                        dodgeVec = new Vec3(-toTarget.z, 0.15, toTarget.x);
+                    } else {
+                        dodgeVec = new Vec3(toTarget.z, 0.15, -toTarget.x);
                     }
-                } else {
-                    this.zombie.stopUsingItem();
-                    blockingTime = 0;
+                    monster.setDeltaMovement(monster.getDeltaMovement().add(dodgeVec.scale(0.5)));
+                    monster.hasImpulse = true;
+                    data.dodgeCooldown = 25;
                 }
-            } else {
-                this.zombie.stopUsingItem();
-                blockingTime = 0;
             }
         }
-        
-        @Override
-        public void stop() {
-            this.zombie.stopUsingItem();
-            blockingTime = 0;
-        }
-    }
-    
-    // カスタムAIゴール - クモ用
-    private static class EnhancedSpiderGoal extends Goal {
-        private final Spider spider;
-        private int webCooldown = 0;
-        
-        public EnhancedSpiderGoal(Spider spider) {
-            this.spider = spider;
-        }
-        
-        @Override
-        public boolean canUse() {
-            return this.spider.getTarget() != null;
-        }
-        
-        @Override
-        public void tick() {
-            if (webCooldown > 0) {
-                webCooldown--;
-                return;
-            }
-            
-            LivingEntity target = this.spider.getTarget();
-            if (target == null) {
-                return;
-            }
-            
-            double distance = this.spider.distanceToSqr(target);
-            
-            // ウェブ設置（プレイヤーの足元）
-            if (distance < 64.0 && this.spider.getRandom().nextInt(100) == 0) {
-                BlockPos targetPos = target.blockPosition();
-                if (this.spider.level.getBlockState(targetPos).isAir()) {
-                    this.spider.level.setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
-                    webCooldown = 100; // 5秒のクールダウン
-                }
+
+        // 戦闘中のストレイフ移動（全モンスター共通、30tickごと）
+        if (monster.getTarget() != null && monster.tickCount % 30 == 0) {
+            LivingEntity strafeTarget = monster.getTarget();
+            double strafeDist = monster.distanceToSqr(strafeTarget);
+            if (strafeDist < 25.0 && strafeDist > 4.0) {
+                Vec3 toTarget = strafeTarget.position().subtract(monster.position()).normalize();
+                double strafeX = monster.getRandom().nextBoolean() ? -toTarget.z : toTarget.z;
+                double strafeZ = monster.getRandom().nextBoolean() ? toTarget.x : -toTarget.x;
+                monster.setDeltaMovement(monster.getDeltaMovement().add(strafeX * 0.25, 0, strafeZ * 0.25));
             }
         }
     }

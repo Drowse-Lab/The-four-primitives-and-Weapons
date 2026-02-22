@@ -43,11 +43,7 @@ src/main/resources/
 
 ### テストアイテム
 ```
-src/main/java/minecraftarmorweapon/item/
-├── IceTestKatanaItem.java              # 氷属性テスト刀
-├── ElectricTestKatanaItem.java         # 電気属性テスト刀
-├── CorrosionTestKatanaItem.java        # 侵食属性テスト刀
-└── HolyTestKatanaItem.java             # 聖属性テスト刀
+/give @s minecraft_armor_weapon:kurikarakenutigatana{ElementType:"ELECTRIC",ElementLevel:1}
 ```
 
 ## 使用方法

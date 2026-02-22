@@ -52,6 +52,11 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
 import minecraftarmorweapon.network.AttackPacket;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.util.DamageCalculator;
+import minecraftarmorweapon.skill.ElectricDischargeBurstSkill;
+import minecraftarmorweapon.skill.ElectricBeamSkill;
+import minecraftarmorweapon.skill.ElectricSlashSkill;
+import minecraftarmorweapon.damage.ElementalDamageUtils;
+import minecraftarmorweapon.damage.ElementType;
 import minecraftarmorweapon.item.LokiTheTricksterItem;
 import minecraftarmorweapon.entity.LokiDecoydasuEntity;
 import minecraftarmorweapon.entity.LokiDisarmEntity;
@@ -319,6 +324,38 @@ public class ChargedAttackHandler {
         // 固有スキルのチェック
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         String itemName = mainHand.getItem().getClass().getSimpleName();
+
+        // 倶利伽羅 + 雷属性の固有スキル
+        if (chargePercent >= 0.5f && ElementalDamageUtils.getElementType(mainHand) == ElementType.ELECTRIC) {
+            if (itemName.equals("KurikarakenswordItem") || itemName.equals("KaminariKurikarakenSwordItem")) {
+                ElectricDischargeBurstSkill.fire(player);
+                return;
+            }
+            if (itemName.equals("KurikarakenItem") || itemName.equals("KaminariKurikarakenTyokutouItem")) {
+                ElectricBeamSkill.fire(player);
+                return;
+            }
+            if (itemName.equals("KurikarakenutigatanaItem") || itemName.equals("KaminariKurikarakenUtigatanaItem")) {
+                ElectricSlashSkill.fire(player);
+                return;
+            }
+        }
+
+        // 雷倶利伽羅の固有スキル（雷属性が付いていない場合でも発動）
+        if (chargePercent >= 0.5f) {
+            if (itemName.equals("KaminariKurikarakenSwordItem")) {
+                ElectricDischargeBurstSkill.fire(player);
+                return;
+            }
+            if (itemName.equals("KaminariKurikarakenTyokutouItem")) {
+                ElectricBeamSkill.fire(player);
+                return;
+            }
+            if (itemName.equals("KaminariKurikarakenUtigatanaItem")) {
+                ElectricSlashSkill.fire(player);
+                return;
+            }
+        }
 
         // Magic Katana special charged attacks
         if ((itemName.equals("MagischesFeenKatanaItem") || itemName.equals("MagicalKatanaItem")) && chargePercent >= 0.5f) {

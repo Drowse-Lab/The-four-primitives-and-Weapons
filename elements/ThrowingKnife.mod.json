@@ -1,0 +1,37 @@
+{
+  "_fv": 43,
+  "_type": "rangeditem",
+  "definition": {
+    "renderType": 0,
+    "texture": "throwingknife",
+    "customModelName": "Normal",
+    "name": "Throwing Knife",
+    "specialInfo": [],
+    "creativeTab": {
+      "value": "CUSTOM:Weapon"
+    },
+    "stackSize": 64,
+    "ammoItem": {
+      "value": ""
+    },
+    "shootConstantly": false,
+    "usageCount": 0,
+    "actionSound": {
+      "value": ""
+    },
+    "hasGlow": false,
+    "animation": "crossbow",
+    "enableMeleeDamage": false,
+    "damageVsEntity": 0.0,
+    "bulletPower": 1.0,
+    "bulletDamage": 5.0,
+    "bulletKnockback": 5,
+    "bulletParticles": false,
+    "bulletIgnitesFire": false,
+    "bulletItemTexture": {
+      "value": "CUSTOM:ThrowingKnife"
+    },
+    "bulletModel": "Default",
+    "customBulletModelTexture": ""
+  }
+}

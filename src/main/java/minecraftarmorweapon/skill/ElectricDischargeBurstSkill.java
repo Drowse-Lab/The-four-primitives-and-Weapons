@@ -1,7 +1,6 @@
 package minecraftarmorweapon.skill;
 
 import minecraftarmorweapon.block.ElectricConductBlock;
-import minecraftarmorweapon.damage.ElementType;
 import minecraftarmorweapon.damage.ElectricElementDamageHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -78,10 +77,11 @@ public final class ElectricDischargeBurstSkill {
                     LivingEntity::isAlive
             )) {
                 if (damagedEntities.add(entity.getId())) {
-                    ElectricElementDamageHandler.apply(
+                    ElectricElementDamageHandler.applyElectricDamage(
                             entity,
-                            DAMAGE,
-                            ElementType.ELECTRIC
+                            (float) DAMAGE,
+                            null,
+                            1
                     );
                 }
             }

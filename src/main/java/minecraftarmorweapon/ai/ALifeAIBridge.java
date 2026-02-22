@@ -9,7 +9,6 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -43,6 +42,13 @@ public class ALifeAIBridge {
     private boolean hasChargeTime = false;
     private boolean hasSkillTime = false;
 
+    // パフォーマンス: エンティティ検索のキャッシュ
+    private int tickCounter = 0;
+    private static final int SEARCH_INTERVAL = 10; // 10tickごとに検索
+    private List<LivingEntity> cachedNearbyEnemies = new ArrayList<>();
+    private double cachedNearestDistance = Double.MAX_VALUE;
+    private LivingEntity cachedNearestEnemy = null;
+
     public ALifeAIBridge(Mob entity, int tier) {
         this.entity = entity;
         this.tier = tier;
@@ -62,19 +68,10 @@ public class ALifeAIBridge {
         AIState newState = evaluateStateTransition(worldData);
         if (newState != currentState) {
             changeState(newState);
-            System.out.println("[ALifeAI] " + entity.getName().getString() + " 状態変更: " + currentState + " (距離: " + String.format("%.1f", worldData.nearestEnemyDistance) + ")");
         }
 
         // 現在の状態に応じた行動を実行
-        AIAction action = executeCurrentState(worldData);
-
-        // デバッグログ（アクションが空でない場合のみ）
-        if (action != null && !"idle".equals(action.action)) {
-            System.out.println("[ALifeAI] " + entity.getName().getString() + " アクション: " + action.action +
-                             " (速度: " + action.speed + ", スプリント: " + action.isSprinting + ")");
-        }
-
-        return action;
+        return executeCurrentState(worldData);
     }
 
     /**
@@ -98,36 +95,69 @@ public class ALifeAIBridge {
             data.health = entity.getHealth();
             data.maxHealth = entity.getMaxHealth();
 
-            // 周囲の敵をすべて取得（クリエイティブ/スペクテーターを除外）
-            // FOLLOW_RANGE分の範囲で敵を探す（64ブロック）
-            data.nearbyEnemies = entity.level.getEntitiesOfClass(
-                LivingEntity.class,
-                entity.getBoundingBox().inflate(64.0),
-                e -> e != null &&
-                     e != entity &&
-                     e.isAlive() &&
-                     !e.isAlliedTo(entity) &&
-                     entity.canAttack(e) &&
-                     (!(e instanceof Player player) || (!player.isCreative() && !player.isSpectator()))
-            );
+            // パフォーマンス: エンティティ検索は10tickごとにのみ実行
+            tickCounter++;
+            if (tickCounter >= SEARCH_INTERVAL || cachedNearbyEnemies.isEmpty()) {
+                tickCounter = 0;
+
+                // 周囲の敵をすべて取得（32ブロック範囲に縮小）
+                cachedNearbyEnemies = entity.level.getEntitiesOfClass(
+                    LivingEntity.class,
+                    entity.getBoundingBox().inflate(32.0),
+                    e -> e != null &&
+                         e != entity &&
+                         e.isAlive() &&
+                         !e.isAlliedTo(entity) &&
+                         entity.canAttack(e) &&
+                         (!(e instanceof Player player) || (!player.isCreative() && !player.isSpectator()))
+                );
+
+                // キャッシュから最も近い敵を検索（2重検索を排除）
+                cachedNearestEnemy = null;
+                cachedNearestDistance = Double.MAX_VALUE;
+
+                // 優先度1: entity.getTarget()
+                LivingEntity existingTarget = entity.getTarget();
+                if (existingTarget != null && existingTarget.isAlive() && entity.distanceTo(existingTarget) < 32.0) {
+                    if (existingTarget instanceof Player player) {
+                        if (player.isCreative() || player.isSpectator()) {
+                            entity.setTarget(null);
+                        } else {
+                            cachedNearestEnemy = existingTarget;
+                            cachedNearestDistance = entity.distanceTo(existingTarget);
+                        }
+                    } else {
+                        cachedNearestEnemy = existingTarget;
+                        cachedNearestDistance = entity.distanceTo(existingTarget);
+                    }
+                }
+
+                // 優先度2: キャッシュから最も近い敵
+                if (cachedNearestEnemy == null) {
+                    for (LivingEntity enemy : cachedNearbyEnemies) {
+                        double dist = entity.distanceTo(enemy);
+                        if (dist < cachedNearestDistance) {
+                            cachedNearestDistance = dist;
+                            cachedNearestEnemy = enemy;
+                        }
+                    }
+                }
+            }
+
+            data.nearbyEnemies = cachedNearbyEnemies;
 
             // 近くの敵の数をカウント（5ブロック以内）
-            data.nearbyEnemyCount = (int) data.nearbyEnemies.stream()
-                .filter(e -> e != null && entity.distanceTo(e) <= 5.0)
-                .count();
+            int count = 0;
+            for (LivingEntity e : data.nearbyEnemies) {
+                if (e != null && entity.distanceTo(e) <= 5.0) count++;
+            }
+            data.nearbyEnemyCount = count;
 
-            // 最も近い敵を探す
-            Optional<LivingEntity> nearestEnemy = findNearestEnemy();
-            if (nearestEnemy.isPresent()) {
-                LivingEntity enemy = nearestEnemy.get();
-                if (enemy != null && enemy.isAlive()) {
-                    data.nearestEnemyPosition = enemy.position();
-                    data.nearestEnemyDistance = entity.distanceTo(enemy);
-                    currentTarget = enemy;
-                } else {
-                    data.nearestEnemyDistance = Double.MAX_VALUE;
-                    currentTarget = null;
-                }
+            // キャッシュ結果をデータに反映
+            if (cachedNearestEnemy != null && cachedNearestEnemy.isAlive()) {
+                data.nearestEnemyPosition = cachedNearestEnemy.position();
+                data.nearestEnemyDistance = entity.distanceTo(cachedNearestEnemy);
+                currentTarget = cachedNearestEnemy;
             } else {
                 data.nearestEnemyDistance = Double.MAX_VALUE;
                 currentTarget = null;
@@ -136,8 +166,6 @@ public class ALifeAIBridge {
             data.currentTime = System.currentTimeMillis();
 
         } catch (Exception e) {
-            System.err.println("[ALifeAI] Error collecting world data for " + entity.getName().getString() + ": " + e.getMessage());
-            e.printStackTrace();
             // フォールバック
             data.nearbyEnemies = new java.util.ArrayList<>();
             data.nearbyEnemyCount = 0;
@@ -146,38 +174,6 @@ public class ALifeAIBridge {
         }
 
         return data;
-    }
-
-    /**
-     * 最も近い敵を探す（優先度: entity.getTarget() → 最も近い敵）
-     * クリエイティブ/スペクテーターモードのプレイヤーは除外
-     */
-    private Optional<LivingEntity> findNearestEnemy() {
-        // 優先度1: entity.getTarget()（攻撃されたMobを追いかける）
-        LivingEntity target = entity.getTarget();
-        if (target != null && target.isAlive() && entity.distanceTo(target) < 64.0) {
-            // クリエイティブ/スペクテーターのプレイヤーの場合はターゲット解除
-            if (target instanceof Player player) {
-                if (player.isCreative() || player.isSpectator()) {
-                    entity.setTarget(null);
-                    return Optional.empty();
-                }
-            }
-            return Optional.of(target);
-        }
-
-        // 優先度2: 最も近い有効な敵（クリエイティブ/スペクテーターを除外）
-        // FOLLOW_RANGE分の範囲で敵を探す（64ブロック）
-        return entity.level.getEntitiesOfClass(
-            LivingEntity.class,
-            entity.getBoundingBox().inflate(64.0),
-            e -> e != entity &&
-                 e.isAlive() &&
-                 !e.isAlliedTo(entity) &&
-                 entity.canAttack(e) &&
-                 (!(e instanceof Player player) || (!player.isCreative() && !player.isSpectator()))
-        ).stream()
-        .min((e1, e2) -> Double.compare(entity.distanceTo(e1), entity.distanceTo(e2)));
     }
 
     /**
@@ -285,8 +281,6 @@ public class ALifeAIBridge {
 
         // 複数の敵に囲まれている場合の判定（3体以上が5ブロック以内）
         if (nearbyEnemyCount >= 3) {
-            System.out.println("[ALifeAI] " + entity.getName().getString() + " は " + nearbyEnemyCount + "体の敵に囲まれている！");
-
             // HPが50%以下なら後退優先
             float hpPercent = data.health / data.maxHealth;
             if (hpPercent < 0.5f) {
@@ -303,7 +297,6 @@ public class ALifeAIBridge {
         if (nearbyEnemyCount >= 2 && !isPlayerTarget) {
             LivingEntity mostDangerous = findMostDangerousEnemy(data);
             if (mostDangerous != null && mostDangerous != currentTarget) {
-                System.out.println("[ALifeAI] ターゲット変更: " + currentTarget.getName().getString() + " → " + mostDangerous.getName().getString());
                 currentTarget = mostDangerous;
                 entity.setTarget(mostDangerous);
 
@@ -560,48 +553,40 @@ public class ALifeAIBridge {
     private String detectWeaponType() {
         ItemStack mainHand = entity.getMainHandItem();
         if (mainHand.isEmpty()) {
-            System.out.println("[ALifeAI] " + entity.getName().getString() + " の手持ちアイテムが空です");
             return "sword";
+        }
+
+        // 直刀チェック（プレイヤーと同じ判定を最優先）
+        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
+            return "straight_sword";
         }
 
         // アイテムの完全な名前を取得
         String itemName = mainHand.getItem().toString().toLowerCase();
         String displayName = mainHand.getHoverName().getString().toLowerCase();
 
-        System.out.println("[ALifeAI] " + entity.getName().getString() + " の武器検出:");
-        System.out.println("  - Item名: " + itemName);
-        System.out.println("  - 表示名: " + displayName);
-
         // 直接的なアイテム比較を最優先（IRON_KATANAなどの特定アイテム）
         if (mainHand.getItem() == MinecraftArmorWeaponModItems.IRON_KATANA.get()) {
-            System.out.println("  → 武器タイプ: katana (直接比較: IRON_KATANA)");
             return "katana";
         }
 
         // katanaを最優先でチェック（swordより先に）
         if (itemName.contains("katana") || displayName.contains("katana") ||
             displayName.contains("刀") || displayName.contains("カタナ")) {
-            System.out.println("  → 武器タイプ: katana");
             return "katana";
         } else if (itemName.contains("spear") || displayName.contains("spear") ||
                    displayName.contains("槍") || displayName.contains("ヤリ")) {
-            System.out.println("  → 武器タイプ: spear");
             return "spear";
         } else if (itemName.contains("lance") || displayName.contains("lance") ||
                    displayName.contains("ランス")) {
-            System.out.println("  → 武器タイプ: lance");
             return "lance";
         } else if (itemName.contains("axe") || displayName.contains("axe") ||
                    displayName.contains("斧") || displayName.contains("アックス")) {
-            System.out.println("  → 武器タイプ: axe");
             return "axe";
         } else if (itemName.contains("sword") || displayName.contains("sword") ||
                    displayName.contains("剣") || displayName.contains("ソード")) {
-            System.out.println("  → 武器タイプ: sword");
             return "sword";
         }
-
-        System.out.println("  → 武器タイプ: sword (デフォルト)");
         return "sword";
     }
 
@@ -617,6 +602,8 @@ public class ALifeAIBridge {
                     case 2: return "quick_slash";     // 素早い斬撃
                 }
                 break;
+            case "straight_sword":
+                return "thrust";  // 直刀は常に突き
             case "sword":
                 switch (combo % 3) {
                     case 0: return "slash";           // 斬撃
@@ -693,11 +680,6 @@ public class ALifeAIBridge {
                 // 武器タイプを検出して適切な攻撃パターンを選択
                 String weaponType = detectWeaponType();
                 String attackPattern = getWeaponAttackPattern(weaponType, comboCount);
-
-                System.out.println("[ALifeAI] " + entity.getName().getString() + " の攻撃:");
-                System.out.println("  - 武器タイプ: " + weaponType);
-                System.out.println("  - コンボ: " + comboCount);
-                System.out.println("  - 攻撃パターン: " + attackPattern);
 
                 AIAction action = new AIAction("attack");
                 action.attackType = attackPattern;

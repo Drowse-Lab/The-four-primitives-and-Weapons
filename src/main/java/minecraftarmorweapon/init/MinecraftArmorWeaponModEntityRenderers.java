@@ -38,5 +38,6 @@ public class MinecraftArmorWeaponModEntityRenderers {
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.METEOR_ARROW.get(), MeteorArrowRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.ALCHEMY_CRAFT_BLOCK_ENTITY.get(), AlchemyCraftBlockEntityRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.FLYING_ATTACKER.get(), FlyingAttackerRenderer::new);
+		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.THROWING_KNIFE.get(), ThrownItemRenderer::new);
 	}
 }

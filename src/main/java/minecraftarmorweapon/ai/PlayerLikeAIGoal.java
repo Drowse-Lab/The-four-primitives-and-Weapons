@@ -242,7 +242,6 @@ public class PlayerLikeAIGoal extends Goal {
         // 盲目効果時：回避が70%の確率で失敗
         if (entity.hasEffect(MobEffects.BLINDNESS)) {
             if (random.nextDouble() < 0.7) {
-                System.out.println("[PlayerLikeAI] " + entity.getName().getString() + " は盲目のため回避に失敗しました");
                 return;
             }
         }
@@ -252,7 +251,6 @@ public class PlayerLikeAIGoal extends Goal {
         if (entity.hasEffect(MobEffects.CONFUSION)) {
             double angle = random.nextDouble() * Math.PI * 2;
             dodgeDirection = new Vec3(Math.cos(angle), 0, Math.sin(angle)).normalize();
-            System.out.println("[PlayerLikeAI] " + entity.getName().getString() + " は混乱のため回避方向がずれました");
         }
 
         Vec3 dodgeVec = dodgeDirection.scale(action.speed);
@@ -296,22 +294,25 @@ public class PlayerLikeAIGoal extends Goal {
         // 盲目効果時：チャージ攻撃が80%の確率で失敗
         if (entity.hasEffect(MobEffects.BLINDNESS)) {
             if (random.nextDouble() < 0.8) {
-                System.out.println("[PlayerLikeAI] " + entity.getName().getString() + " は盲目のためチャージ攻撃に失敗しました");
                 return;
             }
         }
 
-        // 武器取得して攻撃タイプを判定
+        // 武器取得して攻撃タイプを判定（プレイヤーと同じ判定）
         ItemStack weapon = entity.getItemInHand(InteractionHand.MAIN_HAND);
+        boolean isStraightSword = minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(weapon);
         String weaponName = weapon.getItem().getClass().getSimpleName();
         boolean isKatana = weaponName.contains("Katana") || weaponName.contains("katana");
 
-        if (isKatana) {
+        if (isStraightSword) {
+            // 直刀: 貫通突き（ChargedAttackHandler.performChargedThrustと同じ）
+            executeChargedThrust(action);
+        } else if (isKatana) {
             // 刀: 周囲回転斬り（ChargedAttackHandler.performSpinSlashと同じ）
             executeSpinSlash(action);
         } else {
-            // デフォルト: 貫通突き（ChargedAttackHandler.performChargedThrustと同じ）
-            executeChargedThrust(action);
+            // デフォルト: 強化攻撃（ChargedAttackHandler.performDefaultChargedAttackと同じ）
+            executeDefaultChargedAttack(action);
         }
     }
 
@@ -403,14 +404,8 @@ public class PlayerLikeAIGoal extends Goal {
         ItemStack weapon = entity.getItemInHand(InteractionHand.MAIN_HAND);
 
         for (LivingEntity target : targets) {
-            float actualDamage = minecraftarmorweapon.util.DamageCalculator.calculateDamage(
+            minecraftarmorweapon.util.DamageCalculator.dealDamage(
                 entity, target, baseDamage, weapon
-            );
-
-            target.hurt(DamageSource.mobAttack(entity), actualDamage);
-
-            minecraftarmorweapon.util.DamageCalculator.applyWeaponEffects(
-                entity, target, actualDamage, weapon
             );
 
             // 貫通による吹き飛ばし
@@ -483,14 +478,8 @@ public class PlayerLikeAIGoal extends Goal {
         ItemStack weapon = entity.getItemInHand(InteractionHand.MAIN_HAND);
 
         for (LivingEntity target : targets) {
-            float actualDamage = minecraftarmorweapon.util.DamageCalculator.calculateDamage(
+            minecraftarmorweapon.util.DamageCalculator.dealDamage(
                 entity, target, baseDamage, weapon
-            );
-
-            target.hurt(DamageSource.mobAttack(entity), actualDamage);
-
-            minecraftarmorweapon.util.DamageCalculator.applyWeaponEffects(
-                entity, target, actualDamage, weapon
             );
 
             // 円形ノックバック
@@ -514,7 +503,6 @@ public class PlayerLikeAIGoal extends Goal {
         // 盲目効果時：スキルが60%の確率で失敗
         if (entity.hasEffect(MobEffects.BLINDNESS)) {
             if (random.nextDouble() < 0.6) {
-                System.out.println("[PlayerLikeAI] " + entity.getName().getString() + " は盲目のためスキル使用に失敗しました");
                 return;
             }
         }
@@ -522,7 +510,6 @@ public class PlayerLikeAIGoal extends Goal {
         // 混乱効果時：スキルが40%の確率で失敗
         if (entity.hasEffect(MobEffects.CONFUSION)) {
             if (random.nextDouble() < 0.4) {
-                System.out.println("[PlayerLikeAI] " + entity.getName().getString() + " は混乱のためスキル使用に失敗しました");
                 return;
             }
         }
@@ -586,16 +573,20 @@ public class PlayerLikeAIGoal extends Goal {
         }
         lastAttackTime = currentTime;
 
-        // 武器取得して攻撃タイプを判定
+        // 武器取得して攻撃タイプを判定（プレイヤーと同じ判定）
         ItemStack weapon = entity.getItemInHand(InteractionHand.MAIN_HAND);
+        boolean isStraightSword = minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(weapon);
         String weaponName = weapon.getItem().getClass().getSimpleName();
         boolean isKatana = weaponName.contains("Katana") || weaponName.contains("katana");
 
-        if (isKatana) {
+        if (isStraightSword) {
+            // 直刀: 素早い突き（ChargedAttackHandler.performThrustAttackと同じ）
+            executeStraightSwordThrust(target);
+        } else if (isKatana) {
             // 刀: 三段コンボ（ChargedAttackHandler.performKatanaComboと同じ）
             executeKatanaCombo(target);
         } else {
-            // デフォルト攻撃
+            // デフォルト攻撃（ChargedAttackHandler.performDefaultAttackと同じ）
             executeDefaultAttack(target, action);
         }
     }
@@ -677,14 +668,8 @@ public class PlayerLikeAIGoal extends Goal {
         ItemStack weapon = entity.getItemInHand(InteractionHand.MAIN_HAND);
 
         for (LivingEntity t : targets) {
-            float actualDamage = minecraftarmorweapon.util.DamageCalculator.calculateDamage(
+            minecraftarmorweapon.util.DamageCalculator.dealDamage(
                 entity, t, baseDamage, weapon
-            );
-
-            t.hurt(DamageSource.mobAttack(entity), actualDamage);
-
-            minecraftarmorweapon.util.DamageCalculator.applyWeaponEffects(
-                entity, t, actualDamage, weapon
             );
 
             Vec3 knockback = t.position().subtract(entityPos).normalize().scale(0.4);
@@ -700,106 +685,187 @@ public class PlayerLikeAIGoal extends Goal {
     }
 
     /**
-     * デフォルト攻撃（武器タイプに応じたエフェクト付き）
+     * デフォルト通常攻撃（ChargedAttackHandler.performDefaultAttackと同じ）
+     * 前方扇形範囲の斬撃
      */
     private void executeDefaultAttack(LivingEntity target, ALifeAIBridge.AIAction action) {
-        if (target == null || entity.distanceTo(target) > 3.0) {
+        if (target == null || entity.distanceTo(target) > 5.0) {
             return;
         }
 
-        // 通常のダメージ処理
-        boolean hitSuccess = entity.doHurtTarget(target);
+        Level world = entity.level;
+        Vec3 entityPos = entity.position();
+        Vec3 lookVec = target.position().subtract(entityPos).normalize();
 
-        if (hitSuccess) {
-            Level world = entity.level;
-            Vec3 targetPos = target.position();
+        // 斬撃エフェクト（プレイヤーと同じ）
+        if (!world.isClientSide) {
+            ServerLevel serverWorld = (ServerLevel) world;
+            for (int i = 0; i < 4; i++) {
+                serverWorld.sendParticles(
+                    ParticleTypes.SWEEP_ATTACK,
+                    entityPos.x + lookVec.x * (i + 1),
+                    entityPos.y + 1,
+                    entityPos.z + lookVec.z * (i + 1),
+                    1, 0, 0, 0, 0
+                );
+            }
+        }
 
-            // 武器タイプに応じたエフェクトとノックバック
-            if (!world.isClientSide) {
-                ServerLevel serverWorld = (ServerLevel) world;
+        // 前方扇形範囲攻撃（プレイヤーと同じ4.5ブロック範囲、dot > 0.3）
+        double range = 4.5;
+        AABB searchArea = new AABB(
+            entityPos.x - range, entityPos.y - 1, entityPos.z - range,
+            entityPos.x + range, entityPos.y + 3, entityPos.z + range
+        );
 
-                // 攻撃タイプに応じたパーティクルエフェクト
-                switch (action.attackType) {
-                    case "iai_slash":
-                    case "quick_slash":
-                    case "slash":
-                        // 斬撃エフェクト
+        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
+            e -> {
+                if (e == entity) return false;
+                if (!entity.canAttack(e)) return false;
+                Vec3 toEntity = e.position().subtract(entityPos).normalize();
+                double dot = lookVec.dot(toEntity);
+                return dot > 0.3 && entity.distanceTo(e) <= range;
+            });
+
+        ItemStack weapon = entity.getItemInHand(InteractionHand.MAIN_HAND);
+        float baseDamage = 8.0f;
+
+        for (LivingEntity t : targets) {
+            minecraftarmorweapon.util.DamageCalculator.dealDamage(
+                entity, t, baseDamage, weapon
+            );
+
+            Vec3 knockback = t.position().subtract(entityPos).normalize().scale(0.5);
+            t.setDeltaMovement(t.getDeltaMovement().add(knockback.x, 0.15, knockback.z));
+        }
+
+        world.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+            SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0f, 1.0f);
+    }
+
+    /**
+     * 直刀の突き攻撃（ChargedAttackHandler.performThrustAttackと同じ）
+     * 前方に長い横幅の突き
+     */
+    private void executeStraightSwordThrust(LivingEntity target) {
+        Level world = entity.level;
+        Vec3 entityPos = entity.position();
+        Vec3 lookVec = target.position().subtract(entityPos).normalize();
+
+        // 突きエフェクト（プレイヤーと同じ）
+        if (!world.isClientSide) {
+            ServerLevel serverWorld = (ServerLevel) world;
+            Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
+
+            for (int i = 0; i < 5; i++) {
+                double d = i * 0.5 + 1;
+                serverWorld.sendParticles(
+                    ParticleTypes.CRIT,
+                    entityPos.x + lookVec.x * d,
+                    entityPos.y + 1,
+                    entityPos.z + lookVec.z * d,
+                    2, 0.05, 0.05, 0.05, 0
+                );
+
+                for (double side = -1.5; side <= 1.5; side += 0.5) {
+                    if (side != 0) {
                         serverWorld.sendParticles(
-                            ParticleTypes.SWEEP_ATTACK,
-                            targetPos.x, targetPos.y + target.getBbHeight() / 2, targetPos.z,
-                            2, 0.3, 0.3, 0.3, 0
+                            ParticleTypes.ENCHANTED_HIT,
+                            entityPos.x + lookVec.x * d + rightVec.x * side,
+                            entityPos.y + 1,
+                            entityPos.z + lookVec.z * d + rightVec.z * side,
+                            1, 0.02, 0.02, 0.02, 0
                         );
-                        break;
-
-                    case "thrust":
-                    case "pierce":
-                    case "charge_thrust":
-                        // 突きエフェクト（火花）
-                        serverWorld.sendParticles(
-                            ParticleTypes.CRIT,
-                            targetPos.x, targetPos.y + target.getBbHeight() / 2, targetPos.z,
-                            8, 0.2, 0.2, 0.2, 0.1
-                        );
-                        // 強めのノックバック
-                        Vec3 knockback = target.position().subtract(entity.position()).normalize().scale(0.6);
-                        target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.15, knockback.z));
-                        break;
-
-                    case "overhead_smash":
-                    case "cleave":
-                        // 叩きつけエフェクト（爆発パーティクル）
-                        serverWorld.sendParticles(
-                            ParticleTypes.EXPLOSION,
-                            targetPos.x, targetPos.y, targetPos.z,
-                            1, 0, 0, 0, 0
-                        );
-                        // 非常に強いノックバック
-                        Vec3 smashKnockback = target.position().subtract(entity.position()).normalize().scale(0.8);
-                        target.setDeltaMovement(target.getDeltaMovement().add(smashKnockback.x, 0.3, smashKnockback.z));
-                        break;
-
-                    case "spin_slash":
-                    case "sweep":
-                        // 回転斬りエフェクト（複数回の斬撃）
-                        for (int i = 0; i < 3; i++) {
-                            serverWorld.sendParticles(
-                                ParticleTypes.SWEEP_ATTACK,
-                                targetPos.x, targetPos.y + target.getBbHeight() / 2, targetPos.z,
-                                1, 0.4, 0.4, 0.4, 0
-                            );
-                        }
-                        break;
-
-                    case "downward_cut":
-                        // 下段斬りエフェクト
-                        serverWorld.sendParticles(
-                            ParticleTypes.SWEEP_ATTACK,
-                            targetPos.x, targetPos.y + 0.5, targetPos.z,
-                            2, 0.3, 0.2, 0.3, 0
-                        );
-                        break;
-
-                    default:
-                        // デフォルトエフェクト
-                        serverWorld.sendParticles(
-                            ParticleTypes.SWEEP_ATTACK,
-                            targetPos.x, targetPos.y + target.getBbHeight() / 2, targetPos.z,
-                            1, 0.2, 0.2, 0.2, 0
-                        );
-                        break;
+                    }
                 }
+            }
+        }
 
-                // 攻撃音（攻撃タイプに応じて変更）
-                if (action.attackType.contains("smash") || action.attackType.contains("cleave")) {
-                    world.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
-                        SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.HOSTILE, 1.0f, 0.8f);
-                } else if (action.attackType.contains("thrust") || action.attackType.contains("pierce")) {
-                    world.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
-                        SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.HOSTILE, 1.0f, 1.2f);
-                } else {
-                    world.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
-                        SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0f, 1.0f);
-                }
+        // 突き攻撃範囲（プレイヤーと同じ: 5.0前方リーチ、2.5横幅）
+        double range = 5.0;
+        double horizontalWidth = 2.5;
+        Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
+
+        Vec3 minPoint = entityPos.add(lookVec.scale(0.5))
+            .add(rightVec.scale(-horizontalWidth))
+            .add(0, -0.5, 0);
+        Vec3 maxPoint = entityPos.add(lookVec.scale(range))
+            .add(rightVec.scale(horizontalWidth))
+            .add(0, 1.5, 0);
+
+        AABB attackBox = new AABB(minPoint, maxPoint);
+
+        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, attackBox,
+            e -> e != entity && entity.canAttack(e));
+
+        ItemStack weapon = entity.getItemInHand(InteractionHand.MAIN_HAND);
+        float baseDamage = 7.0f;
+
+        for (LivingEntity t : targets) {
+            minecraftarmorweapon.util.DamageCalculator.dealDamage(
+                entity, t, baseDamage, weapon
+            );
+
+            // 突きによる後退
+            t.setDeltaMovement(lookVec.scale(0.8).add(0, 0.1, 0));
+        }
+
+        world.playSound(null, entityPos.x, entityPos.y, entityPos.z,
+            SoundEvents.PLAYER_ATTACK_KNOCKBACK, SoundSource.HOSTILE, 1.0f, 1.2f);
+    }
+
+    /**
+     * デフォルトチャージ攻撃（ChargedAttackHandler.performDefaultChargedAttackと同じ）
+     * 周囲円形範囲の強化攻撃
+     */
+    private void executeDefaultChargedAttack(ALifeAIBridge.AIAction action) {
+        Level world = entity.level;
+        Vec3 entityPos = entity.position();
+
+        float chargePercent = action.chargePercent;
+        float baseDamage = 8.0f * (1.0f + chargePercent * 2.0f);
+        float range = 3.0f + chargePercent * 2.0f;
+
+        world.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+            chargePercent >= 1.0f ? SoundEvents.LIGHTNING_BOLT_IMPACT : SoundEvents.PLAYER_ATTACK_SWEEP,
+            SoundSource.HOSTILE, 1.0f, 0.8f + chargePercent * 0.4f);
+
+        if (!world.isClientSide) {
+            ServerLevel serverWorld = (ServerLevel) world;
+            for (int i = 0; i < 360; i += 15) {
+                double rad = Math.toRadians(i);
+                double x = entity.getX() + Math.cos(rad) * range;
+                double z = entity.getZ() + Math.sin(rad) * range;
+
+                serverWorld.sendParticles(
+                    chargePercent >= 1.0f ? ParticleTypes.ENCHANTED_HIT : ParticleTypes.CRIT,
+                    x, entity.getY() + 1, z,
+                    3, 0.1, 0.1, 0.1, 0.1
+                );
+            }
+        }
+
+        AABB searchArea = new AABB(
+            entityPos.x - range, entityPos.y - 1, entityPos.z - range,
+            entityPos.x + range, entityPos.y + 2, entityPos.z + range
+        );
+
+        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
+            e -> e != entity && entity.canAttack(e) && entity.distanceTo(e) <= range);
+
+        ItemStack weapon = entity.getItemInHand(InteractionHand.MAIN_HAND);
+
+        for (LivingEntity t : targets) {
+            minecraftarmorweapon.util.DamageCalculator.dealDamage(
+                entity, t, baseDamage, weapon
+            );
+
+            double knockbackStrength = 0.5 + chargePercent;
+            Vec3 knockback = t.position().subtract(entityPos).normalize().scale(knockbackStrength);
+            t.setDeltaMovement(t.getDeltaMovement().add(knockback.x, 0.3, knockback.z));
+
+            if (chargePercent >= 1.0f) {
+                t.setSecondsOnFire(3);
             }
         }
     }

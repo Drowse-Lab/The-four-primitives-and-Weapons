@@ -24,6 +24,7 @@ import minecraftarmorweapon.item.WarabitetouItem;
 import minecraftarmorweapon.item.TyokutoSayaItem;
 import minecraftarmorweapon.item.TukaenaItem;
 import minecraftarmorweapon.item.ThunderboltItem;
+import minecraftarmorweapon.item.ThrowingKnifeItem;
 import minecraftarmorweapon.item.TestBowItem;
 import minecraftarmorweapon.item.TestBowArrow2Item;
 import minecraftarmorweapon.item.TestBowArrow1Item;
@@ -263,6 +264,7 @@ public class MinecraftArmorWeaponModItems {
 			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.FLYING_ATTACKER, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
 	public static final RegistryObject<Item> SAYA = REGISTRY.register("saya", () -> new SayaItem());
 	public static final RegistryObject<Item> TYOKUTO_SAYA = REGISTRY.register("tyokuto_saya", () -> new TyokutoSayaItem());
+	public static final RegistryObject<Item> THROWING_KNIFE = REGISTRY.register("throwing_knife", () -> new ThrowingKnifeItem());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, CreativeModeTab tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));

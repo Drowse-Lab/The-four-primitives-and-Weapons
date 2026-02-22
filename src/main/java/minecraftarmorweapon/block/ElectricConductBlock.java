@@ -1,6 +1,5 @@
 package minecraftarmorweapon.block;
 
-import minecraftarmorweapon.damage.ElementType;
 import minecraftarmorweapon.damage.ElectricElementDamageHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,7 +13,6 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,7 +26,7 @@ public final class ElectricConductBlock {
     private static final int MAX_RADIUS = 10;
     private static final int MAX_RADIUS_SQR = MAX_RADIUS * MAX_RADIUS;
 
-    private static final Set<Block> CONDUCTIVE_BLOCKS = EnumSet.of(
+    private static final Set<Block> CONDUCTIVE_BLOCKS = Set.of(
             // 金属
             Blocks.IRON_BLOCK,
             Blocks.GOLD_BLOCK,
@@ -90,10 +88,11 @@ public final class ElectricConductBlock {
 
         for (Entity entity : level.getEntities(null, box)) {
             if (entity instanceof LivingEntity living && living.isAlive()) {
-                ElectricElementDamageHandler.apply(
+                ElectricElementDamageHandler.applyElectricDamage(
                         living,
-                        damage,
-                        ElementType.ELECTRIC
+                        (float) damage,
+                        null,
+                        1
                 );
             }
         }
