@@ -82,6 +82,21 @@ def protect_custom_files():
     """カスタムファイルを保護"""
 
     custom_files = [
+        # --- Rarity Forge システム ---
+        "src/main/java/minecraftarmorweapon/init/RarityForgeRegistration.java",
+        "src/main/java/minecraftarmorweapon/block/RarityForgeBlock.java",
+        "src/main/java/minecraftarmorweapon/block/entity/RarityForgeBlockEntity.java",
+        "src/main/java/minecraftarmorweapon/world/inventory/RarityForgeMenu.java",
+        "src/main/java/minecraftarmorweapon/client/gui/RarityForgeScreen.java",
+        "src/main/java/minecraftarmorweapon/item/rarity/WeaponRarity.java",
+        "src/main/java/minecraftarmorweapon/item/rarity/RarityCraftingLogic.java",
+        "src/main/java/minecraftarmorweapon/item/rarity/RarityForgeRecipe.java",
+        "src/main/java/minecraftarmorweapon/item/rarity/RarityForgeRecipes.java",
+        "src/main/java/minecraftarmorweapon/network/RarityForgeButtonMessage.java",
+        "src/main/java/minecraftarmorweapon/events/WeaponRarityEventHandler.java",
+        "src/main/java/minecraftarmorweapon/integration/RarityForgeRecipeCategory.java",
+        "src/main/java/minecraftarmorweapon/integration/RarityForgeJEIPlugin.java",
+        # --- カスタムエンティティ ---
         "src/main/java/minecraftarmorweapon/init/CustomEntityInit.java",
         "src/main/java/minecraftarmorweapon/init/MinecraftArmorWeaponModCustomEntities.java",
         "src/main/java/minecraftarmorweapon/init/MinecraftArmorWeaponModModels.java",
@@ -91,12 +106,21 @@ def protect_custom_files():
         "src/main/java/minecraftarmorweapon/client/init/CustomEntityRenderers.java",
         "src/main/java/minecraftarmorweapon/client/renderer/DarkProjectileRenderer.java",
         "src/main/java/minecraftarmorweapon/client/model/Modelplayer_slim.java",
+        # --- ユーティリティ・ネットワーク ---
         "src/main/java/minecraftarmorweapon/util/DamageCalculator.java",
+        "src/main/java/minecraftarmorweapon/network/AttackPacket.java",
+        "src/main/java/minecraftarmorweapon/events/ChargedAttackHandler.java",
+        # --- スキルシステム ---
+        "src/main/java/minecraftarmorweapon/skill/ElectricDischargeBurstSkill.java",
+        "src/main/java/minecraftarmorweapon/block/ElectricConductBlock.java",
+        # --- その他カスタムコード ---
         "src/main/java/minecraftarmorweapon/procedures/MagicKatanaSpecialChargeProcedure.java",
         "src/main/java/minecraftarmorweapon/procedures/TyokutouThrustAttackProcedure.java",
         "src/main/java/minecraftarmorweapon/procedures/SummonTriggerEffectEffectExpiresProcedure.java",
         "src/main/java/minecraftarmorweapon/item/MagicalKatanaItem.java",
-        "src/main/java/minecraftarmorweapon/item/MagischesFeenKatanaItem.java"
+        "src/main/java/minecraftarmorweapon/item/MagischesFeenKatanaItem.java",
+        # --- メインModファイル ---
+        "src/main/java/minecraftarmorweapon/MinecraftArmorWeaponMod.java",
     ]
 
     protected_dir = ".protected_custom_files"

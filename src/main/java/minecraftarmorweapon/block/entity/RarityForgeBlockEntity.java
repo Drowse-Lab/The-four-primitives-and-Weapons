@@ -29,11 +29,16 @@ import io.netty.buffer.Unpooled;
 
 /**
  * レアリティ強化台のBlockEntity
- * スロット0: 素材1, スロット1: 素材2, スロット2: 触媒(レアリティブースト), スロット3: 結果出力
+ * スロット0-8: 3×3クラフトグリッド, スロット9: 触媒(レアリティブースト), スロット10: 結果出力
  */
 public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer {
 
-    private NonNullList<ItemStack> stacks = NonNullList.withSize(4, ItemStack.EMPTY);
+    public static final int GRID_SLOTS = 9;
+    public static final int CATALYST_SLOT = 9;
+    public static final int OUTPUT_SLOT = 10;
+    public static final int TOTAL_SLOTS = 11;
+
+    private NonNullList<ItemStack> stacks = NonNullList.withSize(TOTAL_SLOTS, ItemStack.EMPTY);
     private final LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.values());
 
     public RarityForgeBlockEntity(BlockPos position, BlockState state) {
@@ -111,10 +116,7 @@ public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity imp
 
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
-        if (index == 0) return true; // 素材1
-        if (index == 1) return true; // 素材2
-        if (index == 2) return true; // 触媒
-        return false; // スロット3は出力のみ
+        return index < OUTPUT_SLOT;
     }
 
     @Override
@@ -129,7 +131,7 @@ public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity imp
 
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
-        return index == 3; // 出力スロットからのみ取り出し可
+        return index == OUTPUT_SLOT;
     }
 
     @Override

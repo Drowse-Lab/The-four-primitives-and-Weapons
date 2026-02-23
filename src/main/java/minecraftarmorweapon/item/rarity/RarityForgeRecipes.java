@@ -1,6 +1,7 @@
 package minecraftarmorweapon.item.rarity;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.items.IItemHandler;
 
@@ -9,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * レアリティ強化台のレシピ一覧
+ * レアリティ強化台のレシピ一覧（3×3シェイプレシピ）
  */
 public final class RarityForgeRecipes {
 
@@ -18,81 +19,75 @@ public final class RarityForgeRecipes {
     private RarityForgeRecipes() {}
 
     static {
-        // === 石系 (2 cobblestone + 1 stick) ===
-        add(MinecraftArmorWeaponModItems.STONE_KATANA.get(),
-                ing(Items.COBBLESTONE, 2), ing(Items.STICK, 1));
+        // === 石系 ===
+        // 石カタナ: 丸石2 + 棒1 (剣パターン)
+        sword(MinecraftArmorWeaponModItems.STONE_KATANA.get(), Items.COBBLESTONE);
 
-        // === 鉄系 (2 iron + 1 stick) ===
-        add(MinecraftArmorWeaponModItems.IRON_KATANA.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.STICK, 1));
-        add(MinecraftArmorWeaponModItems.MY_TEST_IRON_KATANA.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.STICK, 1));
-        add(MinecraftArmorWeaponModItems.NINJATOU.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.STICK, 1));
-        add(MinecraftArmorWeaponModItems.SMALL_SWORD.get(),
-                ing(Items.IRON_INGOT, 1), ing(Items.STICK, 1));
+        // === 鉄系 ===
+        sword(MinecraftArmorWeaponModItems.IRON_KATANA.get(), Items.IRON_INGOT);
+        sword(MinecraftArmorWeaponModItems.MY_TEST_IRON_KATANA.get(), Items.IRON_INGOT);
+        sword(MinecraftArmorWeaponModItems.NINJATOU.get(), Items.IRON_INGOT);
+        // 小太刀: 鉄1 + 棒1
+        add(RarityForgeRecipe.shaped(MinecraftArmorWeaponModItems.SMALL_SWORD.get(),
+                new String[]{"I", "S"}, 'I', Items.IRON_INGOT, 'S', Items.STICK));
 
-        // === 金系 (2 gold + 1 stick) ===
-        add(MinecraftArmorWeaponModItems.GOLD_KATANA.get(),
-                ing(Items.GOLD_INGOT, 2), ing(Items.STICK, 1));
+        // === 金系 ===
+        sword(MinecraftArmorWeaponModItems.GOLD_KATANA.get(), Items.GOLD_INGOT);
 
-        // === ネザライト系 (2 netherite + 1 stick) ===
-        add(MinecraftArmorWeaponModItems.NETHERITE_KATANA.get(),
-                ing(Items.NETHERITE_INGOT, 2), ing(Items.STICK, 1));
+        // === ネザライト系 ===
+        sword(MinecraftArmorWeaponModItems.NETHERITE_KATANA.get(), Items.NETHERITE_INGOT);
 
-        // === 倶利伽羅剣系 (2 iron + 1 blaze rod) ===
-        add(MinecraftArmorWeaponModItems.KURIKARAKEN.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.BLAZE_ROD, 1));
-        add(MinecraftArmorWeaponModItems.KURIKARAKENSWORD.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.BLAZE_ROD, 1));
-        add(MinecraftArmorWeaponModItems.KURIKARAKENUTIGATANA.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.BLAZE_ROD, 1));
+        // === 倶利伽羅剣系 (鉄 + ブレイズロッド) ===
+        add(RarityForgeRecipe.shaped(MinecraftArmorWeaponModItems.KURIKARAKEN.get(),
+                new String[]{"I", "I", "B"}, 'I', Items.IRON_INGOT, 'B', Items.BLAZE_ROD));
+        add(RarityForgeRecipe.shaped(MinecraftArmorWeaponModItems.KURIKARAKENSWORD.get(),
+                new String[]{"I", "I", "B"}, 'I', Items.IRON_INGOT, 'B', Items.BLAZE_ROD));
+        add(RarityForgeRecipe.shaped(MinecraftArmorWeaponModItems.KURIKARAKENUTIGATANA.get(),
+                new String[]{"I", "I", "B"}, 'I', Items.IRON_INGOT, 'B', Items.BLAZE_ROD));
 
         // === 特殊武器 ===
-        add(MinecraftArmorWeaponModItems.SCYTHE.get(),
-                ing(Items.IRON_INGOT, 3), ing(Items.STICK, 2));
-        add(MinecraftArmorWeaponModItems.MACHETE.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.STICK, 1));
-        add(MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.STICK, 1));
-        add(MinecraftArmorWeaponModItems.WARABITETOU.get(),
-                ing(Items.IRON_INGOT, 1), ing(Items.STICK, 1));
-        add(MinecraftArmorWeaponModItems.OLD_KATANA.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.STICK, 1));
+        // 鎌: 鉄3 + 棒2
+        add(RarityForgeRecipe.shaped(MinecraftArmorWeaponModItems.SCYTHE.get(),
+                new String[]{"II", " S", " S"}, 'I', Items.IRON_INGOT, 'S', Items.STICK));
+        // マチェーテ
+        sword(MinecraftArmorWeaponModItems.MACHETE.get(), Items.IRON_INGOT);
+        // 試作刀
+        sword(MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get(), Items.IRON_INGOT);
+        // 蕨手刀: 鉄1 + 棒1
+        add(RarityForgeRecipe.shaped(MinecraftArmorWeaponModItems.WARABITETOU.get(),
+                new String[]{"I", "S"}, 'I', Items.IRON_INGOT, 'S', Items.STICK));
+        // 古刀
+        sword(MinecraftArmorWeaponModItems.OLD_KATANA.get(), Items.IRON_INGOT);
 
-        // === Bluepurge系 (iron + lapis) ===
-        add(MinecraftArmorWeaponModItems.BLUEPURGE.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.LAPIS_LAZULI, 2));
-        add(MinecraftArmorWeaponModItems.BLUEPURGE_UTIGATANA.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.LAPIS_LAZULI, 2));
-        add(MinecraftArmorWeaponModItems.BLUEPURGE_TYOKUTOU.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.LAPIS_LAZULI, 2));
+        // === Bluepurge系 (鉄 + ラピス) ===
+        add(RarityForgeRecipe.shaped(MinecraftArmorWeaponModItems.BLUEPURGE.get(),
+                new String[]{"L", "I", "I"}, 'I', Items.IRON_INGOT, 'L', Items.LAPIS_LAZULI));
+        add(RarityForgeRecipe.shaped(MinecraftArmorWeaponModItems.BLUEPURGE_UTIGATANA.get(),
+                new String[]{"L", "I", "I"}, 'I', Items.IRON_INGOT, 'L', Items.LAPIS_LAZULI));
+        add(RarityForgeRecipe.shaped(MinecraftArmorWeaponModItems.BLUEPURGE_TYOKUTOU.get(),
+                new String[]{"L", "I", "I"}, 'I', Items.IRON_INGOT, 'L', Items.LAPIS_LAZULI));
 
-        // === 闇系 (iron + wither rose) ===
-        add(MinecraftArmorWeaponModItems.DARKNESS_KATANA.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.WITHER_ROSE, 1));
-        add(MinecraftArmorWeaponModItems.SWORD_OF_NIGHT.get(),
-                ing(Items.IRON_INGOT, 2), ing(Items.WITHER_ROSE, 1));
+        // === 闇系 (鉄 + ウィザーローズ) ===
+        add(RarityForgeRecipe.shaped(MinecraftArmorWeaponModItems.DARKNESS_KATANA.get(),
+                new String[]{"W", "I", "I"}, 'I', Items.IRON_INGOT, 'W', Items.WITHER_ROSE));
+        add(RarityForgeRecipe.shaped(MinecraftArmorWeaponModItems.SWORD_OF_NIGHT.get(),
+                new String[]{"W", "I", "I"}, 'I', Items.IRON_INGOT, 'W', Items.WITHER_ROSE));
     }
 
-    private static RarityForgeRecipe.Ingredient ing(net.minecraft.world.item.Item item, int count) {
-        return new RarityForgeRecipe.Ingredient(item, count);
+    /** 標準的な剣パターン: 素材2 + 棒1 (縦) */
+    private static void sword(Item result, Item material) {
+        add(RarityForgeRecipe.shaped(result,
+                new String[]{"M", "M", "S"}, 'M', material, 'S', Items.STICK));
     }
 
-    private static void add(net.minecraft.world.item.Item result, RarityForgeRecipe.Ingredient... ingredients) {
-        RECIPES.add(new RarityForgeRecipe(result, ingredients));
+    private static void add(RarityForgeRecipe recipe) {
+        RECIPES.add(recipe);
     }
 
-    /**
-     * 全レシピを返す
-     */
     public static List<RarityForgeRecipe> getAll() {
         return Collections.unmodifiableList(RECIPES);
     }
 
-    /**
-     * 入力スロットに一致するレシピを探す
-     */
     public static RarityForgeRecipe findMatch(IItemHandler handler) {
         for (RarityForgeRecipe recipe : RECIPES) {
             if (recipe.matches(handler)) {
