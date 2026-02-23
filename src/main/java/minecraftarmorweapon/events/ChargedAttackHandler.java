@@ -341,17 +341,17 @@ public class ChargedAttackHandler {
             }
         }
 
-        // 雷倶利伽羅の固有スキル（雷属性が付いていない場合でも発動）
+        // 倶利伽羅の固有スキル（雷属性が付いていない場合でも発動）
         if (chargePercent >= 0.5f) {
-            if (itemName.equals("KaminariKurikarakenSwordItem")) {
+            if (itemName.equals("KaminariKurikarakenSwordItem") || itemName.equals("KurikarakenswordItem")) {
                 ElectricDischargeBurstSkill.fire(player);
                 return;
             }
-            if (itemName.equals("KaminariKurikarakenTyokutouItem")) {
+            if (itemName.equals("KaminariKurikarakenTyokutouItem") || itemName.equals("KurikarakenItem")) {
                 ElectricBeamSkill.fire(player);
                 return;
             }
-            if (itemName.equals("KaminariKurikarakenUtigatanaItem")) {
+            if (itemName.equals("KaminariKurikarakenUtigatanaItem") || itemName.equals("KurikarakenutigatanaItem")) {
                 ElectricSlashSkill.fire(player);
                 return;
             }
@@ -893,12 +893,16 @@ public class ChargedAttackHandler {
     
     private static boolean isWeapon(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        
+
+        // 他MOD（TACZ等の銃MOD）のアイテムは除外
+        String className = stack.getItem().getClass().getName();
+        if (className.contains("tacz") || className.contains("cgm")) return false;
+
         // SwordItemまたはカタナ系アイテムかチェック
         if (stack.getItem() instanceof SwordItem) return true;
-        
+
         String itemName = stack.getItem().getClass().getSimpleName();
-        return itemName.contains("Katana") || itemName.contains("Sword") || 
+        return itemName.contains("Katana") || itemName.contains("Sword") ||
                itemName.contains("Blade") || itemName.contains("katana");
     }
     

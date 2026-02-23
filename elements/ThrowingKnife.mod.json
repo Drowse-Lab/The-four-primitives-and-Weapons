@@ -2,9 +2,9 @@
   "_fv": 43,
   "_type": "rangeditem",
   "definition": {
-    "renderType": 0,
+    "renderType": 1,
     "texture": "throwingknife",
-    "customModelName": "Normal",
+    "customModelName": "throwingknife:default",
     "name": "Throwing Knife",
     "specialInfo": [],
     "creativeTab": {

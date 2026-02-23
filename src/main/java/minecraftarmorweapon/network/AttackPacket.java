@@ -3,16 +3,20 @@ package minecraftarmorweapon.network;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
 import java.util.function.Supplier;
 
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class AttackPacket {
     private final int attackType; // 0 = normal, 1 = charged, 2 = falling, 3 = Loki Decoy, 4 = Loki Disarm
     private final float chargePercent;
-    
-    static {
-        // パケットを静的初期化ブロックで登録
+
+    @SubscribeEvent
+    public static void registerMessage(FMLCommonSetupEvent event) {
         MinecraftArmorWeaponMod.addNetworkMessage(AttackPacket.class, AttackPacket::encode, AttackPacket::new, AttackPacket::handle);
     }
 
