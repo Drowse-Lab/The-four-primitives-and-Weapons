@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/katanairon3dblood",
   "textures": {
-    "4": "minecraft_armor_weapon:blocks/bloodkatana",
-    "particle": "minecraft_armor_weapon:items/bloodkatana"
+    "4": "minecraft_armor_weapon:block/bloodkatana",
+    "particle": "minecraft_armor_weapon:item/bloodkatana"
   }
 }

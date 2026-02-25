@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/pumpkin_head_player_converted_converted",
   "textures": {
-    "1": "minecraft_armor_weapon:blocks/pumpkin",
-    "particle": "minecraft_armor_weapon:items/halloween"
+    "1": "minecraft_armor_weapon:block/pumpkin",
+    "particle": "minecraft_armor_weapon:item/halloween"
   }
 }

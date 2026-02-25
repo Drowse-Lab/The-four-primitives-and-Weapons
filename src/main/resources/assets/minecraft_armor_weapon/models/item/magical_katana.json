@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/katanairon3dmagic",
   "textures": {
-    "1": "minecraft_armor_weapon:blocks/katana3dmagic",
-    "particle": "minecraft_armor_weapon:items/luna"
+    "1": "minecraft_armor_weapon:block/katana3dmagic",
+    "particle": "minecraft_armor_weapon:item/luna"
   }
 }

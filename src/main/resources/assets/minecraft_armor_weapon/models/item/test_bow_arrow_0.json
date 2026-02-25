@@ -1,7 +1,7 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "minecraft_armor_weapon:items/dream_bow_arrow_0"
+    "layer0": "minecraft_armor_weapon:item/dream_bow_arrow_0"
   },
       "display": {
         "thirdperson_righthand": {

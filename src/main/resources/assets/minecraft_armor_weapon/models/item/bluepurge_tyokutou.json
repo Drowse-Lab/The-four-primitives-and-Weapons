@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/bluepurgestyokutou",
   "textures": {
-    "2": "minecraft_armor_weapon:blocks/bluepurgetyokutou",
-    "particle": "minecraft_armor_weapon:items/bluepurgestyokutouimage"
+    "2": "minecraft_armor_weapon:block/bluepurgetyokutou",
+    "particle": "minecraft_armor_weapon:item/bluepurgestyokutouimage"
   }
 }

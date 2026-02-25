@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/kamab",
   "textures": {
-    "0": "minecraft_armor_weapon:blocks/kamab",
-    "particle": "minecraft_armor_weapon:items/aaaaa"
+    "0": "minecraft_armor_weapon:block/kamab",
+    "particle": "minecraft_armor_weapon:item/aaaaa"
   }
 }

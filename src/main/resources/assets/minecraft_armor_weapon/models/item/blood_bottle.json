@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "minecraft_armor_weapon:items/blood_bottle"
+    "layer0": "minecraft_armor_weapon:item/blood_bottle"
   }
 }

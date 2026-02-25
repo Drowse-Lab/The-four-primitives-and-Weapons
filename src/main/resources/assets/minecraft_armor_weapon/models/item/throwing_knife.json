@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/throwingknife",
   "textures": {
-    "0": "minecraft_armor_weapon:blocks/throwingknife",
-    "particle": "minecraft_armor_weapon:items/throwingknife"
+    "0": "minecraft_armor_weapon:block/throwingknife",
+    "particle": "minecraft_armor_weapon:item/throwingknife"
   }
 }

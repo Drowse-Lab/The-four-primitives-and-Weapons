@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/banneritemconverted",
   "textures": {
-    "2": "minecraft_armor_weapon:blocks/banneritemconverted",
-    "particle": "minecraft_armor_weapon:items/evoker_helmet"
+    "2": "minecraft_armor_weapon:block/banneritemconverted",
+    "particle": "minecraft_armor_weapon:item/evoker_helmet"
   }
 }

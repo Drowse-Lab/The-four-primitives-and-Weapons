@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/magicstick",
   "textures": {
-    "2": "minecraft_armor_weapon:blocks/magicstic",
-    "particle": "minecraft_armor_weapon:items/black_spesyal_arrow"
+    "2": "minecraft_armor_weapon:block/magicstic",
+    "particle": "minecraft_armor_weapon:item/black_spesyal_arrow"
   }
 }

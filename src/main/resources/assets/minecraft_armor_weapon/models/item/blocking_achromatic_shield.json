@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/shiel2dconverted",
   "textures": {
-    "0": "minecraft_armor_weapon:blocks/shieldb",
-    "particle": "minecraft_armor_weapon:items/shieldb"
+    "0": "minecraft_armor_weapon:block/shieldb",
+    "particle": "minecraft_armor_weapon:item/shieldb"
 
 }}

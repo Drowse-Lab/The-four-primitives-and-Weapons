@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "minecraft_armor_weapon:items/warden_armor_chestplate"
+    "layer0": "minecraft_armor_weapon:item/warden_armor_chestplate"
   }
 }

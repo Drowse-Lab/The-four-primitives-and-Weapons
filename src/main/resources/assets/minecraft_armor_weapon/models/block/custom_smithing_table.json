@@ -1,13 +1,13 @@
 {
   "parent": "block/cube",
   "textures": {
-    "down": "minecraft_armor_weapon:blocks/smithing_table_bottom",
-    "up": "minecraft_armor_weapon:blocks/smithing_table_top",
-    "north": "minecraft_armor_weapon:blocks/smithing_table_front",
-    "east": "minecraft_armor_weapon:blocks/smithing_table_side_b",
-    "south": "minecraft_armor_weapon:blocks/smithing_table_back",
-    "west": "minecraft_armor_weapon:blocks/smithing_table_side",
-    "particle": "minecraft_armor_weapon:blocks/smithing_table_bottom"
+    "down": "minecraft_armor_weapon:block/smithing_table_bottom",
+    "up": "minecraft_armor_weapon:block/smithing_table_top",
+    "north": "minecraft_armor_weapon:block/smithing_table_front",
+    "east": "minecraft_armor_weapon:block/smithing_table_side_b",
+    "south": "minecraft_armor_weapon:block/smithing_table_back",
+    "west": "minecraft_armor_weapon:block/smithing_table_side",
+    "particle": "minecraft_armor_weapon:block/smithing_table_bottom"
   },
   "render_type": "solid"
 }

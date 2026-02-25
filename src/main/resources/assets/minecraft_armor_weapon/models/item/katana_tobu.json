@@ -1,7 +1,7 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "minecraft_armor_weapon:items/a"
+    "layer0": "minecraft_armor_weapon:item/a"
   },
   "display": {
     "thirdperson_righthand": {

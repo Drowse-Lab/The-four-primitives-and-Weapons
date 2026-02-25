@@ -1,7 +1,7 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "minecraft_armor_weapon:items/black_spesyal_arrow"
+    "layer0": "minecraft_armor_weapon:item/black_spesyal_arrow"
   },
   "display": {
     "thirdperson_righthand": {

@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/katanairon3dfeen",
   "textures": {
-    "missing": "minecraft_armor_weapon:blocks/katanairon3dfeen",
-    "particle": "minecraft_armor_weapon:items/katanairon3dfeen"
+    "missing": "minecraft_armor_weapon:block/katanairon3dfeen",
+    "particle": "minecraft_armor_weapon:item/katanairon3dfeen"
   }
 }

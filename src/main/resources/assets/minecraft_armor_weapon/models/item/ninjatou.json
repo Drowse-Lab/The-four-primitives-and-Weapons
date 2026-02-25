@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/ninzyatou",
   "textures": {
-    "0": "minecraft_armor_weapon:blocks/ninzyatou",
-    "particle": "minecraft_armor_weapon:items/katanairon3dfeen"
+    "0": "minecraft_armor_weapon:block/ninzyatou",
+    "particle": "minecraft_armor_weapon:item/katanairon3dfeen"
   }
 }

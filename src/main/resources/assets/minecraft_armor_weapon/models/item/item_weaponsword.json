@@ -1,6 +1,6 @@
 {
   "parent": "item/handheld",
   "textures": {
-    "layer0": "minecraft_armor_weapon:items/aa"
+    "layer0": "minecraft_armor_weapon:item/aa"
   }
 }

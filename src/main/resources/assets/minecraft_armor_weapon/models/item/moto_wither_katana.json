@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/motowitherkatana3d",
   "textures": {
-    "0": "minecraft_armor_weapon:blocks/motowitherkatana3d",
-    "particle": "minecraft_armor_weapon:items/a"
+    "0": "minecraft_armor_weapon:block/motowitherkatana3d",
+    "particle": "minecraft_armor_weapon:item/a"
   }
 }

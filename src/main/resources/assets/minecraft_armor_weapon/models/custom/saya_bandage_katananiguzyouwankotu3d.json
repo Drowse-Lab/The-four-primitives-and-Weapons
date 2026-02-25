@@ -5,9 +5,9 @@
 	"parent": "block/block",
 	"texture_size": [8, 8],
 	"textures": {
-		"1": "minecraft_armor_weapon:blocks/saya_katananiguzyouwan",
-		"2": "minecraft_armor_weapon:items/saya",
-		"particle": "minecraft_armor_weapon:items/saya"
+		"1": "minecraft_armor_weapon:block/saya_katananiguzyouwan",
+		"2": "minecraft_armor_weapon:item/saya",
+		"particle": "minecraft_armor_weapon:item/saya"
 	},
 	"elements": [
 		{

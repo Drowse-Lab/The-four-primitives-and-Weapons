@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/hammer",
   "textures": {
-    "0": "minecraft_armor_weapon:blocks/hammar",
-    "particle": "minecraft_armor_weapon:items/aaa"
+    "0": "minecraft_armor_weapon:block/hammar",
+    "particle": "minecraft_armor_weapon:item/aaa"
   }
 }

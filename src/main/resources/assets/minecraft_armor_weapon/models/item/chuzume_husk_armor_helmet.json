@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/chuzume_head_-_converted",
   "textures": {
-    "1": "minecraft_armor_weapon:blocks/1cf4e48b9fb19c16",
-    "particle": "minecraft_armor_weapon:items/chuzume_husk_leather_helmet"
+    "1": "minecraft_armor_weapon:block/1cf4e48b9fb19c16",
+    "particle": "minecraft_armor_weapon:item/chuzume_husk_leather_helmet"
   }
 }

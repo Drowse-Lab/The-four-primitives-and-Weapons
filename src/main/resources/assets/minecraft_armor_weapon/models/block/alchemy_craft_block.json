@@ -1,13 +1,13 @@
 {
   "parent": "block/cube",
   "textures": {
-    "down": "minecraft_armor_weapon:blocks/stone_bricks_talap_dor",
-    "up": "minecraft_armor_weapon:blocks/dai",
-    "north": "minecraft_armor_weapon:blocks/stone_bricks_talap_dor",
-    "east": "minecraft_armor_weapon:blocks/stone_bricks_talap_dor",
-    "south": "minecraft_armor_weapon:blocks/stone_bricks_talap_dor",
-    "west": "minecraft_armor_weapon:blocks/stone_bricks_talap_dor",
-    "particle": "minecraft_armor_weapon:blocks/stone_bricks_talap_dor"
+    "down": "minecraft_armor_weapon:block/stone_bricks_talap_dor",
+    "up": "minecraft_armor_weapon:block/dai",
+    "north": "minecraft_armor_weapon:block/stone_bricks_talap_dor",
+    "east": "minecraft_armor_weapon:block/stone_bricks_talap_dor",
+    "south": "minecraft_armor_weapon:block/stone_bricks_talap_dor",
+    "west": "minecraft_armor_weapon:block/stone_bricks_talap_dor",
+    "particle": "minecraft_armor_weapon:block/stone_bricks_talap_dor"
   },
   "render_type": "solid"
 }

@@ -1,13 +1,13 @@
 {
   "parent": "block/cube",
   "textures": {
-    "down": "minecraft_armor_weapon:blocks/bluepurgeair",
-    "up": "minecraft_armor_weapon:blocks/bluepurgeair",
-    "north": "minecraft_armor_weapon:blocks/bluepurgeair",
-    "east": "minecraft_armor_weapon:blocks/bluepurgeair",
-    "south": "minecraft_armor_weapon:blocks/bluepurgeair",
-    "west": "minecraft_armor_weapon:blocks/bluepurgeair",
-    "particle": "minecraft_armor_weapon:blocks/bluepurgeair"
+    "down": "minecraft_armor_weapon:block/bluepurgeair",
+    "up": "minecraft_armor_weapon:block/bluepurgeair",
+    "north": "minecraft_armor_weapon:block/bluepurgeair",
+    "east": "minecraft_armor_weapon:block/bluepurgeair",
+    "south": "minecraft_armor_weapon:block/bluepurgeair",
+    "west": "minecraft_armor_weapon:block/bluepurgeair",
+    "particle": "minecraft_armor_weapon:block/bluepurgeair"
   },
   "render_type": "solid"
 }

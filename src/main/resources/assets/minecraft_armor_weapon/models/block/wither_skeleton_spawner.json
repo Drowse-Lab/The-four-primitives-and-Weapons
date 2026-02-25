@@ -1,13 +1,13 @@
 {
   "parent": "block/cube",
   "textures": {
-    "down": "minecraft_armor_weapon:blocks/test",
-    "up": "minecraft_armor_weapon:blocks/test",
-    "north": "minecraft_armor_weapon:blocks/test",
-    "east": "minecraft_armor_weapon:blocks/test",
-    "south": "minecraft_armor_weapon:blocks/test",
-    "west": "minecraft_armor_weapon:blocks/test",
-    "particle": "minecraft_armor_weapon:blocks/aa"
+    "down": "minecraft_armor_weapon:block/test",
+    "up": "minecraft_armor_weapon:block/test",
+    "north": "minecraft_armor_weapon:block/test",
+    "east": "minecraft_armor_weapon:block/test",
+    "south": "minecraft_armor_weapon:block/test",
+    "west": "minecraft_armor_weapon:block/test",
+    "particle": "minecraft_armor_weapon:block/aa"
   },
   "render_type": "solid"
 }

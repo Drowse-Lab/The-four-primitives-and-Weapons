@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/nigushield",
   "textures": {
-    "0": "minecraft_armor_weapon:blocks/nigushield",
-    "particle": "minecraft_armor_weapon:items/shieldb"
+    "0": "minecraft_armor_weapon:block/nigushield",
+    "particle": "minecraft_armor_weapon:item/shieldb"
   }
 }

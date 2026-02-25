@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/kurikarakatana3d",
   "textures": {
-    "1": "minecraft_armor_weapon:blocks/kurikarakatana3d",
-    "particle": "minecraft_armor_weapon:items/aaaaa"
+    "1": "minecraft_armor_weapon:block/kurikarakatana3d",
+    "particle": "minecraft_armor_weapon:item/aaaaa"
   }
 }

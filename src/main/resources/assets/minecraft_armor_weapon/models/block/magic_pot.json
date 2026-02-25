@@ -1,9 +1,9 @@
 {
   "parent": "minecraft_armor_weapon:custom/magicpot",
   "textures": {
-    "all": "minecraft_armor_weapon:blocks/potmahounohead",
-    "particle": "minecraft_armor_weapon:blocks/aa",
-    "0": "minecraft_armor_weapon:blocks/potmahounohead"
+    "all": "minecraft_armor_weapon:block/potmahounohead",
+    "particle": "minecraft_armor_weapon:block/aa",
+    "0": "minecraft_armor_weapon:block/potmahounohead"
   },
   "render_type": "solid"
 }

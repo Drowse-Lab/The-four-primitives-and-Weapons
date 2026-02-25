@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "minecraft_armor_weapon:items/resetmax"
+    "layer0": "minecraft_armor_weapon:item/resetmax"
   }
 }

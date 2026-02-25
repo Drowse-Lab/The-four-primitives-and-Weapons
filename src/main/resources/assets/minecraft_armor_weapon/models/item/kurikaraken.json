@@ -1,7 +1,7 @@
 {
   "parent": "minecraft_armor_weapon:custom/swordb",
   "textures": {
-    "0": "minecraft_armor_weapon:blocks/katanab",
-    "particle": "minecraft_armor_weapon:items/aaaaa"
+    "0": "minecraft_armor_weapon:block/katanab",
+    "particle": "minecraft_armor_weapon:item/aaaaa"
   }
 }
