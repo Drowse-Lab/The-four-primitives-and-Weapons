@@ -25,6 +25,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.core.particles.ParticleTypes;
 
 import java.util.List;
@@ -57,7 +58,7 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 	}
 
 	@Override
-	public Packet<?> getAddEntityPacket() {
+	public Packet<ClientGamePacketListener> getAddEntityPacket() {
 		return NetworkHooks.getEntitySpawningPacket(this);
 	}
 
@@ -84,25 +85,25 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 				ItemStack offHandItem = livingEntity.getOffhandItem();
 
 				if (!mainHandItem.isEmpty()) {
-					if (!level.isClientSide()) {
-						ItemEntity itemEntity = new ItemEntity(level, entity.getX(), entity.getY() + 1, entity.getZ(), mainHandItem.copy());
+					if (!this.level().isClientSide()) {
+						ItemEntity itemEntity = new ItemEntity(this.level(), entity.getX(), entity.getY() + 1, entity.getZ(), mainHandItem.copy());
 						itemEntity.setDefaultPickUpDelay();
-						level.addFreshEntity(itemEntity);
+						this.level().addFreshEntity(itemEntity);
 					}
 					livingEntity.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
 				}
 
 				if (!offHandItem.isEmpty()) {
-					if (!level.isClientSide()) {
-						ItemEntity itemEntity = new ItemEntity(level, entity.getX(), entity.getY() + 1, entity.getZ(), offHandItem.copy());
+					if (!this.level().isClientSide()) {
+						ItemEntity itemEntity = new ItemEntity(this.level(), entity.getX(), entity.getY() + 1, entity.getZ(), offHandItem.copy());
 						itemEntity.setDefaultPickUpDelay();
-						level.addFreshEntity(itemEntity);
+						this.level().addFreshEntity(itemEntity);
 					}
 					livingEntity.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
 				}
 
 				// サウンド再生
-				level.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+				this.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(),
 					ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("entity.item.break")),
 					SoundSource.PLAYERS, 1.0f, 1.0f);
 			}
@@ -124,14 +125,14 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 	public void tick() {
 		super.tick();
 
-		if (level.isClientSide()) {
+		if (this.level().isClientSide()) {
 			return;
 		}
 
 		tickCount++;
 
 		// パーティクル効果 - smoke と crit
-		if (level instanceof ServerLevel serverLevel) {
+		if (this.level() instanceof ServerLevel serverLevel) {
 			serverLevel.sendParticles(ParticleTypes.SMOKE, this.getX(), this.getY(), this.getZ(), 2, 0.1, 0.1, 0.1, 0.01);
 			serverLevel.sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 1, 0.1, 0.1, 0.1, 0.01);
 		}
@@ -146,7 +147,7 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 				returning = true;
 			} else {
 				// 近くのLivingEntityを探して追跡
-				List<LivingEntity> nearbyEntities = level.getEntitiesOfClass(
+				List<LivingEntity> nearbyEntities = this.level().getEntitiesOfClass(
 					LivingEntity.class,
 					this.getBoundingBox().inflate(8.0),
 					entity -> entity != shooter && entity.isAlive()
@@ -201,7 +202,7 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 			double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
 			// 近くのアイテムを引き寄せる
-			List<ItemEntity> nearbyItems = level.getEntitiesOfClass(
+			List<ItemEntity> nearbyItems = this.level().getEntitiesOfClass(
 				ItemEntity.class,
 				this.getBoundingBox().inflate(3.0)
 			);
@@ -257,8 +258,8 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 		double dy = target.getY() + target.getEyeHeight() - 1.1;
 		double dz = target.getZ() - entity.getZ();
 		entityProjectile.shoot(dx, dy - entityProjectile.getY() + Math.hypot(dx, dz) * 0.2F, dz, 1.5f, 12.0F);
-		entity.level.addFreshEntity(entityProjectile);
-		entity.level.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+		entity.level().addFreshEntity(entityProjectile);
+		entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(),
 			ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("entity.snowball.throw")),
 			SoundSource.PLAYERS, 1, 1f / (RandomSource.create().nextFloat() * 0.5f + 1));
 		return entityProjectile;

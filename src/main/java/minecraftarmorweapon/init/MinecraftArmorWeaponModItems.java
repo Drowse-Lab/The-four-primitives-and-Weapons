@@ -118,7 +118,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> THUNDERBOLT = REGISTRY.register("thunderbolt", () -> new ThunderboltItem());
 	public static final RegistryObject<Item> ITEM_WEAPONSWORD = REGISTRY.register("item_weaponsword", () -> new ItemWeaponswordItem());
 	public static final RegistryObject<Item> NETHERITE_KATANA = REGISTRY.register("netherite_katana", () -> new NetheriteKatanaItem());
-	public static final RegistryObject<Item> ROSE = block(MinecraftArmorWeaponModBlocks.ROSE, CreativeModeTab.TAB_DECORATIONS);
+	public static final RegistryObject<Item> ROSE = block(MinecraftArmorWeaponModBlocks.ROSE, null);
 	public static final RegistryObject<Item> PILLAGER_ARMOR_HELMET = REGISTRY.register("pillager_armor_helmet", () -> new PillagerArmorItem.Helmet());
 	public static final RegistryObject<Item> PILLAGER_ARMOR_CHESTPLATE = REGISTRY.register("pillager_armor_chestplate", () -> new PillagerArmorItem.Chestplate());
 	public static final RegistryObject<Item> PILLAGER_ARMOR_LEGGINGS = REGISTRY.register("pillager_armor_leggings", () -> new PillagerArmorItem.Leggings());
@@ -134,12 +134,12 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> CROSS = block(MinecraftArmorWeaponModBlocks.CROSS, MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO);
 	public static final RegistryObject<Item> MY_TEST_IRON_KATANA = REGISTRY.register("my_test_iron_katana", () -> new MyTestIronKatanaItem());
 	public static final RegistryObject<Item> LUNA = REGISTRY.register("luna", () -> new LunaItem());
-	public static final RegistryObject<Item> SKELTON_MOB_SPAWN_EGG = REGISTRY.register("skelton_mob_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.SKELTON_MOB, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+	public static final RegistryObject<Item> SKELTON_MOB_SPAWN_EGG = REGISTRY.register("skelton_mob_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.SKELTON_MOB, -1, -1, new Item.Properties()));
 	public static final RegistryObject<Item> ACHROMATIC_SHIELD = REGISTRY.register("achromatic_shield", () -> new AchromaticShieldItem());
 	public static final RegistryObject<Item> HARVEST_MOON_2023929 = REGISTRY.register("harvest_moon_2023929", () -> new HarvestMoon2023929Item());
 	public static final RegistryObject<Item> WARABITETOU = REGISTRY.register("warabitetou", () -> new WarabitetouItem());
 	public static final RegistryObject<Item> A_2 = REGISTRY.register("a_2", () -> new A2Item());
-	public static final RegistryObject<Item> OTIRUYO_SPAWN_EGG = REGISTRY.register("otiruyo_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.OTIRUYO, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+	public static final RegistryObject<Item> OTIRUYO_SPAWN_EGG = REGISTRY.register("otiruyo_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.OTIRUYO, -1, -1, new Item.Properties()));
 	public static final RegistryObject<Item> WIND_STEP = REGISTRY.register("wind_step", () -> new WindStepItem());
 	public static final RegistryObject<Item> STRAY_OUTER_ARMOR_HELMET = REGISTRY.register("stray_outer_armor_helmet", () -> new StrayOuterArmorItem.Helmet());
 	public static final RegistryObject<Item> STRAY_OUTER_ARMOR_CHESTPLATE = REGISTRY.register("stray_outer_armor_chestplate", () -> new StrayOuterArmorItem.Chestplate());
@@ -150,7 +150,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> STONE_BRICKS_TRAP_DOOR = block(MinecraftArmorWeaponModBlocks.STONE_BRICKS_TRAP_DOOR, MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO);
 	public static final RegistryObject<Item> ROSE_FLOWER_POT = block(MinecraftArmorWeaponModBlocks.ROSE_FLOWER_POT, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
 	public static final RegistryObject<Item> HALLOWEEN_2023_10_31_SICKLE = REGISTRY.register("halloween_2023_10_31_sickle", () -> new Halloween20231031SickleItem());
-	public static final RegistryObject<Item> KILLOTIRU_SPAWN_EGG = REGISTRY.register("killotiru_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.KILLOTIRU, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+	public static final RegistryObject<Item> KILLOTIRU_SPAWN_EGG = REGISTRY.register("killotiru_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.KILLOTIRU, -1, -1, new Item.Properties()));
 	public static final RegistryObject<Item> KATANA_TOBU = REGISTRY.register("katana_tobu", () -> new KatanaTobuItem());
 	public static final RegistryObject<Item> DRAGON_ARMOR_HELMET = REGISTRY.register("dragon_armor_helmet", () -> new DragonArmorItem.Helmet());
 	public static final RegistryObject<Item> DRAGON_ARMOR_CHESTPLATE = REGISTRY.register("dragon_armor_chestplate", () -> new DragonArmorItem.Chestplate());
@@ -209,7 +209,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> GOLD_KATANA = REGISTRY.register("gold_katana", () -> new GoldKatanaItem());
 	public static final RegistryObject<Item> KENTI = REGISTRY.register("kenti", () -> new KentiItem());
 	public static final RegistryObject<Item> BLACKHOLE_SPAWN_EGG = REGISTRY.register("blackhole_spawn_egg",
-			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.BLACKHOLE, -16777216, -16777216, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO)));
+			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.BLACKHOLE, -16777216, -16777216, new Item.Properties()));
 	public static final RegistryObject<Item> DESPORN_KENTI = REGISTRY.register("desporn_kenti", () -> new DespornKentiItem());
 	public static final RegistryObject<Item> DARKNESS = REGISTRY.register("darkness", () -> new DarknessItem());
 	public static final RegistryObject<Item> DARKNESS_KATANA = REGISTRY.register("darkness_katana", () -> new DarknessKatanaItem());
@@ -218,7 +218,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> WARDEN_ARMOR_HELMET = REGISTRY.register("warden_armor_helmet", () -> new WardenArmorItem.Helmet());
 	public static final RegistryObject<Item> WARDEN_ARMOR_CHESTPLATE = REGISTRY.register("warden_armor_chestplate", () -> new WardenArmorItem.Chestplate());
 	public static final RegistryObject<Item> WARDEN_ARMOR_LEGGINGS = REGISTRY.register("warden_armor_leggings", () -> new WardenArmorItem.Leggings());
-	public static final RegistryObject<Item> CUSTOM_SMITHING_TABLE = block(MinecraftArmorWeaponModBlocks.CUSTOM_SMITHING_TABLE, CreativeModeTab.TAB_DECORATIONS);
+	public static final RegistryObject<Item> CUSTOM_SMITHING_TABLE = block(MinecraftArmorWeaponModBlocks.CUSTOM_SMITHING_TABLE, null);
 	public static final RegistryObject<Item> KABUSERU = REGISTRY.register("kabuseru", () -> new KabuseruItem());
 	public static final RegistryObject<Item> MOTASERU = REGISTRY.register("motaseru", () -> new MotaseruItem());
 	public static final RegistryObject<Item> STONE_SLAB = REGISTRY.register("stone_slab", () -> new StoneSlabItem());
@@ -232,7 +232,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> WITHER_KATANA = REGISTRY.register("wither_katana", () -> new WitherKatanaItem());
 	public static final RegistryObject<Item> WITHER_SKELETON_SPAWNER = block(MinecraftArmorWeaponModBlocks.WITHER_SKELETON_SPAWNER, MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO);
 	public static final RegistryObject<Item> SKIN_OF_DRAGON = REGISTRY.register("skin_of_dragon", () -> new SkinOfDragonItem());
-	public static final RegistryObject<Item> CUSTOM_CRAFTER_CRAFTING = block(MinecraftArmorWeaponModBlocks.CUSTOM_CRAFTER_CRAFTING, CreativeModeTab.TAB_DECORATIONS);
+	public static final RegistryObject<Item> CUSTOM_CRAFTER_CRAFTING = block(MinecraftArmorWeaponModBlocks.CUSTOM_CRAFTER_CRAFTING, null);
 	public static final RegistryObject<Item> QUESTBOOK = REGISTRY.register("questbook", () -> new QuestbookItem());
 	public static final RegistryObject<Item> LOKI_DECOYDASU = REGISTRY.register("loki_decoydasu", () -> new LokiDecoydasuItem());
 	public static final RegistryObject<Item> LOKI_THE_TRICKSTER = REGISTRY.register("loki_the_trickster", () -> new LokiTheTricksterItem());
@@ -251,7 +251,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> KAMINARI_KURIKARAKEN_TYOKUTOU = REGISTRY.register("kaminari_kurikaraken_tyokutou", () -> new KaminariKurikarakenTyokutouItem());
 	public static final RegistryObject<Item> STRAY_BONE = REGISTRY.register("stray_bone", () -> new StrayBoneItem());
 	public static final RegistryObject<Item> WITHER_BONE = REGISTRY.register("wither_bone", () -> new WitherBoneItem());
-	public static final RegistryObject<Item> METEOR_ARROW_SPAWN_EGG = REGISTRY.register("meteor_arrow_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.METEOR_ARROW, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+	public static final RegistryObject<Item> METEOR_ARROW_SPAWN_EGG = REGISTRY.register("meteor_arrow_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.METEOR_ARROW, -1, -1, new Item.Properties()));
 	public static final RegistryObject<Item> PUMPKIN_HEAD_HELMET = REGISTRY.register("pumpkin_head_helmet", () -> new PumpkinHeadItem.Helmet());
 	public static final RegistryObject<Item> TUKAENA = REGISTRY.register("tukaena", () -> new TukaenaItem());
 	public static final RegistryObject<Item> ITEM_STAN = block(MinecraftArmorWeaponModBlocks.ITEM_STAN, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
@@ -260,11 +260,11 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> OLD_KATANA = REGISTRY.register("old_katana", () -> new OldKatanaItem());
 	public static final RegistryObject<Item> MAGIC_POT = block(MinecraftArmorWeaponModBlocks.MAGIC_POT, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
 	public static final RegistryObject<Item> FLYING_ATTACKER_SPAWN_EGG = REGISTRY.register("flying_attacker_spawn_egg",
-			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.FLYING_ATTACKER, -1, -1, new Item.Properties().tab(CreativeModeTab.TAB_MISC)));
+			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.FLYING_ATTACKER, -1, -1, new Item.Properties()));
 	public static final RegistryObject<Item> SAYA = REGISTRY.register("saya", () -> new SayaItem());
 	public static final RegistryObject<Item> TYOKUTO_SAYA = REGISTRY.register("tyokuto_saya", () -> new TyokutoSayaItem());
 
-	private static RegistryObject<Item> block(RegistryObject<Block> block, CreativeModeTab tab) {
-		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties().tab(tab)));
+	private static RegistryObject<Item> block(RegistryObject<Block> block, Object tab) {
+		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()));
 	}
 }

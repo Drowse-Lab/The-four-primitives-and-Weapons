@@ -127,12 +127,13 @@ public class CorrosionElementDamageHandler {
      * @param level 属性レベル
      */
     public static void applyCorrosionDamage(LivingEntity target, float damage, LivingEntity source, int level) {
-        // カスタムダメージソースを作成
-        IElementalDamageSource elementalSource = (IElementalDamageSource) new CorrosionDamageSource("corrosion");
+        // カスタムダメージソースを作成（1.20.1: factory method使用）
+        DamageSource ds = target.damageSources().magic();
+        IElementalDamageSource elementalSource = (IElementalDamageSource) ds;
         elementalSource.setElementType(ElementType.CORROSION);
         elementalSource.setElementLevel(level);
 
         // ダメージを適用
-        target.hurt((DamageSource) elementalSource, damage);
+        target.hurt(ds, damage);
     }
 }

@@ -21,9 +21,9 @@ public class AlchemyCraftBlockEntityOnEntityTickUpdateProcedure {
 			return;
 		{
 			Entity _ent = entity;
-			if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+			if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 				_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-						_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "tp @s ~ ~ ~ ~-.5 ~");
+						_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "tp @s ~ ~ ~ ~-.5 ~");
 			}
 		}
 		if (world instanceof ServerLevel _level && _level.getServer() != null) {

@@ -34,7 +34,7 @@ public class LanterntaskfourProcedure {
 		if ((MinecraftArmorWeaponModVariables.MapVariables.get(world).questTaskFour).equals("Craft 8 Torches")
 				&& (entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).playerQuestTaskFourNumber < 1
 				&& (entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).playerHasCompletedQuestTaskFour == false
-				&& (world.getBlockState(new BlockPos(x, y, z))).getBlock() == MinecraftArmorWeaponModBlocks.CUSTOM_CRAFTER_CRAFTING.get()) {
+				&& (world.getBlockState(new BlockPos((int) (x), (int) (y), (int) (z)))).getBlock() == MinecraftArmorWeaponModBlocks.CUSTOM_CRAFTER_CRAFTING.get()) {
 			{
 				double _setval = (entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).playerQuestTaskFourNumber + 1;
 				entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
@@ -46,7 +46,7 @@ public class LanterntaskfourProcedure {
 		if ((MinecraftArmorWeaponModVariables.MapVariables.get(world).questTaskFour).equals("Craft 8 Torches")
 				&& (entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).playerQuestTaskFourNumber >= 1
 				&& (entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).playerHasCompletedQuestTaskFour == false
-				&& (world.getBlockState(new BlockPos(x, y, z))).getBlock() == MinecraftArmorWeaponModBlocks.CUSTOM_CRAFTER_CRAFTING.get()) {
+				&& (world.getBlockState(new BlockPos((int) (x), (int) (y), (int) (z)))).getBlock() == MinecraftArmorWeaponModBlocks.CUSTOM_CRAFTER_CRAFTING.get()) {
 			{
 				boolean _setval = true;
 				entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {

@@ -14,7 +14,7 @@ import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen
 
 import minecraftarmorweapon.procedures.SyugekiOnEffectActiveTickProcedure;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class SyugekiMobEffect extends MobEffect {
 	public SyugekiMobEffect() {
@@ -50,7 +50,7 @@ public class SyugekiMobEffect extends MobEffect {
 			}
 
 			@Override
-			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, PoseStack poseStack, int x, int y, int blitOffset) {
+			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, GuiGraphics guiGraphics, int x, int y, int blitOffset) {
 				return false;
 			}
 

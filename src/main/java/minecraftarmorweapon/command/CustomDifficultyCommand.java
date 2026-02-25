@@ -85,7 +85,7 @@ public class CustomDifficultyCommand {
             .then(Commands.literal("difficulty")
                 .executes(context -> {
                     // 現在の難易度を表示
-                    context.getSource().sendSuccess(
+                    context.getSource().sendSuccess(() ->
                         Component.literal("現在の難易度: " + currentDifficulty.getName()),
                         false
                     );
@@ -111,7 +111,7 @@ public class CustomDifficultyCommand {
             difficultyCommand.then(Commands.literal(diff.getKey())
                 .executes(context -> {
                     context.getSource().getLevel().getServer().setDifficulty(diff, true);
-                    context.getSource().sendSuccess(
+                    context.getSource().sendSuccess(() ->
                         Component.literal("難易度を " + diff.getKey() + " に設定しました"),
                         true
                     );
@@ -153,11 +153,11 @@ public class CustomDifficultyCommand {
             newDifficulty.getDamageMultiplier()
         );
         
-        source.sendSuccess(Component.literal(message), true);
+        source.sendSuccess(() -> Component.literal(message), true);
         
         // Lunaticモードの特別メッセージ
         if (newDifficulty.getName().contains("lunatic")) {
-            source.sendSuccess(
+            source.sendSuccess(() ->
                 Component.literal("§c警告: 非常に難しくなります！"),
                 false
             );

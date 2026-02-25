@@ -51,12 +51,12 @@ public class ZeroDegreeFireSwordItem extends SwordItem {
             public Ingredient getRepairIngredient() {
                 return Ingredient.of(new ItemStack(net.minecraft.world.item.Items.PACKED_ICE));
             }
-        }, 3, -2.4f, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_WEAPON));
+        }, 3, -2.4f, new Item.Properties());
     }
     
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        if (!target.level.isClientSide()) {
+        if (!target.level().isClientSide()) {
             // 零度の炎エフェクトを適用（8秒間、レベル1）
             FreezingFireEffectProcedure.execute(VersionHelper.getLevel(target), target, attacker, 160, 0);
         }

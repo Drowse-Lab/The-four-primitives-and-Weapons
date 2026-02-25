@@ -43,7 +43,7 @@ public class NinjatouItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -2.2f, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_WEAPON));
+		}, 3, -2.2f, new Item.Properties());
 	}
 
 	@Override

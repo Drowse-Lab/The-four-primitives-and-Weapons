@@ -17,7 +17,7 @@ public class TestBowYoukuritukusitatokiProcedure {
 			return false;
 		TestBowAnimetionProcedure.execute(entity);
 		entity.getPersistentData().putBoolean("minecraft_armor_weapon:armor_stand_tobasu_kill_off", true);
-		if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+		if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 			_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TAMETERU.get(), 20, 1, true, false));
 		entity.getPersistentData().putBoolean("minecraft_armor_weapon:test_bow_tameteru_true_or_false", true);
 		MinecraftArmorWeaponMod.queueServerWork(5, () -> {

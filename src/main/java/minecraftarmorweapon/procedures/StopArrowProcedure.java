@@ -60,7 +60,7 @@ public class StopArrowProcedure {
 				for (Entity entityiterator : _entfound) {
 					if (!(entityiterator == entity)) {
 						if ((entityiterator instanceof LivingEntity _livEnt && _livEnt.hasEffect(MobEffects.MOVEMENT_SLOWDOWN) ? _livEnt.getEffect(MobEffects.MOVEMENT_SLOWDOWN).getAmplifier() : 0) < 90) {
-							if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+							if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 								_entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 10000, 100, false, false));
 						}
 						if (entityiterator instanceof Arrow || entityiterator instanceof SpectralArrow || entityiterator instanceof ThrownTrident || entityiterator instanceof LargeFireball || entityiterator instanceof DragonFireball

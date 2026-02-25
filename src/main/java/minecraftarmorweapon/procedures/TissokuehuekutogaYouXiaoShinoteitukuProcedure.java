@@ -22,19 +22,19 @@ public class TissokuehuekutogaYouXiaoShinoteitukuProcedure {
 			return;
 		{
 			Entity _ent = entity;
-			if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+			if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 				_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-						_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/particle dust 0.000 0.102 1.000 1 ~ ~1 ~ 0.1 0.1 0.1 1 25");
+						_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/particle dust 0.000 0.102 1.000 1 ~ ~1 ~ 0.1 0.1 0.1 1 25");
 			}
 		}
-		if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+		if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 			_entity.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN,
 					entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.TISSOKU.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.TISSOKU.get()).getDuration() : 0,
 					entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.TISSOKU.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.TISSOKU.get()).getAmplifier() : 0, true, false));
 		MinecraftArmorWeaponMod.queueServerWork(5, () -> {
 			if (entity.getAirSupply() <= 1) {
 				if (entity instanceof LivingEntity _entity)
-					_entity.hurt(new DamageSource("\u7A92\u606F ").bypassArmor(), 3);
+					_entity.hurt(_entity.damageSources().magic(), 3);
 				entity.setAirSupply((int) (entity.getAirSupply() - 5));
 			}
 		});

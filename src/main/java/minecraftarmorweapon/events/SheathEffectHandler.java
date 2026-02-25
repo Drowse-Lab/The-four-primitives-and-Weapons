@@ -20,7 +20,7 @@ public class SheathEffectHandler {
         if (event.phase != TickEvent.Phase.END) return;
         
         Player player = event.player;
-        if (player.level.isClientSide) return;
+        if (player.level().isClientSide) return;
         
         // OldKatanaを手に持っているかチェック
         boolean hasOldKatanaInHand = player.getMainHandItem().getItem() == MinecraftArmorWeaponModItems.OLD_KATANA.get() ||

@@ -11,7 +11,7 @@ import net.minecraft.world.item.CreativeModeTab;
 
 public class MagicMcrystalItem extends Item {
 	public MagicMcrystalItem() {
-		super(new Item.Properties().tab(CreativeModeTab.TAB_MATERIALS).stacksTo(64).rarity(Rarity.RARE));
+		super(new Item.Properties().stacksTo(64).rarity(Rarity.RARE));
 	}
 
 	@Override

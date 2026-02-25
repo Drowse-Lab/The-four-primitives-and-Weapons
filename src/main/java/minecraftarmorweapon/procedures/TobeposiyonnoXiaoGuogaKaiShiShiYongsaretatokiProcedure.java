@@ -51,7 +51,7 @@ public class TobeposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 		entity.getPersistentData().putDouble("Xpos", (entity.getPersistentData().getDouble("X") + Math.sin(Math.toRadians(entity.getPersistentData().getDouble("yaw") + 180)) * entity.getPersistentData().getDouble("distance")));
 		entity.getPersistentData().putDouble("Zpos", (entity.getPersistentData().getDouble("Z") + Math.cos(Math.toRadians(entity.getPersistentData().getDouble("yaw"))) * entity.getPersistentData().getDouble("distance")));
 		for (int index0 = 0; index0 < 30; index0++) {
-			if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos") + entity.getPersistentData().getDouble("beta") / 60, entity.getPersistentData().getDouble("Zpos")))
+			if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos") + entity.getPersistentData().getDouble("beta") / 60), (int) (entity.getPersistentData().getDouble("Zpos"))))
 					.canOcclude()) {
 				entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos") + entity.getPersistentData().getDouble("beta") / 60));
 			} else {
@@ -59,7 +59,7 @@ public class TobeposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 			}
 		}
 		for (int index1 = 0; index1 < 30; index1++) {
-			if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos") + entity.getPersistentData().getDouble("beta") / 60, entity.getPersistentData().getDouble("Zpos")))
+			if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos") + entity.getPersistentData().getDouble("beta") / 60), (int) (entity.getPersistentData().getDouble("Zpos"))))
 					.canOcclude()) {
 				entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos") + entity.getPersistentData().getDouble("beta") / 60));
 				break;
@@ -79,33 +79,33 @@ public class TobeposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 							if (entityiterator instanceof LivingEntity) {
 								if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 									if (entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.TUNDERBOLTEFFRCT.get()) : false) {
-										if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+										if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 											_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 100, 2, true, false));
 									}
 									{
 										Entity _ent = entityiterator;
-										if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+										if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 											_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-													VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+													VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 										}
 									}
 									{
 										Entity _ent = entityiterator;
-										if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+										if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 											_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-													VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
+													VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
 										}
 									}
 								} else {
 									if (entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.TUNDERBOLTEFFRCT.get()) : false) {
-										if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+										if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 											_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 100, 2, true, false));
 									}
 									if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KURIKARAKEN.get()
 											&& (entity instanceof LivingEntity _livEnt ? _livEnt.getMobType() == MobType.UNDEAD : false)) {
-										entityiterator.hurt(DamageSource.GENERIC, 10);
+										entityiterator.hurt(entityiterator.damageSources().generic(), 10);
 									}
-									entityiterator.hurt(DamageSource.GENERIC, 10);
+									entityiterator.hurt(entityiterator.damageSources().generic(), 10);
 								}
 							}
 						}

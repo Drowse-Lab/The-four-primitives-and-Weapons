@@ -1,12 +1,14 @@
 package minecraftarmorweapon.client.gui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -27,119 +29,141 @@ import java.util.List;
 
 @Mod.EventBusSubscriber(modid = MinecraftArmorWeaponMod.MODID, value = Dist.CLIENT)
 public class SkillSelectionOverlay {
-    
+
     private static final ResourceLocation SKILL_GUI_TEXTURE = new ResourceLocation(MinecraftArmorWeaponMod.MODID, "textures/gui/skill_selection.png");
     private static boolean isExpanded = false;
     private static List<AbstractWidget> skillWidgets = new ArrayList<>();
-    
+
     @SubscribeEvent
     public static void onInventoryOpen(ScreenEvent.Init.Post event) {
         if (!(event.getScreen() instanceof InventoryScreen inventoryScreen)) {
             return;
         }
-        
+
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null) return;
-        
+
         // 知恵の書の上にスキル選択ボタンを追加
         int x = inventoryScreen.getGuiLeft() + 130;
         int y = inventoryScreen.getGuiTop() - 22;
-        
+
         // メインのスキル選択ボタン
-        Button skillButton = new Button(x, y, 20, 20, 
-            Component.literal("⚔"), 
-            button -> toggleSkillMenu(inventoryScreen)) {
+        AbstractButton skillButton = new AbstractButton(x, y, 20, 20, Component.literal("⚔")) {
             @Override
-            public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+            public void onPress() {
+                toggleSkillMenu(inventoryScreen);
+            }
+
+            @Override
+            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
                 RenderSystem.enableBlend();
                 RenderSystem.defaultBlendFunc();
-                
+
                 // ボタンの背景
                 int textureY = this.isHoveredOrFocused() ? 20 : 0;
-                blit(poseStack, this.x, this.y, 0, textureY, this.width, this.height);
-                
+                guiGraphics.blit(SKILL_GUI_TEXTURE, this.getX(), this.getY(), 0, textureY, this.width, this.height);
+
                 // アイコンまたはテキスト
-                drawCenteredString(poseStack, mc.font, this.getMessage(), 
-                    this.x + this.width / 2, this.y + (this.height - 8) / 2, 
+                guiGraphics.drawCenteredString(mc.font, this.getMessage(),
+                    this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2,
                     this.isHoveredOrFocused() ? 0xFFFFFF : 0xA0A0A0);
-                
+
                 RenderSystem.disableBlend();
             }
+
+            @Override
+            protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+                this.defaultButtonNarrationText(narrationElementOutput);
+            }
         };
-        
+
         event.addListener(skillButton);
-        
+
         // 展開時のスキル選択UI
         if (isExpanded) {
             addSkillSelectionWidgets(inventoryScreen, event);
         }
     }
-    
+
     private static void toggleSkillMenu(InventoryScreen screen) {
         isExpanded = !isExpanded;
         screen.init(Minecraft.getInstance(), screen.width, screen.height);
     }
-    
+
     private static void addSkillSelectionWidgets(InventoryScreen screen, ScreenEvent.Init.Post event) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
-        
+
         // GUI位置を調整（インベントリの右側に配置）
         int baseX = screen.getGuiLeft() + 180;
         int baseY = screen.getGuiTop() + 20;
-        
+
         // 武器タイプ選択ボタン
         int typeY = baseY;
         for (WeaponType type : WeaponType.values()) {
-            Button typeButton = new Button(baseX, typeY, 80, 20,
-                Component.literal(type.getDisplayName()),
-                button -> {
+            AbstractButton typeButton = new AbstractButton(baseX, typeY, 80, 20, Component.literal(type.getDisplayName())) {
+                @Override
+                public void onPress() {
                     skillData.setSelectedWeaponType(type);
                     MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
                         new SkillSelectionPacket(type, null, null, null)
                     );
                     screen.init(mc, screen.width, screen.height);
-                }) {
+                }
+
                 @Override
-                public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+                public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
                     // 選択中の武器タイプをハイライト
                     boolean isSelected = skillData.getSelectedWeaponType() == type;
                     int color = isSelected ? 0x80FF80 : (this.isHoveredOrFocused() ? 0xFFFFFF : 0xA0A0A0);
-                    
-                    fill(poseStack, this.x, this.y, this.x + this.width, this.y + this.height,
+
+                    guiGraphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height,
                         isSelected ? 0x4000FF00 : 0x80000000);
-                    drawCenteredString(poseStack, mc.font, this.getMessage(),
-                        this.x + this.width / 2, this.y + (this.height - 8) / 2, color);
+                    guiGraphics.drawCenteredString(mc.font, this.getMessage(),
+                        this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, color);
+                }
+
+                @Override
+                protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+                    this.defaultButtonNarrationText(narrationElementOutput);
                 }
             };
             event.addListener(typeButton);
             typeY += 25;
         }
-        
+
         // 現在選択中の武器タイプに応じたスキル一覧
         WeaponType currentType = skillData.getSelectedWeaponType();
         int skillX = baseX + 100;
         int skillY = baseY;
-        
+
         // スキルタイトル
-        event.addListener(new Button(skillX, skillY, 150, 20,
-            Component.literal("【" + currentType.getDisplayName() + "の技】"),
-            button -> {}) {
+        event.addListener(new AbstractButton(skillX, skillY, 150, 20, Component.literal("【" + currentType.getDisplayName() + "の技】")) {
             @Override
-            public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
-                drawCenteredString(poseStack, mc.font, this.getMessage(),
-                    this.x + this.width / 2, this.y + (this.height - 8) / 2, 0xFFD700);
+            public void onPress() {
+                // no-op
+            }
+
+            @Override
+            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+                guiGraphics.drawCenteredString(mc.font, this.getMessage(),
+                    this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, 0xFFD700);
+            }
+
+            @Override
+            protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+                this.defaultButtonNarrationText(narrationElementOutput);
             }
         });
-        
+
         skillY += 25;
-        
+
         // 各技の説明
         if (currentType == WeaponType.STRAIGHT_SWORD) {
-            addSkillDescription(event, skillX, skillY, 
+            addSkillDescription(event, skillX, skillY,
                 "ダッシュ抜刀: 突きながら前進",
                 "通常攻撃: 素早い突きの連打",
                 "強化攻撃: 強力な突きを一撃");
@@ -149,68 +173,100 @@ public class SkillSelectionOverlay {
                 "通常攻撃: 三段斬り（左上→右上→横）",
                 "強化攻撃: 回転斬り（周囲攻撃）");
         }
-        
+
         // 固有スキルのON/OFF（位置を調整）
         addUniqueSkillToggles(event, screen, skillX, skillY + 80);
     }
-    
-    private static void addSkillDescription(ScreenEvent.Init.Post event, int x, int y, 
+
+    private static void addSkillDescription(ScreenEvent.Init.Post event, int x, int y,
                                            String dash, String normal, String charged) {
         Minecraft mc = Minecraft.getInstance();
-        
-        event.addListener(new Button(x, y, 200, 15,
-            Component.literal("▸ " + dash),
-            button -> {}) {
+
+        event.addListener(new AbstractButton(x, y, 200, 15, Component.literal("▸ " + dash)) {
             @Override
-            public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
-                drawString(poseStack, mc.font, this.getMessage(),
-                    this.x, this.y + (this.height - 8) / 2, 0xCCCCCC);
+            public void onPress() {
+                // no-op
+            }
+
+            @Override
+            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+                guiGraphics.drawString(mc.font, this.getMessage(),
+                    this.getX(), this.getY() + (this.height - 8) / 2, 0xCCCCCC);
+            }
+
+            @Override
+            protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+                this.defaultButtonNarrationText(narrationElementOutput);
             }
         });
-        
-        event.addListener(new Button(x, y + 20, 200, 15,
-            Component.literal("▸ " + normal),
-            button -> {}) {
+
+        event.addListener(new AbstractButton(x, y + 20, 200, 15, Component.literal("▸ " + normal)) {
             @Override
-            public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
-                drawString(poseStack, mc.font, this.getMessage(),
-                    this.x, this.y + (this.height - 8) / 2, 0xCCCCCC);
+            public void onPress() {
+                // no-op
+            }
+
+            @Override
+            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+                guiGraphics.drawString(mc.font, this.getMessage(),
+                    this.getX(), this.getY() + (this.height - 8) / 2, 0xCCCCCC);
+            }
+
+            @Override
+            protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+                this.defaultButtonNarrationText(narrationElementOutput);
             }
         });
-        
-        event.addListener(new Button(x, y + 40, 200, 15,
-            Component.literal("▸ " + charged),
-            button -> {}) {
+
+        event.addListener(new AbstractButton(x, y + 40, 200, 15, Component.literal("▸ " + charged)) {
             @Override
-            public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
-                drawString(poseStack, mc.font, this.getMessage(),
-                    this.x, this.y + (this.height - 8) / 2, 0xCCCCCC);
+            public void onPress() {
+                // no-op
+            }
+
+            @Override
+            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+                guiGraphics.drawString(mc.font, this.getMessage(),
+                    this.getX(), this.getY() + (this.height - 8) / 2, 0xCCCCCC);
+            }
+
+            @Override
+            protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+                this.defaultButtonNarrationText(narrationElementOutput);
             }
         });
     }
-    
+
     private static void addUniqueSkillToggles(ScreenEvent.Init.Post event, Screen screen, int x, int y) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
         ItemStack mainHand = player.getMainHandItem();
-        
+
         // タイトル
-        event.addListener(new Button(x, y, 100, 20,
-            Component.literal("【固有スキル】"),
-            button -> {}) {
+        event.addListener(new AbstractButton(x, y, 100, 20, Component.literal("【固有スキル】")) {
             @Override
-            public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
-                drawString(poseStack, mc.font, this.getMessage(),
-                    this.x, this.y + (this.height - 8) / 2, 0xFFD700);
+            public void onPress() {
+                // no-op
+            }
+
+            @Override
+            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+                guiGraphics.drawString(mc.font, this.getMessage(),
+                    this.getX(), this.getY() + (this.height - 8) / 2, 0xFFD700);
+            }
+
+            @Override
+            protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+                this.defaultButtonNarrationText(narrationElementOutput);
             }
         });
-        
+
         y += 25;
-        
+
         // 特定の武器の固有スキル
         if (mainHand.getItem().getClass().getSimpleName().equals("ReplicaSwordOfLightItem")) {
-            addUniqueSkillToggle(event, x, y, "ReplicaSwordOfLight", 
+            addUniqueSkillToggle(event, x, y, "ReplicaSwordOfLight",
                 "SwordOfLight - ジャストガード", skillData, screen);
         } else if (mainHand.getItem().getClass().getSimpleName().equals("SwordOfNightItem")) {
             addUniqueSkillToggle(event, x, y, "SwordOfNight",
@@ -222,50 +278,56 @@ public class SkillSelectionOverlay {
             y += 25;
         }
     }
-    
-    private static void addUniqueSkillToggle(ScreenEvent.Init.Post event, int x, int y, 
+
+    private static void addUniqueSkillToggle(ScreenEvent.Init.Post event, int x, int y,
                                             String itemId, String skillName,
                                             PlayerSkillData.SkillStorage skillData, Screen screen) {
         Minecraft mc = Minecraft.getInstance();
-        
-        Button toggleButton = new Button(x, y, 180, 20,
-            Component.literal(skillName),
-            button -> {
+
+        AbstractButton toggleButton = new AbstractButton(x, y, 180, 20, Component.literal(skillName)) {
+            @Override
+            public void onPress() {
                 // 現在の状態を取得してトグル
                 boolean currentState = skillData.isUniqueSkillEnabled(itemId);
                 boolean newState = !currentState;
                 skillData.setUniqueSkillEnabled(itemId, newState);
-                
+
                 // サーバーに変更を送信
                 MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
                     new SkillSelectionPacket(null, null, itemId, newState)
                 );
-                
+
                 // 画面を再初期化して更新を反映
                 screen.init(mc, screen.width, screen.height);
-            }) {
+            }
+
             @Override
-            public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+            public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
                 boolean enabled = skillData.isUniqueSkillEnabled(itemId);
                 int bgColor = enabled ? 0x6000FF00 : 0x60404040;
                 int borderColor = enabled ? 0xFF00FF00 : 0xFF808080;
                 int textColor = this.isHoveredOrFocused() ? 0xFFFFFF : (enabled ? 0x00FF00 : 0xCCCCCC);
-                
+
                 // 背景を描画
-                fill(poseStack, this.x, this.y, this.x + this.width, this.y + this.height, bgColor);
+                guiGraphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, bgColor);
                 // 枠線を描画
-                fill(poseStack, this.x, this.y, this.x + this.width, this.y + 1, borderColor);
-                fill(poseStack, this.x, this.y + this.height - 1, this.x + this.width, this.y + this.height, borderColor);
-                fill(poseStack, this.x, this.y, this.x + 1, this.y + this.height, borderColor);
-                fill(poseStack, this.x + this.width - 1, this.y, this.x + this.width, this.y + this.height, borderColor);
-                
+                guiGraphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + 1, borderColor);
+                guiGraphics.fill(this.getX(), this.getY() + this.height - 1, this.getX() + this.width, this.getY() + this.height, borderColor);
+                guiGraphics.fill(this.getX(), this.getY(), this.getX() + 1, this.getY() + this.height, borderColor);
+                guiGraphics.fill(this.getX() + this.width - 1, this.getY(), this.getX() + this.width, this.getY() + this.height, borderColor);
+
                 // テキストを描画（ON/OFF状態を表示）
                 String displayText = this.getMessage().getString() + " [" + (enabled ? "ON" : "OFF") + "]";
-                drawCenteredString(poseStack, mc.font, Component.literal(displayText),
-                    this.x + this.width / 2, this.y + (this.height - 8) / 2, textColor);
+                guiGraphics.drawCenteredString(mc.font, Component.literal(displayText),
+                    this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, textColor);
+            }
+
+            @Override
+            protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+                this.defaultButtonNarrationText(narrationElementOutput);
             }
         };
-        
+
         event.addListener(toggleButton);
     }
 }

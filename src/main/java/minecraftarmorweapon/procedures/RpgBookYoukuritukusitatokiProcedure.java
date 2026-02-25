@@ -23,7 +23,7 @@ public class RpgBookYoukuritukusitatokiProcedure {
 			return;
 		{
 			if (entity instanceof ServerPlayer _ent) {
-				BlockPos _bpos = new BlockPos(x, y, z);
+				BlockPos _bpos = new BlockPos((int) (x), (int) (y), (int) (z));
 				NetworkHooks.openScreen((ServerPlayer) _ent, new MenuProvider() {
 					@Override
 					public Component getDisplayName() {

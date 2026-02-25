@@ -26,7 +26,7 @@ public class FreezingFireEffectProcedure {
             
             // ダメージ
             float damage = 2.0f + (level * 0.5f);
-            livingTarget.hurt(DamageSource.MAGIC, damage);
+            livingTarget.hurt(livingTarget.damageSources().magic(), damage);
             
             // パーティクル
             if (world instanceof ServerLevel _level) {
@@ -36,7 +36,7 @@ public class FreezingFireEffectProcedure {
                 
                 // 青い炎のパーティクル
                 DustParticleOptions blueFlame = new DustParticleOptions(
-                    new com.mojang.math.Vector3f(0.5f, 0.8f, 1.0f), 1.0f
+                    new org.joml.Vector3f(0.5f, 0.8f, 1.0f), 1.0f
                 );
                 _level.sendParticles(blueFlame, x, y, z, 10, 0.3, 0.5, 0.3, 0.02);
                 _level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, x, y, z, 5, 0.2, 0.3, 0.2, 0.01);

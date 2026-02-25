@@ -32,6 +32,6 @@ public class KamianariKurikaraItem extends PickaxeItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 1, -3f, new Item.Properties().tab(null));
+		}, 1, -3f, new Item.Properties());
 	}
 }

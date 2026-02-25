@@ -19,7 +19,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.DustParticleOptions;
-import com.mojang.math.Vector3f;
+import org.joml.Vector3f;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -142,7 +142,7 @@ public class TyokutouThrustAttackProcedure {
         for (LivingEntity target : targets) {
             // ダメージ計算（エンチャントや効果を適用）
             float actualDamage = calculateDamage(player, target, (float)damage);
-            target.hurt(DamageSource.playerAttack(player), actualDamage);
+            target.hurt(player.damageSources().playerAttack(player), actualDamage);
 
             // 武器特殊効果を適用
             applyWeaponEffects(player, target, actualDamage);
@@ -283,7 +283,7 @@ public class TyokutouThrustAttackProcedure {
         // 全ての敵を貫通
         for (LivingEntity target : targets) {
             float actualDamage = calculateDamage(player, target, (float)damage);
-            target.hurt(DamageSource.playerAttack(player), actualDamage);
+            target.hurt(player.damageSources().playerAttack(player), actualDamage);
 
             applyWeaponEffects(player, target, actualDamage);
 
@@ -410,7 +410,7 @@ public class TyokutouThrustAttackProcedure {
 
             // ダメージ計算（エンチャントや効果を適用）
             float actualDamage = calculateDamage(player, target, (float)damage);
-            target.hurt(DamageSource.playerAttack(player), actualDamage);
+            target.hurt(player.damageSources().playerAttack(player), actualDamage);
 
             // 武器特殊効果を適用
             applyWeaponEffects(player, target, actualDamage);
@@ -497,7 +497,7 @@ public class TyokutouThrustAttackProcedure {
         }
 
         // クリティカル判定
-        if (player.fallDistance > 0.0F && !player.isOnGround() && !player.onClimbable() &&
+        if (player.fallDistance > 0.0F && !player.onGround() && !player.onClimbable() &&
             !player.isInWater() && !player.hasEffect(MobEffects.BLINDNESS) && !player.isPassenger()) {
             damage *= 1.5f;
 
@@ -508,7 +508,7 @@ public class TyokutouThrustAttackProcedure {
                     15, 0.2, 0.2, 0.2, 0.1);
             }
 
-            player.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+            player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                 SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
         }
 
@@ -553,7 +553,7 @@ public class TyokutouThrustAttackProcedure {
         // Killエンチャント
         if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), weapon) > 0) {
             if (Math.random() < 0.03) { // 3%の確率で即死
-                target.hurt(DamageSource.MAGIC, target.getMaxHealth() * 2);
+                target.hurt(target.damageSources().magic(), target.getMaxHealth() * 2);
 
                 if (VersionHelper.getLevel(player) instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(ParticleTypes.SMOKE,
@@ -561,7 +561,7 @@ public class TyokutouThrustAttackProcedure {
                         20, 0.5, 0.5, 0.5, 0.1);
                 }
 
-                player.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+                player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                     SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 0.5f, 2.0f);
             }
         }
@@ -1051,7 +1051,7 @@ public class TyokutouThrustAttackProcedure {
 
         for (LivingEntity target : targets) {
             // 追加の魔法ダメージ
-            target.hurt(DamageSource.MAGIC, damage);
+            target.hurt(target.damageSources().magic(), damage);
 
             // 小さなノックバック
             Vec3 knockback = target.position().subtract(start).normalize().scale(0.3);

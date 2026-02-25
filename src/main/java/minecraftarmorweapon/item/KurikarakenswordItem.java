@@ -23,10 +23,6 @@ import minecraftarmorweapon.procedures.IronKatanaturuwoShoudeChituteiruJiannotei
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
 import java.util.List;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.core.NonNullList;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.Enchantments;
 
 public class KurikarakenswordItem extends SwordItem {
 	public KurikarakenswordItem() {
@@ -54,7 +50,7 @@ public class KurikarakenswordItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -1.4f, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_WEAPON).fireResistant());
+		}, 3, -1.4f, new Item.Properties().fireResistant());
 	}
 //
 //	@Override
@@ -82,12 +78,4 @@ public class KurikarakenswordItem extends SwordItem {
 	public boolean isFoil(ItemStack itemstack) {
 		return true;
 	}
-	    @Override
-    public void fillItemCategory(CreativeModeTab tab,NonNullList<ItemStack>Items) {
-    if (this.allowedIn(tab)) {
-        ItemStack stack = new ItemStack(this);
-        stack.enchant(Enchantments.SMITE, 5);
-        Items.add(stack);
-    } }
-
 }

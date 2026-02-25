@@ -13,7 +13,7 @@ import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen
 import minecraftarmorweapon.procedures.OtiroposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure;
 import minecraftarmorweapon.procedures.OtiroehuekutogaYouXiaoShinoteitukuProcedure;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class OtiroMobEffect extends MobEffect {
 	public OtiroMobEffect() {
@@ -49,7 +49,7 @@ public class OtiroMobEffect extends MobEffect {
 			}
 
 			@Override
-			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, PoseStack poseStack, int x, int y, int blitOffset) {
+			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, GuiGraphics guiGraphics, int x, int y, int blitOffset) {
 				return false;
 			}
 

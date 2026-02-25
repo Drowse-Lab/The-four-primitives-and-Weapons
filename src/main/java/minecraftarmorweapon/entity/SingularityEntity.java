@@ -177,7 +177,7 @@ public class SingularityEntity extends PathfinderMob {
             if (isUnarmed && !playerCounterAttackUsed.getOrDefault(playerUUID, false)) {
                 playerCounterAttackUsed.put(playerUUID, true);
                 // 素手で反撃（1ダメージ）
-                player.hurt(DamageSource.mobAttack(this), 1.0f);
+                player.hurt(this.damageSources().mobAttack(this), 1.0f);
 
                 // メッセージ表示
                 player.displayClientMessage(Component.literal("§c特異点: この程度か..."), false);
@@ -212,7 +212,7 @@ public class SingularityEntity extends PathfinderMob {
             );
 
             // ダメージを与える
-            boolean result = livingTarget.hurt(DamageSource.mobAttack(this), actualDamage);
+            boolean result = livingTarget.hurt(this.damageSources().mobAttack(this), actualDamage);
 
             if (result) {
                 // 武器エフェクトを適用
@@ -227,7 +227,7 @@ public class SingularityEntity extends PathfinderMob {
                         livingTarget.setSecondsOnFire(3);
 
                         // パーティクル
-                        if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
+                        if (!this.level().isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                             serverLevel.sendParticles(
                                 ParticleTypes.FLAME,
                                 livingTarget.getX(), livingTarget.getY() + 1, livingTarget.getZ(),
@@ -241,7 +241,7 @@ public class SingularityEntity extends PathfinderMob {
                         ));
 
                         // パーティクル
-                        if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
+                        if (!this.level().isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                             serverLevel.sendParticles(
                                 ParticleTypes.SNOWFLAKE,
                                 livingTarget.getX(), livingTarget.getY() + 1, livingTarget.getZ(),
@@ -256,7 +256,7 @@ public class SingularityEntity extends PathfinderMob {
                 livingTarget.setDeltaMovement(livingTarget.getDeltaMovement().add(knockback.x, 0.15, knockback.z));
 
                 // 攻撃エフェクト
-                if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
+                if (!this.level().isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(
                         ParticleTypes.SWEEP_ATTACK,
                         livingTarget.getX(), livingTarget.getY() + livingTarget.getBbHeight() / 2, livingTarget.getZ(),
@@ -265,7 +265,7 @@ public class SingularityEntity extends PathfinderMob {
                 }
 
                 // 攻撃音（より重い音）
-                this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+                this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                     SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.HOSTILE, 1.2f, 0.9f);
             }
 

@@ -66,7 +66,7 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 			random = entity.getPersistentData().getDouble("random");
 			Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 			for (int index0 = 0; index0 < 100; index0++) {
-				if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))).canOcclude()) {
+				if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))).canOcclude()) {
 					entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 					Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 				} else {
@@ -74,7 +74,7 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 				}
 			}
 			for (int index1 = 0; index1 < 100; index1++) {
-				if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))).canOcclude()) {
+				if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))).canOcclude()) {
 					entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 					Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 					break;
@@ -82,8 +82,8 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 				entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 				Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 			}
-			world.levelEvent(2001, new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos")),
-					Block.getId((world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))))));
+			world.levelEvent(2001, new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos"))),
+					Block.getId((world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))))));
 			for (int index2 = 0; index2 < 36; index2++) {
 				X = entity.getPersistentData().getDouble("X") + Math.sin(Math.toRadians(entity.getPersistentData().getDouble("yaw") + 180)) * entity.getPersistentData().getDouble("distance") + Math.cos(loop) * XRadius2;
 				Y = Y_pos + 1;
@@ -111,22 +111,22 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 											entity.getPersistentData().putBoolean("enchantmagickatanadamege", true);
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+															VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 												}
 											}
 											{
 												Entity _ent = entityiterator;
-												if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+												if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 													_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-															VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/deta merge entity @s (Health:0)");
+															VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/deta merge entity @s (Health:0)");
 												}
 											}
 										}
 									} else {
 										if (entityiterator instanceof LivingEntity) {
-											entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
+											entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 										}
 									}
 								}
@@ -151,7 +151,7 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 				random = entity.getPersistentData().getDouble("random");
 				Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 				for (int index3 = 0; index3 < 25; index3++) {
-					if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))).canOcclude()) {
+					if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))).canOcclude()) {
 						entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 						Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 					} else {
@@ -159,7 +159,7 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 					}
 				}
 				for (int index4 = 0; index4 < 25; index4++) {
-					if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))).canOcclude()) {
+					if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))).canOcclude()) {
 						entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 						Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 						break;
@@ -167,8 +167,8 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 					entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 					Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 				}
-				world.levelEvent(2001, new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos")),
-						Block.getId((world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))))));
+				world.levelEvent(2001, new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos"))),
+						Block.getId((world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))))));
 				for (int index5 = 0; index5 < 10; index5++) {
 					X = entity.getPersistentData().getDouble("X") + Math.sin(Math.toRadians(entity.getPersistentData().getDouble("yaw") + 180)) * entity.getPersistentData().getDouble("distance");
 					Y = Y_pos + 8;
@@ -189,24 +189,24 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 											if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 													}
 												}
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
+																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
 																"/deta merge entity @s (Health:0)");
 													}
 												}
 											} else {
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WIND_STEP.get()) {
-													entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
+													entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
 												} else {
-													entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
+													entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 												}
 											}
 										}
@@ -229,7 +229,7 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 				random = entity.getPersistentData().getDouble("random");
 				Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 				for (int index6 = 0; index6 < 100; index6++) {
-					if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))).canOcclude()) {
+					if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))).canOcclude()) {
 						entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 						Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 					} else {
@@ -237,7 +237,7 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 					}
 				}
 				for (int index7 = 0; index7 < 100; index7++) {
-					if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))).canOcclude()) {
+					if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))).canOcclude()) {
 						entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 						Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 						break;
@@ -245,8 +245,8 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 					entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 					Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 				}
-				world.levelEvent(2001, new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos")),
-						Block.getId((world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))))));
+				world.levelEvent(2001, new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos"))),
+						Block.getId((world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))))));
 				for (int index8 = 0; index8 < 36; index8++) {
 					X = entity.getPersistentData().getDouble("X") + Math.sin(Math.toRadians(entity.getPersistentData().getDouble("yaw") + 180)) * entity.getPersistentData().getDouble("distance") + Math.cos(loop) * XRadius2;
 					Y = Y_pos + 1;
@@ -325,16 +325,16 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 											if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 													}
 												}
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
+																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
 																"/deta merge entity @s (Health:0)");
 													}
 												}
@@ -345,33 +345,33 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 														|| (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()
 														|| (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()) {
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.FIREBALL.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 														entityiterator.setSecondsOnFire(30);
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WIND_STEP.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.BUBBLESHOT.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 2));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 2));
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
 													}
 												} else {
-													entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
+													entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 												}
 											}
 										}
@@ -393,7 +393,7 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 				random = entity.getPersistentData().getDouble("random");
 				Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 				for (int index9 = 0; index9 < 100; index9++) {
-					if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))).canOcclude()) {
+					if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))).canOcclude()) {
 						entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 						Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 					} else {
@@ -401,7 +401,7 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 					}
 				}
 				for (int index10 = 0; index10 < 100; index10++) {
-					if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))).canOcclude()) {
+					if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))).canOcclude()) {
 						entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 						Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 						break;
@@ -409,8 +409,8 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 					entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 					Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 				}
-				world.levelEvent(2001, new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos")),
-						Block.getId((world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))))));
+				world.levelEvent(2001, new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos"))),
+						Block.getId((world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))))));
 				for (int index11 = 0; index11 < 36; index11++) {
 					X = entity.getPersistentData().getDouble("X") + Math.sin(Math.toRadians(entity.getPersistentData().getDouble("yaw") + 180)) * entity.getPersistentData().getDouble("distance") + Math.cos(loop) * XRadius2;
 					Y = Y_pos + 1;
@@ -490,16 +490,16 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 												entity.getPersistentData().putBoolean("enchantmagickatanadamege", true);
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 													}
 												}
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
+																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
 																"/deta merge entity @s (Health:0)");
 													}
 												}
@@ -512,33 +512,33 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 														|| (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()
 														|| (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()) {
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.FIREBALL.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 														entityiterator.setSecondsOnFire(30);
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WIND_STEP.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.BUBBLESHOT.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 2));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 2));
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
 													}
 												} else {
-													entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
+													entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 												}
 											}
 										}
@@ -560,7 +560,7 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 				random = entity.getPersistentData().getDouble("random");
 				Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 				for (int index12 = 0; index12 < 50; index12++) {
-					if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))).canOcclude()) {
+					if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))).canOcclude()) {
 						entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 						Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 					} else {
@@ -568,7 +568,7 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 					}
 				}
 				for (int index13 = 0; index13 < 50; index13++) {
-					if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))).canOcclude()) {
+					if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))).canOcclude()) {
 						entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 						Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 						break;
@@ -576,8 +576,8 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 					entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 					Y_pos = entity.getPersistentData().getDouble("Ypos") + 1;
 				}
-				world.levelEvent(2001, new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos")),
-						Block.getId((world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))))));
+				world.levelEvent(2001, new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos"))),
+						Block.getId((world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))))));
 				for (int index14 = 0; index14 < 36; index14++) {
 					X = entity.getPersistentData().getDouble("X") + Math.sin(Math.toRadians(entity.getPersistentData().getDouble("yaw") + 180)) * entity.getPersistentData().getDouble("distance") + Math.cos(loop) * XRadius2;
 					Y = Y_pos + 1;
@@ -620,16 +620,16 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 												entity.getPersistentData().putBoolean("enchantmagickatanadamege", true);
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 													}
 												}
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
+																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
 																"/deta merge entity @s (Health:0)");
 													}
 												}
@@ -641,24 +641,24 @@ public class TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure {
 														|| (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.BUBBLESHOT.get()
 														|| (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()) {
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.FIREBALL.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 														entityiterator.setSecondsOnFire(30);
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WIND_STEP.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.BUBBLESHOT.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.TISSOKU.get(), 120, 6, true, false));
 													}
 													if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.THUNDERBOLT.get()) {
-														entityiterator.hurt(DamageSource.GENERIC, (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 2));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+														entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 2));
+														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
 													}
 												} else {
-													entityiterator.hurt(DamageSource.GENERIC, (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
+													entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
 												}
 											}
 										}

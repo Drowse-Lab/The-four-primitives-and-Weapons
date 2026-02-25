@@ -34,16 +34,16 @@ import java.util.Map;
 import java.util.Collections;
 
 public abstract class PillagerArmorItem extends ArmorItem {
-	public PillagerArmorItem(EquipmentSlot slot, Item.Properties properties) {
+	public PillagerArmorItem(ArmorItem.Type type, Item.Properties properties) {
 		super(new ArmorMaterial() {
 			@Override
-			public int getDurabilityForSlot(EquipmentSlot slot) {
-				return new int[]{13, 15, 16, 11}[slot.getIndex()] * 0;
+			public int getDurabilityForType(ArmorItem.Type type) {
+				return new int[]{13, 15, 16, 11}[type.getSlot().getIndex()] * 0;
 			}
 
 			@Override
-			public int getDefenseForSlot(EquipmentSlot slot) {
-				return new int[]{2, 5, 6, 0}[slot.getIndex()];
+			public int getDefenseForType(ArmorItem.Type type) {
+				return new int[]{2, 5, 6, 0}[type.getSlot().getIndex()];
 			}
 
 			@Override
@@ -75,12 +75,12 @@ public abstract class PillagerArmorItem extends ArmorItem {
 			public float getKnockbackResistance() {
 				return 0f;
 			}
-		}, slot, properties);
+		}, type, properties);
 	}
 
 	public static class Helmet extends PillagerArmorItem {
 		public Helmet() {
-			super(EquipmentSlot.HEAD, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_ARMOR));
+			super(ArmorItem.Type.HELMET, new Item.Properties());
 		}
 
 		@Override
@@ -109,7 +109,7 @@ public abstract class PillagerArmorItem extends ArmorItem {
 
 	public static class Chestplate extends PillagerArmorItem {
 		public Chestplate() {
-			super(EquipmentSlot.CHEST, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_ARMOR));
+			super(ArmorItem.Type.CHESTPLATE, new Item.Properties());
 		}
 
 		@Override
@@ -138,7 +138,7 @@ public abstract class PillagerArmorItem extends ArmorItem {
 
 	public static class Leggings extends PillagerArmorItem {
 		public Leggings() {
-			super(EquipmentSlot.LEGS, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_ARMOR));
+			super(ArmorItem.Type.LEGGINGS, new Item.Properties());
 		}
 
 		@Override
@@ -168,7 +168,7 @@ public abstract class PillagerArmorItem extends ArmorItem {
 
 	public static class Boots extends PillagerArmorItem {
 		public Boots() {
-			super(EquipmentSlot.FEET, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_ARMOR));
+			super(ArmorItem.Type.BOOTS, new Item.Properties());
 		}
 
 		@Override

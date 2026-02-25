@@ -1,0 +1,34 @@
+{
+  "sources": [
+    {
+      "type": "directory",
+      "source": "blocks",
+      "prefix": "blocks/"
+    },
+    {
+      "type": "directory",
+      "source": "items",
+      "prefix": "items/"
+    },
+    {
+      "type": "directory",
+      "source": "entities",
+      "prefix": "entities/"
+    },
+    {
+      "type": "directory",
+      "source": "entity",
+      "prefix": "entity/"
+    },
+    {
+      "type": "directory",
+      "source": "models",
+      "prefix": "models/"
+    },
+    {
+      "type": "directory",
+      "source": "screens",
+      "prefix": "screens/"
+    }
+  ]
+}

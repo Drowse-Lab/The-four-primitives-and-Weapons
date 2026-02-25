@@ -23,7 +23,7 @@ public class FeynEffectHandler {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         Player player = event.player;
-        if (player == null || player.level.isClientSide) return;
+        if (player == null || player.level().isClientSide) return;
 
         boolean hasCursedItem = hasCursedFeyn(player.getMainHandItem()) || hasCursedFeyn(player.getOffhandItem());
 

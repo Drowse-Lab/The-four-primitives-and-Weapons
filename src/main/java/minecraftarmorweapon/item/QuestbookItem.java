@@ -33,7 +33,7 @@ import io.netty.buffer.Unpooled;
 
 public class QuestbookItem extends Item {
 	public QuestbookItem() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS).stacksTo(1).rarity(Rarity.UNCOMMON));
+		super(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON));
 	}
 
 	@Override

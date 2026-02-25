@@ -62,8 +62,8 @@ public class KarikarisiterunemaidomaidoehuekutogaYouXiaoShinoteitukuProcedure {
 			List<Entity> _entfound = world.getEntitiesOfClass(Entity.class, new AABB(_center, _center).inflate(2 / 2d), e -> true).stream().sorted(Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_center))).collect(Collectors.toList());
 			for (Entity entityiterator : _entfound) {
 				if (entityiterator instanceof Mob) {
-					entityiterator.hurt(DamageSource.GENERIC, 5);
-					if (!entity.level.isClientSide())
+					entityiterator.hurt(entityiterator.damageSources().generic(), 5);
+					if (!entity.level().isClientSide())
 						entity.discard();
 				}
 			}

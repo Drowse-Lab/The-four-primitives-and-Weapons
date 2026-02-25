@@ -6,7 +6,6 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
@@ -44,7 +43,7 @@ public class LokiDecoyArmorStandEntity extends ArmorStand {
     public void tick() {
         super.tick();
 
-        if (this.level.isClientSide()) {
+        if (this.level().isClientSide()) {
             return;
         }
 
@@ -77,7 +76,7 @@ public class LokiDecoyArmorStandEntity extends ArmorStand {
             this.getX() + TAUNT_RADIUS, this.getY() + TAUNT_RADIUS, this.getZ() + TAUNT_RADIUS
         );
 
-        List<Mob> mobs = this.level.getEntitiesOfClass(Mob.class, box, mob -> {
+        List<Mob> mobs = this.level().getEntitiesOfClass(Mob.class, box, mob -> {
             return mob.isAlive() && !mob.getUUID().equals(this.getUUID());
         });
 
@@ -95,13 +94,13 @@ public class LokiDecoyArmorStandEntity extends ArmorStand {
         // 回転速度を段階的に上げる
         if (tickCount == SPIN_START) {
             spinPhase = 1;
-            playSoundEffect(SoundEvents.NOTE_BLOCK_PLING, 2.0f, 1.0f);
+            playSoundEffect(SoundEvents.NOTE_BLOCK_PLING.value(), 2.0f, 1.0f);
         } else if (tickCount == SPIN_PHASE_2) {
             spinPhase = 2;
-            playSoundEffect(SoundEvents.NOTE_BLOCK_PLING, 2.0f, 1.5f);
+            playSoundEffect(SoundEvents.NOTE_BLOCK_PLING.value(), 2.0f, 1.5f);
         } else if (tickCount == SPIN_PHASE_3) {
             spinPhase = 3;
-            playSoundEffect(SoundEvents.NOTE_BLOCK_PLING, 2.0f, 2.0f);
+            playSoundEffect(SoundEvents.NOTE_BLOCK_PLING.value(), 2.0f, 2.0f);
         }
 
         // 回転速度
@@ -145,15 +144,15 @@ public class LokiDecoyArmorStandEntity extends ArmorStand {
      * 爆発処理
      */
     private void explode() {
-        if (!this.level.isClientSide()) {
-            this.level.explode(
+        if (!this.level().isClientSide()) {
+            this.level().explode(
                 null,
                 this.getX(), this.getY(), this.getZ(),
                 4.0f,
-                Explosion.BlockInteraction.DESTROY
+                Level.ExplosionInteraction.MOB
             );
 
-            this.level.playSound(
+            this.level().playSound(
                 null,
                 this.blockPosition(),
                 SoundEvents.GENERIC_EXPLODE,
@@ -167,7 +166,7 @@ public class LokiDecoyArmorStandEntity extends ArmorStand {
      * サウンド再生（publicメソッド）
      */
     public void playSoundEffect(net.minecraft.sounds.SoundEvent sound, float volume, float pitch) {
-        this.level.playSound(
+        this.level().playSound(
             null,
             this.blockPosition(),
             sound,

@@ -16,45 +16,45 @@ public class A2aitemuwoShoudeChituteiruJiannoteitukuProcedure {
 		if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 6) {
 			{
 				Entity _ent = entity;
-				if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+				if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 					_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-							_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/fill ~3 ~3 ~3 ~-3 ~-3 ~-3 minecraft:deepslate");
+							_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/fill ~3 ~3 ~3 ~-3 ~-3 ~-3 minecraft:deepslate");
 				}
 			}
 		}
 		if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 5) {
 			{
 				Entity _ent = entity;
-				if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+				if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 					_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-							_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/fill ~3 ~3 ~3 ~-3 ~-3 ~-3 minecraft:air");
+							_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/fill ~3 ~3 ~3 ~-3 ~-3 ~-3 minecraft:air");
 				}
 			}
 		}
 		if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 4) {
 			{
 				Entity _ent = entity;
-				if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+				if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 					_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-							_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/fill ~3 ~3 ~3 ~-3 ~-3 ~-3 minecraft:water");
+							_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/fill ~3 ~3 ~3 ~-3 ~-3 ~-3 minecraft:water");
 				}
 			}
 		}
 		if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 3) {
 			{
 				Entity _ent = entity;
-				if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+				if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 					_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-							_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/fill ~3 ~3 ~3 ~-3 ~-3 ~-3 minecraft:stone");
+							_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/fill ~3 ~3 ~3 ~-3 ~-3 ~-3 minecraft:stone");
 				}
 			}
 		}
 		if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 2) {
 			{
 				Entity _ent = entity;
-				if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+				if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 					_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-							_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/fill ~3 ~3 ~3 ~-3 ~-3 ~-3 minecraft:dirt");
+							_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/fill ~3 ~3 ~3 ~-3 ~-3 ~-3 minecraft:dirt");
 				}
 			}
 		}

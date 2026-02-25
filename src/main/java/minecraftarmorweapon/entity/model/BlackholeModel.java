@@ -1,12 +1,12 @@
 package minecraftarmorweapon.entity.model;
 
-import software.bernie.geckolib3.model.AnimatedGeoModel;
+import software.bernie.geckolib.model.GeoModel;
 
 import net.minecraft.resources.ResourceLocation;
 
 import minecraftarmorweapon.entity.BlackholeEntity;
 
-public class BlackholeModel extends AnimatedGeoModel<BlackholeEntity> {
+public class BlackholeModel extends GeoModel<BlackholeEntity> {
 	@Override
 	public ResourceLocation getAnimationResource(BlackholeEntity entity) {
 		return new ResourceLocation("minecraft_armor_weapon", "animations/blackhole.animation.json");

@@ -120,7 +120,7 @@ public class ElementalDamageEvent {
             target.getZ() + radius
         );
 
-        List<LivingEntity> nearbyEntities = target.level.getEntitiesOfClass(
+        List<LivingEntity> nearbyEntities = target.level().getEntitiesOfClass(
             LivingEntity.class, searchBox,
             e -> e != target && e != attacker && (e.isInWaterOrRain() || e.isInWaterRainOrBubble())
         );
@@ -147,7 +147,7 @@ public class ElementalDamageEvent {
 
             // 周囲のエンティティには50%のダメージ（通常のDamageSourceで再帰を防ぐ）
             float chainDamage = originalDamage * 0.5f;
-            nearby.hurt(DamageSource.LIGHTNING_BOLT, chainDamage);
+            nearby.hurt(nearby.damageSources().lightningBolt(), chainDamage);
         }
     }
 }

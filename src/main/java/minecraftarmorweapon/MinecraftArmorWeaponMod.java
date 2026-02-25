@@ -13,7 +13,7 @@
  */
 package minecraftarmorweapon;
 
-import software.bernie.geckolib3.GeckoLib;
+import software.bernie.geckolib.GeckoLib;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -60,9 +60,9 @@ public class MinecraftArmorWeaponMod {
 
 	public MinecraftArmorWeaponMod() {
 		MinecraftForge.EVENT_BUS.register(this);
-		MinecraftArmorWeaponModTabs.load();
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 
+		MinecraftArmorWeaponModTabs.REGISTRY.register(bus);
 		MinecraftArmorWeaponModBlocks.REGISTRY.register(bus);
 		MinecraftArmorWeaponModItems.REGISTRY.register(bus);
 		MinecraftArmorWeaponModEntities.REGISTRY.register(bus);

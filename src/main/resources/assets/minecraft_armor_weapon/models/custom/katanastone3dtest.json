@@ -1,6 +1,6 @@
 {
   "credit": "Made with Blockbench",
-  "parent": "katanastone3dtest",
+  "parent": "block/block",
   "elements": [
     {
       "from": [

@@ -43,7 +43,7 @@ public class MotaseruItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, 96f, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO));
+		}, 3, 96f, new Item.Properties());
 	}
 
 	@Override

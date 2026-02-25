@@ -11,6 +11,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.level.ServerLevel;
@@ -50,7 +51,7 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
     }
 
     @Override
-    public Packet<?> getAddEntityPacket() {
+    public Packet<ClientGamePacketListener> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
@@ -128,11 +129,11 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
 
                 // 無敵時間をリセットしてボーナスダメージ（+7）を追加
                 livingEntity.invulnerableTime = 0;
-                livingEntity.hurt(DamageSource.playerAttack(player), damage);
+                livingEntity.hurt(player.damageSources().playerAttack(player), damage);
             } else if (shooter != null) {
-                livingEntity.hurt(DamageSource.mobAttack(shooter), damage);
+                livingEntity.hurt(shooter.damageSources().mobAttack(shooter), damage);
             } else {
-                livingEntity.hurt(DamageSource.MAGIC, damage);
+                livingEntity.hurt(this.damageSources().magic(), damage);
             }
 
             // ヒットエフェクト
@@ -147,7 +148,7 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
             }
 
             // ヒットサウンド
-            this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.WITHER_HURT, SoundSource.HOSTILE, 1.0f, 0.5f);
 
             this.discard();
@@ -163,7 +164,7 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
                 10, 0.3, 0.3, 0.3, 0.05);
         }
 
-        this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+        this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
             SoundEvents.WITHER_BREAK_BLOCK, SoundSource.HOSTILE, 0.5f, 1.0f);
 
         this.discard();

@@ -27,15 +27,15 @@ public class StormYoukuritukusitatokiProcedure {
 			return;
 		}
 
-		minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("Storm: Entity: {}, Client side: {}", entity, entity.level.isClientSide);
+		minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("Storm: Entity: {}, Client side: {}", entity, entity.level().isClientSide);
 		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()
 				|| (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STORM.get()) {
 			minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("Storm: Item check passed!");
-			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.STORM_EFFECT.get(), 100, 2, true, false));
 
 			// 竜巻エンティティの召喚（感電効果付き）
-			if (!entity.level.isClientSide && entity instanceof Player player) {
+			if (!entity.level().isClientSide && entity instanceof Player player) {
 				Level level = VersionHelper.getLevel(entity);
 				ItemStack mainHandItem = player.getMainHandItem();
 

@@ -23,9 +23,9 @@ public class LokiDecoydasuFeibiDaoJugaburotukuniDangtatutatokiProcedure {
 		MinecraftArmorWeaponMod.queueServerWork(2, () -> {
 			{
 				Entity _ent = entity;
-				if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+				if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 					_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-							_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "effect give @e[type=minecraft:armor_stand,tag=Loki_Decoy] minecraft_armor_weapon:lokidecoyeffect 10 1");
+							_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "effect give @e[type=minecraft:armor_stand,tag=Loki_Decoy] minecraft_armor_weapon:lokidecoyeffect 10 1");
 				}
 			}
 		});

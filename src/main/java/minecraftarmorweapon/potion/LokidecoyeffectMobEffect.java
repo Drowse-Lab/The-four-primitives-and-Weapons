@@ -16,7 +16,7 @@ import minecraftarmorweapon.procedures.LokidecoyeffectposiyonnoXiaoGuogaKaiShiSh
 import minecraftarmorweapon.procedures.LokidecoyeffectposiyonXiaoGuogaQieretaShiProcedure;
 import minecraftarmorweapon.procedures.LokidecoyeffectehuekutogaYouXiaoShinoteitukuProcedure;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class LokidecoyeffectMobEffect extends MobEffect {
 	public LokidecoyeffectMobEffect() {
@@ -58,7 +58,7 @@ public class LokidecoyeffectMobEffect extends MobEffect {
 			}
 
 			@Override
-			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, PoseStack poseStack, int x, int y, int blitOffset) {
+			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, GuiGraphics guiGraphics, int x, int y, int blitOffset) {
 				return false;
 			}
 

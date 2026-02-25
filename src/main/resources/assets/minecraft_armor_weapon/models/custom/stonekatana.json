@@ -1,7 +1,7 @@
 {
   "made": "hrmcngs",
   "credit": "Made with Blockbench",
-  "parent": "stone_katana",
+  "parent": "block/block",
   "texture_size": [
     32,
     32

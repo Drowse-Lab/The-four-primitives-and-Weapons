@@ -210,7 +210,7 @@ public class MagicKatanaSpecialChargeProcedure {
 
             // 無敵時間をリセットしてボーナスダメージを追加
             target.invulnerableTime = 0;
-            target.hurt(DamageSource.playerAttack(player), 2.0f);
+            target.hurt(player.damageSources().playerAttack(player), 2.0f);
 
             // プレイヤーの向いている方向に少しノックバック
             Vec3 knockbackVec = lookVec.normalize().multiply(0.5, 0.2, 0.5); // 水平方向に0.5、上に0.2

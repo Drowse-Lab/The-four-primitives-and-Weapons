@@ -95,7 +95,7 @@ public class DodgeAndBattouHandler {
             data.dodgeTimer--;
             
             // ダッシュ攻撃可能時の視覚的フィードバック
-            if (data.hasDodged && !player.level.isClientSide && data.dodgeTimer % 4 == 0) {
+            if (data.hasDodged && !player.level().isClientSide && data.dodgeTimer % 4 == 0) {
                 ServerLevel serverWorld = (ServerLevel) VersionHelper.getLevel(player);
                 serverWorld.sendParticles(
                     ParticleTypes.ELECTRIC_SPARK,
@@ -114,7 +114,7 @@ public class DodgeAndBattouHandler {
             data.cooldownTimer--;
             
             // クールダウン中は視覚的フィードバック
-            if (player.level.isClientSide && data.cooldownTimer % 10 == 0) {
+            if (player.level().isClientSide && data.cooldownTimer % 10 == 0) {
                 float percent = (float)data.cooldownTimer / DODGE_COOLDOWN;
                 player.displayClientMessage(
                     Component.literal(String.format("§7回避CD: %.1f秒", percent * 2.0f)), 
@@ -128,7 +128,7 @@ public class DodgeAndBattouHandler {
             data.fallDamageImmunityTimer--;
             
             // 落下ダメージ無効中のエフェクト
-            if (!player.level.isClientSide && data.fallDamageImmunityTimer % 5 == 0) {
+            if (!player.level().isClientSide && data.fallDamageImmunityTimer % 5 == 0) {
                 ServerLevel serverWorld = (ServerLevel) VersionHelper.getLevel(player);
                 serverWorld.sendParticles(
                     ParticleTypes.PORTAL,
@@ -144,17 +144,17 @@ public class DodgeAndBattouHandler {
         }
         
         // 地面にいる場合、空中ダッシュカウントをリセット
-        if (player.isOnGround()) {
+        if (player.onGround()) {
             data.airDashCount = 0;
         }
         
         // クライアント側で同時押しを検出（通常のダッシュ攻撃用）
-        if (player.level.isClientSide) {
+        if (player.level().isClientSide) {
             checkSimultaneousInput(player, data);
         }
         
         // クライアント側で左クリックを検出（回避後のダッシュ攻撃用）
-        if (player.level.isClientSide && data.hasDodged && data.dodgeTimer > 0) {
+        if (player.level().isClientSide && data.hasDodged && data.dodgeTimer > 0) {
             checkDashAttackInput(player, data);
         }
     }
@@ -330,7 +330,7 @@ public class DodgeAndBattouHandler {
         }
         
         // 空中でのダッシュ制限（1回まで）
-        boolean isInAir = !player.isOnGround();
+        boolean isInAir = !player.onGround();
         if (isInAir) {
             // if (data.airDashCount >= 1) {
             //     player.displayClientMessage(Component.literal("§c空中ダッシュは1回まで！"), true);
@@ -409,7 +409,7 @@ public class DodgeAndBattouHandler {
             float actualDamage = DamageCalculator.calculateDamage(player, target, baseDamage, weapon);
 
             // ダッシュ攻撃のダメージ
-            target.hurt(DamageSource.playerAttack(player), actualDamage);
+            target.hurt(player.damageSources().playerAttack(player), actualDamage);
             
             // 武器エフェクトを適用
             DamageCalculator.applyWeaponEffects(player, target, actualDamage, weapon);
@@ -634,7 +634,7 @@ public class DodgeAndBattouHandler {
         }
         
         // 落下ダメージかチェック
-        if (event.getSource() == DamageSource.FALL) {
+        if (event.getSource() == player.damageSources().fall()) {
             UUID playerId = player.getUUID();
             DodgeData data = playerDodgeData.get(playerId);
             
@@ -643,7 +643,7 @@ public class DodgeAndBattouHandler {
                 event.setCanceled(true);
                 
                 // エフェクトと通知
-                if (!player.level.isClientSide) {
+                if (!player.level().isClientSide) {
                     ServerLevel serverWorld = (ServerLevel) VersionHelper.getLevel(player);
                     serverWorld.sendParticles(
                         ParticleTypes.HAPPY_VILLAGER,
@@ -724,7 +724,7 @@ public class DodgeAndBattouHandler {
                     10, 0.3, 0.3, 0.3, 0.1);
             }
             
-            player.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+            player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                 SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
         }
         
@@ -759,9 +759,9 @@ public class DodgeAndBattouHandler {
                 for (int dy = -1; dy <= 2; dy++) {
                     for (int dz = -1; dz <= 1; dz++) {
                         BlockPos pos = new BlockPos(
-                            checkPos.x + dx,
-                            checkPos.y + dy,
-                            checkPos.z + dz
+                            (int)(checkPos.x + dx),
+                            (int)(checkPos.y + dy),
+                            (int)(checkPos.z + dz)
                         );
                         
                         BlockState state = world.getBlockState(pos);

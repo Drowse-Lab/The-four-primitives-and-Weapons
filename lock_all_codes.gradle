@@ -1,27 +1,199 @@
-// Gradle task to automatically lock all MCreator codes
+// ============================================================
+// MCreator コードロック & カスタムファイル保護システム
+// ビルド前に自動実行され、カスタムコードを保護します
+// ============================================================
+
+// 保護対象のカスタムファイル一覧
+def protectedCustomFiles = [
+    // --- Rarity Forge システム ---
+    'src/main/java/minecraftarmorweapon/init/RarityForgeRegistration.java',
+    'src/main/java/minecraftarmorweapon/block/RarityForgeBlock.java',
+    'src/main/java/minecraftarmorweapon/block/entity/RarityForgeBlockEntity.java',
+    'src/main/java/minecraftarmorweapon/world/inventory/RarityForgeMenu.java',
+    'src/main/java/minecraftarmorweapon/client/gui/RarityForgeScreen.java',
+    'src/main/java/minecraftarmorweapon/item/rarity/WeaponRarity.java',
+    'src/main/java/minecraftarmorweapon/item/rarity/RarityCraftingLogic.java',
+    'src/main/java/minecraftarmorweapon/item/rarity/RarityForgeRecipe.java',
+    'src/main/java/minecraftarmorweapon/item/rarity/RarityForgeRecipes.java',
+    'src/main/java/minecraftarmorweapon/network/RarityForgeButtonMessage.java',
+    'src/main/java/minecraftarmorweapon/events/WeaponRarityEventHandler.java',
+    // --- カスタムエンティティ ---
+    'src/main/java/minecraftarmorweapon/init/CustomEntityInit.java',
+    'src/main/java/minecraftarmorweapon/client/init/CustomEntityRenderers.java',
+    'src/main/java/minecraftarmorweapon/entity/DarkProjectileEntity.java',
+    'src/main/java/minecraftarmorweapon/client/renderer/DarkProjectileRenderer.java',
+    // --- ユーティリティ・イベント ---
+    'src/main/java/minecraftarmorweapon/util/DamageCalculator.java',
+    'src/main/java/minecraftarmorweapon/network/AttackPacket.java',
+    'src/main/java/minecraftarmorweapon/events/ChargedAttackHandler.java',
+    // --- スキルシステム ---
+    'src/main/java/minecraftarmorweapon/skill/ElectricDischargeBurstSkill.java',
+    'src/main/java/minecraftarmorweapon/block/ElectricConductBlock.java',
+    // --- JEI連携 ---
+    'src/main/java/minecraftarmorweapon/integration/RarityForgeRecipeCategory.java',
+    'src/main/java/minecraftarmorweapon/integration/RarityForgeJEIPlugin.java',
+    // --- メインModファイル (lockBaseModFilesで保護されるが念のため) ---
+    'src/main/java/minecraftarmorweapon/MinecraftArmorWeaponMod.java',
+]
+
+// === タスク1: MCreator要素コードを全てロック ===
 task lockAllCodes {
+    group = 'mcreator protection'
+    description = 'MCreatorの全要素のlocked_codeをtrueに設定'
     doLast {
         def mcreatorFile = file('minecraft_armor_weapon.mcreator')
-        if (mcreatorFile.exists()) {
-            def content = mcreatorFile.text
-            // Replace all locked_code: false with locked_code: true
-            content = content.replaceAll('"locked_code"\\s*:\\s*false', '"locked_code": true')
+        if (!mcreatorFile.exists()) {
+            println "⚠ minecraft_armor_weapon.mcreator が見つかりません"
+            return
+        }
+        def content = mcreatorFile.text
+        def original = content
+
+        // locked_code: false → true
+        content = content.replaceAll('"locked_code"\\s*:\\s*false', '"locked_code": true')
+
+        // lockBaseModFiles: false → true
+        content = content.replaceAll('"lockBaseModFiles"\\s*:\\s*false', '"lockBaseModFiles": true')
+
+        if (content != original) {
             mcreatorFile.text = content
-            println "✓ All MCreator element codes have been locked"
+            println "✓ MCreator要素コードをロックしました"
+        } else {
+            println "✓ MCreator要素コードは既にロック済み"
         }
     }
 }
 
-// Automatically run before any build
-tasks.whenTaskAdded { task ->
-    if (task.name.startsWith('build') || task.name == 'runClient' || task.name == 'runServer') {
-        task.dependsOn lockAllCodes
+// === タスク2: カスタムファイルをバックアップ ===
+task backupCustomFiles {
+    group = 'mcreator protection'
+    description = 'カスタムファイルを .protected_custom_files/ にバックアップ'
+    doLast {
+        def backupDir = file('.protected_custom_files')
+        if (!backupDir.exists()) backupDir.mkdirs()
+
+        int backed = 0
+        protectedCustomFiles.each { path ->
+            def src = file(path)
+            if (src.exists()) {
+                // サブディレクトリ構造を維持してバックアップ
+                def relativePath = path.replace('src/main/java/minecraftarmorweapon/', '')
+                def dst = new File(backupDir, relativePath)
+                dst.parentFile.mkdirs()
+                dst.text = src.text
+                backed++
+            }
+        }
+        println "✓ ${backed}個のカスタムファイルをバックアップしました"
     }
 }
 
-// Add task to lock codes before MCreator regeneration
-gradle.taskGraph.beforeTask { Task task ->
-    if (task.name.contains('generate') || task.name.contains('regenerate')) {
-        lockAllCodes.execute()
+// === タスク3: ビルド後にカスタムファイルの整合性を検証・復元 ===
+task verifyCustomFiles {
+    group = 'mcreator protection'
+    description = 'カスタムファイルが変更されていないか検証し、必要なら復元'
+    doLast {
+        def backupDir = file('.protected_custom_files')
+        if (!backupDir.exists()) {
+            println "⚠ バックアップが見つかりません。先に backupCustomFiles を実行してください"
+            return
+        }
+
+        int restored = 0
+        int intact = 0
+        protectedCustomFiles.each { path ->
+            def src = file(path)
+            def relativePath = path.replace('src/main/java/minecraftarmorweapon/', '')
+            def bak = new File(backupDir, relativePath)
+
+            if (bak.exists()) {
+                if (!src.exists()) {
+                    // ファイルが削除された → 復元
+                    src.parentFile.mkdirs()
+                    src.text = bak.text
+                    println "⚠ 復元 (削除されていた): ${src.name}"
+                    restored++
+                } else if (src.text != bak.text) {
+                    // ファイルが変更された → 復元
+                    src.text = bak.text
+                    println "⚠ 復元 (変更されていた): ${src.name}"
+                    restored++
+                } else {
+                    intact++
+                }
+            }
+        }
+
+        if (restored > 0) {
+            println "✓ ${restored}個のカスタムファイルを復元しました (${intact}個は変更なし)"
+        } else {
+            println "✓ 全カスタムファイルが正常 (${intact}個)"
+        }
+    }
+}
+
+// === タスク4: 保護状態の確認レポート ===
+task protectionStatus {
+    group = 'mcreator protection'
+    description = '現在の保護状態を表示'
+    doLast {
+        println "=" * 50
+        println "MCreator 保護状態レポート"
+        println "=" * 50
+
+        // .mcreator ファイルのロック状態
+        def mcreatorFile = file('minecraft_armor_weapon.mcreator')
+        if (mcreatorFile.exists()) {
+            def content = mcreatorFile.text
+            def unlocked = (content =~ /"locked_code"\s*:\s*false/).count
+            def locked = (content =~ /"locked_code"\s*:\s*true/).count
+            println "\n[MCreator要素]"
+            println "  ロック済み: ${locked}個"
+            println "  未ロック:   ${unlocked}個"
+
+            def baseLocked = content.contains('"lockBaseModFiles": true') || content.contains('"lockBaseModFiles":true')
+            println "  ベースファイルロック: ${baseLocked ? '有効' : '無効'}"
+        }
+
+        // カスタムファイルの状態
+        println "\n[カスタムファイル]"
+        int exists = 0
+        int missing = 0
+        protectedCustomFiles.each { path ->
+            def f = file(path)
+            if (f.exists()) {
+                exists++
+            } else {
+                println "  ✗ 見つからない: ${f.name}"
+                missing++
+            }
+        }
+        println "  存在: ${exists}個, 不足: ${missing}個"
+
+        // バックアップの状態
+        def backupDir = file('.protected_custom_files')
+        println "\n[バックアップ]"
+        if (backupDir.exists()) {
+            def backupCount = 0
+            backupDir.eachFileRecurse { if (it.isFile()) backupCount++ }
+            println "  バックアップファイル数: ${backupCount}個"
+        } else {
+            println "  バックアップなし"
+        }
+
+        println "\n" + "=" * 50
+    }
+}
+
+// === ビルドライフサイクルへのフック ===
+// ビルド関連タスク実行前に自動でロック＆バックアップ
+tasks.whenTaskAdded { task ->
+    if (task.name == 'compileJava' ||
+        task.name.startsWith('build') ||
+        task.name == 'runClient' ||
+        task.name == 'runServer' ||
+        task.name == 'jar') {
+        task.dependsOn lockAllCodes, backupCustomFiles
+        task.finalizedBy verifyCustomFiles
     }
 }

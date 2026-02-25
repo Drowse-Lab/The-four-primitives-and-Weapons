@@ -36,7 +36,7 @@ public class ItemWeaponswordItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -1f, new Item.Properties().tab(null));
+		}, 3, -1f, new Item.Properties());
 	}
 
 	@Override

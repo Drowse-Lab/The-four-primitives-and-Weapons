@@ -17,7 +17,7 @@ import com.google.common.collect.ImmutableMultimap;
 
 public class HammerItem extends Item {
 	public HammerItem() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_WEAPON).durability(9999).rarity(Rarity.RARE));
+		super(new Item.Properties().durability(9999).rarity(Rarity.RARE));
 	}
 
 	@Override

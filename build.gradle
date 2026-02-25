@@ -12,7 +12,7 @@ apply plugin: 'eclipse'
 
 version = '1.0'
 group = 'com.hrmcngs.minecraft_armor_weapon'
-archivesBaseName = 'minecraft_armor_weapon'
+archivesBaseName = 'The four primitives and Weapons-forge-1.20.1-'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
@@ -38,7 +38,7 @@ minecraft {
             property 'mixin.env.remapRefMap', 'true'
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             mods {
-                examplemod {
+                minecraft_armor_weapon {
                     source sourceSets.main
                 }
             }
@@ -52,7 +52,7 @@ minecraft {
             property 'mixin.env.remapRefMap', 'true'
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             mods {
-                examplemod {
+                minecraft_armor_weapon {
                     source sourceSets.main
                 }
             }
@@ -76,4 +76,5 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 apply from: 'mcreator.gradle'
+apply from: 'lock_all_codes.gradle'
 

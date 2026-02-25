@@ -33,7 +33,7 @@ public class KillEnchantmentHandler {
             Entity directAttacker = event.getSource().getDirectEntity();
             LivingEntity target = event.getEntity();
 
-            if (target.level.isClientSide())
+            if (target.level().isClientSide())
                 return;
 
             boolean hasKillEnchant = false;
@@ -102,7 +102,7 @@ public class KillEnchantmentHandler {
                                 4,
                                 target.getName().getString(),
                                 target.getDisplayName(),
-                                target.level.getServer(),
+                                target.level().getServer(),
                                 target
                             ),
                             "kill @s"

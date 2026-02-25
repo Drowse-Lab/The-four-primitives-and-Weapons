@@ -14,7 +14,7 @@ import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen
 
 import minecraftarmorweapon.procedures.Nagiharai2posiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class Nagiharai2MobEffect extends MobEffect {
 	public Nagiharai2MobEffect() {
@@ -45,7 +45,7 @@ public class Nagiharai2MobEffect extends MobEffect {
 			}
 
 			@Override
-			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, PoseStack poseStack, int x, int y, int blitOffset) {
+			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, GuiGraphics guiGraphics, int x, int y, int blitOffset) {
 				return false;
 			}
 

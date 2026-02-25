@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -49,7 +49,7 @@ public class TrueCrafterSafeAI {
     
     // スポーン時の強化
     @SubscribeEvent
-    public static void onEntitySpawn(LivingSpawnEvent.SpecialSpawn event) {
+    public static void onEntitySpawn(MobSpawnEvent.FinalizeSpawn event) {
         if (!CustomDifficultyCommand.isTrueCrafterEnabled()) {
             return;
         }
@@ -58,7 +58,7 @@ public class TrueCrafterSafeAI {
             return;
         }
         
-        if (VersionHelper.getLevel(monster) == null || monster.level.isClientSide) {
+        if (VersionHelper.getLevel(monster) == null || monster.level().isClientSide) {
             return;
         }
         
@@ -89,7 +89,7 @@ public class TrueCrafterSafeAI {
             return;
         }
         
-        if (VersionHelper.getLevel(monster) == null || monster.level.isClientSide) {
+        if (VersionHelper.getLevel(monster) == null || monster.level().isClientSide) {
             return;
         }
         
@@ -220,7 +220,7 @@ public class TrueCrafterSafeAI {
         }
         
         // 飛びかかり攻撃
-        if (state.leapCooldown <= 0 && zombie.isOnGround()) {
+        if (state.leapCooldown <= 0 && zombie.onGround()) {
             double distance = zombie.distanceTo(target);
             if (distance > 3 && distance < 8) {
                 Vec3 direction = target.position().subtract(zombie.position()).normalize();
@@ -236,9 +236,9 @@ public class TrueCrafterSafeAI {
                 BlockPos pos = zombie.blockPosition();
                 BlockPos placePos = pos.relative(zombie.getDirection());
                 
-                if (zombie.level.getBlockState(placePos).isAir() && 
-                    zombie.level.getBlockState(placePos.below()).getMaterial().isSolid()) {
-                    zombie.level.setBlock(placePos, Blocks.COBBLESTONE.defaultBlockState(), 3);
+                if (zombie.level().getBlockState(placePos).isAir() &&
+                    zombie.level().getBlockState(placePos.below()).isSolid()) {
+                    zombie.level().setBlock(placePos, Blocks.COBBLESTONE.defaultBlockState(), 3);
                     temporaryBlocks.put(placePos, System.currentTimeMillis());
                     state.blockPlaceCooldown = 30;
                 }
@@ -314,8 +314,8 @@ public class TrueCrafterSafeAI {
             double distance = spider.distanceTo(target);
             if (distance < 4) {
                 BlockPos targetPos = target.blockPosition();
-                if (spider.level.getBlockState(targetPos).isAir()) {
-                    spider.level.setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
+                if (spider.level().getBlockState(targetPos).isAir()) {
+                    spider.level().setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
                     temporaryBlocks.put(targetPos, System.currentTimeMillis());
                     state.blockPlaceCooldown = 100;
                 }

@@ -9,6 +9,6 @@ public class AttackBowposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 		if (entity == null)
 			return;
 		if (entity instanceof LivingEntity _entity)
-			_entity.hurt(new DamageSource("Attack bow").bypassArmor(), 10);
+			_entity.hurt(_entity.damageSources().magic(), 10);
 	}
 }

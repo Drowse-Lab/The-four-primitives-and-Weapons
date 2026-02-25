@@ -7,6 +7,6 @@ import net.minecraft.world.item.CreativeModeTab;
 
 public class SkinOfDragonItem extends Item {
 	public SkinOfDragonItem() {
-		super(new Item.Properties().tab(CreativeModeTab.TAB_MATERIALS).stacksTo(64).rarity(Rarity.EPIC));
+		super(new Item.Properties().stacksTo(64).rarity(Rarity.EPIC));
 	}
 }

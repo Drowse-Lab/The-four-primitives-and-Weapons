@@ -10,7 +10,7 @@ public class BlackholeenteiteigasuponsitaShiProcedure {
 		if (entity == null)
 			return;
 		MinecraftArmorWeaponMod.queueServerWork(400, () -> {
-			if (!entity.level.isClientSide())
+			if (!entity.level().isClientSide())
 				entity.discard();
 		});
 	}

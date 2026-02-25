@@ -9,6 +9,6 @@ public class RosemobupureiyagaZhiWutoChongTusitatokiProcedure {
 		if (entity == null)
 			return;
 		if (entity instanceof LivingEntity _entity)
-			_entity.hurt(new DamageSource("roge damege").bypassArmor(), 1);
+			_entity.hurt(_entity.damageSources().magic(), 1);
 	}
 }

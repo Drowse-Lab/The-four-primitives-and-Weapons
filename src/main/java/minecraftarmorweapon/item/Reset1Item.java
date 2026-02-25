@@ -19,7 +19,7 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
 public class Reset1Item extends Item {
 	public Reset1Item() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO).stacksTo(1).rarity(Rarity.EPIC));
+		super(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC));
 	}
 
 	@Override

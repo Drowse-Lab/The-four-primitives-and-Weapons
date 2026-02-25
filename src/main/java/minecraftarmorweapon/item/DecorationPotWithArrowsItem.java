@@ -16,7 +16,7 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
 public class DecorationPotWithArrowsItem extends Item {
 	public DecorationPotWithArrowsItem() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS).stacksTo(64).rarity(Rarity.COMMON));
+		super(new Item.Properties().stacksTo(64).rarity(Rarity.COMMON));
 	}
 
 	@Override

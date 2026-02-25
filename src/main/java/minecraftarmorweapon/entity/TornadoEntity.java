@@ -14,6 +14,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
@@ -22,6 +23,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.PlayMessages;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import minecraftarmorweapon.util.DamageCalculator;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModCustomEntities;
 import net.minecraft.world.item.ItemStack;
@@ -89,11 +91,11 @@ public class TornadoEntity extends Entity {
         // デバッグ: 最初のtickでログ出力
         if (tickCount == 1) {
             minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("TornadoEntity: First tick! Position: {}, {}, {}, Side: {}",
-                getX(), getY(), getZ(), level.isClientSide ? "CLIENT" : "SERVER");
+                getX(), getY(), getZ(), level().isClientSide ? "CLIENT" : "SERVER");
 
             // 最初のtickで生成音を再生
-            if (!level.isClientSide) {
-                level.playSound(null, getX(), getY(), getZ(),
+            if (!level().isClientSide) {
+                level().playSound(null, getX(), getY(), getZ(),
                     SoundEvents.EVOKER_CAST_SPELL, SoundSource.HOSTILE, 4.0f, 0.8f);
             }
 
@@ -108,7 +110,7 @@ public class TornadoEntity extends Entity {
             double traveledDistance = position().distanceTo(startPosition);
             if (traveledDistance >= maxTravelDistance) {
                 minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("TornadoEntity: Max travel distance reached! Distance: {}", traveledDistance);
-                if (!level.isClientSide) {
+                if (!level().isClientSide) {
                     spawnDespawnEffect();
                 }
                 discard();
@@ -119,7 +121,7 @@ public class TornadoEntity extends Entity {
         // 寿命チェック（安全装置）
         if (tickCount >= lifespan) {
             minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("TornadoEntity: Lifespan reached, discarding");
-            if (!level.isClientSide) {
+            if (!level().isClientSide) {
                 spawnDespawnEffect();
             }
             discard();
@@ -127,7 +129,7 @@ public class TornadoEntity extends Entity {
         }
 
         // ブロック衝突チェック
-        if (!level.isClientSide && checkBlockCollision()) {
+        if (!level().isClientSide && checkBlockCollision()) {
             spawnDespawnEffect();
             discard();
             return;
@@ -136,7 +138,7 @@ public class TornadoEntity extends Entity {
         // 移動（両側で同期）
         moveAlongPath();
 
-        if (!level.isClientSide) {
+        if (!level().isClientSide) {
             // サーバー側の処理
 
             // エフェクトと攻撃処理
@@ -150,13 +152,13 @@ public class TornadoEntity extends Entity {
             }
 
             // サーバー側でもパーティクルを生成してクライアントに送信
-            if (tickCount % 2 == 0 && level instanceof ServerLevel serverLevel) {
+            if (tickCount % 2 == 0 && level() instanceof ServerLevel serverLevel) {
                 createServerParticles(serverLevel);
             }
 
             // 竜巻の音を定期的に再生
             if (tickCount % 10 == 0) {
-                level.playSound(null, getX(), getY(), getZ(),
+                level().playSound(null, getX(), getY(), getZ(),
                     SoundEvents.EVOKER_CAST_SPELL, SoundSource.HOSTILE, 4.0f, 0.8f);
             }
         } else {
@@ -201,7 +203,7 @@ public class TornadoEntity extends Entity {
 
                 totalCheckPoints++;
 
-                if (!level.getBlockState(new net.minecraft.core.BlockPos(blockX, blockY, blockZ)).isAir()) {
+                if (!level().getBlockState(new net.minecraft.core.BlockPos(blockX, blockY, blockZ)).isAir()) {
                     solidBlockCount++;
                 }
             }
@@ -218,7 +220,7 @@ public class TornadoEntity extends Entity {
     }
 
     private void spawnDespawnEffect() {
-        if (!(level instanceof ServerLevel serverLevel)) return;
+        if (!(level() instanceof ServerLevel serverLevel)) return;
 
         Vec3 pos = position();
 
@@ -233,12 +235,12 @@ public class TornadoEntity extends Entity {
             50, 1, tornadoHeight / 4, 1, 0.2);
 
         // 消滅音を再生
-        level.playSound(null, pos.x, pos.y, pos.z,
+        level().playSound(null, pos.x, pos.y, pos.z,
             SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 0.5f, 1.2f);
     }
 
     private void applyTornadoEffects() {
-        if (!(level instanceof ServerLevel serverLevel)) return;
+        if (!(level() instanceof ServerLevel serverLevel)) return;
 
         Vec3 pos = position();
         boolean withElectricity = entityData.get(WITH_ELECTRICITY);
@@ -249,7 +251,7 @@ public class TornadoEntity extends Entity {
             pos.x + radius, pos.y + maxHeight, pos.z + radius
         );
 
-        List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, searchArea,
+        List<LivingEntity> targets = level().getEntitiesOfClass(LivingEntity.class, searchArea,
             entity -> entity != owner && entity.isAlive());
 
         for (LivingEntity target : targets) {
@@ -282,7 +284,7 @@ public class TornadoEntity extends Entity {
     }
 
     private void damageNearbyEntities() {
-        if (!(level instanceof ServerLevel)) return;
+        if (!(level() instanceof ServerLevel)) return;
 
         Vec3 pos = position();
         float damage = entityData.get(DAMAGE);
@@ -293,7 +295,7 @@ public class TornadoEntity extends Entity {
             pos.x + radius, pos.y + maxHeight * 0.7, pos.z + radius
         );
 
-        List<LivingEntity> targets = level.getEntitiesOfClass(LivingEntity.class, damageArea,
+        List<LivingEntity> targets = level().getEntitiesOfClass(LivingEntity.class, damageArea,
             entity -> entity != owner && affectedEntities.contains(entity));
 
         for (LivingEntity target : targets) {
@@ -301,7 +303,7 @@ public class TornadoEntity extends Entity {
             if (owner != null) {
                 DamageCalculator.dealDamage(owner, target, damage, weaponStack);
             } else {
-                target.hurt(DamageSource.MAGIC, damage);
+                target.hurt(target.damageSources().magic(), damage);
             }
         }
     }
@@ -414,20 +416,20 @@ public class TornadoEntity extends Entity {
                 double zOffset = Math.sin(angle) * currentRadius;
 
                 // poof パーティクル
-                level.addParticle(ParticleTypes.POOF,
+                level().addParticle(ParticleTypes.POOF,
                     pos.x + xOffset, pos.y + h, pos.z + zOffset,
                     xOffset * 0.05, 0.1, zOffset * 0.05);
 
                 // sweep_attack パーティクル
                 if (i % 2 == 0) {
-                    level.addParticle(ParticleTypes.SWEEP_ATTACK,
+                    level().addParticle(ParticleTypes.SWEEP_ATTACK,
                         pos.x + xOffset, pos.y + h, pos.z + zOffset,
                         0, 0, 0);
                 }
 
                 // 感電エフェクト（StormItemの場合）
                 if (withElectricity && i % 3 == 0 && Math.random() < 0.3) {
-                    level.addParticle(ParticleTypes.ELECTRIC_SPARK,
+                    level().addParticle(ParticleTypes.ELECTRIC_SPARK,
                         pos.x + xOffset, pos.y + h, pos.z + zOffset,
                         0, 0, 0);
                 }
@@ -436,7 +438,7 @@ public class TornadoEntity extends Entity {
 
         // 中心の雲パーティクル
         for (int i = 0; i < 3; i++) {
-            level.addParticle(ParticleTypes.CLOUD,
+            level().addParticle(ParticleTypes.CLOUD,
                 pos.x + (random.nextDouble() - 0.5) * 0.5,
                 pos.y + tornadoHeight / 2 + (random.nextDouble() - 0.5) * 1.0,
                 pos.z + (random.nextDouble() - 0.5) * 0.5,
@@ -447,7 +449,7 @@ public class TornadoEntity extends Entity {
         for (int i = 0; i < 12; i++) {
             double angle = (i / 12.0) * Math.PI * 2 + timeOffset;
             double groundRadius = 1.2;
-            level.addParticle(ParticleTypes.POOF,
+            level().addParticle(ParticleTypes.POOF,
                 pos.x + Math.cos(angle) * groundRadius,
                 pos.y + 0.1,
                 pos.z + Math.sin(angle) * groundRadius,
@@ -460,13 +462,13 @@ public class TornadoEntity extends Entity {
         super.onRemovedFromWorld();
 
         // 竜巻が消える時のエフェクト
-        if (level instanceof ServerLevel serverLevel) {
+        if (level() instanceof ServerLevel serverLevel) {
             Vec3 pos = position();
             serverLevel.sendParticles(ParticleTypes.EXPLOSION,
                 pos.x, pos.y + maxHeight / 2, pos.z,
                 10, radius / 2, maxHeight / 4, radius / 2, 0.1);
 
-            level.playSound(null, pos.x, pos.y, pos.z,
+            level().playSound(null, pos.x, pos.y, pos.z,
                 SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 0.5f, 1.2f);
         }
     }
@@ -500,7 +502,7 @@ public class TornadoEntity extends Entity {
         }
 
         if (compound.hasUUID("Owner")) {
-            if (level instanceof ServerLevel serverLevel) {
+            if (level() instanceof ServerLevel serverLevel) {
                 Entity entity = serverLevel.getEntity(compound.getUUID("Owner"));
                 if (entity instanceof Player) {
                     owner = (Player) entity;
@@ -542,7 +544,7 @@ public class TornadoEntity extends Entity {
     }
 
     @Override
-    public Packet<?> getAddEntityPacket() {
+    public Packet<ClientGamePacketListener> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 

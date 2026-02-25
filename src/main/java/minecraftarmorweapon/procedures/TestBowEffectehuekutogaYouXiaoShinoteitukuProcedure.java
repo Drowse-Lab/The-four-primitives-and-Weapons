@@ -28,9 +28,9 @@ public class TestBowEffectehuekutogaYouXiaoShinoteitukuProcedure {
 		alpha = entity.getYRot();
 		beta = entity.getXRot();
 		for (int index0 = 0; index0 < 2; index0++) {
-			if (world.getBlockState(new BlockPos(x - r * Math.cos(Math.toRadians(beta)) * Math.sin(Math.toRadians(alpha)), (y - 0.3) - r * Math.sin(Math.toRadians(beta)), z + r * Math.cos(Math.toRadians(beta)) * Math.cos(Math.toRadians(alpha))))
+			if (world.getBlockState(new BlockPos((int) (x - r * Math.cos(Math.toRadians(beta)) * Math.sin(Math.toRadians(alpha))), (int) ((y - 0.3) - r * Math.sin(Math.toRadians(beta))), (int) (z + r * Math.cos(Math.toRadians(beta)) * Math.cos(Math.toRadians(alpha)))))
 					.canOcclude()) {
-				if (!entity.level.isClientSide())
+				if (!entity.level().isClientSide())
 					entity.discard();
 				break;
 			}
@@ -47,7 +47,7 @@ public class TestBowEffectehuekutogaYouXiaoShinoteitukuProcedure {
 						if (!(entityiterator instanceof SkeltonMobEntity)) {
 							if (!(entityiterator.getPersistentData().getBoolean("minecraft_armor_weapon:armor_stand_tobasu_kill_off") == true)) {
 								if (entityiterator instanceof LivingEntity) {
-									entityiterator.hurt(DamageSource.GENERIC, 5);
+									entityiterator.hurt(entityiterator.damageSources().generic(), 5);
 								}
 							}
 						}

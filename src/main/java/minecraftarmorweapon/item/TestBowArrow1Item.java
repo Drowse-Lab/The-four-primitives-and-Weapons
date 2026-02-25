@@ -8,7 +8,7 @@ import net.minecraft.world.item.Item;
 
 public class TestBowArrow1Item extends Item {
 	public TestBowArrow1Item() {
-		super(new Item.Properties().tab(null).stacksTo(1).rarity(Rarity.EPIC));
+		super(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC));
 	}
 
 	@Override

@@ -44,7 +44,8 @@ public class SingularityRenderer extends HumanoidMobRenderer<SingularityEntity, 
         this.addLayer(new HumanoidArmorLayer<>(
             this,
             new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_INNER_ARMOR)),
-            new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR))
+            new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR)),
+            context.getModelManager()
         ));
 
         // 武器レイヤーを追加

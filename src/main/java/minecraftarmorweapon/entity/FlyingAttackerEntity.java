@@ -26,6 +26,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -92,7 +95,7 @@ public class FlyingAttackerEntity extends Monster {
 
     public FlyingAttackerEntity(EntityType<FlyingAttackerEntity> type, Level world) {
         super(type, world);
-        maxUpStep = 0.6f;
+        this.setMaxUpStep(0.6f);
         xpReward = 0;
         setNoAi(false);
         setPersistenceRequired();
@@ -152,7 +155,7 @@ public class FlyingAttackerEntity extends Monster {
     }
 
     @Override
-    public Packet<?> getAddEntityPacket() {
+    public Packet<ClientGamePacketListener> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
 
@@ -312,12 +315,12 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // /killコマンドとvoidダメージは受ける
-        if (source.isCreativePlayer() || source == DamageSource.OUT_OF_WORLD || source.isBypassInvul()) {
+        if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || source.is(DamageTypes.GENERIC_KILL)) {
             return super.hurt(source, amount);
         }
         
         // 火や溶岩ダメージを完全に無効化
-        if (source == DamageSource.IN_FIRE || source == DamageSource.ON_FIRE || source == DamageSource.LAVA || source == DamageSource.HOT_FLOOR) {
+        if (source.is(DamageTypes.IN_FIRE) || source.is(DamageTypes.ON_FIRE) || source.is(DamageTypes.LAVA) || source.is(DamageTypes.HOT_FLOOR)) {
             return false;
         }
         
@@ -331,7 +334,7 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // 発射体ダメージは無効化
-        if (source.isProjectile()) {
+        if (source.is(DamageTypeTags.IS_PROJECTILE)) {
             return false;
         }
         
@@ -347,12 +350,12 @@ public class FlyingAttackerEntity extends Monster {
     @Override
     public boolean isInvulnerableTo(DamageSource source) {
         // /killコマンドとvoidダメージは受ける
-        if (source.isCreativePlayer() || source == DamageSource.OUT_OF_WORLD || source.isBypassInvul()) {
+        if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || source.is(DamageTypes.GENERIC_KILL)) {
             return false;
         }
         
         // 火や溶岩ダメージに対して完全に無敵
-        if (source == DamageSource.IN_FIRE || source == DamageSource.ON_FIRE || source == DamageSource.LAVA || source == DamageSource.HOT_FLOOR) {
+        if (source.is(DamageTypes.IN_FIRE) || source.is(DamageTypes.ON_FIRE) || source.is(DamageTypes.LAVA) || source.is(DamageTypes.HOT_FLOOR)) {
             return true;
         }
         
@@ -366,7 +369,7 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // 発射体ダメージには無敵
-        if (source.isProjectile()) {
+        if (source.is(DamageTypeTags.IS_PROJECTILE)) {
             return true;
         }
         
@@ -406,11 +409,11 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // ブロックにめり込んでいる場合の処理
-        if (this.level.getBlockState(this.blockPosition()).getMaterial().isSolid() ||
-            this.level.getBlockState(this.blockPosition().above()).getMaterial().isSolid()) {
+        if (this.level().getBlockState(this.blockPosition()).blocksMotion() ||
+            this.level().getBlockState(this.blockPosition().above()).blocksMotion()) {
             // 空いている方向を探して移動
             for (int i = 1; i <= 3; i++) {
-                if (!this.level.getBlockState(this.blockPosition().above(i)).getMaterial().isSolid()) {
+                if (!this.level().getBlockState(this.blockPosition().above(i)).blocksMotion()) {
                     this.setPos(this.getX(), this.blockPosition().getY() + i, this.getZ());
                     break;
                 }
@@ -480,7 +483,7 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // 剣モードの近接攻撃処理
-        if (!this.getPersistentData().getBoolean("ArrowShootMode") && !this.level.isClientSide) {
+        if (!this.getPersistentData().getBoolean("ArrowShootMode") && !this.level().isClientSide) {
             LivingEntity target = this.getTarget();
             if (target == null && this.targetUUID != null) {
                 target = this.getTargetEntity();
@@ -518,7 +521,7 @@ public class FlyingAttackerEntity extends Monster {
         }
         
         // 矢射撃モードのチェック
-        if (this.getPersistentData().getBoolean("ArrowShootMode") && !this.level.isClientSide) {
+        if (this.getPersistentData().getBoolean("ArrowShootMode") && !this.level().isClientSide) {
             if (arrowShootCooldown > 0) {
                 arrowShootCooldown--;
             }
@@ -538,7 +541,7 @@ public class FlyingAttackerEntity extends Monster {
                     this.targetUUID = target.getUUID();
                 } else {
                     // 周囲の敵を検索
-                    List<LivingEntity> nearbyEntities = this.level.getEntitiesOfClass(
+                    List<LivingEntity> nearbyEntities = this.level().getEntitiesOfClass(
                         LivingEntity.class, 
                         this.getBoundingBox().inflate(16.0D),
                         e -> e != this && e != this.owner && e.isAlive() && 
@@ -637,7 +640,7 @@ public class FlyingAttackerEntity extends Monster {
         
         // 半径20ブロック以内の飛び道具を検知（検出範囲を拡大）
         double detectionRange = 20.0D;
-        List<Entity> nearbyEntities = this.level.getEntities(this, 
+        List<Entity> nearbyEntities = this.level().getEntities(this, 
             this.getBoundingBox().inflate(detectionRange));
         
         // nullチェックを追加
@@ -939,7 +942,7 @@ public class FlyingAttackerEntity extends Monster {
                 20, 0.3, 0.3, 0.3, 0.2);
             
             // 剣の弾き音
-            this.level.playSound(null, projectilePos.x, projectilePos.y, projectilePos.z,
+            this.level().playSound(null, projectilePos.x, projectilePos.y, projectilePos.z,
                 SoundEvents.SHIELD_BLOCK, SoundSource.HOSTILE, 1.0F, 1.2F);
         }
         
@@ -1041,9 +1044,9 @@ public class FlyingAttackerEntity extends Monster {
                 1, 0, 0, 0, 0);
             
             // ガラスが割れる音と剣の音
-            this.level.playSound(null, potionPos.x, potionPos.y, potionPos.z,
+            this.level().playSound(null, potionPos.x, potionPos.y, potionPos.z,
                 SoundEvents.GLASS_BREAK, SoundSource.HOSTILE, 0.8F, 1.0F);
-            this.level.playSound(null, potionPos.x, potionPos.y, potionPos.z,
+            this.level().playSound(null, potionPos.x, potionPos.y, potionPos.z,
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 0.8F, 1.2F);
         }
         
@@ -1226,7 +1229,7 @@ public class FlyingAttackerEntity extends Monster {
             hit = actualDamage > 0; // ダメージが与えられたかどうか
         } else {
             // 召喚者がいない場合は通常のダメージ
-            DamageSource damageSource = DamageSource.mobAttack(this);
+            DamageSource damageSource = this.damageSources().mobAttack(this);
             hit = target.hurt(damageSource, baseDamage);
         }
         System.out.println("DEBUG: Hit successful? " + hit);
@@ -1263,7 +1266,7 @@ public class FlyingAttackerEntity extends Monster {
                     float sweepRatio = sweepingLevel / 3.0F; // レベル1=33%, レベル2=66%, レベル3=100%
                     float sweepDamage = 1.0F + sweepRatio * baseDamage;
                     // 周囲の敵にダメージ
-                    List<LivingEntity> nearbyTargets = this.level.getEntitiesOfClass(LivingEntity.class,
+                    List<LivingEntity> nearbyTargets = this.level().getEntitiesOfClass(LivingEntity.class,
                             target.getBoundingBox().inflate(1.0D, 0.25D, 1.0D));
                     if (nearbyTargets != null) {
                         for (LivingEntity nearbyEntity : nearbyTargets) {
@@ -1274,7 +1277,7 @@ public class FlyingAttackerEntity extends Monster {
                                     // DamageCalculatorを使用（戻り値は使用しない）
                                     minecraftarmorweapon.util.DamageCalculator.dealDamage(this.owner, nearbyEntity, sweepDamage, displayItem);
                                 } else {
-                                    nearbyEntity.hurt(DamageSource.mobAttack(this), sweepDamage);
+                                    nearbyEntity.hurt(this.damageSources().mobAttack(this), sweepDamage);
                                 }
                             }
                         }
@@ -1290,12 +1293,12 @@ public class FlyingAttackerEntity extends Monster {
             }
 
             // 攻撃エフェクト
-            this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0F, 1.0F);
 
             // クリティカルエフェクト
             if (isCritical) {
-                this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+                this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                     SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.HOSTILE, 1.0F, 1.0F);
                 if (VersionHelper.getLevel(this) instanceof ServerLevel) {
                     ServerLevel serverLevel = (ServerLevel) VersionHelper.getLevel(this);
@@ -1362,10 +1365,10 @@ public class FlyingAttackerEntity extends Monster {
         }
 
         // サウンド再生
-        this.level.playSound(null, this.getX(), this.getY(), this.getZ(), 
+        this.level().playSound(null, this.getX(), this.getY(), this.getZ(), 
             SoundEvents.SKELETON_SHOOT, SoundSource.HOSTILE, 1.0F, 1.0F / (this.random.nextFloat() * 0.4F + 0.8F));
 
-        this.level.addFreshEntity(arrow);
+        this.level().addFreshEntity(arrow);
         
         // 矢を撃った後にkillエンチャントフラグをクリア
         this.getPersistentData().remove("minecraft_armor_weapon:killentity");

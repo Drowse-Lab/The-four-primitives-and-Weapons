@@ -5,14 +5,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.world.inventory.QuestscreenMenu;
 
 import java.util.HashMap;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 public class QuestscreenScreen extends AbstractContainerScreen<QuestscreenMenu> {
@@ -33,20 +32,19 @@ public class QuestscreenScreen extends AbstractContainerScreen<QuestscreenMenu> 
 	}
 
 	@Override
-	public void render(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
+	public void render(GuiGraphics ms, int mouseX, int mouseY, float partialTicks) {
 		this.renderBackground(ms);
 		super.render(ms, mouseX, mouseY, partialTicks);
 		this.renderTooltip(ms, mouseX, mouseY);
 	}
 
 	@Override
-	protected void renderBg(PoseStack ms, float partialTicks, int gx, int gy) {
+	protected void renderBg(GuiGraphics ms, float partialTicks, int gx, int gy) {
 		RenderSystem.setShaderColor(1, 1, 1, 1);
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 
-		RenderSystem.setShaderTexture(0, new ResourceLocation("minecraft_armor_weapon:textures/screens/quest_gui.png"));
-		this.blit(ms, this.leftPos + -58, this.topPos + -11, 0, 0, 292, 180, 292, 180);
+		ms.blit(new ResourceLocation("minecraft_armor_weapon:textures/screens/quest_gui.png"), this.leftPos + -58, this.topPos + -11, 0, 0, 292, 180, 292, 180);
 
 		RenderSystem.disableBlend();
 	}
@@ -66,18 +64,16 @@ public class QuestscreenScreen extends AbstractContainerScreen<QuestscreenMenu> 
 	}
 
 	@Override
-	protected void renderLabels(PoseStack poseStack, int mouseX, int mouseY) {
+	protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
 	}
 
 	@Override
 	public void onClose() {
 		super.onClose();
-		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(false);
 	}
 
 	@Override
 	public void init() {
 		super.init();
-		this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
 	}
 }

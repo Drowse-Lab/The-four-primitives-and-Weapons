@@ -1,7 +1,7 @@
 {
   "made": "hrmcngs",
   "credit": "Made with Blockbench",
-  "parent": "moto_wither_katana_block_1",
+  "parent": "block/block",
   "elements": [
     {
       "from": [

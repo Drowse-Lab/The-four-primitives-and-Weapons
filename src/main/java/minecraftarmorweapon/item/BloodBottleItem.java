@@ -14,7 +14,7 @@ import minecraftarmorweapon.procedures.BloodBottlepureiyagaaitemuwoShiiZhongwaru
 
 public class BloodBottleItem extends Item {
 	public BloodBottleItem() {
-		super(new Item.Properties().tab(CreativeModeTab.TAB_FOOD).stacksTo(16).rarity(Rarity.COMMON).food((new FoodProperties.Builder()).nutrition(0).saturationMod(0f).alwaysEat()
+		super(new Item.Properties().stacksTo(16).rarity(Rarity.COMMON).food((new FoodProperties.Builder()).nutrition(0).saturationMod(0f).alwaysEat()
 
 				.build()));
 	}

@@ -10,7 +10,7 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
 public class ArrowHeadItem extends Item {
 	public ArrowHeadItem() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO).stacksTo(1).fireResistant().rarity(Rarity.EPIC));
+		super(new Item.Properties().stacksTo(1).fireResistant().rarity(Rarity.EPIC));
 	}
 
 	@Override

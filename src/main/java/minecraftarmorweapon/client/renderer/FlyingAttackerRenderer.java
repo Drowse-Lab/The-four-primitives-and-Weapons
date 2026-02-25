@@ -12,10 +12,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.world.item.ItemStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.world.item.BowItem;
@@ -32,7 +33,7 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 	public FlyingAttackerRenderer(EntityRendererProvider.Context context) {
 		super(context, new HumanoidModel(context.bakeLayer(ModelLayers.PLAYER)), 0.5f);
 		this.model = this.getModel();
-		this.addLayer(new HumanoidArmorLayer(this, new HumanoidModel(context.bakeLayer(ModelLayers.PLAYER_INNER_ARMOR)), new HumanoidModel(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR))));
+		this.addLayer(new HumanoidArmorLayer(this, new HumanoidModel(context.bakeLayer(ModelLayers.PLAYER_INNER_ARMOR)), new HumanoidModel(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR)), context.getModelManager()));
 		// デフォルトのItemInHandLayerは追加しない（親クラスで追加されるため）
 		// カスタムアイテムレイヤーを追加
 		this.addLayer(new CenteredItemInHandLayer(this));
@@ -76,8 +77,8 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 				poseStack.translate(0.0D, 0.7D, 0.0D);
 				
 				// 水平に浮いている状態で表示
-				poseStack.mulPose(Vector3f.YP.rotationDegrees(ageInTicks * 3)); // ゆっくり回転
-				poseStack.mulPose(Vector3f.XP.rotationDegrees(0.0F));
+				poseStack.mulPose(Axis.YP.rotationDegrees(ageInTicks * 3)); // ゆっくり回転
+				poseStack.mulPose(Axis.XP.rotationDegrees(0.0F));
 				
 				// サイズ調整
 				poseStack.scale(2.0F, 2.0F, 2.0F);
@@ -86,26 +87,27 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 				poseStack.translate(0.0D, 0.5D, 0.5D);  // 前方向を反転
 				
 				// 剣を前方に向ける（180度回転）
-				poseStack.mulPose(Vector3f.XP.rotationDegrees(90.0F));
-				poseStack.mulPose(Vector3f.ZP.rotationDegrees(-180.0F));  // 45度から-135度に変更（180度回転）
+				poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
+				poseStack.mulPose(Axis.ZP.rotationDegrees(-180.0F));  // 45度から-135度に変更（180度回転）
 				
 				// サイズ調整
 				poseStack.scale(1.5F, 1.5F, 1.5F);
 			} else {
 				// その他のアイテムの場合
 				poseStack.translate(0.0D, 0.5D, 0.0D);
-				poseStack.mulPose(Vector3f.YP.rotationDegrees(ageInTicks * 3));
+				poseStack.mulPose(Axis.YP.rotationDegrees(ageInTicks * 3));
 				poseStack.scale(1.5F, 1.5F, 1.5F);
 			}
 				
 			// アイテムをレンダリング
 			Minecraft.getInstance().getItemRenderer().renderStatic(
 				heldItem,
-				ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND,
+				ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
 				packedLight,
 				net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
 				poseStack,
 				buffer,
+				entity.level(),
 				entity.getId()
 			);
 			

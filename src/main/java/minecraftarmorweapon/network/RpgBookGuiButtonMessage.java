@@ -71,7 +71,7 @@ public class RpgBookGuiButtonMessage {
 		Level world = VersionHelper.getLevel(entity);
 		HashMap guistate = RpgBookGuiMenu.guistate;
 		// security measure to prevent arbitrary chunk generation
-		if (!world.hasChunkAt(new BlockPos(x, y, z)))
+		if (!world.hasChunkAt(new BlockPos((int) (x), (int) (y), (int) (z))))
 			return;
 		if (buttonID == 0) {
 

@@ -21,7 +21,7 @@
 //
 //public class TestBowItem extends Item {
 //	public TestBowItem() {
-//		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_WEAPON).stacksTo(1));
+//		super(new Item.Properties().stacksTo(1));
 //	}
 //
 //	@Override
@@ -77,7 +77,7 @@ import minecraftarmorweapon.entity.TestBowEntity;
 
 public class TestBowItem extends Item {
 	public TestBowItem() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_WEAPON).stacksTo(1));
+		super(new Item.Properties().stacksTo(1));
 	}
 
 	@Override

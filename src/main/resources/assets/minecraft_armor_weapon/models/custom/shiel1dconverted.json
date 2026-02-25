@@ -1,7 +1,7 @@
 {
   "made": "hrmcngs",
   "credit": "Made with Blockbench",
-  "parent": "shiel1dconverted",
+  "parent": "block/block",
   "texture_size": [
     64,
     64

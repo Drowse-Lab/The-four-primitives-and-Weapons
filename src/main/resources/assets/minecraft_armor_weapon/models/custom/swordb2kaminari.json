@@ -1,7 +1,7 @@
 {
   "made": "hrmcngs",
   "credit": "Made with Blockbench",
-  "parent": "swordb2kaminari",
+  "parent": "block/block",
   "elements": [
     {
       "from": [

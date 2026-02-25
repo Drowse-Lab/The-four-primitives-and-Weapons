@@ -23,7 +23,7 @@ public class OtiruyoenteiteigasuponsitaShiProcedure {
 			}
 		}
 		MinecraftArmorWeaponMod.queueServerWork(2, () -> {
-			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.OTIRO.get(), 2, 1, true, false));
 		});
 	}

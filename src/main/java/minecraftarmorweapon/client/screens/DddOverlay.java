@@ -37,8 +37,7 @@ public class DddOverlay {
 			z = entity.getZ();
 		}
 		if (true) {
-			Minecraft.getInstance().font.draw(event.getPoseStack(),
-
+			event.getGuiGraphics().drawString(Minecraft.getInstance().font,
 					DddgemuNeiniobareiwoBiaoShiProcedure.execute(entity), posX + 116, posY + 109, -5921371);
 		}
 	}

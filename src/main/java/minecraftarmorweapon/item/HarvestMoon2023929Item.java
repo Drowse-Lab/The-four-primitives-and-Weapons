@@ -10,7 +10,7 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
 public class HarvestMoon2023929Item extends Item {
 	public HarvestMoon2023929Item() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_EVENT).stacksTo(64).rarity(Rarity.COMMON).food((new FoodProperties.Builder()).nutrition(3).saturationMod(1f)
+		super(new Item.Properties().stacksTo(64).rarity(Rarity.COMMON).food((new FoodProperties.Builder()).nutrition(3).saturationMod(1f)
 
 				.build()));
 	}

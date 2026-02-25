@@ -18,6 +18,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 
 import minecraftarmorweapon.procedures.AlchemyCraftBlockEntityOnEntityTickUpdateProcedure;
 
@@ -30,14 +31,14 @@ public class AlchemyCraftBlockEntityEntity extends Monster {
 
 	public AlchemyCraftBlockEntityEntity(EntityType<AlchemyCraftBlockEntityEntity> type, Level world) {
 		super(type, world);
-		maxUpStep = 0.6f;
+		this.setMaxUpStep(0.6f);
 		xpReward = 0;
 		setNoAi(false);
 		setPersistenceRequired();
 	}
 
 	@Override
-	public Packet<?> getAddEntityPacket() {
+	public Packet<ClientGamePacketListener> getAddEntityPacket() {
 		return NetworkHooks.getEntitySpawningPacket(this);
 	}
 

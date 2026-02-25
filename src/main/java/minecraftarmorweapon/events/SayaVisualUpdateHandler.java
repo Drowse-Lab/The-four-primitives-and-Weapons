@@ -66,7 +66,7 @@ public class SayaVisualUpdateHandler {
         if (event.phase != TickEvent.Phase.END) return;
         
         Player player = event.player;
-        if (player.level.isClientSide) return;
+        if (player.level().isClientSide) return;
         
         UUID playerId = player.getUUID();
         InventorySnapshot lastSnapshot = lastInventoryState.get(playerId);

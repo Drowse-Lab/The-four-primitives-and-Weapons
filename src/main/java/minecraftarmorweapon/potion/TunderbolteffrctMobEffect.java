@@ -14,7 +14,7 @@ import minecraftarmorweapon.procedures.TunderbolteffrctposiyonnoXiaoGuogaKaiShiS
 import minecraftarmorweapon.procedures.TunderbolteffrctposiyonXiaoGuogaQieretaShiProcedure;
 import minecraftarmorweapon.procedures.TunderbolteffrctehuekutogaYouXiaoShinoteitukuProcedure;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class TunderbolteffrctMobEffect extends MobEffect {
 	public TunderbolteffrctMobEffect() {
@@ -56,7 +56,7 @@ public class TunderbolteffrctMobEffect extends MobEffect {
 			}
 
 			@Override
-			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, PoseStack poseStack, int x, int y, int blitOffset) {
+			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, GuiGraphics guiGraphics, int x, int y, int blitOffset) {
 				return false;
 			}
 

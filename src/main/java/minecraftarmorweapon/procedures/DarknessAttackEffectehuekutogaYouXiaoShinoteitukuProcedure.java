@@ -10,7 +10,7 @@ public class DarknessAttackEffectehuekutogaYouXiaoShinoteitukuProcedure {
 	public static void execute(Entity entity) {
 		if (entity == null)
 			return;
-		entity.hurt(DamageSource.DRAGON_BREATH, (float) Math
+		entity.hurt(entity.damageSources().dragonBreath(), (float) Math
 				.ceil((entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.DARKNESS_ATTACK_EFFECT.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.DARKNESS_ATTACK_EFFECT.get()).getAmplifier() : 0)
 						/ 2));
 	}

@@ -47,7 +47,7 @@ public class FireballHitHandler {
         // 無敵時間をリセットしてボーナスダメージ（+3）を追加
         target.invulnerableTime = 0;
         float bonusDamage = tag.contains("BonusDamage") ? tag.getFloat("BonusDamage") : 3.0f;
-        target.hurt(DamageSource.playerAttack(player), bonusDamage);
+        target.hurt(player.damageSources().playerAttack(player), bonusDamage);
 
         // 炎上効果を付与（6秒）
         target.setSecondsOnFire(6);

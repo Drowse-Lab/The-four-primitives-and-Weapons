@@ -18,7 +18,7 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
 public class BubbleshotItem extends Item implements ICurioItem {
 	public BubbleshotItem() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS).stacksTo(1).rarity(Rarity.EPIC));
+		super(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC));
 	}
 
 	@Override

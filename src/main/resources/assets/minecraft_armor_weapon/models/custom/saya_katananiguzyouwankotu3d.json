@@ -1,7 +1,7 @@
 {
 	"format_version": "1.9.0",
 	"credit": "Made with Blockbench",
-	"parent": "saya_katananiguzyouwankotu3d",
+	"parent": "block/block",
 	"texture_size": [8, 8],
 	"textures": {
 		"2": "block/saya_katananiguzyouwan",

@@ -69,7 +69,7 @@ public class BlackholeenteiteinotitukuGengXinShiProcedure {
 												&& !((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.DARKNESS_KATANA.get())
 												&& !((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get())) {
 											MinecraftArmorWeaponMod.queueServerWork(1, () -> {
-												entityiterator.hurt(DamageSource.MAGIC, (float) 0.5);
+												entityiterator.hurt(entityiterator.damageSources().magic(), (float) 0.5);
 											});
 										}
 									}

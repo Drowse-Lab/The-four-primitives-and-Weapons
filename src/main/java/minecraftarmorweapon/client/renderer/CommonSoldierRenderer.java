@@ -47,7 +47,8 @@ public class CommonSoldierRenderer extends HumanoidMobRenderer<CommonSoldierEnti
         this.addLayer(new HumanoidArmorLayer<>(
             this,
             new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_INNER_ARMOR)),
-            new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR))
+            new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR)),
+            context.getModelManager()
         ));
 
         // 武器レイヤーを追加（手に持っている刀を表示）

@@ -43,25 +43,25 @@ public class AlchemyCraftBlockEffectOnEffectActiveTickProcedure {
 		if (entity instanceof ArmorStand) {
 			{
 				Entity _ent = entity;
-				if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+				if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 					_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-							_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "tp @s ~ ~ ~ ~-.5 ~");
+							_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "tp @s ~ ~ ~ ~-.5 ~");
 				}
 			}
-			if (!((world.getBlockState(new BlockPos(entity.getX(), entity.getY() - 0.5, entity.getZ()))).getBlock() == MinecraftArmorWeaponModBlocks.ALCHEMY_CRAFT_BLOCK.get())) {
+			if (!((world.getBlockState(new BlockPos((int) entity.getX(), (int) (entity.getY() - 0.5), (int) entity.getZ()))).getBlock() == MinecraftArmorWeaponModBlocks.ALCHEMY_CRAFT_BLOCK.get())) {
 				if (world instanceof ServerLevel _level)
 					_level.getServer().getCommands().performPrefixedCommand(
 							new CommandSourceStack(CommandSource.NULL, new Vec3((entity.getX()), (entity.getY() - 0.5), (entity.getZ())), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
 							"fill ~-4 ~ ~-4 ~4 ~1 ~4 air");
-				if (!entity.level.isClientSide())
+				if (!entity.level().isClientSide())
 					entity.discard();
 			}
-			if ((world.getBlockState(new BlockPos(x, y, z))).getBlock() == Blocks.AIR) {
+			if ((world.getBlockState(new BlockPos((int) x, (int) y, (int) z))).getBlock() == Blocks.AIR) {
 				{
 					Entity _ent = entity;
-					if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+					if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 						_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-								_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "function minecraft_armor_weapon:alchemymod1");
+								_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "function minecraft_armor_weapon:alchemymod1");
 					}
 				}
 			}

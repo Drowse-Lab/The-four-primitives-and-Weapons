@@ -43,7 +43,7 @@ public class YouwakaranehuekutogaYouXiaoShinoteitukuProcedure {
 		entity.getPersistentData().putDouble("Xpos", (entity.getPersistentData().getDouble("X") + Math.sin(Math.toRadians(entity.getPersistentData().getDouble("yaw") + 180)) * entity.getPersistentData().getDouble("distance")));
 		entity.getPersistentData().putDouble("Zpos", (entity.getPersistentData().getDouble("Z") + Math.cos(Math.toRadians(entity.getPersistentData().getDouble("yaw"))) * entity.getPersistentData().getDouble("distance")));
 		for (int index0 = 0; index0 < 100; index0++) {
-			if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))).canOcclude()) {
+			if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))).canOcclude()) {
 				entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 				Y_pos = entity.getPersistentData().getDouble("Ypos") + 5;
 			} else {
@@ -51,7 +51,7 @@ public class YouwakaranehuekutogaYouXiaoShinoteitukuProcedure {
 			}
 		}
 		for (int index1 = 0; index1 < 100; index1++) {
-			if (world.getBlockState(new BlockPos(entity.getPersistentData().getDouble("Xpos"), entity.getPersistentData().getDouble("Ypos"), entity.getPersistentData().getDouble("Zpos"))).canOcclude()) {
+			if (world.getBlockState(new BlockPos((int) (entity.getPersistentData().getDouble("Xpos")), (int) (entity.getPersistentData().getDouble("Ypos")), (int) (entity.getPersistentData().getDouble("Zpos")))).canOcclude()) {
 				entity.getPersistentData().putDouble("Ypos", (entity.getPersistentData().getDouble("Ypos")));
 				Y_pos = entity.getPersistentData().getDouble("Ypos") + 5;
 				break;
@@ -73,7 +73,7 @@ public class YouwakaranehuekutogaYouXiaoShinoteitukuProcedure {
 						.collect(Collectors.toList());
 				for (Entity entityiterator : _entfound) {
 					if (!(entityiterator == entity)) {
-						entityiterator.hurt(DamageSource.GENERIC, 25);
+						entityiterator.hurt(entityiterator.damageSources().generic(), 25);
 					}
 				}
 			}

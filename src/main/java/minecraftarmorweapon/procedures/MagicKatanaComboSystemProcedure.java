@@ -14,7 +14,7 @@
 // import net.minecraft.server.level.ServerLevel;
 // import net.minecraft.core.particles.ParticleTypes;
 // import net.minecraft.core.particles.DustParticleOptions;
-// import com.mojang.math.Vector3f;
+// import org.joml.Vector3f;
 // import net.minecraft.sounds.SoundEvents;
 // import net.minecraft.sounds.SoundSource;
 // import net.minecraft.nbt.CompoundTag;
@@ -107,7 +107,7 @@
 
 //         // サウンド
 //         world.playSound(null, player.getX(), player.getY(), player.getZ(),
-//             SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 1.2f);
+//             SoundEvents.PLAYER_ATTACK_SWEEP.value(), SoundSource.PLAYERS, 1.0f, 1.2f);
 //     }
 
 //     /**
@@ -138,7 +138,7 @@
 //         }
 
 //         world.playSound(null, player.getX(), player.getY(), player.getZ(),
-//             SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 1.0f);
+//             SoundEvents.PLAYER_ATTACK_SWEEP.value(), SoundSource.PLAYERS, 1.0f, 1.0f);
 //     }
 
 //     /**
@@ -176,7 +176,7 @@
 //         player.setYRot(player.getYRot() + 360);
 
 //         world.playSound(null, player.getX(), player.getY(), player.getZ(),
-//             SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.2f, 0.8f);
+//             SoundEvents.PLAYER_ATTACK_SWEEP.value(), SoundSource.PLAYERS, 1.2f, 0.8f);
 //     }
 
 //     /**
@@ -219,7 +219,7 @@
 //         combo.lastDashDirection = lookVec;
 
 //         world.playSound(null, player.getX(), player.getY(), player.getZ(),
-//             SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.5f);
+//             SoundEvents.ENDERMAN_TELEPORT.value(), SoundSource.PLAYERS, 1.0f, 1.5f);
 //     }
 
 //     /**
@@ -257,7 +257,7 @@
 //         }
 
 //         world.playSound(null, player.getX(), player.getY(), player.getZ(),
-//             SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.5f, 1.0f);
+//             SoundEvents.PLAYER_ATTACK_CRIT.value(), SoundSource.PLAYERS, 1.5f, 1.0f);
 //     }
 
 //     /**
@@ -290,7 +290,7 @@
 //                     }
 
 //                     world.playSound(null, slashPos.x, slashPos.y, slashPos.z,
-//                         SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.8f, 1.5f + index * 0.1f);
+//                         SoundEvents.PLAYER_ATTACK_SWEEP.value(), SoundSource.PLAYERS, 0.8f, 1.5f + index * 0.1f);
 //                 });
 //             }
 //         }
@@ -345,9 +345,9 @@
 //         player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 2));
 
 //         world.playSound(null, player.getX(), player.getY(), player.getZ(),
-//             SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 2.0f, 0.5f);
+//             SoundEvents.LIGHTNING_BOLT_THUNDER.value(), SoundSource.PLAYERS, 2.0f, 0.5f);
 //         world.playSound(null, player.getX(), player.getY(), player.getZ(),
-//             SoundEvents.DRAGON_FIREBALL_EXPLODE, SoundSource.PLAYERS, 1.5f, 1.0f);
+//             SoundEvents.DRAGON_FIREBALL_EXPLODE.value(), SoundSource.PLAYERS, 1.5f, 1.0f);
 //     }
 
 //     /**

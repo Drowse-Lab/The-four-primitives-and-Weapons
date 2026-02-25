@@ -43,7 +43,7 @@ public class PrototypeKatanaItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -1.4f, new Item.Properties().tab(null));
+		}, 3, -1.4f, new Item.Properties());
 	}
 
 	@Override

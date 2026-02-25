@@ -52,7 +52,7 @@ public class WeaponSwitchHandler {
         LivingEntity entity = event.getEntity();
         
         // クライアントサイドでは処理しない
-        if (entity.level.isClientSide) {
+        if (entity.level().isClientSide) {
             return;
         }
         
@@ -100,13 +100,13 @@ public class WeaponSwitchHandler {
             // 距離に応じて武器を切り替え
             if (distance > 6.0) {
                 // 遠距離なら弓
-                if (!ItemStack.isSame(currentWeapon, weapons.ranged)) {
+                if (!ItemStack.isSameItem(currentWeapon, weapons.ranged)) {
                     entity.setItemSlot(EquipmentSlot.MAINHAND, weapons.ranged.copy());
                     switchCooldowns.put(entityId, 40); // 2秒のクールダウン
                 }
             } else if (distance < 4.0) {
                 // 近距離なら剣
-                if (!ItemStack.isSame(currentWeapon, weapons.melee)) {
+                if (!ItemStack.isSameItem(currentWeapon, weapons.melee)) {
                     entity.setItemSlot(EquipmentSlot.MAINHAND, weapons.melee.copy());
                     switchCooldowns.put(entityId, 40); // 2秒のクールダウン
                 }

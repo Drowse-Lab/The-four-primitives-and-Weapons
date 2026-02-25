@@ -16,7 +16,7 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
 public class ResetMaxItem extends Item {
 	public ResetMaxItem() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO).stacksTo(1).rarity(Rarity.EPIC));
+		super(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC));
 	}
 
 	@Override

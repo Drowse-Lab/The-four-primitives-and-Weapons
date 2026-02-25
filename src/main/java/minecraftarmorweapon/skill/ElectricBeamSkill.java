@@ -1,95 +1,107 @@
 package minecraftarmorweapon.skill;
 
 import minecraftarmorweapon.block.ElectricConductBlock;
-import minecraftarmorweapon.damage.ElementType;
 import minecraftarmorweapon.damage.ElectricElementDamageHandler;
-import minecraftarmorweapon.util.VersionHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
- * ELECTRIC beam skill (Forge API version)
+ * ELECTRIC ビームスキル（瞬間到達）
  */
 public final class ElectricBeamSkill {
 
-	private ElectricBeamSkill() {}
+    private ElectricBeamSkill() {}
 
-	public static void fire(Player player) {
-		Level level = VersionHelper.getLevel(player);
-		if (level.isClientSide()) return;
+    private static final double MAX_DISTANCE = 50.0;
+    private static final float DAMAGE = 8.0f;
 
-		Vec3 start = player.getEyePosition();
-		Vec3 direction = player.getLookAngle().normalize();
+    public static void fire(Player player) {
+        if (player.level().isClientSide()) return;
 
-		double maxDistance = 50.0;
-		double damage = 8.0;
+        ServerLevel level = (ServerLevel) player.level();
+        Vec3 start = player.getEyePosition();
+        Vec3 direction = player.getLookAngle().normalize();
+        Vec3 end = start.add(direction.scale(MAX_DISTANCE));
 
-		Vec3 end = start.add(direction.scale(maxDistance));
+        // ブロックへのレイトレース
+        BlockHitResult blockHit = level.clip(new ClipContext(
+                start, end,
+                ClipContext.Block.COLLIDER,
+                ClipContext.Fluid.NONE,
+                player
+        ));
 
-		// ray trace for blocks
-		BlockHitResult blockHit = level.clip(new ClipContext(
-				start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+        Vec3 hitPos = (blockHit.getType() != HitResult.Type.MISS)
+                ? blockHit.getLocation()
+                : end;
 
-		Vec3 reachEnd = (blockHit.getType() != HitResult.Type.MISS)
-				? blockHit.getLocation()
-				: end;
+        // ビーム経路上のエンティティをチェック
+        AABB beamBox = new AABB(start, hitPos).inflate(0.3);
+        List<LivingEntity> entities = level.getEntitiesOfClass(
+                LivingEntity.class, beamBox,
+                e -> e != player && e.isAlive()
+        );
 
-		// check entities along the beam
-		AABB searchArea = new AABB(start, reachEnd).inflate(1.0);
-		List<Entity> entities = level.getEntities(player, searchArea,
-				e -> e instanceof LivingEntity && e.isAlive() && e != player);
+        LivingEntity closestTarget = null;
+        double closestDist = Double.MAX_VALUE;
 
-		LivingEntity hitEntity = null;
-		double closestDist = maxDistance * maxDistance;
+        for (LivingEntity entity : entities) {
+            // エンティティがビームの経路上にあるか簡易チェック
+            Vec3 toEntity = entity.position().add(0, entity.getBbHeight() / 2, 0).subtract(start);
+            double proj = toEntity.dot(direction);
+            if (proj < 0 || proj > start.distanceTo(hitPos)) continue;
 
-		for (Entity entity : entities) {
-			Optional<Vec3> hitVec = entity.getBoundingBox().clip(start, reachEnd);
-			if (hitVec.isPresent()) {
-				double dist = start.distanceToSqr(hitVec.get());
-				if (dist < closestDist) {
-					closestDist = dist;
-					hitEntity = (LivingEntity) entity;
-				}
-			}
-		}
+            Vec3 closest = start.add(direction.scale(proj));
+            double dist = closest.distanceTo(entity.position().add(0, entity.getBbHeight() / 2, 0));
+            if (dist < 1.0 && proj < closestDist) {
+                closestDist = proj;
+                closestTarget = entity;
+            }
+        }
 
-		// beam particles
-		if (level instanceof ServerLevel serverLevel) {
-			Vec3 particleEnd = (hitEntity != null) ? hitEntity.position().add(0, hitEntity.getBbHeight() / 2, 0) : reachEnd;
-			Vec3 diff = particleEnd.subtract(start);
-			double length = diff.length();
-			Vec3 step = diff.normalize().scale(0.5);
-			Vec3 pos = start;
+        // 終点を調整（エンティティの方がブロックより近い場合）
+        if (closestTarget != null) {
+            hitPos = closestTarget.position().add(0, closestTarget.getBbHeight() / 2, 0);
+        }
 
-			for (double d = 0; d < length; d += 0.5) {
-				serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
-						pos.x, pos.y, pos.z, 1, 0, 0, 0, 0);
-				pos = pos.add(step);
-			}
-		}
+        // パーティクルでビームを描画
+        renderBeamParticles(level, start, hitPos);
 
-		// entity hit
-		if (hitEntity != null) {
-			ElectricElementDamageHandler.apply(hitEntity, damage, ElementType.ELECTRIC);
-		}
+        // エンティティ命中
+        if (closestTarget != null) {
+            ElectricElementDamageHandler.applyElectricDamage(
+                    closestTarget, DAMAGE, player, 1
+            );
+        }
 
-		// block hit - conduct electricity
-		if (blockHit.getType() != HitResult.Type.MISS) {
-			BlockPos hitPos = blockHit.getBlockPos();
-			ElectricConductBlock.conduct(level, hitPos, damage);
-		}
-	}
+        // ブロック命中 → 通電
+        if (blockHit.getType() != HitResult.Type.MISS && closestTarget == null) {
+            BlockPos blockPos = blockHit.getBlockPos();
+            ElectricConductBlock.conduct(level, blockPos, DAMAGE);
+        }
+    }
+
+    private static void renderBeamParticles(ServerLevel level, Vec3 start, Vec3 end) {
+        Vec3 diff = end.subtract(start);
+        double length = diff.length();
+        Vec3 step = diff.normalize().scale(0.5);
+        Vec3 pos = start;
+
+        for (double d = 0; d < length; d += 0.5) {
+            level.sendParticles(ParticleTypes.ELECTRIC_SPARK,
+                    pos.x, pos.y, pos.z,
+                    2, 0.05, 0.05, 0.05, 0.01);
+            pos = pos.add(step);
+        }
+    }
 }

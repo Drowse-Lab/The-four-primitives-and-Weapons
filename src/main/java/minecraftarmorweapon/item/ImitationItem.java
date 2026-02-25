@@ -8,6 +8,6 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
 public class ImitationItem extends Item {
 	public ImitationItem() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS).stacksTo(1).rarity(Rarity.EPIC));
+		super(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC));
 	}
 }

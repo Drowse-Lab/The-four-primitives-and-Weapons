@@ -13,7 +13,7 @@ public class LokidecoyeffectposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 		if (entity == null)
 			return;
 		// Decoy召喚時にスコアボードを初期化
-		if (!entity.level.isClientSide() && VersionHelper.getLevel(entity) instanceof ServerLevel) {
+		if (!entity.level().isClientSide() && VersionHelper.getLevel(entity) instanceof ServerLevel) {
 			ServerLevel serverLevel = (ServerLevel) VersionHelper.getLevel(entity);
 			serverLevel.getServer().getCommands().performPrefixedCommand(
 				new CommandSourceStack(CommandSource.NULL, entity.position(), entity.getRotationVector(),

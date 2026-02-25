@@ -14,7 +14,7 @@ public class MagicPotBlockAddedProcedure {
 		if (world instanceof ServerLevel _serverworld) {
 			StructureTemplate template = _serverworld.getStructureManager().getOrCreate(new ResourceLocation("minecraft_armor_weapon", "mahouzin"));
 			if (template != null) {
-				template.placeInWorld(_serverworld, new BlockPos(x - 4, y, z - 4), new BlockPos(x - 4, y, z - 4), new StructurePlaceSettings().setRotation(Rotation.NONE).setMirror(Mirror.NONE).setIgnoreEntities(false), _serverworld.random, 3);
+				template.placeInWorld(_serverworld, new BlockPos((int) (x - 4), (int) (y), (int) (z - 4)), new BlockPos((int) (x - 4), (int) (y), (int) (z - 4)), new StructurePlaceSettings().setRotation(Rotation.NONE).setMirror(Mirror.NONE).setIgnoreEntities(false), _serverworld.random, 3);
 			}
 		}
 	}

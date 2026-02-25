@@ -20,7 +20,7 @@ public static void execute(Entity entity) {
 					new ResourceLocation("minecraft_armor_weapon:you_have_become_a_vampire"))).isDone()) {
 
 		if (entity instanceof LivingEntity _livingEntity) {
-			if (!_livingEntity.level.isClientSide()) {
+			if (!_livingEntity.level().isClientSide()) {
 				_livingEntity.addEffect(new MobEffectInstance(MobEffects.SATURATION, 1, 4, false, false)); // 満腹度+4
 			}
 
@@ -32,7 +32,7 @@ public static void execute(Entity entity) {
 			}
 		}
 	} else {
-		if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide()) {
+		if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide()) {
 			_entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 60, 1, true, true));
 		}
 	}

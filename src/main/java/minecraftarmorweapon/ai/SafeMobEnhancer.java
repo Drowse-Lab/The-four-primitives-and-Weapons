@@ -8,7 +8,7 @@ import net.minecraft.world.entity.monster.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraftforge.event.entity.living.LivingSpawnEvent;
+import net.minecraftforge.event.entity.living.MobSpawnEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import minecraftarmorweapon.command.CustomDifficultyCommand;
@@ -27,7 +27,7 @@ public class SafeMobEnhancer {
     );
     
     @SubscribeEvent
-    public static void onEntitySpawn(LivingSpawnEvent.SpecialSpawn event) {
+    public static void onEntitySpawn(MobSpawnEvent.FinalizeSpawn event) {
         // True Crafterモードが無効なら何もしない
         if (!CustomDifficultyCommand.isTrueCrafterEnabled()) {
             return;
@@ -49,7 +49,7 @@ public class SafeMobEnhancer {
         }
         
         // レベルがnullなら無視
-        if (VersionHelper.getLevel(monster) == null || monster.level.isClientSide) {
+        if (VersionHelper.getLevel(monster) == null || monster.level().isClientSide) {
             return;
         }
         

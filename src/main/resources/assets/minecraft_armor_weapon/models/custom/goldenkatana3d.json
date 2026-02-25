@@ -2,7 +2,7 @@
   "made": "hrmcngs",
   "format_version": "1.21.6",
   "credit": "Made with Blockbench",
-  "parent": "goldenkatana3d",
+  "parent": "block/block",
   "elements": [
     {
       "from": [

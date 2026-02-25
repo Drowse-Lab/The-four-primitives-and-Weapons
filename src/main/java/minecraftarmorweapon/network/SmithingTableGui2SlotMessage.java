@@ -72,7 +72,7 @@ public class SmithingTableGui2SlotMessage {
 		Level world = VersionHelper.getLevel(entity);
 		HashMap guistate = SmithingTableGui2Menu.guistate;
 		// security measure to prevent arbitrary chunk generation
-		if (!world.hasChunkAt(new BlockPos(x, y, z)))
+		if (!world.hasChunkAt(new BlockPos((int) (x), (int) (y), (int) (z))))
 			return;
 		if (slotID == 0 && changeType == 1) {
 

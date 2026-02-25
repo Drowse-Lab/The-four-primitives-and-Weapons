@@ -5,6 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.Minecraft;
 
@@ -12,7 +13,6 @@ import minecraftarmorweapon.world.inventory.SmithingTableGui2Menu;
 
 import java.util.HashMap;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 public class SmithingTableGui2Screen extends AbstractContainerScreen<SmithingTableGui2Menu> {
@@ -35,22 +35,20 @@ public class SmithingTableGui2Screen extends AbstractContainerScreen<SmithingTab
 	private static final ResourceLocation texture = new ResourceLocation("minecraft_armor_weapon:textures/screens/smithing_table_gui_2.png");
 
 	@Override
-	public void render(PoseStack ms, int mouseX, int mouseY, float partialTicks) {
-		this.renderBackground(ms);
-		super.render(ms, mouseX, mouseY, partialTicks);
-		this.renderTooltip(ms, mouseX, mouseY);
+	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+		this.renderBackground(guiGraphics);
+		super.render(guiGraphics, mouseX, mouseY, partialTicks);
+		this.renderTooltip(guiGraphics, mouseX, mouseY);
 	}
 
 	@Override
-	protected void renderBg(PoseStack ms, float partialTicks, int gx, int gy) {
+	protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int gx, int gy) {
 		RenderSystem.setShaderColor(1, 1, 1, 1);
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
-		RenderSystem.setShaderTexture(0, texture);
-		this.blit(ms, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+		guiGraphics.blit(texture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
 
-		RenderSystem.setShaderTexture(0, new ResourceLocation("minecraft_armor_weapon:textures/screens/smithing_table_1.20.png"));
-		this.blit(ms, this.leftPos + 0, this.topPos + -5, 0, 0, 170, 160, 170, 160);
+		guiGraphics.blit(new ResourceLocation("minecraft_armor_weapon:textures/screens/smithing_table_1.20.png"), this.leftPos + 0, this.topPos + -5, 0, 0, 170, 160, 170, 160);
 
 		RenderSystem.disableBlend();
 	}
@@ -70,19 +68,17 @@ public class SmithingTableGui2Screen extends AbstractContainerScreen<SmithingTab
 	}
 
 	@Override
-	protected void renderLabels(PoseStack poseStack, int mouseX, int mouseY) {
-		this.font.draw(poseStack, Component.translatable("gui.minecraft_armor_weapon.smithing_table_gui_2.label_upgrade_gear"), 39, 15, -16777216);
+	protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+		guiGraphics.drawString(this.font, Component.translatable("gui.minecraft_armor_weapon.smithing_table_gui_2.label_upgrade_gear"), 39, 15, -16777216, false);
 	}
 
 	@Override
 	public void onClose() {
 		super.onClose();
-		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(false);
 	}
 
 	@Override
 	public void init() {
 		super.init();
-		this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
 	}
 }

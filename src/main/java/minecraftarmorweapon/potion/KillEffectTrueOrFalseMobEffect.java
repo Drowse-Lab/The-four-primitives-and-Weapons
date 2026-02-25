@@ -14,7 +14,7 @@ import minecraftarmorweapon.procedures.KillEffectTrueOrFalseposiyonnoXiaoGuogaKa
 import minecraftarmorweapon.procedures.KillEffectTrueOrFalseposiyonXiaoGuogaQieretaShiProcedure;
 import minecraftarmorweapon.procedures.KillEffectTrueOrFalseehuekutogaYouXiaoShinoteitukuProcedure;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class KillEffectTrueOrFalseMobEffect extends MobEffect {
 	public KillEffectTrueOrFalseMobEffect() {
@@ -58,7 +58,7 @@ public class KillEffectTrueOrFalseMobEffect extends MobEffect {
 			}
 
 			@Override
-			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, PoseStack poseStack, int x, int y, int blitOffset) {
+			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, GuiGraphics guiGraphics, int x, int y, int blitOffset) {
 				return false;
 			}
 

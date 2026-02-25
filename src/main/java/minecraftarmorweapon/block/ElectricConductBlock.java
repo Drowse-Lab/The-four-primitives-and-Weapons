@@ -1,9 +1,12 @@
 package minecraftarmorweapon.block;
 
-import minecraftarmorweapon.damage.ElementType;
 import minecraftarmorweapon.damage.ElectricElementDamageHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -18,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * ELECTRIC 通電処理（最終版）
+ * ELECTRIC 通電処理
  */
 public final class ElectricConductBlock {
 
@@ -26,6 +29,7 @@ public final class ElectricConductBlock {
 
     private static final int MAX_RADIUS = 10;
     private static final int MAX_RADIUS_SQR = MAX_RADIUS * MAX_RADIUS;
+    private static final int NEIGHBOR_SEARCH = 2; // 起点から導体を探す範囲
 
     private static final Set<Block> CONDUCTIVE_BLOCKS = Set.of(
             // 金属
@@ -54,25 +58,63 @@ public final class ElectricConductBlock {
     );
 
     public static void conduct(Level level, BlockPos origin, double damage) {
+        if (level.isClientSide()) return;
 
         Deque<BlockPos> queue = new ArrayDeque<>();
         Set<BlockPos> visited = new HashSet<>();
 
-        queue.add(origin);
-        visited.add(origin);
+        // 起点が導体ならそのまま開始
+        if (CONDUCTIVE_BLOCKS.contains(level.getBlockState(origin).getBlock())) {
+            queue.add(origin);
+            visited.add(origin);
+        } else {
+            // 起点が導体でない場合、周囲 NEIGHBOR_SEARCH ブロック内から導体を探す
+            visited.add(origin);
+            for (int dx = -NEIGHBOR_SEARCH; dx <= NEIGHBOR_SEARCH; dx++) {
+                for (int dy = -NEIGHBOR_SEARCH; dy <= NEIGHBOR_SEARCH; dy++) {
+                    for (int dz = -NEIGHBOR_SEARCH; dz <= NEIGHBOR_SEARCH; dz++) {
+                        BlockPos check = origin.offset(dx, dy, dz);
+                        if (CONDUCTIVE_BLOCKS.contains(level.getBlockState(check).getBlock())) {
+                            queue.add(check);
+                            visited.add(check);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (queue.isEmpty()) return;
+
+        boolean playedSound = false;
 
         while (!queue.isEmpty()) {
             BlockPos current = queue.poll();
 
-            // 半径制限（絶対条件）
+            // 半径制限
             if (current.distSqr(origin) > MAX_RADIUS_SQR) continue;
 
             BlockState state = level.getBlockState(current);
             if (!CONDUCTIVE_BLOCKS.contains(state.getBlock())) continue;
 
+            // 通電エフェクト
+            if (level instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
+                        current.getX() + 0.5, current.getY() + 1.0, current.getZ() + 0.5,
+                        5, 0.3, 0.3, 0.3, 0.02);
+            }
+
+            // 通電音（1回だけ）
+            if (!playedSound) {
+                level.playSound(null,
+                        current.getX() + 0.5, current.getY() + 0.5, current.getZ() + 0.5,
+                        SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.BLOCKS, 0.5f, 1.8f);
+                playedSound = true;
+            }
+
+            // ブロック上+周囲のエンティティにダメージ
             shockEntities(level, current, damage);
 
-            // 接しているブロックのみ
+            // 隣接する導体ブロックへ伝播
             for (Direction dir : Direction.values()) {
                 BlockPos next = current.relative(dir);
                 if (visited.contains(next)) continue;
@@ -85,14 +127,16 @@ public final class ElectricConductBlock {
     }
 
     private static void shockEntities(Level level, BlockPos pos, double damage) {
-        AABB box = new AABB(pos).inflate(0.1);
+        // ブロックの上と周囲1ブロックのエンティティを感電
+        AABB box = new AABB(pos).inflate(0.5, 1.0, 0.5);
 
         for (Entity entity : level.getEntities(null, box)) {
             if (entity instanceof LivingEntity living && living.isAlive()) {
-                ElectricElementDamageHandler.apply(
+                ElectricElementDamageHandler.applyElectricDamage(
                         living,
-                        damage,
-                        ElementType.ELECTRIC
+                        (float) damage,
+                        null,
+                        1
                 );
             }
         }

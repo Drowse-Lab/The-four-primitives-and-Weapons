@@ -27,17 +27,17 @@ public class WindStepYoukuritukusitatokiProcedure {
 			return;
 		}
 
-		minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("WindStep: Entity: {}, Client side: {}", entity, entity.level.isClientSide);
+		minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("WindStep: Entity: {}, Client side: {}", entity, entity.level().isClientSide);
 
 		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WIND_STEP.get()
 				|| (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.WIND_STEP.get()) {
 			minecraftarmorweapon.MinecraftArmorWeaponMod.LOGGER.info("WindStep: Item check passed!");
 
-			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.WIND_STEP_EFFECT.get(), 100, 1, true, false));
 
 			// 竜巻エンティティの召喚
-			if (!entity.level.isClientSide && entity instanceof Player player) {
+			if (!entity.level().isClientSide && entity instanceof Player player) {
 				Level level = VersionHelper.getLevel(entity);
 				ItemStack mainHandItem = player.getMainHandItem();
 

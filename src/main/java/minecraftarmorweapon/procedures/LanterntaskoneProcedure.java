@@ -34,7 +34,7 @@ public class LanterntaskoneProcedure {
 		if ((MinecraftArmorWeaponModVariables.MapVariables.get(world).questTaskOne).equals("Use Custom blacksmithing table")
 				&& (entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).playerQuestTaskOneNumber < 1
 				&& (entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).playerHasCompletedQuestTaskOne == false
-				&& (world.getBlockState(new BlockPos(x, y, z))).getBlock() == MinecraftArmorWeaponModBlocks.CUSTOM_SMITHING_TABLE.get()) {
+				&& (world.getBlockState(new BlockPos((int) (x), (int) (y), (int) (z)))).getBlock() == MinecraftArmorWeaponModBlocks.CUSTOM_SMITHING_TABLE.get()) {
 			{
 				double _setval = (entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).playerQuestTaskOneNumber + 1;
 				entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
@@ -46,7 +46,7 @@ public class LanterntaskoneProcedure {
 		if ((MinecraftArmorWeaponModVariables.MapVariables.get(world).questTaskOne).equals("Use Custom blacksmithing table")
 				&& (entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).playerQuestTaskOneNumber >= 1
 				&& (entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).playerHasCompletedQuestTaskOne == false
-				&& (world.getBlockState(new BlockPos(x, y, z))).getBlock() == MinecraftArmorWeaponModBlocks.CUSTOM_SMITHING_TABLE.get()) {
+				&& (world.getBlockState(new BlockPos((int) (x), (int) (y), (int) (z)))).getBlock() == MinecraftArmorWeaponModBlocks.CUSTOM_SMITHING_TABLE.get()) {
 			{
 				boolean _setval = true;
 				entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {

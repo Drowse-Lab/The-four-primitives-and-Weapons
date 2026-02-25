@@ -21,7 +21,7 @@ import java.util.List;
 public class TyokutoSayaItem extends Item {
     public TyokutoSayaItem() {
         super(new Item.Properties()
-            .tab(MinecraftArmorWeaponModTabs.TAB_WEAPON)
+            
             .stacksTo(1)
             .rarity(Rarity.UNCOMMON));
     }

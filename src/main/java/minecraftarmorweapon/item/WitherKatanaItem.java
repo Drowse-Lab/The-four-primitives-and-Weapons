@@ -53,7 +53,7 @@ public class WitherKatanaItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -1.4f, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_WEAPON));
+		}, 3, -1.4f, new Item.Properties());
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public class WitherKatanaItem extends SwordItem {
 	
 	@Override
 	public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-		if (!attacker.level.isClientSide) {
+		if (!attacker.level().isClientSide) {
 			// ターゲットが呪われているかチェック（既にウィザー効果があるかカスタムNBTタグ）
 			boolean isCursed = target.hasEffect(MobEffects.WITHER) || 
 							   (target.getPersistentData().contains("Feyn") && 
@@ -87,7 +87,7 @@ public class WitherKatanaItem extends SwordItem {
 				target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
 				
 				// 即座にウィザーダメージ
-				target.hurt(DamageSource.WITHER, 6.0f);
+				target.hurt(target.damageSources().wither(), 6.0f);
 				
 				// 呪いをNBTタグに設定（他の武器でも認識できるように）
 				target.getPersistentData().putString("Feyn", "cursed");
@@ -128,7 +128,7 @@ public class WitherKatanaItem extends SwordItem {
 			}
 			
 			// ウィザーのサウンド効果
-			attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+			attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
 				SoundEvents.WITHER_SKELETON_HURT, SoundSource.PLAYERS, 0.7f, 0.8f);
 			
 			// 呪われた敵には高確率（30%）、通常は低確率（10%）で追加のウィザー爆発
@@ -142,10 +142,10 @@ public class WitherKatanaItem extends SwordItem {
 				}
 				
 				// 爆発ダメージ
-				target.hurt(DamageSource.WITHER, 4.0f);
+				target.hurt(target.damageSources().wither(), 4.0f);
 				
 				// 爆発音
-				attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+				attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
 					SoundEvents.WITHER_SHOOT, SoundSource.PLAYERS, 0.5f, 1.0f);
 			}
 		}

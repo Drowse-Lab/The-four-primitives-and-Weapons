@@ -31,7 +31,7 @@ public class SimplifiedWeaponEffectsProcedure {
         if (event == null || event.getEntity() == null)
             return;
             
-        LevelAccessor world = event.getEntity().level;
+        LevelAccessor world = event.getEntity().level();
         Entity target = event.getEntity();
         Entity attacker = event.getSource().getEntity();
         

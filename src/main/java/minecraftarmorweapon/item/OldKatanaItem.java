@@ -55,7 +55,7 @@ public class OldKatanaItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -1.4f, new Item.Properties().tab(null));
+		}, 3, -1.4f, new Item.Properties());
 	}
     @Override
     public Component getName(ItemStack stack) {
@@ -110,7 +110,7 @@ public class OldKatanaItem extends SwordItem {
 			}
 			
 			// 納刀中の場合、SliceGuard効果を付与
-			if (isSheathed && !player.level.isClientSide()) {
+			if (isSheathed && !player.level().isClientSide()) {
 				player.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SLICE_GUARD.get(), 60, 1, true, false));
 			}
 		}

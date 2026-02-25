@@ -12,6 +12,14 @@ run/
 build/
 gradle-app.setting
 
+build/*
+!build/libs/
+build/libs/*
+!build/libs/*.jar
+run/
+.gradle/
+/libs/
+
 ## IntelliJ IDEA
 
 .idea/

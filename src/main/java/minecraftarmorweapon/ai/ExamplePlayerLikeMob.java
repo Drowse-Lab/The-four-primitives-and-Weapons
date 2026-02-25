@@ -95,7 +95,7 @@ public class ExamplePlayerLikeMob extends Monster {
     @Override
     public boolean hurt(DamageSource source, float amount) {
         // 落下ダメージで、かつ無効時間中なら無効化
-        if (source == DamageSource.FALL && playerLikeAI != null && playerLikeAI.isFallDamageImmune()) {
+        if (source.is(net.minecraft.world.damagesource.DamageTypes.FALL) && playerLikeAI != null && playerLikeAI.isFallDamageImmune()) {
             return false;
         }
 

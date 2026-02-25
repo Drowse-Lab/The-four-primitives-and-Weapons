@@ -13,7 +13,7 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
 public class A2Item extends Item {
 	public A2Item() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO).stacksTo(1).rarity(Rarity.COMMON));
+		super(new Item.Properties().stacksTo(1).rarity(Rarity.COMMON));
 	}
 
 	@Override

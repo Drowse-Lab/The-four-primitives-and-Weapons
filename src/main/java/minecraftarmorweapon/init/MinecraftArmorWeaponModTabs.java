@@ -4,108 +4,73 @@
  */
 package minecraftarmorweapon.init;
 
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.RegistryObject;
+
+import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
 public class MinecraftArmorWeaponModTabs {
-	public static CreativeModeTab TAB_WEAPON;
-	public static CreativeModeTab TAB_MAGIC_BOOKS;
-	public static CreativeModeTab TAB_ARMOR;
-	public static CreativeModeTab TAB_YOPKEINAMONO;
-	public static CreativeModeTab TAB_EVENT;
-	public static CreativeModeTab TAB_DRAGON_ARMOR_TAB;
-	public static CreativeModeTab TAB_NIGU;
-	public static CreativeModeTab TAB_CHUZUME_TAB;
+	public static final DeferredRegister<CreativeModeTab> REGISTRY =
+			DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MinecraftArmorWeaponMod.MODID);
 
-	public static void load() {
-		TAB_WEAPON = new CreativeModeTab("tabweapon") {
-			@Override
-			public ItemStack makeIcon() {
-				return new ItemStack(MinecraftArmorWeaponModItems.IRON_KATANA.get());
-			}
+	public static final RegistryObject<CreativeModeTab> TAB_WEAPON = REGISTRY.register("weapon",
+			() -> CreativeModeTab.builder()
+					.title(Component.translatable("itemGroup.tabweapon"))
+					.icon(() -> new ItemStack(MinecraftArmorWeaponModItems.IRON_KATANA.get()))
+					.displayItems((params, output) -> {})
+					.build());
 
-			@Override
-			public boolean hasSearchBar() {
-				return false;
-			}
-		};
-		TAB_MAGIC_BOOKS = new CreativeModeTab("tabmagic_books") {
-			@Override
-			public ItemStack makeIcon() {
-				return new ItemStack(Items.WRITABLE_BOOK);
-			}
+	public static final RegistryObject<CreativeModeTab> TAB_MAGIC_BOOKS = REGISTRY.register("magic_books",
+			() -> CreativeModeTab.builder()
+					.title(Component.translatable("itemGroup.tabmagic_books"))
+					.icon(() -> new ItemStack(Items.WRITABLE_BOOK))
+					.displayItems((params, output) -> {})
+					.build());
 
-			@Override
-			public boolean hasSearchBar() {
-				return false;
-			}
-		};
-		TAB_ARMOR = new CreativeModeTab("tabarmor") {
-			@Override
-			public ItemStack makeIcon() {
-				return new ItemStack(Items.TURTLE_HELMET);
-			}
+	public static final RegistryObject<CreativeModeTab> TAB_ARMOR = REGISTRY.register("armor",
+			() -> CreativeModeTab.builder()
+					.title(Component.translatable("itemGroup.tabarmor"))
+					.icon(() -> new ItemStack(Items.TURTLE_HELMET))
+					.displayItems((params, output) -> {})
+					.build());
 
-			@Override
-			public boolean hasSearchBar() {
-				return false;
-			}
-		};
-		TAB_YOPKEINAMONO = new CreativeModeTab("tabyopkeinamono") {
-			@Override
-			public ItemStack makeIcon() {
-				return new ItemStack(MinecraftArmorWeaponModBlocks.CROSS.get());
-			}
+	public static final RegistryObject<CreativeModeTab> TAB_YOPKEINAMONO = REGISTRY.register("yopkeinamono",
+			() -> CreativeModeTab.builder()
+					.title(Component.translatable("itemGroup.tabyopkeinamono"))
+					.icon(() -> new ItemStack(MinecraftArmorWeaponModBlocks.CROSS.get()))
+					.displayItems((params, output) -> {})
+					.build());
 
-			@Override
-			public boolean hasSearchBar() {
-				return false;
-			}
-		};
-		TAB_EVENT = new CreativeModeTab("tabevent") {
-			@Override
-			public ItemStack makeIcon() {
-				return new ItemStack(MinecraftArmorWeaponModItems.HARVEST_MOON_2023929.get());
-			}
+	public static final RegistryObject<CreativeModeTab> TAB_EVENT = REGISTRY.register("event",
+			() -> CreativeModeTab.builder()
+					.title(Component.translatable("itemGroup.tabevent"))
+					.icon(() -> new ItemStack(MinecraftArmorWeaponModItems.HARVEST_MOON_2023929.get()))
+					.displayItems((params, output) -> {})
+					.build());
 
-			@Override
-			public boolean hasSearchBar() {
-				return false;
-			}
-		};
-		TAB_DRAGON_ARMOR_TAB = new CreativeModeTab("tabdragon_armor_tab") {
-			@Override
-			public ItemStack makeIcon() {
-				return new ItemStack(MinecraftArmorWeaponModItems.DRAGON_ARMOR_HELMET.get());
-			}
+	public static final RegistryObject<CreativeModeTab> TAB_DRAGON_ARMOR_TAB = REGISTRY.register("dragon_armor_tab",
+			() -> CreativeModeTab.builder()
+					.title(Component.translatable("itemGroup.tabdragon_armor_tab"))
+					.icon(() -> new ItemStack(MinecraftArmorWeaponModItems.DRAGON_ARMOR_HELMET.get()))
+					.displayItems((params, output) -> {})
+					.build());
 
-			@Override
-			public boolean hasSearchBar() {
-				return false;
-			}
-		};
-		TAB_NIGU = new CreativeModeTab("tabnigu") {
-			@Override
-			public ItemStack makeIcon() {
-				return new ItemStack(MinecraftArmorWeaponModItems.KATANA_NIGU_HUMERUS.get());
-			}
+	public static final RegistryObject<CreativeModeTab> TAB_NIGU = REGISTRY.register("nigu",
+			() -> CreativeModeTab.builder()
+					.title(Component.translatable("itemGroup.tabnigu"))
+					.icon(() -> new ItemStack(MinecraftArmorWeaponModItems.KATANA_NIGU_HUMERUS.get()))
+					.displayItems((params, output) -> {})
+					.build());
 
-			@Override
-			public boolean hasSearchBar() {
-				return false;
-			}
-		};
-		TAB_CHUZUME_TAB = new CreativeModeTab("tabchuzume_tab") {
-			@Override
-			public ItemStack makeIcon() {
-				return new ItemStack(MinecraftArmorWeaponModItems.SWORD_OF_NIGHT.get());
-			}
-
-			@Override
-			public boolean hasSearchBar() {
-				return false;
-			}
-		};
-	}
+	public static final RegistryObject<CreativeModeTab> TAB_CHUZUME_TAB = REGISTRY.register("chuzume_tab",
+			() -> CreativeModeTab.builder()
+					.title(Component.translatable("itemGroup.tabchuzume_tab"))
+					.icon(() -> new ItemStack(MinecraftArmorWeaponModItems.SWORD_OF_NIGHT.get()))
+					.displayItems((params, output) -> {})
+					.build());
 }

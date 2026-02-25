@@ -18,7 +18,7 @@ import minecraftarmorweapon.entity.LokiDecoydasuEntity;
 
 public class LokiDecoydasuItem extends Item {
 	public LokiDecoydasuItem() {
-		super(new Item.Properties().tab(CreativeModeTab.TAB_COMBAT).stacksTo(1));
+		super(new Item.Properties().stacksTo(1));
 	}
 
 	@Override

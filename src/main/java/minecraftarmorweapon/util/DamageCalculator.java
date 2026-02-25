@@ -96,7 +96,7 @@ public class DamageCalculator {
 
         // クリティカル判定（攻撃者がプレイヤーで落下中の場合）
         if (attacker instanceof Player player) {
-            if (player.fallDistance > 0.0F && !player.isOnGround() && !player.onClimbable() &&
+            if (player.fallDistance > 0.0F && !player.onGround() && !player.onClimbable() &&
                 !player.isInWater() && !player.hasEffect(MobEffects.BLINDNESS) && !player.isPassenger()) {
                 damage *= 1.5f;
 
@@ -107,7 +107,7 @@ public class DamageCalculator {
                         15, 0.2, 0.2, 0.2, 0.1);
                 }
 
-                player.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+                player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                     SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
             }
         }
@@ -164,7 +164,7 @@ public class DamageCalculator {
                             4,
                             target.getName().getString(),
                             target.getDisplayName(),
-                            target.level.getServer(),
+                            target.level().getServer(),
                             target
                         ),
                         "kill @s"
@@ -187,9 +187,9 @@ public class DamageCalculator {
                 }
 
                 // より強力な音を再生
-                attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+                attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                     SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 1.0f, 0.5f);
-                attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+                attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                     SoundEvents.WITHER_DEATH, SoundSource.PLAYERS, 0.5f, 2.0f);
             }
         }
@@ -232,7 +232,7 @@ public class DamageCalculator {
 
         // ダメージを与える
         DamageSource source = attacker instanceof Player player ?
-            DamageSource.playerAttack(player) : DamageSource.mobAttack(attacker);
+            player.damageSources().playerAttack(player) : attacker.damageSources().mobAttack(attacker);
         target.hurt(source, actualDamage);
 
         // 武器エフェクトを適用
@@ -253,7 +253,7 @@ public class DamageCalculator {
 
         if (isCursed) {
             // 呪われた敵への追加効果
-            target.hurt(DamageSource.MAGIC, damage * 0.3f);
+            target.hurt(target.damageSources().magic(), damage * 0.3f);
             target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
             target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
         }
@@ -265,7 +265,7 @@ public class DamageCalculator {
                 10, 0.3, 0.3, 0.3, 0.1);
         }
 
-        attacker.level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
+        attacker.level().playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
             SoundEvents.GENERIC_DRINK, SoundSource.PLAYERS, 0.5f, 1.2f);
     }
 
@@ -277,7 +277,7 @@ public class DamageCalculator {
         if (isCursed) {
             // 呪われた敵には強化されたウィザー効果
             target.addEffect(new MobEffectInstance(MobEffects.WITHER, 200, 2));
-            target.hurt(DamageSource.WITHER, damage * 0.5f);
+            target.hurt(target.damageSources().wither(), damage * 0.5f);
 
             // 闇のオーラエフェクト
             if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
@@ -291,7 +291,7 @@ public class DamageCalculator {
         }
 
         // ウィザーサウンド
-        attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+        attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
             SoundEvents.WITHER_HURT, SoundSource.PLAYERS, 0.5f, 1.0f);
     }
 
@@ -301,7 +301,7 @@ public class DamageCalculator {
         target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 60, 0));
 
         // 追加の闇ダメージ
-        target.hurt(DamageSource.MAGIC, damage * 0.2f);
+        target.hurt(target.damageSources().magic(), damage * 0.2f);
 
         // 暗黒エフェクト
         if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
@@ -313,13 +313,13 @@ public class DamageCalculator {
                 10, 0.3, 0.3, 0.3, 0.05);
         }
 
-        attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+        attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
             SoundEvents.WARDEN_HEARTBEAT, SoundSource.PLAYERS, 0.5f, 0.5f);
     }
 
     private static void applyMagicEffect(LivingEntity attacker, LivingEntity target, float damage) {
         // 魔法ダメージのみ（ランダム効果を削除）
-        target.hurt(DamageSource.MAGIC, damage * 0.3f);
+        target.hurt(target.damageSources().magic(), damage * 0.3f);
 
         // 魔法エフェクト
         if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
@@ -331,7 +331,7 @@ public class DamageCalculator {
                 10, 0.3, 0.3, 0.3, 0.05);
         }
 
-        attacker.level.playSound(null, target.getX(), target.getY(), target.getZ(),
+        attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
             SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.5f, 1.2f);
     }
 }

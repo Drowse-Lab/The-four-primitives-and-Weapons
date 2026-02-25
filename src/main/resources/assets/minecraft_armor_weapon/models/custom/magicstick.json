@@ -1,7 +1,7 @@
 {
   "made": "hrmcngs",
   "credit": "Made with Blockbench",
-  "parent": "magicstick",
+  "parent": "block/block",
   "elements": [
     {
       "from": [

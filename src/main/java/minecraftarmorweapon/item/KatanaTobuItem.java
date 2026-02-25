@@ -18,7 +18,7 @@ import minecraftarmorweapon.entity.KatanaTobuEntity;
 
 public class KatanaTobuItem extends Item {
 	public KatanaTobuItem() {
-		super(new Item.Properties().tab(CreativeModeTab.TAB_COMBAT).stacksTo(1));
+		super(new Item.Properties().stacksTo(1));
 	}
 
 	@Override

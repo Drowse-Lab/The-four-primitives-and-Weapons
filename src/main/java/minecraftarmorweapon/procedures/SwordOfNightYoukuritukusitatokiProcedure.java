@@ -115,23 +115,23 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 													if (entityiterator instanceof Mob) {
 														{
 															Entity _ent = entityiterator;
-															if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+															if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 																_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 															}
 														}
 														{
 															Entity _ent = entityiterator;
-															if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+															if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 																_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
+																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
 																		"/deta merge entity @s (Health:0)");
 															}
 														}
 													}
 												} else {
 													if (entityiterator instanceof Mob) {
-														entityiterator.hurt(DamageSource.GENERIC, 5);
+														entityiterator.hurt(entityiterator.damageSources().generic(), 5);
 													}
 												}
 											}
@@ -245,23 +245,23 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 													if (entityiterator instanceof Mob) {
 														{
 															Entity _ent = entityiterator;
-															if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+															if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 																_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 															}
 														}
 														{
 															Entity _ent = entityiterator;
-															if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+															if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 																_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
+																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
 																		"/deta merge entity @s (Health:0)");
 															}
 														}
 													}
 												} else {
 													if (entityiterator instanceof Mob) {
-														entityiterator.hurt(DamageSource.GENERIC, 7);
+														entityiterator.hurt(entityiterator.damageSources().generic(), 7);
 													}
 												}
 											}
@@ -271,12 +271,9 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 							}
 							break;
 						}
-						if (world.getBlockState(new BlockPos(
-								x - entity.getPersistentData().getDouble("minecraft_armor_weapon:r") * Math.cos(Math.toRadians(entity.getPersistentData().getDouble("minecraft_armor_weapon:beta")))
-										* Math.sin(Math.toRadians(entity.getPersistentData().getDouble("minecraft_armor_weapon:alpha"))),
-								(y + 1) - entity.getPersistentData().getDouble("minecraft_armor_weapon:r") * Math.sin(Math.toRadians(entity.getPersistentData().getDouble("minecraft_armor_weapon:beta"))),
-								z + entity.getPersistentData().getDouble("minecraft_armor_weapon:r") * Math.cos(Math.toRadians(entity.getPersistentData().getDouble("minecraft_armor_weapon:beta")))
-										* Math.cos(Math.toRadians(entity.getPersistentData().getDouble("minecraft_armor_weapon:alpha")))))
+						if (world.getBlockState(new BlockPos((int) (x - entity.getPersistentData().getDouble("minecraft_armor_weapon:r") * Math.cos(Math.toRadians(entity.getPersistentData().getDouble("minecraft_armor_weapon:beta")))
+										* Math.sin(Math.toRadians(entity.getPersistentData().getDouble("minecraft_armor_weapon:alpha")))), (int) ((y + 1) - entity.getPersistentData().getDouble("minecraft_armor_weapon:r") * Math.sin(Math.toRadians(entity.getPersistentData().getDouble("minecraft_armor_weapon:beta")))), (int) (z + entity.getPersistentData().getDouble("minecraft_armor_weapon:r") * Math.cos(Math.toRadians(entity.getPersistentData().getDouble("minecraft_armor_weapon:beta")))
+										* Math.cos(Math.toRadians(entity.getPersistentData().getDouble("minecraft_armor_weapon:alpha"))))))
 								.canOcclude()) {
 							if (world instanceof ServerLevel _level)
 								_level.getServer().getCommands()
@@ -325,23 +322,23 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 													if (entityiterator instanceof Mob) {
 														{
 															Entity _ent = entityiterator;
-															if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+															if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 																_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 															}
 														}
 														{
 															Entity _ent = entityiterator;
-															if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+															if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 																_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
+																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
 																		"/deta merge entity @s (Health:0)");
 															}
 														}
 													}
 												} else {
 													if (entityiterator instanceof Mob) {
-														entityiterator.hurt(DamageSource.GENERIC, 7);
+														entityiterator.hurt(entityiterator.damageSources().generic(), 7);
 													}
 												}
 											}
@@ -399,23 +396,23 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 													if (entityiterator instanceof LivingEntity) {
 														{
 															Entity _ent = entityiterator;
-															if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+															if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 																_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 															}
 														}
 														{
 															Entity _ent = entityiterator;
-															if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+															if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 																_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
+																		VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
 																		"/deta merge entity @s (Health:0)");
 															}
 														}
 													}
 												} else {
 													if (entityiterator instanceof LivingEntity) {
-														entityiterator.hurt(DamageSource.GENERIC, 7);
+														entityiterator.hurt(entityiterator.damageSources().generic(), 7);
 													}
 												}
 											}
@@ -429,60 +426,60 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 					if (entity.getPersistentData().getDouble("sword_of_night_shot_number_of_remaining_ammunition_score_2") == 1) {
 						{
 							Entity _ent = entity;
-							if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+							if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 								_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-										_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "playsound minecraft:ui.button.click player @a ~ ~ ~ 1 1.5");
+										_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "playsound minecraft:ui.button.click player @a ~ ~ ~ 1 1.5");
 							}
 						}
 						{
 							Entity _ent = entity;
-							if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+							if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 								_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-										_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "playsound minecraft:block.piston.contract player @a ~ ~ ~ 1 1.5");
+										_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "playsound minecraft:block.piston.contract player @a ~ ~ ~ 1 1.5");
 							}
 						}
 					}
 					{
 						Entity _ent = entity;
-						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+						if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "playsound minecraft:entity.ghast.shoot player @a ~ ~ ~ 1 2");
+									_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "playsound minecraft:entity.ghast.shoot player @a ~ ~ ~ 1 2");
 						}
 					}
 					{
 						Entity _ent = entity;
-						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+						if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "playsound minecraft:entity.arrow.shoot player @a ~ ~ ~ 1 1.2");
+									_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "playsound minecraft:entity.arrow.shoot player @a ~ ~ ~ 1 1.2");
 						}
 					}
 					{
 						Entity _ent = entity;
-						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+						if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "playsound minecraft:entity.player.attack.sweep player @a ~ ~ ~ 1 1.2");
+									_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "playsound minecraft:entity.player.attack.sweep player @a ~ ~ ~ 1 1.2");
 						}
 					}
 					{
 						Entity _ent = entity;
-						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+						if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "playsound minecraft:entity.experience_orb.pickup player @a ~ ~ ~ 1 2");
+									_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "playsound minecraft:entity.experience_orb.pickup player @a ~ ~ ~ 1 2");
 						}
 					}
 				} else {
 					{
 						Entity _ent = entity;
-						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+						if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "playsound minecraft:block.iron_trapdoor.close player @a ~ ~ ~ 1 1.5");
+									_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "playsound minecraft:block.iron_trapdoor.close player @a ~ ~ ~ 1 1.5");
 						}
 					}
 					{
 						Entity _ent = entity;
-						if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+						if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 							_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-									_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "playsound minecraft:block.iron_trapdoor.open player @a ~ ~ ~ 1 1.5");
+									_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "playsound minecraft:block.iron_trapdoor.open player @a ~ ~ ~ 1 1.5");
 						}
 					}
 				}
@@ -493,27 +490,27 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 					if (entity.getPersistentData().getDouble("sword_of_night_shot_number_of_remaining_ammunition_score_2") == 3) {
 						{
 							Entity _ent = entity;
-							if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+							if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 								_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-										_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "title @s actionbar {\"text\":\"| 3 |\",\"color\":\"green\"}");
+										_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "title @s actionbar {\"text\":\"| 3 |\",\"color\":\"green\"}");
 							}
 						}
 					}
 					if (entity.getPersistentData().getDouble("sword_of_night_shot_number_of_remaining_ammunition_score_2") == 2) {
 						{
 							Entity _ent = entity;
-							if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+							if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 								_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-										_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "title @s actionbar {\"text\":\"| 2 |\",\"color\":\"yellow\"}");
+										_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "title @s actionbar {\"text\":\"| 2 |\",\"color\":\"yellow\"}");
 							}
 						}
 					}
 					if (entity.getPersistentData().getDouble("sword_of_night_shot_number_of_remaining_ammunition_score_2") == 1) {
 						{
 							Entity _ent = entity;
-							if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+							if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 								_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-										_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "title @s actionbar {\"text\":\"| 1 |\",\"color\":\"red\"}");
+										_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "title @s actionbar {\"text\":\"| 1 |\",\"color\":\"red\"}");
 							}
 						}
 					}
@@ -521,43 +518,43 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 						if (!(entity.getPersistentData().getBoolean("sword_of_night_shot_number_of_remaining_ammunition_reload") == true)) {
 							{
 								Entity _ent = entity;
-								if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+								if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 									_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-											_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "title @s actionbar {\"text\":\"| Reloading... |\",\"color\":\"gray\"}");
+											_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "title @s actionbar {\"text\":\"| Reloading... |\",\"color\":\"gray\"}");
 								}
 							}
 							entity.getPersistentData().putBoolean("sword_of_night_shot_number_of_remaining_ammunition_reload", true);
 							{
 								Entity _ent = entity;
-								if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+								if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 									_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-											_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "playsound minecraft:block.piston.extend player @a ~ ~ ~ 1 1.5");
+											_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "playsound minecraft:block.piston.extend player @a ~ ~ ~ 1 1.5");
 								}
 							}
 							MinecraftArmorWeaponMod.queueServerWork(10, () -> {
 								{
 									Entity _ent = entity;
-									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "title @s actionbar {\"text\":\"| Reloading.. |\",\"color\":\"gray\"}");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "title @s actionbar {\"text\":\"| Reloading.. |\",\"color\":\"gray\"}");
 									}
 								}
 							});
 							MinecraftArmorWeaponMod.queueServerWork(20, () -> {
 								{
 									Entity _ent = entity;
-									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "title @s actionbar {\"text\":\"| Reloading. |\",\"color\":\"gray\"}");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "title @s actionbar {\"text\":\"| Reloading. |\",\"color\":\"gray\"}");
 									}
 								}
 							});
 							MinecraftArmorWeaponMod.queueServerWork(30, () -> {
 								{
 									Entity _ent = entity;
-									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "title @s actionbar {\"text\":\"| Reloading |\",\"color\":\"gray\"}");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "title @s actionbar {\"text\":\"| Reloading |\",\"color\":\"gray\"}");
 									}
 								}
 							});
@@ -566,9 +563,9 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 								entity.getPersistentData().putBoolean("sword_of_night_shot_number_of_remaining_ammunition_reload", false);
 								{
 									Entity _ent = entity;
-									if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+									if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 										_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null,
-												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "title @s actionbar {\"text\":\"| 4 |\",\"color\":\"aqua\"}");
+												4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "title @s actionbar {\"text\":\"| 4 |\",\"color\":\"aqua\"}");
 									}
 								}
 							});
@@ -578,10 +575,10 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 					if (entity.getPersistentData().getDouble("sword_of_night_shot_number_of_remaining_ammunition_score_2") == 3) {
 						{
 							Entity _ent = entity;
-							if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+							if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 								_ent.getServer().getCommands().performPrefixedCommand(
 										new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(),
-												_ent.level.getServer(), _ent),
+												_ent.level().getServer(), _ent),
 										"title @s actionbar [\"\",{\"text\":\"|\",\"color\":\"dark_green\"},{\"text\":\" I\",\"color\":\"dark_aqua\"},{\"text\":\"n\",\"color\":\"dark_red\"},{\"text\":\"f\",\"color\":\"dark_purple\"},{\"text\":\"i\",\"color\":\"gold\"},{\"text\":\"n\",\"color\":\"blue\"},{\"text\":\"i\",\"color\":\"green\"},{\"text\":\"t\",\"color\":\"aqua\"},{\"text\":\"y\",\"color\":\"red\"},{\"text\":\" |\",\"color\":\"light_purple\"}]");
 							}
 						}
@@ -589,10 +586,10 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 					if (entity.getPersistentData().getDouble("sword_of_night_shot_number_of_remaining_ammunition_score_2") == 2) {
 						{
 							Entity _ent = entity;
-							if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+							if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 								_ent.getServer().getCommands().performPrefixedCommand(
 										new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(),
-												_ent.level.getServer(), _ent),
+												_ent.level().getServer(), _ent),
 										"title @s actionbar [\"\",{\"text\":\"|\",\"color\":\"dark_aqua\"},{\"text\":\" I\",\"color\":\"dark_red\"},{\"text\":\"n\",\"color\":\"dark_purple\"},{\"text\":\"f\",\"color\":\"gold\"},{\"text\":\"i\",\"color\":\"blue\"},{\"text\":\"n\",\"color\":\"green\"},{\"text\":\"i\",\"color\":\"aqua\"},{\"text\":\"t\",\"color\":\"red\"},{\"text\":\"y\",\"color\":\"light_purple\"},{\"text\":\" |\",\"color\":\"yellow\"}]");
 							}
 						}
@@ -600,10 +597,10 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 					if (entity.getPersistentData().getDouble("sword_of_night_shot_number_of_remaining_ammunition_score_2") == 1) {
 						{
 							Entity _ent = entity;
-							if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+							if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 								_ent.getServer().getCommands().performPrefixedCommand(
 										new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(),
-												_ent.level.getServer(), _ent),
+												_ent.level().getServer(), _ent),
 										"title @s actionbar [\"\",{\"text\":\"|\",\"color\":\"dark_red\"},{\"text\":\" I\",\"color\":\"dark_purple\"},{\"text\":\"n\",\"color\":\"gold\"},{\"text\":\"f\",\"color\":\"blue\"},{\"text\":\"i\",\"color\":\"green\"},{\"text\":\"n\",\"color\":\"aqua\"},{\"text\":\"i\",\"color\":\"red\"},{\"text\":\"t\",\"color\":\"light_purple\"},{\"text\":\"y\",\"color\":\"yellow\"},{\"text\":\" |\",\"color\":\"dark_blue\"}]");
 							}
 						}
@@ -613,10 +610,10 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 						entity.getPersistentData().putBoolean("sword_of_night_shot_number_of_remaining_ammunition_reload", false);
 						{
 							Entity _ent = entity;
-							if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+							if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 								_ent.getServer().getCommands().performPrefixedCommand(
 										new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(),
-												_ent.level.getServer(), _ent),
+												_ent.level().getServer(), _ent),
 										"title @s actionbar [\"\",{\"text\":\"| \",\"color\":\"dark_blue\"},{\"text\":\"I\",\"color\":\"dark_green\"},{\"text\":\"n\",\"color\":\"dark_aqua\"},{\"text\":\"f\",\"color\":\"dark_red\"},{\"text\":\"i\",\"color\":\"dark_purple\"},{\"text\":\"n\",\"color\":\"gold\"},{\"text\":\"i\",\"color\":\"blue\"},{\"text\":\"t\",\"color\":\"green\"},{\"text\":\"y \",\"color\":\"aqua\"},{\"text\":\"|\",\"color\":\"red\"}]");
 							}
 						}
@@ -671,7 +668,7 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 				entity.getPersistentData().putDouble("Ypos", y);
 				entity.getPersistentData().putDouble("yaw", (entity.getYRot()));
 				entity.getPersistentData().putDouble("distance", 3);
-				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+				if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.NAGIHARAI.get(), 2, 1, true, false));
 				if (!(entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.KURUTIMENASI.get()) : false)) {
 					if (entity instanceof Player _player)
@@ -693,30 +690,30 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 										if (entityiterator instanceof LivingEntity) {
 											if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 												if (entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.TUNDERBOLTEFFRCT.get()) : false) {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 100, 2, true, false));
 												}
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 													}
 												}
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
+																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
 																"/deta merge entity @s (Health:0)");
 													}
 												}
 											} else {
 												if (entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.TUNDERBOLTEFFRCT.get()) : false) {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 100, 2, true, false));
 												}
-												entityiterator.hurt(DamageSource.GENERIC, 10);
+												entityiterator.hurt(entityiterator.damageSources().generic(), 10);
 											}
 											dis = Math.abs(xknockback) + Math.abs(yknockback) + Math.abs(zknockback);
 										}
@@ -737,30 +734,30 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 										if (entityiterator instanceof LivingEntity) {
 											if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {
 												if (entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.TUNDERBOLTEFFRCT.get()) : false) {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 100, 2, true, false));
 												}
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/kill @s");
+																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @s");
 													}
 												}
 												{
 													Entity _ent = entityiterator;
-													if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+													if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 														_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(),
-																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent),
+																VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4, _ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent),
 																"/deta merge entity @s (Health:0)");
 													}
 												}
 											} else {
 												if (entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.TUNDERBOLTEFFRCT.get()) : false) {
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level.isClientSide())
+													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.THUNDER_HIT.get(), 100, 2, true, false));
 												}
-												entityiterator.hurt(DamageSource.GENERIC, 10);
+												entityiterator.hurt(entityiterator.damageSources().generic(), 10);
 											}
 											dis = Math.abs(xknockback) + Math.abs(yknockback) + Math.abs(zknockback);
 										}
@@ -775,7 +772,7 @@ public class SwordOfNightYoukuritukusitatokiProcedure {
 				entity.getPersistentData().putDouble("Ypos", y);
 				entity.getPersistentData().putDouble("yaw", (entity.getYRot()));
 				entity.getPersistentData().putDouble("distance", 3);
-				if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+				if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 					_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.SYUGEKI.get(), 30, 1, true, false));
 				if (entity instanceof Player _player)
 					_player.getCooldowns().addCooldown(MinecraftArmorWeaponModItems.SWORD_OF_NIGHT.get(), 40);

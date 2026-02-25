@@ -19,7 +19,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import com.mojang.math.Vector3f;
+import org.joml.Vector3f;
 
 import minecraftarmorweapon.util.DamageCalculator;
 
@@ -145,7 +145,7 @@ public class MobWeaponAttackHandler {
                 if (dot > 0.8 && toEntity.length() <= range) {
                     // 追加ダメージ（50%）
                     float damage = 3.0f;
-                    additionalTarget.hurt(DamageSource.mobAttack(attacker), damage);
+                    additionalTarget.hurt(attacker.damageSources().mobAttack(attacker), damage);
 
                     // ノックバック
                     additionalTarget.setDeltaMovement(attackDirection.scale(0.5).add(0, 0.1, 0));
@@ -209,7 +209,7 @@ public class MobWeaponAttackHandler {
                 if (dot > -0.2 && additionalTarget.distanceTo(attacker) <= range) {
                     // 追加ダメージ
                     float damage = 4.0f;
-                    additionalTarget.hurt(DamageSource.mobAttack(attacker), damage);
+                    additionalTarget.hurt(attacker.damageSources().mobAttack(attacker), damage);
 
                     // ノックバック
                     Vec3 knockback = toEntity.scale(0.4);
@@ -268,7 +268,7 @@ public class MobWeaponAttackHandler {
                 if (dot > 0.5 && additionalTarget.distanceTo(attacker) <= range) {
                     // 追加ダメージ
                     float damage = 3.0f;
-                    additionalTarget.hurt(DamageSource.mobAttack(attacker), damage);
+                    additionalTarget.hurt(attacker.damageSources().mobAttack(attacker), damage);
 
                     // ノックバック
                     Vec3 knockback = toEntity.scale(0.3);

@@ -60,12 +60,12 @@ public class TrueCrafterOverrideAI {
             return;
         }
         
-        if (VersionHelper.getLevel(monster) == null || monster.level.isClientSide) {
+        if (VersionHelper.getLevel(monster) == null || monster.level().isClientSide) {
             return;
         }
         
         // 次のティックで処理（エンティティが完全に初期化された後）
-        monster.level.getServer().execute(() -> {
+        monster.level().getServer().execute(() -> {
             try {
                 if (monster instanceof Skeleton skeleton) {
                     overrideSkeleton(skeleton);
@@ -288,9 +288,9 @@ public class TrueCrafterOverrideAI {
                     BlockPos pos = zombie.blockPosition();
                     BlockPos placePos = pos.relative(zombie.getDirection());
                     
-                    if (zombie.level.getBlockState(placePos).isAir() && 
-                        zombie.level.getBlockState(placePos.below()).getMaterial().isSolid()) {
-                        zombie.level.setBlock(placePos, Blocks.COBBLESTONE.defaultBlockState(), 3);
+                    if (zombie.level().getBlockState(placePos).isAir() && 
+                        zombie.level().getBlockState(placePos.below()).isSolid()) {
+                        zombie.level().setBlock(placePos, Blocks.COBBLESTONE.defaultBlockState(), 3);
                         temporaryBlocks.put(placePos, new TemporaryBlockData(System.currentTimeMillis(), zombie.getUUID()));
                         blockPlaceCooldown = 20;
                     }
@@ -299,17 +299,17 @@ public class TrueCrafterOverrideAI {
                 // 橋を作る（谷や水を渡る）
                 BlockPos frontPos = zombie.blockPosition().relative(zombie.getDirection());
                 BlockPos belowFront = frontPos.below();
-                BlockState belowState = zombie.level.getBlockState(belowFront);
+                BlockState belowState = zombie.level().getBlockState(belowFront);
                 
-                if (belowState.isAir() || belowState.getMaterial().isLiquid()) {
-                    zombie.level.setBlock(belowFront, Blocks.COBBLESTONE.defaultBlockState(), 3);
+                if (belowState.isAir() || belowState.liquid()) {
+                    zombie.level().setBlock(belowFront, Blocks.COBBLESTONE.defaultBlockState(), 3);
                     temporaryBlocks.put(belowFront, new TemporaryBlockData(System.currentTimeMillis(), zombie.getUUID()));
                     blockPlaceCooldown = 15;
                 }
             }
             
             // 飛びかかり攻撃
-            if (leapCooldown <= 0 && zombie.isOnGround()) {
+            if (leapCooldown <= 0 && zombie.onGround()) {
                 if (distance > 9 && distance < 49) { // 3-7ブロック
                     Vec3 direction = target.position().subtract(zombie.position()).normalize();
                     zombie.setDeltaMovement(direction.x * 1.0, 0.4, direction.z * 1.0);
@@ -404,15 +404,15 @@ public class TrueCrafterOverrideAI {
             return;
         }
         
-        if (event.getEntity() instanceof Spider spider && !spider.level.isClientSide) {
+        if (event.getEntity() instanceof Spider spider && !spider.level().isClientSide) {
             LivingEntity target = spider.getTarget();
             if (target != null) {
                 // クモの巣設置
                 if (spider.getRandom().nextInt(100) == 0) {
                     BlockPos targetPos = target.blockPosition();
-                    if (spider.level.getBlockState(targetPos).isAir() && 
+                    if (spider.level().getBlockState(targetPos).isAir() && 
                         spider.distanceToSqr(target) < 16) {
-                        spider.level.setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
+                        spider.level().setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
                         temporaryBlocks.put(targetPos, new TemporaryBlockData(System.currentTimeMillis(), spider.getUUID()));
                     }
                 }

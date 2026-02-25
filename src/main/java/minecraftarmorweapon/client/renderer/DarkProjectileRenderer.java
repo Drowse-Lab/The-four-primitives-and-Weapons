@@ -8,9 +8,9 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import com.mojang.math.Axis;
 
 import minecraftarmorweapon.entity.DarkProjectileEntity;
 
@@ -28,8 +28,8 @@ public class DarkProjectileRenderer extends EntityRenderer<DarkProjectileEntity>
 
         // 回転アニメーション
         float rotation = (entity.tickCount + partialTicks) * 20;
-        poseStack.mulPose(Vector3f.YP.rotationDegrees(rotation));
-        poseStack.mulPose(Vector3f.XP.rotationDegrees(rotation * 0.7f));
+        poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
+        poseStack.mulPose(Axis.XP.rotationDegrees(rotation * 0.7f));
 
         // 球体を描画
         VertexConsumer vertexconsumer = buffer.getBuffer(RENDER_TYPE);

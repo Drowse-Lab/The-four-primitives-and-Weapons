@@ -217,7 +217,7 @@ public class PlayerLikeAIGoal extends Goal {
                 entity, targetEntity, baseDamage, weapon
             );
 
-            targetEntity.hurt(DamageSource.mobAttack(entity), actualDamage);
+            targetEntity.hurt(entity.damageSources().mobAttack(entity), actualDamage);
 
             minecraftarmorweapon.util.DamageCalculator.applyWeaponEffects(
                 entity, targetEntity, actualDamage, weapon
@@ -409,7 +409,7 @@ public class PlayerLikeAIGoal extends Goal {
                 entity, target, baseDamage, weapon
             );
 
-            target.hurt(DamageSource.mobAttack(entity), actualDamage);
+            target.hurt(entity.damageSources().mobAttack(entity), actualDamage);
 
             minecraftarmorweapon.util.DamageCalculator.applyWeaponEffects(
                 entity, target, actualDamage, weapon
@@ -489,7 +489,7 @@ public class PlayerLikeAIGoal extends Goal {
                 entity, target, baseDamage, weapon
             );
 
-            target.hurt(DamageSource.mobAttack(entity), actualDamage);
+            target.hurt(entity.damageSources().mobAttack(entity), actualDamage);
 
             minecraftarmorweapon.util.DamageCalculator.applyWeaponEffects(
                 entity, target, actualDamage, weapon
@@ -683,7 +683,7 @@ public class PlayerLikeAIGoal extends Goal {
                 entity, t, baseDamage, weapon
             );
 
-            t.hurt(DamageSource.mobAttack(entity), actualDamage);
+            t.hurt(entity.damageSources().mobAttack(entity), actualDamage);
 
             minecraftarmorweapon.util.DamageCalculator.applyWeaponEffects(
                 entity, t, actualDamage, weapon
@@ -972,9 +972,9 @@ public class PlayerLikeAIGoal extends Goal {
                 for (int dy = -1; dy <= 2; dy++) {
                     for (int dz = -1; dz <= 1; dz++) {
                         BlockPos pos = new BlockPos(
-                            checkPos.x + dx,
-                            checkPos.y + dy,
-                            checkPos.z + dz
+                            (int)(checkPos.x + dx),
+                            (int)(checkPos.y + dy),
+                            (int)(checkPos.z + dz)
                         );
 
                         BlockState state = world.getBlockState(pos);

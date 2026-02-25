@@ -2,8 +2,7 @@ package minecraftarmorweapon.damage;
 
 import minecraftarmorweapon.util.VersionHelper;
 
-import com.mojang.math.Vector3f;
-import net.minecraft.core.Registry;
+import org.joml.Vector3f;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
@@ -12,6 +11,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashSet;
 import java.util.List;
@@ -67,7 +67,7 @@ public class ElectricElementDamageHandler {
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemStack stack = entity.getItemBySlot(slot);
             if (!stack.isEmpty()) {
-                ResourceLocation itemId = Registry.ITEM.getKey(stack.getItem());
+                ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
                 if (CONDUCTOR_ITEMS.contains(itemId.toString())) {
                     count++;
                 }
@@ -135,12 +135,13 @@ public class ElectricElementDamageHandler {
      * @param level 属性レベル
      */
     public static void applyElectricDamage(LivingEntity target, float damage, LivingEntity source, int level) {
-        // カスタムダメージソースを作成
-        IElementalDamageSource elementalSource = (IElementalDamageSource) new ElectricDamageSource("electric");
+        // カスタムダメージソースを作成（1.20.1: factory method使用）
+        DamageSource ds = target.damageSources().magic();
+        IElementalDamageSource elementalSource = (IElementalDamageSource) ds;
         elementalSource.setElementType(ElementType.ELECTRIC);
         elementalSource.setElementLevel(level);
 
         // ダメージを適用
-        target.hurt((DamageSource) elementalSource, damage);
+        target.hurt(ds, damage);
     }
 }

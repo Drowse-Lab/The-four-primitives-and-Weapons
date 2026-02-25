@@ -21,9 +21,9 @@ public class OnazitakasaArrowposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure 
 		entity.getPersistentData().putDouble("distance", 3);
 		{
 			Entity _ent = entity;
-			if (!_ent.level.isClientSide() && _ent.getServer() != null) {
+			if (!_ent.level().isClientSide() && _ent.getServer() != null) {
 				_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-						_ent.getName().getString(), _ent.getDisplayName(), _ent.level.getServer(), _ent), "/playsound minecraft:entity.generic.explode block @s");
+						_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/playsound minecraft:entity.generic.explode block @s");
 			}
 		}
 	}

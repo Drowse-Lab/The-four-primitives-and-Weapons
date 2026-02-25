@@ -11,9 +11,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.core.NonNullList;
-
 import minecraftarmorweapon.item.base.Base3DModelSwordItem;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
@@ -46,7 +43,7 @@ public class Dynamic3DSwordItem extends Base3DModelSwordItem {
             public Ingredient getRepairIngredient() {
                 return Ingredient.of();
             }
-        }, 3, -2.4f, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_WEAPON));
+        }, 3, -2.4f, new Item.Properties());
     }
 
     @Override
@@ -83,21 +80,5 @@ public class Dynamic3DSwordItem extends Base3DModelSwordItem {
             list.add(Component.literal("§7Variant: §e" + variant));
         }
         list.add(Component.literal("§8Right-click to change texture"));
-    }
-    
-    @Override
-    public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> items) {
-        if (this.allowedIn(tab)) {
-            // Add default variant
-            items.add(new ItemStack(this));
-            
-            // Add all texture variants
-            String[] variants = {"fire", "ice", "thunder", "dark", "light", "blood", "magic", "gold", "emerald", "diamond"};
-            for (String variant : variants) {
-                ItemStack stack = new ItemStack(this);
-                setTextureVariant(stack, variant);
-                items.add(stack);
-            }
-        }
     }
 }

@@ -12,6 +12,8 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SwordItem;
@@ -152,15 +154,15 @@ public class EliteSoldierEntity extends PathfinderMob {
     @Override
     public boolean hurt(DamageSource source, float amount) {
         // 落下ダメージ無効化
-        if (source == DamageSource.FALL && playerLikeAI != null && playerLikeAI.isFallDamageImmune()) {
-            if (!this.level.isClientSide) {
-                this.level.broadcastEntityEvent(this, (byte) 2);
+        if (source.is(DamageTypes.FALL) && playerLikeAI != null && playerLikeAI.isFallDamageImmune()) {
+            if (!this.level().isClientSide) {
+                this.level().broadcastEntityEvent(this, (byte) 2);
             }
             return false;
         }
 
         // プレイヤーから攻撃された場合の特別処理
-        if (source.getEntity() instanceof Player player && !this.level.isClientSide) {
+        if (source.getEntity() instanceof Player player && !this.level().isClientSide) {
             UUID playerUUID = player.getUUID();
 
             boolean isUnarmedAttack = isPlayerUnarmed(player);
@@ -221,9 +223,9 @@ public class EliteSoldierEntity extends PathfinderMob {
 
     private void counterAttackPlayer(Player player) {
         if (this.distanceTo(player) <= 3.5) {
-            player.hurt(DamageSource.mobAttack(this), 3.0f);
+            player.hurt(this.damageSources().mobAttack(this), 3.0f);
 
-            this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.PLAYER_ATTACK_WEAK, SoundSource.HOSTILE, 0.8f, 1.0f);
 
             if (VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
@@ -251,7 +253,7 @@ public class EliteSoldierEntity extends PathfinderMob {
                 this, livingTarget, baseDamage * 1.3f, weapon
             );
 
-            boolean result = livingTarget.hurt(DamageSource.mobAttack(this), actualDamage);
+            boolean result = livingTarget.hurt(this.damageSources().mobAttack(this), actualDamage);
 
             if (result) {
                 DamageCalculator.applyWeaponEffects(
@@ -263,7 +265,7 @@ public class EliteSoldierEntity extends PathfinderMob {
                 livingTarget.setDeltaMovement(livingTarget.getDeltaMovement().add(knockback.x, 0.15, knockback.z));
 
                 // 攻撃エフェクト（より派手）
-                if (!this.level.isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
+                if (!this.level().isClientSide && VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
                     serverLevel.sendParticles(
                         ParticleTypes.SWEEP_ATTACK,
                         livingTarget.getX(), livingTarget.getY() + livingTarget.getBbHeight() / 2, livingTarget.getZ(),
@@ -294,7 +296,7 @@ public class EliteSoldierEntity extends PathfinderMob {
                     }
                 }
 
-                this.level.playSound(null, this.getX(), this.getY(), this.getZ(),
+                this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                     SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0f, 0.9f);
             }
 
@@ -307,7 +309,7 @@ public class EliteSoldierEntity extends PathfinderMob {
     @Override
     public void die(DamageSource cause) {
         super.die(cause);
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide) {
             if (cause.getEntity() instanceof Player player) {
                 player.displayClientMessage(Component.literal("§6精鋭兵を倒した"), true);
             }

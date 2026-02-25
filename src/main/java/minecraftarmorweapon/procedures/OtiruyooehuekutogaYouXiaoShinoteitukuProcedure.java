@@ -14,11 +14,11 @@ public class OtiruyooehuekutogaYouXiaoShinoteitukuProcedure {
 		if (entity == null)
 			return;
 		entity.fallDistance = 0;
-		if (!entity.isOnGround()) {
-			if (entity instanceof LivingEntity _entity && !_entity.level.isClientSide())
+		if (!entity.onGround()) {
+			if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 				_entity.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.OTIRUYOO.get(), 5, 1, true, false));
 		}
-		if (entity.isOnGround()) {
+		if (entity.onGround()) {
 			MinecraftArmorWeaponMod.queueServerWork(10, () -> {
 				if (entity instanceof LivingEntity _entity)
 					_entity.removeEffect(MinecraftArmorWeaponModMobEffects.OTIRUYOO.get());

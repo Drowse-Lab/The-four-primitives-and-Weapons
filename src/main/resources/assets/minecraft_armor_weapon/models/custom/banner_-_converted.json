@@ -1,7 +1,7 @@
 {
   "made": "hrmcngs",
   "credit": "Made with Blockbench",
-  "parent": "banner - Converted",
+  "parent": "block/block",
   "texture_size": [
     64,
     64

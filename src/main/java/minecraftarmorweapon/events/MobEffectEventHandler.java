@@ -47,7 +47,7 @@ public class MobEffectEventHandler {
     public static void onMobEffectAdded(MobEffectEvent.Added event) {
         try {
             // サーバー側でのみ処理
-            if (event.getEntity().level.isClientSide()) {
+            if (event.getEntity().level().isClientSide()) {
                 return;
             }
 
@@ -84,7 +84,7 @@ public class MobEffectEventHandler {
     public static void onMobEffectRemoved(MobEffectEvent.Remove event) {
         try {
             // サーバー側でのみ処理
-            if (event.getEntity().level.isClientSide()) {
+            if (event.getEntity().level().isClientSide()) {
                 return;
             }
 

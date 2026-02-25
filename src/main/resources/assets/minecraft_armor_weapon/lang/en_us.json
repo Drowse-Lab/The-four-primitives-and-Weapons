@@ -279,5 +279,7 @@
   "entity.minecraft_armor_weapon.otiruyo": "Otiruyo",
   "gui.minecraft_armor_weapon.rpg_book_gui_2.button_bogged_outer": "Bogged Outer",
   "effect.minecraft_armor_weapon.tp_attack": "tp",
-  "item.minecraft_armor_weapon.tukaena": "Tukaena"
+  "item.minecraft_armor_weapon.tukaena": "Tukaena",
+  "item.minecraft_armor_weapon.throwing_knife": "Throwing Knife",
+  "block.minecraft_armor_weapon.rarity_forge": "Rarity Forge"
 }

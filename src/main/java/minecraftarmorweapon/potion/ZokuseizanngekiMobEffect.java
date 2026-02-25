@@ -15,7 +15,7 @@ import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen
 import minecraftarmorweapon.procedures.ZokuseizanngekiehuekutogaYouXiaoShinoteitukuProcedure;
 import minecraftarmorweapon.procedures.GyetonzangekiposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class ZokuseizanngekiMobEffect extends MobEffect {
 	public ZokuseizanngekiMobEffect() {
@@ -51,7 +51,7 @@ public class ZokuseizanngekiMobEffect extends MobEffect {
 			}
 
 			@Override
-			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, PoseStack poseStack, int x, int y, int blitOffset) {
+			public boolean renderInventoryText(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen, GuiGraphics guiGraphics, int x, int y, int blitOffset) {
 				return false;
 			}
 

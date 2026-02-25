@@ -15,7 +15,7 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
 public class TukaenaItem extends Item {
 	public TukaenaItem() {
-		super(new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS).stacksTo(64).rarity(Rarity.COMMON));
+		super(new Item.Properties().stacksTo(64).rarity(Rarity.COMMON));
 	}
 
 	@Override

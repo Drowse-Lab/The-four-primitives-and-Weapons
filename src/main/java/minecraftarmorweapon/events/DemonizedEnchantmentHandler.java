@@ -114,7 +114,7 @@ public class DemonizedEnchantmentHandler {
 
                 // 吸収サウンド（レベルに応じてピッチ変化）
                 float pitch = 1.0f + (demonizedLevel * 0.05f); // レベル10で1.5
-                attacker.level.playSound(
+                attacker.level().playSound(
                     null,
                     attacker.getX(), attacker.getY(), attacker.getZ(),
                     SoundEvents.PLAYER_HURT_DROWN,
@@ -125,7 +125,7 @@ public class DemonizedEnchantmentHandler {
 
                 // 高レベル時は追加サウンド
                 if (demonizedLevel >= 5) {
-                    attacker.level.playSound(
+                    attacker.level().playSound(
                         null,
                         attacker.getX(), attacker.getY(), attacker.getZ(),
                         SoundEvents.SOUL_ESCAPE,

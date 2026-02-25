@@ -118,7 +118,7 @@ public class HardentityehuekutogaYouXiaoShinoteitukuProcedure {
 				if (nearestPlayer instanceof ServerPlayer _serverPlayer) {
 					GameType gameType = _serverPlayer.gameMode.getGameModeForPlayer();
 					isCreativeOrSpectator = (gameType == GameType.CREATIVE || gameType == GameType.SPECTATOR);
-				} else if (nearestPlayer.level.isClientSide()) {
+				} else if (nearestPlayer.level().isClientSide()) {
 					try {
 						var connection = Minecraft.getInstance().getConnection();
 						if (connection != null) {

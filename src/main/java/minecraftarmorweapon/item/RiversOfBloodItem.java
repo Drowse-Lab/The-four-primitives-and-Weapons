@@ -56,7 +56,7 @@ public class RiversOfBloodItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -1.4f, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_WEAPON));
+		}, 3, -1.4f, new Item.Properties());
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class RiversOfBloodItem extends SwordItem {
 	
 	@Override
 	public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-		if (!attacker.level.isClientSide && attacker instanceof Player player) {
+		if (!attacker.level().isClientSide && attacker instanceof Player player) {
 			// 基本のライフスティール量（ダメージの20%）
 			float damageDealt = this.getDamage();
 			float healAmount = damageDealt * 0.2f;
@@ -90,7 +90,7 @@ public class RiversOfBloodItem extends SwordItem {
 				healAmount = damageDealt * 0.5f;
 				
 				// 追加ダメージ
-				target.hurt(DamageSource.MAGIC, damageDealt * 0.3f);
+				target.hurt(target.damageSources().magic(), damageDealt * 0.3f);
 				
 				// 特殊エフェクト
 				if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
@@ -117,7 +117,7 @@ public class RiversOfBloodItem extends SwordItem {
 				target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
 				
 				// 特殊サウンド
-				attacker.level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
+				attacker.level().playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
 					SoundEvents.WITHER_HURT, SoundSource.PLAYERS, 0.5f, 0.8f);
 			} else {
 				// 通常の血のエフェクト
@@ -139,7 +139,7 @@ public class RiversOfBloodItem extends SwordItem {
 			// }
 			
 			// 吸血サウンド
-			attacker.level.playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
+			attacker.level().playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
 				SoundEvents.GENERIC_DRINK, SoundSource.PLAYERS, 0.5f, 1.2f);
 		}
 		

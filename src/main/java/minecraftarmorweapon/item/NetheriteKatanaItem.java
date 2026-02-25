@@ -41,7 +41,7 @@ public class NetheriteKatanaItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -0.8f, new Item.Properties().tab(MinecraftArmorWeaponModTabs.TAB_WEAPON).fireResistant());
+		}, 3, -0.8f, new Item.Properties().fireResistant());
 	}
 
 	@Override
