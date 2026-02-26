@@ -324,6 +324,13 @@ public class ChargedAttackHandler {
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         String itemName = mainHand.getItem().getClass().getSimpleName();
 
+        // 禁忌レアリティ: ため攻撃時に飛び道具反射
+        minecraftarmorweapon.item.rarity.WeaponRarity rarity =
+                minecraftarmorweapon.item.rarity.WeaponRarity.getFromStack(mainHand);
+        if (rarity == minecraftarmorweapon.item.rarity.WeaponRarity.FORBIDDEN) {
+            ForbiddenRarityHandler.reflectNearbyProjectiles(player);
+        }
+
         // 倶利伽羅 + 雷属性の固有スキル
         if (chargePercent >= 0.5f && ElementalDamageUtils.getElementType(mainHand) == ElementType.ELECTRIC) {
             if (itemName.equals("KurikarakenswordItem") || itemName.equals("KaminariKurikarakenSwordItem")) {

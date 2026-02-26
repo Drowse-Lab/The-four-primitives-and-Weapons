@@ -60,9 +60,9 @@ public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeRec
         int pw = recipe.getPatternWidth();
         int ph = recipe.getPatternHeight();
 
-        // 3×3グリッドの中央寄せオフセット
-        int offsetX = (3 - pw) * 18 / 2;
-        int offsetY = (3 - ph) * 18 / 2;
+        // 3×3グリッドの中央寄せオフセット（セル単位にスナップ）
+        int offsetX = ((3 - pw) / 2) * 18;
+        int offsetY = ((3 - ph) / 2) * 18;
 
         for (int y = 0; y < ph; y++) {
             for (int x = 0; x < pw; x++) {

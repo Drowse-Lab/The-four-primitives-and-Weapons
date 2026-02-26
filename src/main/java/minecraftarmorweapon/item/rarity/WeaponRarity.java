@@ -22,10 +22,13 @@ public enum WeaponRarity {
     UNCOMMON(1, "Uncommon", "\u00A7a", ChatFormatting.GREEN, 1),
     RARE(2, "Rare", "\u00A79", ChatFormatting.BLUE, 2),
     EPIC(3, "Epic", "\u00A75", ChatFormatting.DARK_PURPLE, 4),
-    LEGENDARY(4, "Legendary", "\u00A76", ChatFormatting.GOLD, 7);
+    LEGENDARY(4, "Legendary", "\u00A76", ChatFormatting.GOLD, 7),
+    FORBIDDEN(5, "\u7981\u5fcc", "\u00A74", ChatFormatting.DARK_RED, 8);
 
     private static final String NBT_KEY = "WeaponRarity";
+    private static final String CATALYST_BONUS_KEY = "CatalystBonus";
     private static final UUID RARITY_DAMAGE_UUID = UUID.fromString("a3e6f5c8-7b2d-4e1a-9f0c-8d5b3a7e2c1f");
+    private static final UUID CATALYST_DAMAGE_UUID = UUID.fromString("b4f7e6d9-8c3e-5f2b-a0d1-9e6c4b8a3d2e");
 
     private final int id;
     private final String displayName;
@@ -101,5 +104,41 @@ public enum WeaponRarity {
 
     public static UUID getRarityDamageUuid() {
         return RARITY_DAMAGE_UUID;
+    }
+
+    // === 触媒ボーナス ===
+
+    /** ItemStackに触媒ボーナスを書き込む */
+    public static void setCatalystBonus(ItemStack stack, double bonus) {
+        if (stack.isEmpty() || bonus <= 0) return;
+        stack.getOrCreateTag().putDouble(CATALYST_BONUS_KEY, bonus);
+    }
+
+    /** ItemStackから触媒ボーナスを読み取る（なければ0） */
+    public static double getCatalystBonus(ItemStack stack) {
+        if (stack.isEmpty()) return 0;
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains(CATALYST_BONUS_KEY)) return 0;
+        return tag.getDouble(CATALYST_BONUS_KEY);
+    }
+
+    /** 触媒ボーナス用のAttributeModifierを返す */
+    public static AttributeModifier createCatalystDamageModifier(double bonus) {
+        return new AttributeModifier(
+                CATALYST_DAMAGE_UUID,
+                "Catalyst Bonus",
+                bonus,
+                AttributeModifier.Operation.ADDITION
+        );
+    }
+
+    /** レアリティ＋触媒ボーナスを合算した単一のAttributeModifierを返す */
+    public static AttributeModifier createCombinedDamageModifier(double totalBonus) {
+        return new AttributeModifier(
+                RARITY_DAMAGE_UUID,
+                "Weapon Rarity Bonus",
+                totalBonus,
+                AttributeModifier.Operation.ADDITION
+        );
     }
 }

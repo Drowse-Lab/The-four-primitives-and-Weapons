@@ -31,10 +31,14 @@ public class WeaponRarityEventHandler {
         if (!(stack.getItem() instanceof SwordItem)) return;
 
         WeaponRarity rarity = WeaponRarity.getFromStack(stack);
-        if (rarity == null || rarity.getAttackBonus() <= 0) return;
+        double catalystBonus = WeaponRarity.getCatalystBonus(stack);
+        double totalBonus = (rarity != null ? rarity.getAttackBonus() : 0) + catalystBonus;
 
-        // レアリティボーナスを追加
-        event.addModifier(Attributes.ATTACK_DAMAGE, rarity.createDamageModifier());
+        // レアリティ＋触媒ボーナスを1つのModifierとして追加
+        if (totalBonus > 0) {
+            event.addModifier(Attributes.ATTACK_DAMAGE,
+                    WeaponRarity.createCombinedDamageModifier(totalBonus));
+        }
     }
 
     /**
@@ -52,10 +56,19 @@ public class WeaponRarityEventHandler {
         // レアリティ名を1行目の後に挿入
         event.getToolTip().add(1, Component.literal(rarity.getColoredName()));
 
-        // 攻撃力ボーナスがある場合
-        if (rarity.getAttackBonus() > 0) {
-            event.getToolTip().add(2,
-                    Component.literal("\u00A77Rarity Bonus: \u00A7a+" + (int) rarity.getAttackBonus() + " Attack Damage"));
+        // 合算攻撃力ボーナス表示
+        double catalystBonus = WeaponRarity.getCatalystBonus(stack);
+        double totalBonus = rarity.getAttackBonus() + catalystBonus;
+        int nextIdx = 2;
+        if (totalBonus > 0) {
+            event.getToolTip().add(nextIdx++,
+                    Component.literal("\u00A77Bonus: \u00A7a+" + (int) totalBonus + " Attack Damage"));
+        }
+
+        // 禁忌レアリティの特殊能力表示
+        if (rarity == WeaponRarity.FORBIDDEN) {
+            event.getToolTip().add(nextIdx,
+                    Component.literal("\u00A74\u7981\u5fcc\u306e\u529b: \u00A7c\u98db\u3073\u9053\u5177\u53cd\u5c04"));
         }
     }
 }

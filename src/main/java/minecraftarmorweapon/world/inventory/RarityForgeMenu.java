@@ -143,9 +143,13 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
         // レアリティ抽選（2スロット合算）
         WeaponRarity rarity = RarityCraftingLogic.rollRarity(catalyst0, catalyst1);
 
+        // 触媒ボーナス計算（各触媒のティアに応じた攻撃力加算）
+        double catalystBonus = RarityCraftingLogic.getCatalystBonus(catalyst0, catalyst1);
+
         // 結果アイテム作成
         ItemStack result = new ItemStack(recipe.getResult());
         WeaponRarity.setToStack(result, rarity);
+        WeaponRarity.setCatalystBonus(result, catalystBonus);
 
         // グリッドから素材消費
         recipe.consumeIngredients(grid);

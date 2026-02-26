@@ -19,6 +19,28 @@ public final class RarityForgeRecipes {
     private RarityForgeRecipes() {}
 
     static {
+        // === バニラ武器 ===
+        // 木の剣
+        sword(Items.WOODEN_SWORD, Items.OAK_PLANKS);
+        // 石の剣
+        sword(Items.STONE_SWORD, Items.COBBLESTONE);
+        // 鉄の剣
+        sword(Items.IRON_SWORD, Items.IRON_INGOT);
+        // 金の剣
+        sword(Items.GOLDEN_SWORD, Items.GOLD_INGOT);
+        // ダイヤの剣
+        sword(Items.DIAMOND_SWORD, Items.DIAMOND);
+        // ネザライトの剣
+        sword(Items.NETHERITE_SWORD, Items.NETHERITE_INGOT);
+
+        // === バニラ斧 ===
+        axe(Items.WOODEN_AXE, Items.OAK_PLANKS);
+        axe(Items.STONE_AXE, Items.COBBLESTONE);
+        axe(Items.IRON_AXE, Items.IRON_INGOT);
+        axe(Items.GOLDEN_AXE, Items.GOLD_INGOT);
+        axe(Items.DIAMOND_AXE, Items.DIAMOND);
+        axe(Items.NETHERITE_AXE, Items.NETHERITE_INGOT);
+
         // === 石系 ===
         // 石カタナ: 丸石2 + 棒1 (剣パターン)
         sword(MinecraftArmorWeaponModItems.STONE_KATANA.get(), Items.COBBLESTONE);
@@ -78,6 +100,12 @@ public final class RarityForgeRecipes {
     private static void sword(Item result, Item material) {
         add(RarityForgeRecipe.shaped(result,
                 new String[]{"M", "M", "S"}, 'M', material, 'S', Items.STICK));
+    }
+
+    /** 標準的な斧パターン: 素材3 + 棒2 */
+    private static void axe(Item result, Item material) {
+        add(RarityForgeRecipe.shaped(result,
+                new String[]{"MM", "MS", " S"}, 'M', material, 'S', Items.STICK));
     }
 
     private static void add(RarityForgeRecipe recipe) {

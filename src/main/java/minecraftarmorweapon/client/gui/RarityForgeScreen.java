@@ -2,8 +2,10 @@ package minecraftarmorweapon.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
+import minecraftarmorweapon.item.rarity.RarityCraftingLogic;
 import minecraftarmorweapon.item.rarity.RarityForgeRecipe;
 import minecraftarmorweapon.item.rarity.RarityForgeRecipes;
+import minecraftarmorweapon.item.rarity.WeaponRarity;
 import minecraftarmorweapon.network.RarityForgeButtonMessage;
 import minecraftarmorweapon.world.inventory.RarityForgeMenu;
 import net.minecraft.client.gui.GuiGraphics;
@@ -129,6 +131,43 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
         gfx.drawString(font, Component.literal("+"), 31, 59, 0x404040, false);
         gfx.drawString(font, Component.literal("\u2192"), 137, 58, 0x404040, false);
         gfx.drawString(font, Component.literal("\u30A4\u30F3\u30D9\u30F3\u30C8\u30EA"), 59, 128, 0x404040, false);
+
+        // === 触媒によるレアリティ確率表示 ===
+        ItemStack cat0 = menu.getInternal().getStackInSlot(0);
+        ItemStack cat1 = menu.getInternal().getStackInSlot(1);
+        if (!cat0.isEmpty() || !cat1.isEmpty()) {
+            int dy = 78;
+            float scale = 0.8f;
+
+            // レアリティ付き触媒 → そのレアリティを確定表示
+            WeaponRarity transferred = RarityCraftingLogic.getTransferredRarity(cat0, cat1);
+            int[] weights = RarityCraftingLogic.getWeightsForCatalysts(cat0, cat1);
+
+            if (weights == null) {
+                // 禁忌確定（CURSED触媒）
+                gfx.drawString(font, Component.literal("\u00A74\u7981\u5fcc \u00A7c100%"), 5, dy, 0xFFFFFF, false);
+            } else if (transferred != null) {
+                // レアリティ付きアイテムが触媒 → そのレアリティ確定
+                String line = transferred.getColorCode() + transferred.getDisplayName() + " \u00A7f100%";
+                gfx.drawString(font, Component.literal(line), 5, dy, 0xFFFFFF, false);
+            } else {
+                int total = 0;
+                for (int w : weights) total += w;
+                WeaponRarity[] rarities = WeaponRarity.values();
+                for (int i = 0; i < weights.length && i < rarities.length; i++) {
+                    if (weights[i] <= 0) continue;
+                    int pct = weights[i] * 100 / total;
+                    String line = rarities[i].getColorCode() + rarities[i].getDisplayName()
+                            + " \u00A7f" + pct + "%";
+                    gfx.pose().pushPose();
+                    gfx.pose().translate(5, dy, 0);
+                    gfx.pose().scale(scale, scale, 1);
+                    gfx.drawString(font, Component.literal(line), 0, 0, 0xFFFFFF, false);
+                    gfx.pose().popPose();
+                    dy += 8;
+                }
+            }
+        }
     }
 
     /** クラフト候補リスト描画（クラフト可能なレシピのみ表示） */

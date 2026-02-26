@@ -9,7 +9,6 @@ run/
 !run/**/*.mcfunction
 .nbt
 .gradle/
-build/
 gradle-app.setting
 
 build/*
