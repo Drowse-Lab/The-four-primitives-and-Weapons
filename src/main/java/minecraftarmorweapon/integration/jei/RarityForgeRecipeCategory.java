@@ -14,22 +14,24 @@ import minecraftarmorweapon.init.RarityForgeRegistration;
 import minecraftarmorweapon.item.rarity.RarityForgeRecipe;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeRecipe> {
 
     public static final ResourceLocation UID = new ResourceLocation("minecraft_armor_weapon", "rarity_forge");
-    public static final RecipeType<RarityForgeRecipe> RECIPE_TYPE = RecipeType.create("minecraft_armor_weapon", "rarity_forge", RarityForgeRecipe.class);
+    public static final RecipeType<RarityForgeRecipe> RECIPE_TYPE =
+            RecipeType.create("minecraft_armor_weapon", "rarity_forge", RarityForgeRecipe.class);
 
     private final IDrawable background;
     private final IDrawable icon;
     private final Component title;
 
     public RarityForgeRecipeCategory(IGuiHelper guiHelper) {
-        this.background = guiHelper.createBlankDrawable(120, 36);
+        this.background = guiHelper.createBlankDrawable(116, 54);
         this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
                 new ItemStack(RarityForgeRegistration.getBlock()));
-        this.title = Component.literal("Rarity Forge");
+        this.title = Component.literal("\u30EC\u30A2\u30EA\u30C6\u30A3\u89E3\u653E\u30C6\u30FC\u30D6\u30EB");
     }
 
     @Override
@@ -54,28 +56,56 @@ public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeRec
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, RarityForgeRecipe recipe, IFocusGroup focuses) {
-        // パターンから素材スロットを配置
-        net.minecraft.world.item.Item[][] pattern = recipe.getPattern();
-        int slotX = 1;
-        for (int y = 0; y < recipe.getPatternHeight(); y++) {
-            for (int x = 0; x < recipe.getPatternWidth(); x++) {
+        Item[][] pattern = recipe.getPattern();
+        int pw = recipe.getPatternWidth();
+        int ph = recipe.getPatternHeight();
+
+        // 3×3グリッドの中央寄せオフセット
+        int offsetX = (3 - pw) * 18 / 2;
+        int offsetY = (3 - ph) * 18 / 2;
+
+        for (int y = 0; y < ph; y++) {
+            for (int x = 0; x < pw; x++) {
                 if (pattern[y][x] != null) {
-                    builder.addSlot(RecipeIngredientRole.INPUT, slotX, 10)
+                    builder.addSlot(RecipeIngredientRole.INPUT,
+                                    1 + offsetX + x * 18,
+                                    1 + offsetY + y * 18)
                             .addItemStack(new ItemStack(pattern[y][x]));
-                    slotX += 20;
                 }
             }
         }
 
-        // 結果 (右)
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 99, 10)
+        // 結果スロット（右側）
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 95, 19)
                 .addItemStack(new ItemStack(recipe.getResult()));
     }
 
     @Override
-    public void draw(RarityForgeRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
-        // 矢印を描画 (テキストで代用)
+    public void draw(RarityForgeRecipe recipe, IRecipeSlotsView recipeSlotsView,
+                     GuiGraphics gfx, double mouseX, double mouseY) {
+        // 3×3グリッド背景
+        for (int r = 0; r < 3; r++) {
+            for (int c = 0; c < 3; c++) {
+                int sx = c * 18;
+                int sy = r * 18;
+                gfx.fill(sx, sy, sx + 18, sy + 18, 0xFF8B8B8B);
+                gfx.fill(sx, sy, sx + 18, sy + 1, 0xFF373737);
+                gfx.fill(sx, sy, sx + 1, sy + 18, 0xFF373737);
+                gfx.fill(sx + 17, sy, sx + 18, sy + 18, 0xFFFFFFFF);
+                gfx.fill(sx, sy + 17, sx + 18, sy + 18, 0xFFFFFFFF);
+            }
+        }
+
+        // 結果スロット背景
+        int ox = 94, oy = 18;
+        gfx.fill(ox, oy, ox + 18, oy + 18, 0xFF8B8B8B);
+        gfx.fill(ox, oy, ox + 18, oy + 1, 0xFF373737);
+        gfx.fill(ox, oy, ox + 1, oy + 18, 0xFF373737);
+        gfx.fill(ox + 17, oy, ox + 18, oy + 18, 0xFFFFFFFF);
+        gfx.fill(ox, oy + 17, ox + 18, oy + 18, 0xFFFFFFFF);
+
+        // 矢印
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-        guiGraphics.drawString(mc.font, "\u2192", 55, 14, 0x404040);
+        gfx.drawString(mc.font, "\u2192", 62, 22, 0x404040, false);
     }
 }

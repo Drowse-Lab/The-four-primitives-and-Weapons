@@ -2,49 +2,210 @@ package minecraftarmorweapon.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
+import minecraftarmorweapon.item.rarity.RarityForgeRecipe;
+import minecraftarmorweapon.item.rarity.RarityForgeRecipes;
 import minecraftarmorweapon.network.RarityForgeButtonMessage;
 import minecraftarmorweapon.world.inventory.RarityForgeMenu;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * レアリティ解放テーブルのGUI画面
+ * 左: 触媒スロット×2, 中央: 3×3クラフトグリッド, 右: クラフト候補リスト
+ */
 public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> {
 
-    private static final ResourceLocation BG_BASE = new ResourceLocation("minecraft_armor_weapon:textures/screens/smithing_table_gui_2.png");
-    private static final ResourceLocation BG_OVERLAY = new ResourceLocation("minecraft_armor_weapon:textures/screens/smithing_table_1.20.png");
-
     private final int x, y, z;
+
+    /** クラフト可能なレシピのインデックス（RarityForgeRecipes.getAll()内） */
+    private List<Integer> craftableIndices = List.of();
+    private int scrollOffset = 0;
+    /** ホバー中のレシピのグローバルインデックス（getAll()内） */
+    private int hoveredRecipeIndex = -1;
+
+    // --- 右パネル（候補リスト）レイアウト ---
+    private static final int VISIBLE_ROWS = 5;
+    private static final int ROW_HEIGHT = 18;
+    private static final int LIST_X = 143;
+    private static final int LIST_Y = 34;
+    private static final int LIST_W = 128;
+    private static final int LIST_H = VISIBLE_ROWS * ROW_HEIGHT;
+
+    // --- 中央パネル（クラフトグリッド）レイアウト ---
+    private static final int GRID_X = 76;
+    private static final int GRID_Y = 38;
+    private static final int CELL = 18;
 
     public RarityForgeScreen(RarityForgeMenu container, Inventory inventory, Component text) {
         super(container, inventory, text);
         this.x = container.x;
         this.y = container.y;
         this.z = container.z;
-        this.imageWidth = 170;
-        this.imageHeight = 160;
+        this.imageWidth = 280;
+        this.imageHeight = 220;
     }
 
     @Override
-    public void render(GuiGraphics ms, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(ms);
-        super.render(ms, mouseX, mouseY, partialTicks);
-        this.renderTooltip(ms, mouseX, mouseY);
+    public void containerTick() {
+        super.containerTick();
+        List<RarityForgeRecipe> all = RarityForgeRecipes.getAll();
+        List<RarityForgeRecipe> craftable = menu.getMatchingRecipes();
+        List<Integer> newIndices = new ArrayList<>();
+        for (int i = 0; i < all.size(); i++) {
+            if (craftable.contains(all.get(i))) {
+                newIndices.add(i);
+            }
+        }
+        craftableIndices = newIndices;
+        int maxScroll = Math.max(0, craftableIndices.size() - VISIBLE_ROWS);
+        if (scrollOffset > maxScroll) scrollOffset = maxScroll;
     }
 
     @Override
-    protected void renderBg(GuiGraphics ms, float partialTicks, int gx, int gy) {
+    public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTicks) {
+        this.renderBackground(gfx);
+        super.render(gfx, mouseX, mouseY, partialTicks);
+
+        // クラフト候補リスト描画
+        renderCandidateList(gfx, mouseX, mouseY);
+
+        // スロットツールチップ
+        this.renderTooltip(gfx, mouseX, mouseY);
+
+        // 候補ホバー時のアイテムツールチップ
+        if (hoveredRecipeIndex >= 0) {
+            List<RarityForgeRecipe> all = RarityForgeRecipes.getAll();
+            if (hoveredRecipeIndex < all.size()) {
+                ItemStack stack = new ItemStack(all.get(hoveredRecipeIndex).getResult());
+                gfx.renderTooltip(this.font, stack, mouseX, mouseY);
+            }
+        }
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics gfx, float partialTicks, int gx, int gy) {
         RenderSystem.setShaderColor(1, 1, 1, 1);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+        int lx = this.leftPos;
+        int ly = this.topPos;
 
-        ms.blit(BG_BASE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+        // メイン背景
+        gfx.fill(lx, ly, lx + imageWidth, ly + imageHeight, 0xFFC6C6C6);
+        draw3DBorder(gfx, lx, ly, imageWidth, imageHeight, true);
 
-        ms.blit(BG_OVERLAY, this.leftPos, this.topPos - 5, 0, 0, 170, 160, 170, 160);
+        // === 左パネル（触媒）===
+        drawInsetPanel(gfx, lx + 3, ly + 18, 63, 108);
+        drawSlotBg(gfx, lx + 9, ly + 54);
+        drawSlotBg(gfx, lx + 39, ly + 54);
 
-        RenderSystem.disableBlend();
+        // === 中央パネル（3×3クラフトグリッド）===
+        drawInsetPanel(gfx, lx + 69, ly + 18, 66, 108);
+        for (int r = 0; r < 3; r++)
+            for (int c = 0; c < 3; c++)
+                drawSlotBg(gfx, lx + GRID_X + c * CELL, ly + GRID_Y + r * CELL);
+
+        // === 右パネル（クラフト候補）===
+        drawInsetPanel(gfx, lx + 139, ly + 18, 136, 108);
+
+        // === プレイヤーインベントリ ===
+        for (int r = 0; r < 3; r++)
+            for (int c = 0; c < 9; c++)
+                drawSlotBg(gfx, lx + 58 + c * 18, ly + 137 + r * 18);
+        for (int c = 0; c < 9; c++)
+            drawSlotBg(gfx, lx + 58 + c * 18, ly + 195);
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics gfx, int mouseX, int mouseY) {
+        gfx.drawString(font, Component.literal("\u00A7l\u30EC\u30A2\u30EA\u30C6\u30A3\u89E3\u653E\u30C6\u30FC\u30D6\u30EB"), 5, 6, 0x404040, false);
+        gfx.drawString(font, Component.literal("\u89E6\u5A92"), 20, 22, 0x404040, false);
+        gfx.drawString(font, Component.literal("\u30AF\u30E9\u30D5\u30C8"), 83, 26, 0x404040, false);
+        gfx.drawString(font, Component.literal("\u30AF\u30E9\u30D5\u30C8\u5019\u88DC"), 160, 22, 0x404040, false);
+        gfx.drawString(font, Component.literal("+"), 31, 59, 0x404040, false);
+        gfx.drawString(font, Component.literal("\u2192"), 137, 58, 0x404040, false);
+        gfx.drawString(font, Component.literal("\u30A4\u30F3\u30D9\u30F3\u30C8\u30EA"), 59, 128, 0x404040, false);
+    }
+
+    /** クラフト候補リスト描画（クラフト可能なレシピのみ表示） */
+    private void renderCandidateList(GuiGraphics gfx, int mouseX, int mouseY) {
+        int lx = this.leftPos + LIST_X;
+        int ly = this.topPos + LIST_Y;
+        hoveredRecipeIndex = -1;
+
+        if (craftableIndices.isEmpty()) return;
+
+        List<RarityForgeRecipe> all = RarityForgeRecipes.getAll();
+        gfx.enableScissor(lx, ly, lx + LIST_W, ly + LIST_H);
+        for (int i = 0; i < craftableIndices.size(); i++) {
+            int di = i - scrollOffset;
+            if (di < 0 || di >= VISIBLE_ROWS) continue;
+
+            int globalIdx = craftableIndices.get(i);
+            RarityForgeRecipe recipe = all.get(globalIdx);
+            int rowY = ly + di * ROW_HEIGHT;
+
+            boolean hovered = mouseX >= lx && mouseX < lx + LIST_W
+                    && mouseY >= rowY && mouseY < rowY + ROW_HEIGHT;
+            if (hovered) {
+                hoveredRecipeIndex = globalIdx;
+                gfx.fill(lx, rowY, lx + LIST_W, rowY + ROW_HEIGHT, 0x6000FF00);
+            } else {
+                gfx.fill(lx, rowY, lx + LIST_W, rowY + ROW_HEIGHT,
+                        (i % 2 == 0) ? 0x20000000 : 0x10000000);
+            }
+
+            ItemStack stack = new ItemStack(recipe.getResult());
+            gfx.renderItem(stack, lx + 1, rowY + 1);
+
+            String name = stack.getHoverName().getString();
+            int maxW = LIST_W - 22;
+            if (font.width(name) > maxW) {
+                while (name.length() > 1 && font.width(name + "..") > maxW)
+                    name = name.substring(0, name.length() - 1);
+                name += "..";
+            }
+            gfx.drawString(font, name, lx + 19, rowY + 5, 0xFFFFFF, true);
+        }
+        gfx.disableScissor();
+
+        // スクロールバー
+        if (craftableIndices.size() > VISIBLE_ROWS) {
+            int sbX = lx + LIST_W - 4;
+            int maxS = craftableIndices.size() - VISIBLE_ROWS;
+            int thumbH = Math.max(10, LIST_H * VISIBLE_ROWS / craftableIndices.size());
+            int thumbY = ly + (LIST_H - thumbH) * scrollOffset / maxS;
+            gfx.fill(sbX, ly, sbX + 4, ly + LIST_H, 0x40000000);
+            gfx.fill(sbX, thumbY, sbX + 4, thumbY + thumbH, 0xA0FFFFFF);
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double mx, double my, int button) {
+        // クラフト可能なレシピのみクリック可
+        if (button == 0 && hoveredRecipeIndex >= 0
+                && craftableIndices.contains(hoveredRecipeIndex)) {
+            MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                    new RarityForgeButtonMessage(x, y, z, hoveredRecipeIndex));
+            return true;
+        }
+        return super.mouseClicked(mx, my, button);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mx, double my, double delta) {
+        int lx = this.leftPos + LIST_X;
+        int ly = this.topPos + LIST_Y;
+        if (mx >= lx && mx < lx + LIST_W && my >= ly && my < ly + LIST_H) {
+            int maxS = Math.max(0, craftableIndices.size() - VISIBLE_ROWS);
+            scrollOffset = Math.max(0, Math.min(maxS, scrollOffset - (int) delta));
+            return true;
+        }
+        return super.mouseScrolled(mx, my, delta);
     }
 
     @Override
@@ -56,21 +217,27 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
         return super.keyPressed(key, b, c);
     }
 
-    @Override
-    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        guiGraphics.drawString(this.font, Component.literal("\u00A7lRarity Forge"), 39, 15, 0x404040);
+    // === 描画ヘルパー ===
+
+    private void draw3DBorder(GuiGraphics gfx, int x, int y, int w, int h, boolean raised) {
+        int light = raised ? 0xFFFFFFFF : 0xFF373737;
+        int dark = raised ? 0xFF555555 : 0xFFFFFFFF;
+        gfx.fill(x, y, x + w, y + 1, light);
+        gfx.fill(x, y, x + 1, y + h, light);
+        gfx.fill(x + w - 1, y, x + w, y + h, dark);
+        gfx.fill(x, y + h - 1, x + w, y + h, dark);
     }
 
-    @Override
-    public void init() {
-        super.init();
+    private void drawInsetPanel(GuiGraphics gfx, int x, int y, int w, int h) {
+        gfx.fill(x, y, x + w, y + h, 0xFF8B8B8B);
+        draw3DBorder(gfx, x, y, w, h, false);
+    }
 
-        this.addRenderableWidget(Button.builder(
-                Component.literal("\u00A76Forge!"),
-                button -> {
-                    MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
-                            new RarityForgeButtonMessage(x, y, z));
-                }
-        ).bounds(this.leftPos + 56, this.topPos + 62, 58, 16).build());
+    private void drawSlotBg(GuiGraphics gfx, int x, int y) {
+        gfx.fill(x, y, x + 18, y + 18, 0xFF8B8B8B);
+        gfx.fill(x, y, x + 18, y + 1, 0xFF373737);
+        gfx.fill(x, y, x + 1, y + 18, 0xFF373737);
+        gfx.fill(x + 17, y, x + 18, y + 18, 0xFFFFFFFF);
+        gfx.fill(x, y + 17, x + 18, y + 18, 0xFFFFFFFF);
     }
 }

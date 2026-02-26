@@ -2,22 +2,41 @@
 
 Minecraft Forge 1.20.1 Mod (Java 17)
 
-## Build Commands
+## .jar ビルド手順
 
-### Compile (check for errors)
+### 1. ビルド実行
+```bash
+./gradlew build
+```
+Windows (PowerShell/cmd) の場合:
+```cmd
+.\gradlew.bat build
+```
+
+### 2. 出力先
+```
+build/libs/The four primitives and Weapons-forge-1.20.1--1.0.jar
+```
+
+### 3. Minecraftに導入
+1. 上記の `.jar` ファイルをコピー
+2. Minecraftの `mods` フォルダに配置
+   - デフォルト: `%APPDATA%\.minecraft\mods\`
+3. Forge 1.20.1 の入ったプロファイルで起動
+
+### クリーンビルド（キャッシュ問題時）
+```bash
+./gradlew clean build
+```
+
+### コンパイルだけ（エラーチェック）
 ```bash
 ./gradlew compileJava
 ```
 
-### Build (generate jar)
+### デバッグ付きビルド
 ```bash
-./gradlew build
-```
-Output: `build/libs/The four primitives and Weapons-forge-1.20.1--1.0.jar`
-
-### Clean Build
-```bash
-./gradlew clean build
+./gradlew build --stacktrace
 ```
 
 ## Run (Test Play)
@@ -25,9 +44,6 @@ Output: `build/libs/The four primitives and Weapons-forge-1.20.1--1.0.jar`
 ### Terminal
 ```bash
 ./gradlew runClient
-
-bash run_client.sh
-
 ```
 
 ### VSCode (F5 Debug)
@@ -69,7 +85,7 @@ bash run_client.sh
 
 ## Troubleshooting
 
-### Build Errors
+### ビルドが通らない場合
 ```bash
 ./gradlew clean
 ./gradlew build --stacktrace
@@ -81,8 +97,20 @@ rm -rf ~/.gradle/caches/forge_gradle
 ./gradlew build
 ```
 
-### WSL (Linux)
-WSL does not have Java. Use Windows terminal (PowerShell/cmd/VSCode terminal).
-```cmd
-.\gradlew.bat build
+### deprecation警告が出る
+Curios APIの`SlotTypeMessage`等の警告はエラーではないので無視してOK。jarは正常に生成される。
+
+### WSL (Linux) でビルドする場合
+
+#### 初回セットアップ（Java 17インストール）
+```bash
+sudo apt update && sudo apt install -y openjdk-17-jdk
 ```
+
+#### ビルド
+```bash
+bash build.sh          # 通常ビルド
+bash build.sh clean    # クリーンビルド
+```
+
+詳細は [WSL_BUILD.md](WSL_BUILD.md) を参照。

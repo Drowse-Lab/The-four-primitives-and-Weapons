@@ -28,14 +28,11 @@ import java.util.stream.IntStream;
 import io.netty.buffer.Unpooled;
 
 /**
- * レアリティ強化台のBlockEntity
- * スロット0-8: 3×3クラフトグリッド, スロット9: 触媒(レアリティブースト), スロット10: 結果出力
+ * レアリティ解放テーブルのBlockEntity
+ * スロット0-1: 触媒, スロット2-10: 3×3クラフトグリッド
  */
 public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer {
 
-    public static final int GRID_SLOTS = 9;
-    public static final int CATALYST_SLOT = 9;
-    public static final int OUTPUT_SLOT = 10;
     public static final int TOTAL_SLOTS = 11;
 
     private NonNullList<ItemStack> stacks = NonNullList.withSize(TOTAL_SLOTS, ItemStack.EMPTY);
@@ -101,7 +98,7 @@ public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity imp
 
     @Override
     public Component getDisplayName() {
-        return Component.literal("Rarity Forge");
+        return Component.literal("レアリティ解放テーブル");
     }
 
     @Override
@@ -116,7 +113,7 @@ public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity imp
 
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
-        return index < OUTPUT_SLOT;
+        return index < TOTAL_SLOTS;
     }
 
     @Override
@@ -131,7 +128,7 @@ public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity imp
 
     @Override
     public boolean canTakeItemThroughFace(int index, ItemStack stack, Direction direction) {
-        return index == OUTPUT_SLOT;
+        return true;
     }
 
     @Override

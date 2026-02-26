@@ -66,8 +66,8 @@ public class CommonSoldierRenderer extends HumanoidMobRenderer<CommonSoldierEnti
     private static void initializeSkins() {
         try {
             // デフォルトスキンを追加
-            wideSkins.add(new ResourceLocation("textures/entity/steve.png"));
-            slimSkins.add(new ResourceLocation("textures/entity/alex.png"));
+            wideSkins.add(new ResourceLocation("textures/entity/player/wide/steve.png"));
+            slimSkins.add(new ResourceLocation("textures/entity/player/slim/alex.png"));
 
             // slim フォルダから既知のスキンを追加
             // 実際に存在するファイル名を使用
@@ -166,8 +166,8 @@ public class CommonSoldierRenderer extends HumanoidMobRenderer<CommonSoldierEnti
         // スキンリストが空の場合はデフォルトを返す
         if (skins.isEmpty()) {
             return isSlim ?
-                new ResourceLocation("textures/entity/alex.png") :
-                new ResourceLocation("textures/entity/steve.png");
+                new ResourceLocation("textures/entity/player/slim/alex.png") :
+                new ResourceLocation("textures/entity/player/wide/steve.png");
         }
 
         return skins.get(skinIndex);

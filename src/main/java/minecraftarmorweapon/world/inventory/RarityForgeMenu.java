@@ -22,15 +22,22 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * レアリティ強化台メニュー
- * スロット0: 素材1, スロット1: 素材2, スロット2: 触媒(レアリティブースト), スロット3: 結果出力
+ * レアリティ解放テーブルメニュー
+ * スロット0-1: 触媒, スロット2-10: 3×3クラフトグリッド
+ * 右パネルのクラフト候補をクリックして作成
  */
 public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<Map<Integer, Slot>> {
+
+    private static final int CATALYST_SLOTS = 2;
+    private static final int GRID_SLOTS = 9;
+    private static final int CONTAINER_SLOTS = CATALYST_SLOTS + GRID_SLOTS; // 11
 
     public final Level world;
     public final Player entity;
@@ -43,7 +50,7 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
         super(RarityForgeRegistration.getMenuType(), id);
         this.entity = inv.player;
         this.world = inv.player.level();
-        this.internal = new ItemStackHandler(4);
+        this.internal = new ItemStackHandler(CONTAINER_SLOTS);
         BlockPos pos = null;
         if (extraData != null) {
             pos = extraData.readBlockPos();
@@ -61,73 +68,105 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
             }
         }
 
-        // スロット0: 素材1
-        this.customSlots.put(0, this.addSlot(new SlotItemHandler(internal, 0, 7, 41) {
-        }));
+        // スロット0-1: 触媒
+        this.customSlots.put(0, this.addSlot(new SlotItemHandler(internal, 0, 10, 55)));
+        this.customSlots.put(1, this.addSlot(new SlotItemHandler(internal, 1, 40, 55)));
 
-        // スロット1: 素材2
-        this.customSlots.put(1, this.addSlot(new SlotItemHandler(internal, 1, 25, 41) {
-        }));
-
-        // スロット2: 触媒（レアリティブースト素材）
-        this.customSlots.put(2, this.addSlot(new SlotItemHandler(internal, 2, 43, 41) {
-        }));
-
-        // スロット3: 結果出力（取り出し専用）
-        this.customSlots.put(3, this.addSlot(new SlotItemHandler(internal, 3, 95, 41) {
-            @Override
-            public boolean mayPlace(ItemStack stack) {
-                return false;
+        // スロット2-10: 3×3クラフトグリッド
+        for (int r = 0; r < 3; r++)
+            for (int c = 0; c < 3; c++) {
+                int slotIndex = CATALYST_SLOTS + r * 3 + c;
+                int slotX = 77 + c * 18;
+                int slotY = 39 + r * 18;
+                this.customSlots.put(slotIndex, this.addSlot(new SlotItemHandler(internal, slotIndex, slotX, slotY)));
             }
-        }));
 
-        // プレイヤーインベントリ
+        // プレイヤーインベントリ (3×9)
         for (int si = 0; si < 3; ++si)
             for (int sj = 0; sj < 9; ++sj)
-                this.addSlot(new Slot(inv, sj + (si + 1) * 9, -3 + 8 + sj * 18, -3 + 84 + si * 18));
+                this.addSlot(new Slot(inv, sj + (si + 1) * 9, 59 + sj * 18, 138 + si * 18));
+
+        // ホットバー
         for (int si = 0; si < 9; ++si)
-            this.addSlot(new Slot(inv, si, -3 + 8 + si * 18, -3 + 142));
+            this.addSlot(new Slot(inv, si, 59 + si * 18, 196));
+    }
+
+    public IItemHandler getInternal() {
+        return internal;
     }
 
     /**
-     * 強化ボタンが押された時の処理（サーバーサイド）
-     * 素材1+素材2でレシピマッチ → 触媒でレアリティ決定 → 結果を出力スロットへ
+     * 3×3グリッド部分をスロット0-8として見せるラッパー
      */
-    public void performForge() {
-        ItemStack output = internal.getStackInSlot(3);
+    private IItemHandler getGridHandler() {
+        return new IItemHandler() {
+            @Override public int getSlots() { return GRID_SLOTS; }
+            @Override public ItemStack getStackInSlot(int slot) { return internal.getStackInSlot(slot + CATALYST_SLOTS); }
+            @Override public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) { return internal.insertItem(slot + CATALYST_SLOTS, stack, simulate); }
+            @Override public ItemStack extractItem(int slot, int amount, boolean simulate) { return internal.extractItem(slot + CATALYST_SLOTS, amount, simulate); }
+            @Override public int getSlotLimit(int slot) { return internal.getSlotLimit(slot + CATALYST_SLOTS); }
+            @Override public boolean isItemValid(int slot, ItemStack stack) { return internal.isItemValid(slot + CATALYST_SLOTS, stack); }
+        };
+    }
 
-        // 出力スロットが埋まっていたら何もしない
-        if (!output.isEmpty()) return;
+    /**
+     * 3×3グリッドのパターンに一致するレシピ一覧を返す
+     */
+    public List<RarityForgeRecipe> getMatchingRecipes() {
+        IItemHandler grid = getGridHandler();
+        List<RarityForgeRecipe> matches = new ArrayList<>();
+        for (RarityForgeRecipe recipe : RarityForgeRecipes.getAll()) {
+            if (recipe.matches(grid)) {
+                matches.add(recipe);
+            }
+        }
+        return matches;
+    }
 
-        // レシピマッチ
-        RarityForgeRecipe recipe = RarityForgeRecipes.findMatch(internal);
-        if (recipe == null) return;
+    /**
+     * クラフト実行（全レシピリストのインデックス指定）
+     */
+    public void performForge(int recipeIndex) {
+        List<RarityForgeRecipe> all = RarityForgeRecipes.getAll();
+        if (recipeIndex < 0 || recipeIndex >= all.size()) return;
 
-        // 触媒スロットからレアリティ決定
-        ItemStack catalyst = internal.getStackInSlot(2);
-        WeaponRarity rarity = RarityCraftingLogic.rollRarity(catalyst);
+        RarityForgeRecipe recipe = all.get(recipeIndex);
+        IItemHandler grid = getGridHandler();
+
+        // 3×3グリッドパターンチェック
+        if (!recipe.matches(grid)) return;
+
+        // 触媒取得（両スロット）
+        ItemStack catalyst0 = internal.getStackInSlot(0);
+        ItemStack catalyst1 = internal.getStackInSlot(1);
+
+        // レアリティ抽選（2スロット合算）
+        WeaponRarity rarity = RarityCraftingLogic.rollRarity(catalyst0, catalyst1);
 
         // 結果アイテム作成
         ItemStack result = new ItemStack(recipe.getResult());
         WeaponRarity.setToStack(result, rarity);
 
-        // 素材を消費
-        recipe.consumeIngredients(internal);
+        // グリッドから素材消費
+        recipe.consumeIngredients(grid);
 
-        // 触媒を1つ消費
-        if (!catalyst.isEmpty()) {
-            catalyst.shrink(1);
+        // 触媒消費（各スロット1個ずつ）
+        if (!catalyst0.isEmpty()) {
+            internal.extractItem(0, 1, false);
+        }
+        if (!catalyst1.isEmpty()) {
+            internal.extractItem(1, 1, false);
         }
 
-        // 出力スロットにセット
-        if (internal instanceof ItemStackHandler handler) {
-            handler.setStackInSlot(3, result);
+        // プレイヤーに付与
+        if (!entity.getInventory().add(result)) {
+            entity.drop(result, false);
         }
 
-        // 音を鳴らす
-        if (entity instanceof ServerPlayer serverPlayer) {
-            serverPlayer.level().playSound(null,
-                    serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(),
+        // サウンド
+        if (entity instanceof ServerPlayer sp) {
+            sp.level().playSound(null,
+                    sp.getX(), sp.getY(), sp.getZ(),
                     SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
         }
     }
@@ -144,13 +183,16 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
         if (slot != null && slot.hasItem()) {
             ItemStack itemstack1 = slot.getItem();
             itemstack = itemstack1.copy();
-            if (index < 4) {
-                if (!this.moveItemStackTo(itemstack1, 4, this.slots.size(), true))
+            if (index < CONTAINER_SLOTS) {
+                // コンテナ → プレイヤー
+                if (!this.moveItemStackTo(itemstack1, CONTAINER_SLOTS, this.slots.size(), true))
                     return ItemStack.EMPTY;
                 slot.onQuickCraft(itemstack1, itemstack);
-            } else if (!this.moveItemStackTo(itemstack1, 0, 3, false)) {
-                // Shift-click from inventory: try slots 0-2 (not output slot 3)
-                return ItemStack.EMPTY;
+            } else {
+                // プレイヤー → グリッド優先、次に触媒
+                if (!this.moveItemStackTo(itemstack1, CATALYST_SLOTS, CONTAINER_SLOTS, false)
+                        && !this.moveItemStackTo(itemstack1, 0, CATALYST_SLOTS, false))
+                    return ItemStack.EMPTY;
             }
             if (itemstack1.getCount() == 0)
                 slot.set(ItemStack.EMPTY);

@@ -1,19 +1,13 @@
 package minecraftarmorweapon.procedures;
 
-import minecraftarmorweapon.util.VersionHelper;
-
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -22,11 +16,8 @@ import net.minecraft.core.particles.DustParticleOptions;
 import org.joml.Vector3f;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.InteractionHand;
 
-import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
+import minecraftarmorweapon.util.DamageCalculator;
 
 import java.util.List;
 import java.util.Arrays;
@@ -140,12 +131,9 @@ public class TyokutouThrustAttackProcedure {
 
         // 敵にダメージ
         for (LivingEntity target : targets) {
-            // ダメージ計算（エンチャントや効果を適用）
-            float actualDamage = calculateDamage(player, target, (float)damage);
-            target.hurt(player.damageSources().playerAttack(player), actualDamage);
-
-            // 武器特殊効果を適用
-            applyWeaponEffects(player, target, actualDamage);
+            // ダメージ計算＋エンチャント＋武器効果を統一適用
+            ItemStack weapon = player.getMainHandItem();
+            DamageCalculator.dealDamage(player, target, (float)damage, weapon);
 
             // ノックバック（他の刀と同じ）
             target.setDeltaMovement(lookVec.scale(1.5).add(0, 0.4, 0));
@@ -281,11 +269,10 @@ public class TyokutouThrustAttackProcedure {
             });
 
         // 全ての敵を貫通
+        ItemStack weapon = player.getMainHandItem();
         for (LivingEntity target : targets) {
-            float actualDamage = calculateDamage(player, target, (float)damage);
-            target.hurt(player.damageSources().playerAttack(player), actualDamage);
-
-            applyWeaponEffects(player, target, actualDamage);
+            // ダメージ計算＋エンチャント＋武器効果を統一適用
+            float actualDamage = DamageCalculator.dealDamage(player, target, (float)damage, weapon);
 
             // ターゲット位置にダメージエフェクト
             if (world instanceof ServerLevel serverLevel) {
@@ -408,12 +395,9 @@ public class TyokutouThrustAttackProcedure {
         if (!targets.isEmpty()) {
             LivingEntity target = targets.get(0);
 
-            // ダメージ計算（エンチャントや効果を適用）
-            float actualDamage = calculateDamage(player, target, (float)damage);
-            target.hurt(player.damageSources().playerAttack(player), actualDamage);
-
-            // 武器特殊効果を適用
-            applyWeaponEffects(player, target, actualDamage);
+            // ダメージ計算＋エンチャント＋武器効果を統一適用
+            ItemStack weapon = player.getMainHandItem();
+            DamageCalculator.dealDamage(player, target, (float)damage, weapon);
 
             // ノックバック
             target.setDeltaMovement(lookVec.scale(0.8).add(0, 0.2, 0));
@@ -438,132 +422,6 @@ public class TyokutouThrustAttackProcedure {
         if (world instanceof Level level) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.8f, 1.8f);
-        }
-    }
-
-    /**
-     * ダメージ計算（エンチャント、ポーション効果、属性を含む）
-     */
-    private static float calculateDamage(Player player, LivingEntity target, float baseDamage) {
-        ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (weapon.isEmpty()) {
-            weapon = player.getItemInHand(InteractionHand.OFF_HAND);
-        }
-
-        float damage = baseDamage;
-
-        // 武器の基本攻撃力を取得
-        if (weapon.getItem() instanceof SwordItem swordItem) {
-            damage += swordItem.getDamage();
-        }
-
-        // プレイヤーの攻撃力属性
-        double attackDamage = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
-        damage += (float)(attackDamage - 1.0); // 基本値1.0を引く
-
-        // 攻撃力上昇エフェクト
-        if (player.hasEffect(MobEffects.DAMAGE_BOOST)) {
-            int amplifier = player.getEffect(MobEffects.DAMAGE_BOOST).getAmplifier();
-            damage += damage * (0.3f * (amplifier + 1));
-        }
-
-        // 弱体化エフェクト
-        if (player.hasEffect(MobEffects.WEAKNESS)) {
-            int amplifier = player.getEffect(MobEffects.WEAKNESS).getAmplifier();
-            damage -= damage * (0.2f * (amplifier + 1));
-        }
-
-        // シャープネスエンチャント
-        int sharpnessLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SHARPNESS, weapon);
-        if (sharpnessLevel > 0) {
-            damage += 0.5f * sharpnessLevel + 0.5f;
-        }
-
-        // アンデッド特攻
-        if (target.getMobType() == MobType.UNDEAD) {
-            int smiteLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SMITE, weapon);
-            if (smiteLevel > 0) {
-                damage += 2.5f * smiteLevel;
-            }
-        }
-
-        // 虫特攻
-        if (target.getMobType() == MobType.ARTHROPOD) {
-            int baneLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BANE_OF_ARTHROPODS, weapon);
-            if (baneLevel > 0) {
-                damage += 2.5f * baneLevel;
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 + 10 * baneLevel, 3));
-            }
-        }
-
-        // クリティカル判定
-        if (player.fallDistance > 0.0F && !player.onGround() && !player.onClimbable() &&
-            !player.isInWater() && !player.hasEffect(MobEffects.BLINDNESS) && !player.isPassenger()) {
-            damage *= 1.5f;
-
-            // クリティカルエフェクト
-            if (VersionHelper.getLevel(player) instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(ParticleTypes.CRIT,
-                    target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
-                    15, 0.2, 0.2, 0.2, 0.1);
-            }
-
-            player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-                SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 1.0f);
-        }
-
-        return damage;
-    }
-
-    /**
-     * 武器特殊効果を適用
-     */
-    private static void applyWeaponEffects(Player player, LivingEntity target, float damage) {
-        ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (weapon.isEmpty()) {
-            weapon = player.getItemInHand(InteractionHand.OFF_HAND);
-        }
-
-        // 火属性エンチャント
-        int fireAspect = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FIRE_ASPECT, weapon);
-        if (fireAspect > 0) {
-            target.setSecondsOnFire(fireAspect * 4);
-        }
-
-        // ノックバックエンチャント
-        int knockback = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.KNOCKBACK, weapon);
-        if (knockback > 0) {
-            Vec3 knockbackVec = new Vec3(
-                target.getX() - player.getX(),
-                0,
-                target.getZ() - player.getZ()
-            ).normalize().scale(knockback * 0.5);
-
-            target.setDeltaMovement(
-                target.getDeltaMovement().add(knockbackVec.x, 0.1, knockbackVec.z)
-            );
-        }
-
-        // 略奪エンチャント（経験値増加）
-        int looting = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MOB_LOOTING, weapon);
-        if (looting > 0 && target.getHealth() <= 0) {
-            // ドロップ増加の処理は別途
-        }
-
-        // Killエンチャント
-        if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), weapon) > 0) {
-            if (Math.random() < 0.03) { // 3%の確率で即死
-                target.hurt(target.damageSources().magic(), target.getMaxHealth() * 2);
-
-                if (VersionHelper.getLevel(player) instanceof ServerLevel serverLevel) {
-                    serverLevel.sendParticles(ParticleTypes.SMOKE,
-                        target.getX(), target.getY() + 1, target.getZ(),
-                        20, 0.5, 0.5, 0.5, 0.1);
-                }
-
-                player.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-                    SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 0.5f, 2.0f);
-            }
         }
     }
 
@@ -1049,9 +907,10 @@ public class TyokutouThrustAttackProcedure {
                 return distanceToBeam <= 1.0; // ビームから1ブロック以内
             });
 
+        ItemStack weapon = player.getMainHandItem();
         for (LivingEntity target : targets) {
-            // 追加の魔法ダメージ
-            target.hurt(target.damageSources().magic(), damage);
+            // DamageCalculatorを基準にダメージ計算＋武器効果適用
+            DamageCalculator.dealDamage(player, target, damage, weapon);
 
             // 小さなノックバック
             Vec3 knockback = target.position().subtract(start).normalize().scale(0.3);

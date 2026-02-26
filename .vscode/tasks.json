@@ -5,33 +5,55 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build Project",
+            "label": "Build (jar)",
             "type": "shell",
-            "command": "./gradlew build",
+            "command": "bash build.sh",
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": ["$java"]
+            "problemMatcher": ["$java"],
+            "options": {
+                "shell": {
+                    "executable": "wsl.exe",
+                    "args": ["-e", "bash", "-c"]
+                },
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "Clean Build (jar)",
+            "type": "shell",
+            "command": "bash build.sh clean",
+            "group": "build",
+            "problemMatcher": ["$java"],
+            "options": {
+                "shell": {
+                    "executable": "wsl.exe",
+                    "args": ["-e", "bash", "-c"]
+                },
+                "cwd": "${workspaceFolder}"
+            }
         },
         {
             "label": "Run Client",
             "type": "shell",
-            "command": "./gradlew runClient",
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
-            "problemMatcher": []
+            "command": "bash run_client.sh",
+            "group": "build",
+            "problemMatcher": [],
+            "options": {
+                "shell": {
+                    "executable": "wsl.exe",
+                    "args": ["-e", "bash", "-c"]
+                },
+                "cwd": "${workspaceFolder}"
+            }
         },
         {
             "label": "Run Server",
             "type": "shell",
             "command": "./gradlew runServer",
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
+            "group": "build",
             "problemMatcher": []
         }
     ]

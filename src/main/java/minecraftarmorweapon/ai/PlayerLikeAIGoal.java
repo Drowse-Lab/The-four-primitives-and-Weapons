@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModMobEffects;
+import minecraftarmorweapon.util.DamageCalculator;
 
 import java.util.List;
 import java.util.EnumSet;
@@ -213,15 +214,7 @@ public class PlayerLikeAIGoal extends Goal {
 
         for (LivingEntity targetEntity : targets) {
             float baseDamage = 18.0f;
-            float actualDamage = minecraftarmorweapon.util.DamageCalculator.calculateDamage(
-                entity, targetEntity, baseDamage, weapon
-            );
-
-            targetEntity.hurt(entity.damageSources().mobAttack(entity), actualDamage);
-
-            minecraftarmorweapon.util.DamageCalculator.applyWeaponEffects(
-                entity, targetEntity, actualDamage, weapon
-            );
+            DamageCalculator.dealDamage(entity, targetEntity, baseDamage, weapon);
 
             targetEntity.setDeltaMovement(lookVec.scale(1.5).add(0, 0.4, 0));
         }
@@ -405,15 +398,7 @@ public class PlayerLikeAIGoal extends Goal {
         ItemStack weapon = entity.getItemInHand(InteractionHand.MAIN_HAND);
 
         for (LivingEntity target : targets) {
-            float actualDamage = minecraftarmorweapon.util.DamageCalculator.calculateDamage(
-                entity, target, baseDamage, weapon
-            );
-
-            target.hurt(entity.damageSources().mobAttack(entity), actualDamage);
-
-            minecraftarmorweapon.util.DamageCalculator.applyWeaponEffects(
-                entity, target, actualDamage, weapon
-            );
+            DamageCalculator.dealDamage(entity, target, baseDamage, weapon);
 
             // 貫通による吹き飛ばし
             target.setDeltaMovement(finalLookVec.scale(2.0 * chargePercent).add(0, 0.5, 0));
@@ -485,15 +470,7 @@ public class PlayerLikeAIGoal extends Goal {
         ItemStack weapon = entity.getItemInHand(InteractionHand.MAIN_HAND);
 
         for (LivingEntity target : targets) {
-            float actualDamage = minecraftarmorweapon.util.DamageCalculator.calculateDamage(
-                entity, target, baseDamage, weapon
-            );
-
-            target.hurt(entity.damageSources().mobAttack(entity), actualDamage);
-
-            minecraftarmorweapon.util.DamageCalculator.applyWeaponEffects(
-                entity, target, actualDamage, weapon
-            );
+            DamageCalculator.dealDamage(entity, target, baseDamage, weapon);
 
             // 円形ノックバック
             Vec3 knockback = target.position().subtract(entityPos).normalize().scale(1.0 + chargePercent);
@@ -679,15 +656,7 @@ public class PlayerLikeAIGoal extends Goal {
         ItemStack weapon = entity.getItemInHand(InteractionHand.MAIN_HAND);
 
         for (LivingEntity t : targets) {
-            float actualDamage = minecraftarmorweapon.util.DamageCalculator.calculateDamage(
-                entity, t, baseDamage, weapon
-            );
-
-            t.hurt(entity.damageSources().mobAttack(entity), actualDamage);
-
-            minecraftarmorweapon.util.DamageCalculator.applyWeaponEffects(
-                entity, t, actualDamage, weapon
-            );
+            DamageCalculator.dealDamage(entity, t, baseDamage, weapon);
 
             Vec3 knockback = t.position().subtract(entityPos).normalize().scale(0.4);
             t.setDeltaMovement(t.getDeltaMovement().add(knockback.x, 0.1, knockback.z));

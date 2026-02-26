@@ -6,6 +6,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
+import minecraftarmorweapon.init.RarityForgeRegistration;
 
 @Mod.EventBusSubscriber(modid = MinecraftArmorWeaponMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CreativeTabPopulator {
@@ -178,6 +179,10 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.STONE_SLAB);
 			event.accept(MinecraftArmorWeaponModItems.STRAY_BONE);
 			event.accept(MinecraftArmorWeaponModItems.WITHER_BONE);
+		}
+
+		if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
+			event.accept(RarityForgeRegistration.getItem());
 		}
 
 		if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {

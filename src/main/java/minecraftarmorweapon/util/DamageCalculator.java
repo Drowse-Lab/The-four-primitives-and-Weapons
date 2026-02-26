@@ -8,6 +8,9 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.effect.MobEffects;
@@ -19,10 +22,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.CommandSource;
-
-import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
+import com.google.common.collect.Multimap;
+import java.util.Collection;
 
 /**
  * 統一的なダメージ計算とエフェクト適用を行うユーティリティクラス
@@ -40,23 +41,20 @@ public class DamageCalculator {
     public static float calculateDamage(LivingEntity attacker, LivingEntity target, float baseDamage, ItemStack weapon) {
         if (weapon == null || weapon.isEmpty()) {
             weapon = attacker.getItemInHand(InteractionHand.MAIN_HAND);
-            if (weapon.isEmpty()) {
-                weapon = attacker.getItemInHand(InteractionHand.OFF_HAND);
-            }
         }
 
         float damage = baseDamage;
 
-        // 武器の基本攻撃力を取得
-        if (weapon.getItem() instanceof SwordItem swordItem) {
-            damage += swordItem.getDamage();
+        // 武器の攻撃力をアイテムの属性修飾子から取得（SwordItem以外のカスタム武器にも対応）
+        Multimap<Attribute, AttributeModifier> modifiers = weapon.getAttributeModifiers(EquipmentSlot.MAINHAND);
+        Collection<AttributeModifier> attackModifiers = modifiers.get(Attributes.ATTACK_DAMAGE);
+        double weaponDamage = 0;
+        for (AttributeModifier modifier : attackModifiers) {
+            if (modifier.getOperation() == AttributeModifier.Operation.ADDITION) {
+                weaponDamage += modifier.getAmount();
+            }
         }
-
-        // 攻撃者がプレイヤーの場合、攻撃力属性を追加
-        if (attacker instanceof Player player) {
-            double attackDamage = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
-            damage += (float)(attackDamage - 1.0); // 基本値1.0を引く
-        }
+        damage += (float) weaponDamage;
 
         // 攻撃力上昇エフェクト
         if (attacker.hasEffect(MobEffects.DAMAGE_BOOST)) {
@@ -125,9 +123,6 @@ public class DamageCalculator {
     public static void applyWeaponEffects(LivingEntity attacker, LivingEntity target, float damage, ItemStack weapon) {
         if (weapon == null || weapon.isEmpty()) {
             weapon = attacker.getItemInHand(InteractionHand.MAIN_HAND);
-            if (weapon.isEmpty()) {
-                weapon = attacker.getItemInHand(InteractionHand.OFF_HAND);
-            }
         }
 
         // 火属性エンチャント（Fire Aspect）
@@ -150,49 +145,7 @@ public class DamageCalculator {
             );
         }
 
-        // Killエンチャント（82.4%の確率で即死）
-        if (EnchantmentHelper.getItemEnchantmentLevel(MinecraftArmorWeaponModEnchantments.KILL.get(), weapon) > 0) {
-            if (Math.random() < 0.824) { // 82.4%の確率
-                // killコマンドを実行（KillEnchantmentHandlerと同じ処理）
-                if (target.getServer() != null) {
-                    target.getServer().getCommands().performPrefixedCommand(
-                        new CommandSourceStack(
-                            CommandSource.NULL,
-                            target.position(),
-                            target.getRotationVector(),
-                            VersionHelper.getLevel(target) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(target) : null,
-                            4,
-                            target.getName().getString(),
-                            target.getDisplayName(),
-                            target.level().getServer(),
-                            target
-                        ),
-                        "kill @s"
-                    );
-                }
-
-                // 確実に倒すためにsetHealth(0f)も実行
-                target.setHealth(0f);
-
-                // 即死エフェクト
-                if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
-                    serverLevel.sendParticles(ParticleTypes.SMOKE,
-                        target.getX(), target.getY() + 1, target.getZ(),
-                        20, 0.5, 0.5, 0.5, 0.1);
-
-                    // 追加エフェクト：ウィザーのような暗黒パーティクル
-                    serverLevel.sendParticles(ParticleTypes.SOUL,
-                        target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
-                        30, 0.5, 0.5, 0.5, 0.05);
-                }
-
-                // より強力な音を再生
-                attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-                    SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 1.0f, 0.5f);
-                attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-                    SoundEvents.WITHER_DEATH, SoundSource.PLAYERS, 0.5f, 2.0f);
-            }
-        }
+        // Killエンチャントの処理はKillEnchantmentHandlerに一元化（重複防止）
 
         // 武器固有の特殊効果（アイテム名で判定）
         String weaponName = weapon.getItem().getClass().getSimpleName();

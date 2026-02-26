@@ -6,6 +6,7 @@ import net.minecraftforge.items.IItemHandler;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * レアリティ強化台の3×3シェイプレシピ
@@ -91,6 +92,58 @@ public class RarityForgeRecipe {
                     int slot = (y + offset[1]) * 3 + (x + offset[0]);
                     handler.getStackInSlot(slot).shrink(1);
                 }
+            }
+        }
+    }
+
+    /**
+     * レシピに必要な素材とその個数を返す
+     */
+    public Map<Item, Integer> getIngredientCounts() {
+        Map<Item, Integer> counts = new HashMap<>();
+        for (int y = 0; y < patternHeight; y++) {
+            for (int x = 0; x < patternWidth; x++) {
+                if (pattern[y][x] != null) {
+                    counts.merge(pattern[y][x], 1, Integer::sum);
+                }
+            }
+        }
+        return counts;
+    }
+
+    /**
+     * 2スロットの素材で作成可能かチェック
+     */
+    public boolean canCraftWith(IItemHandler handler) {
+        Map<Item, Integer> required = getIngredientCounts();
+        Map<Item, Integer> available = new HashMap<>();
+        for (int slot = 0; slot < handler.getSlots(); slot++) {
+            ItemStack stack = handler.getStackInSlot(slot);
+            if (!stack.isEmpty()) {
+                available.merge(stack.getItem(), stack.getCount(), Integer::sum);
+            }
+        }
+        for (Entry<Item, Integer> entry : required.entrySet()) {
+            if (available.getOrDefault(entry.getKey(), 0) < entry.getValue()) return false;
+        }
+        return true;
+    }
+
+    /**
+     * 2スロットから素材を消費する
+     */
+    public void consumeFromHandler(IItemHandler handler) {
+        Map<Item, Integer> toConsume = new HashMap<>(getIngredientCounts());
+        for (int slot = 0; slot < handler.getSlots(); slot++) {
+            ItemStack stack = handler.getStackInSlot(slot);
+            if (stack.isEmpty()) continue;
+            Integer need = toConsume.get(stack.getItem());
+            if (need != null && need > 0) {
+                int take = Math.min(need, stack.getCount());
+                handler.extractItem(slot, take, false);
+                need -= take;
+                if (need <= 0) toConsume.remove(stack.getItem());
+                else toConsume.put(stack.getItem(), need);
             }
         }
     }

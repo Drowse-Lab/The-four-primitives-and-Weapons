@@ -315,6 +315,11 @@ public class CommonSoldierEntity extends PathfinderMob {
 
     @Override
     public boolean canAttack(net.minecraft.world.entity.LivingEntity target) {
+        // 兵士エンティティは仲間なので攻撃しない
+        if (target instanceof CommonSoldierEntity || target instanceof EliteSoldierEntity || target instanceof HeroicTierEntity) {
+            return false;
+        }
+
         // プレイヤーの場合
         if (target instanceof Player player) {
             // クリエイティブ/スペクテーターモードのプレイヤーは攻撃しない

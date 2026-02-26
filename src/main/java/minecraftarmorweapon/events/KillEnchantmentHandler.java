@@ -36,7 +36,7 @@ public class KillEnchantmentHandler {
             if (target.level().isClientSide())
                 return;
 
-            boolean hasKillEnchant = false;
+            int resolvedKillLevel = 0;
 
             // 直接攻撃の場合
             if (attacker instanceof LivingEntity livingAttacker) {
@@ -45,12 +45,12 @@ public class KillEnchantmentHandler {
                     MinecraftArmorWeaponModEnchantments.KILL.get(), weapon);
 
                 if (killLevel > 0) {
-                    hasKillEnchant = true;
+                    resolvedKillLevel = Math.max(resolvedKillLevel, killLevel);
                 }
 
                 // NBTタグでのkillフラグもチェック
                 if (attacker.getPersistentData().getBoolean("minecraft_armor_weapon:killentity")) {
-                    hasKillEnchant = true;
+                    resolvedKillLevel = Math.max(resolvedKillLevel, 1);
                 }
             }
 
@@ -67,7 +67,7 @@ public class KillEnchantmentHandler {
                         int killLevel = EnchantmentHelper.getItemEnchantmentLevel(
                             MinecraftArmorWeaponModEnchantments.KILL.get(), mainHand);
                         if (killLevel > 0) {
-                            hasKillEnchant = true;
+                            resolvedKillLevel = Math.max(resolvedKillLevel, killLevel);
                         }
                     }
 
@@ -76,21 +76,21 @@ public class KillEnchantmentHandler {
                         int killLevel = EnchantmentHelper.getItemEnchantmentLevel(
                             MinecraftArmorWeaponModEnchantments.KILL.get(), offHand);
                         if (killLevel > 0) {
-                            hasKillEnchant = true;
+                            resolvedKillLevel = Math.max(resolvedKillLevel, killLevel);
                         }
                     }
 
                     // 射手のNBTタグもチェック
                     if (shooter.getPersistentData().getBoolean("minecraft_armor_weapon:killentity")) {
-                        hasKillEnchant = true;
+                        resolvedKillLevel = Math.max(resolvedKillLevel, 1);
                     }
                 }
             }
 
-            // Killエンチャントが有効な場合、確率で即死させる
-            if (hasKillEnchant) {
-                // 82.4%の確率で即死
-                if (Math.random() < 0.824) {
+            // Killエンチャントが有効な場合、レベル×10%の確率で即死
+            if (resolvedKillLevel > 0) {
+                double killChance = Math.min(resolvedKillLevel * 0.1, 1.0); // Lv1=10%, Lv2=20%, ... Lv10=100%
+                if (Math.random() < killChance) {
                     // killコマンドを実行
                     if (target.getServer() != null) {
                         target.getServer().getCommands().performPrefixedCommand(

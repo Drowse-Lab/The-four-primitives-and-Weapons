@@ -148,6 +148,28 @@ public class HeroicTierEntity extends PathfinderMob {
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, WitherSkeleton.class, true));
     }
 
+    @Override
+    public boolean canAttack(LivingEntity target) {
+        // 兵士エンティティは仲間なので攻撃しない
+        if (target instanceof CommonSoldierEntity || target instanceof EliteSoldierEntity || target instanceof HeroicTierEntity) {
+            return false;
+        }
+
+        // クリエイティブ/スペクテーターのプレイヤーは攻撃しない
+        if (target instanceof Player player) {
+            if (player.isCreative() || player.isSpectator()) {
+                return false;
+            }
+        }
+
+        // 敵対Mobは常に攻撃可能
+        if (target instanceof Monster) {
+            return true;
+        }
+
+        return super.canAttack(target);
+    }
+
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 80.0)        // HP: 80（ティア3: 60 → ティア4: 80）

@@ -1,6 +1,9 @@
 package minecraftarmorweapon.events;
 
 import minecraftarmorweapon.util.VersionHelper;
+import minecraftarmorweapon.entity.CommonSoldierEntity;
+import minecraftarmorweapon.entity.EliteSoldierEntity;
+import minecraftarmorweapon.entity.HeroicTierEntity;
 
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -33,8 +36,16 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = "minecraft_armor_weapon")
 public class MobWeaponAttackHandler {
 
+    // 再帰防止フラグ（範囲攻撃のhurt→LivingAttackEvent→再び範囲攻撃の無限ループを防ぐ）
+    private static boolean isProcessingAttack = false;
+
     @SubscribeEvent
     public static void onLivingAttack(LivingAttackEvent event) {
+        // 再帰防止：既に範囲攻撃処理中なら何もしない
+        if (isProcessingAttack) {
+            return;
+        }
+
         try {
             // 攻撃を受けた側のエンティティ
             LivingEntity target = event.getEntity();
@@ -52,8 +63,14 @@ public class MobWeaponAttackHandler {
                 // Mobが武器を持っているかチェック
                 ItemStack weapon = attacker.getMainHandItem();
                 if (isWeapon(weapon)) {
-                    // 武器攻撃エフェクトを追加
-                    enhanceMobWeaponAttack(attacker, target, weapon, event);
+                    // 再帰防止フラグをセット
+                    isProcessingAttack = true;
+                    try {
+                        // 武器攻撃エフェクトを追加
+                        enhanceMobWeaponAttack(attacker, target, weapon, event);
+                    } finally {
+                        isProcessingAttack = false;
+                    }
                 }
             }
         } catch (Throwable e) {
@@ -136,16 +153,17 @@ public class MobWeaponAttackHandler {
 
             List<LivingEntity> additionalTargets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
                 entity -> entity != attacker && entity != target && entity.isAlive() &&
-                          !entity.isAlliedTo(attacker));
+                          !entity.isAlliedTo(attacker) &&
+                          !(isSoldierEntity(attacker) && isSoldierEntity(entity)));
 
             for (LivingEntity additionalTarget : additionalTargets) {
                 Vec3 toEntity = additionalTarget.position().subtract(attackerPos);
                 double dot = attackDirection.dot(toEntity.normalize());
 
                 if (dot > 0.8 && toEntity.length() <= range) {
-                    // 追加ダメージ（50%）
-                    float damage = 3.0f;
-                    additionalTarget.hurt(attacker.damageSources().mobAttack(attacker), damage);
+                    // 追加ダメージ（エンチャント込み）
+                    ItemStack weapon = attacker.getMainHandItem();
+                    DamageCalculator.dealDamage(attacker, additionalTarget, 3.0f, weapon);
 
                     // ノックバック
                     additionalTarget.setDeltaMovement(attackDirection.scale(0.5).add(0, 0.1, 0));
@@ -200,16 +218,17 @@ public class MobWeaponAttackHandler {
 
             List<LivingEntity> additionalTargets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
                 entity -> entity != attacker && entity != target && entity.isAlive() &&
-                          !entity.isAlliedTo(attacker));
+                          !entity.isAlliedTo(attacker) &&
+                          !(isSoldierEntity(attacker) && isSoldierEntity(entity)));
 
             for (LivingEntity additionalTarget : additionalTargets) {
                 Vec3 toEntity = additionalTarget.position().subtract(attackerPos).normalize();
                 double dot = attackDirection.dot(toEntity);
 
                 if (dot > -0.2 && additionalTarget.distanceTo(attacker) <= range) {
-                    // 追加ダメージ
-                    float damage = 4.0f;
-                    additionalTarget.hurt(attacker.damageSources().mobAttack(attacker), damage);
+                    // 追加ダメージ（エンチャント込み）
+                    ItemStack weapon = attacker.getMainHandItem();
+                    DamageCalculator.dealDamage(attacker, additionalTarget, 4.0f, weapon);
 
                     // ノックバック
                     Vec3 knockback = toEntity.scale(0.4);
@@ -259,16 +278,17 @@ public class MobWeaponAttackHandler {
 
             List<LivingEntity> additionalTargets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
                 entity -> entity != attacker && entity != target && entity.isAlive() &&
-                          !entity.isAlliedTo(attacker));
+                          !entity.isAlliedTo(attacker) &&
+                          !(isSoldierEntity(attacker) && isSoldierEntity(entity)));
 
             for (LivingEntity additionalTarget : additionalTargets) {
                 Vec3 toEntity = additionalTarget.position().subtract(attackerPos).normalize();
                 double dot = attackDirection.dot(toEntity);
 
                 if (dot > 0.5 && additionalTarget.distanceTo(attacker) <= range) {
-                    // 追加ダメージ
-                    float damage = 3.0f;
-                    additionalTarget.hurt(attacker.damageSources().mobAttack(attacker), damage);
+                    // 追加ダメージ（エンチャント込み）
+                    ItemStack weapon = attacker.getMainHandItem();
+                    DamageCalculator.dealDamage(attacker, additionalTarget, 3.0f, weapon);
 
                     // ノックバック
                     Vec3 knockback = toEntity.scale(0.3);
@@ -281,6 +301,15 @@ public class MobWeaponAttackHandler {
             System.err.println("[MobWeaponAttack] Error in performMobDefaultAttack: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 兵士エンティティかどうかをチェック（仲間割れ防止用）
+     */
+    private static boolean isSoldierEntity(LivingEntity entity) {
+        return entity instanceof CommonSoldierEntity ||
+               entity instanceof EliteSoldierEntity ||
+               entity instanceof HeroicTierEntity;
     }
 
     /**

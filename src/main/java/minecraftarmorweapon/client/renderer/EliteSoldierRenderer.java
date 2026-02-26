@@ -60,8 +60,8 @@ public class EliteSoldierRenderer extends HumanoidMobRenderer<EliteSoldierEntity
     private static void initializeSkins() {
         try {
             // デフォルトスキンを追加
-            wideSkins.add(new ResourceLocation("textures/entity/steve.png"));
-            slimSkins.add(new ResourceLocation("textures/entity/alex.png"));
+            wideSkins.add(new ResourceLocation("textures/entity/player/wide/steve.png"));
+            slimSkins.add(new ResourceLocation("textures/entity/player/slim/alex.png"));
 
             // slim フォルダからスキンを追加
             slimSkins.add(new ResourceLocation("minecraft_armor_weapon", "textures/entity/slim/37da0e0fbea5d2f3.png"));
@@ -136,8 +136,8 @@ public class EliteSoldierRenderer extends HumanoidMobRenderer<EliteSoldierEntity
 
         if (skins.isEmpty()) {
             return isSlim ?
-                new ResourceLocation("textures/entity/alex.png") :
-                new ResourceLocation("textures/entity/steve.png");
+                new ResourceLocation("textures/entity/player/slim/alex.png") :
+                new ResourceLocation("textures/entity/player/wide/steve.png");
         }
 
         return skins.get(skinIndex);

@@ -24,13 +24,22 @@ public final class RarityCraftingLogic {
         NETHER_STAR   // ネザースター系
     }
 
-    // 確率テーブル（累積: Common, Uncommon, Rare, Epic, Legendary）
-    // 素材なし: 50, 30, 15, 4, 1
-    private static final int[] WEIGHTS_NONE        = { 50, 30, 15, 4, 1 };
-    // ダイヤ系: 20, 35, 30, 12, 3
+    // 確率テーブル（Common, Uncommon, Rare, Epic, Legendary）
+    // レベル0: 触媒なし → 必ずCommon
+    private static final int[] WEIGHTS_NONE        = { 1, 0, 0, 0, 0 };
+    // レベル1: ダイヤ系×1
     private static final int[] WEIGHTS_DIAMOND     = { 20, 35, 30, 12, 3 };
-    // ネザースター: 5, 15, 35, 30, 15
+    // レベル2: ネザースター×1 or ダイヤ系×2
     private static final int[] WEIGHTS_NETHER_STAR = { 5, 15, 35, 30, 15 };
+    // レベル3: ダイヤ系+ネザースター
+    private static final int[] WEIGHTS_LEVEL3      = { 2, 8, 25, 40, 25 };
+    // レベル4: ネザースター×2
+    private static final int[] WEIGHTS_LEVEL4      = { 1, 4, 15, 40, 40 };
+
+    /** レベル別テーブル */
+    private static final int[][] WEIGHTS_BY_LEVEL = {
+            WEIGHTS_NONE, WEIGHTS_DIAMOND, WEIGHTS_NETHER_STAR, WEIGHTS_LEVEL3, WEIGHTS_LEVEL4
+    };
 
     /** ダイヤ系素材のアイテムID */
     private static final Set<String> DIAMOND_ITEMS = Set.of(
@@ -65,15 +74,20 @@ public final class RarityCraftingLogic {
     }
 
     /**
-     * 素材に応じてランダムにレアリティを決定
+     * 素材1つでレアリティを決定
      */
     public static WeaponRarity rollRarity(ItemStack material) {
-        MaterialTier tier = getMaterialTier(material);
-        int[] weights = switch (tier) {
-            case DIAMOND -> WEIGHTS_DIAMOND;
-            case NETHER_STAR -> WEIGHTS_NETHER_STAR;
-            default -> WEIGHTS_NONE;
-        };
+        return rollRarity(material, ItemStack.EMPTY);
+    }
+
+    /**
+     * 触媒2つの合算レベルでレアリティを決定
+     * NONE=0, DIAMOND=1, NETHER_STAR=2 の合計（0～4）
+     */
+    public static WeaponRarity rollRarity(ItemStack mat1, ItemStack mat2) {
+        int level = getMaterialTier(mat1).ordinal() + getMaterialTier(mat2).ordinal();
+        level = Math.min(level, WEIGHTS_BY_LEVEL.length - 1);
+        int[] weights = WEIGHTS_BY_LEVEL[level];
 
         int total = 0;
         for (int w : weights) total += w;

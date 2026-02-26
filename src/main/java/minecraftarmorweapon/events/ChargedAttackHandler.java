@@ -721,12 +721,9 @@ public class ChargedAttackHandler {
         
         for (LivingEntity target : targets) {
             float baseDamage = 7.0f;
-            float actualDamage = calculateActualDamage(player, target, baseDamage);
-            target.hurt(player.damageSources().playerAttack(player), actualDamage);
-            
-            // 武器特殊効果を適用
-            applyWeaponEffects(player, target, actualDamage);
-            
+            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+            DamageCalculator.dealDamage(player, target, baseDamage, weapon);
+
             // 突きによる後退
             target.setDeltaMovement(lookVec.scale(0.8).add(0, 0.1, 0));
         }
@@ -854,12 +851,9 @@ public class ChargedAttackHandler {
         
         for (LivingEntity target : targets) {
             float baseDamage = 8.0f;
-            float actualDamage = calculateActualDamage(player, target, baseDamage);
-            target.hurt(player.damageSources().playerAttack(player), actualDamage);
-            
-            // 武器特殊効果を適用
-            applyWeaponEffects(player, target, actualDamage);
-            
+            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+            DamageCalculator.dealDamage(player, target, baseDamage, weapon);
+
             Vec3 knockback = target.position().subtract(playerPos).normalize().scale(0.5);
             target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.15, knockback.z));
         }
