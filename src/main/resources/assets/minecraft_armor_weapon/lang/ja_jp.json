@@ -231,6 +231,8 @@
   "item.minecraft_armor_weapon.luna": "§eLuna",
   "advancements.kurikaraken_progress.descr": "倶利伽羅剣を得る",
   "key.minecraft_armor_weapon.r": "R",
+  "key.minecraft_armor_weapon.skill_screen": "技の選択画面",
+  "key.categories.minecraft_armor_weapon": "防具と武器MOD",
   "item.minecraft_armor_weapon.kurikaraken": "§5倶利伽羅剣",
   "gui.minecraft_armor_weapon.custom_crafter_craftinggui.label_custom_crafter": "custom crafter",
   "entity.minecraft_armor_weapon.skelton_mob": "Skelton Mob",

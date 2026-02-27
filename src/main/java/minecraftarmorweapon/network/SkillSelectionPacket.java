@@ -63,6 +63,16 @@ public class SkillSelectionPacket {
                         }
                     }
                     
+                    // スキルの選択（skillType + itemIdでスキルIDを指定）
+                    if (skillType != null && itemId != null && uniqueSkillEnabled == null) {
+                        for (PlayerSkillData.SkillType st : PlayerSkillData.SkillType.values()) {
+                            if (st.getId().equals(skillType)) {
+                                skillData.setSelectedSkill(st, itemId);
+                                break;
+                            }
+                        }
+                    }
+
                     // 固有スキルのトグル
                     if (itemId != null && uniqueSkillEnabled != null) {
                         skillData.setUniqueSkillEnabled(itemId, uniqueSkillEnabled);

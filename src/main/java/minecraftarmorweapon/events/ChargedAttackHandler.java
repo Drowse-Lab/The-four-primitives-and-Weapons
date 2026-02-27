@@ -619,6 +619,13 @@ public class ChargedAttackHandler {
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         String itemName = mainHand.getItem().getClass().getSimpleName();
 
+        // 禁忌レアリティ: 通常攻撃時に飛び道具反射
+        minecraftarmorweapon.item.rarity.WeaponRarity normalRarity =
+                minecraftarmorweapon.item.rarity.WeaponRarity.getFromStack(mainHand);
+        if (normalRarity == minecraftarmorweapon.item.rarity.WeaponRarity.FORBIDDEN) {
+            ForbiddenRarityHandler.reflectNearbyProjectiles(player);
+        }
+
         // Lunaまたは他の直刀を持っている場合は自動的に直刀タイプに設定
         WeaponType weaponType;
         if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {

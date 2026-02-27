@@ -45,6 +45,35 @@ public class ForbiddenRarityHandler {
         reflectNearbyProjectiles(player);
     }
 
+    // TACZ MODの弾エンティティクラス名（実際のソース: com.tacz.guns.entity.EntityKineticBullet）
+    // EntityKineticBulletはProjectileを継承しているのでinstanceofでも検出可能
+    private static final String TACZ_BULLET_CLASS = "com.tacz.guns.entity.EntityKineticBullet";
+
+    /**
+     * エンティティが飛び道具かどうか判定（バニラ + TACZ + 他の銃MOD対応）
+     * TACZ: EntityKineticBullet (extends Projectile, registry: tacz:bullet)
+     */
+    private static boolean isProjectileEntity(Entity entity) {
+        // バニラProjectile（TACZ弾もProjectileを継承しているのでここで検出される）
+        if (entity instanceof Projectile) return true;
+
+        // TACZの弾を明示的にチェック（将来Projectile継承が変わった場合の保険）
+        String className = entity.getClass().getName();
+        if (className.equals(TACZ_BULLET_CLASS)) return true;
+
+        // レジストリ名でTACZ弾をチェック
+        String entityTypeKey = entity.getType().toShortString().toLowerCase();
+        if (entityTypeKey.equals("tacz:bullet")) return true;
+
+        // 他の銃MODの汎用チェック（Projectileを継承しない銃MOD対応）
+        String lowerClassName = className.toLowerCase();
+        if (lowerClassName.contains("bullet") || lowerClassName.contains("projectile")) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * 周囲の飛び道具をプレイヤーの視線方向に跳ね返す
      */
@@ -53,24 +82,26 @@ public class ForbiddenRarityHandler {
 
         AABB area = player.getBoundingBox().inflate(REFLECT_RADIUS);
         List<Entity> projectiles = player.level().getEntities(player, area,
-                e -> e instanceof Projectile);
+                ForbiddenRarityHandler::isProjectileEntity);
 
         if (projectiles.isEmpty()) return;
 
         Vec3 lookVec = player.getLookAngle().normalize().scale(REFLECT_SPEED);
 
         for (Entity entity : projectiles) {
-            Projectile proj = (Projectile) entity;
-
             // プレイヤーの視線方向に飛ばす
-            proj.setDeltaMovement(lookVec);
-            proj.setOwner(player);
-            proj.hurtMarked = true; // クライアント同期
+            entity.setDeltaMovement(lookVec);
+            entity.hurtMarked = true;
+
+            // バニラProjectileの場合はオーナーも変更
+            if (entity instanceof Projectile proj) {
+                proj.setOwner(player);
+            }
 
             // パーティクル
             if (player.level() instanceof ServerLevel serverLevel) {
                 serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
-                        proj.getX(), proj.getY(), proj.getZ(),
+                        entity.getX(), entity.getY(), entity.getZ(),
                         5, 0.2, 0.2, 0.2, 0.02);
             }
         }
