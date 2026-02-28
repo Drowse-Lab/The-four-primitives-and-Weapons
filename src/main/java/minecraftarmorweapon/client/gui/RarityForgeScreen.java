@@ -145,7 +145,7 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
 
             if (weights == null) {
                 // 禁忌確定（CURSED触媒）
-                gfx.drawString(font, Component.literal("\u00A74\u7981\u5fcc \u00A7c100%"), 5, dy, 0xFFFFFF, false);
+                gfx.drawString(font, Component.literal("\u00A74Forbidden \u00A7c100%"), 5, dy, 0xFFFFFF, false);
             } else if (transferred != null) {
                 // レアリティ付きアイテムが触媒 → そのレアリティ確定
                 String line = transferred.getColorCode() + transferred.getDisplayName() + " \u00A7f100%";

@@ -39,6 +39,9 @@ import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
 import net.minecraftforge.registries.ForgeRegistries;
 import minecraftarmorweapon.util.DamageCalculator;
+import minecraftarmorweapon.skill.PlayerSkillData;
+import minecraftarmorweapon.skill.PlayerSkillData.AttackSlot;
+import minecraftarmorweapon.skill.MotionExecutor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -386,37 +389,10 @@ public class DodgeAndBattouHandler {
             }
         }
         
-        // 前方の敵に大ダメージ（範囲と判定を大幅に拡大）
-        double range = 7.0;  // 5.0から7.0に拡大
-        Vec3 endPos = playerPos.add(lookVec.scale(range));
-        AABB searchArea = new AABB(playerPos.add(-2, -1, -2), endPos.add(2, 2, 2));  // より大きな判定ボックス
-        
-        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> {
-                if (entity == player) return false;
-                // 前方180度の広い範囲で判定
-                Vec3 toEntity = entity.position().subtract(playerPos).normalize();
-                double dot = lookVec.dot(toEntity);
-                return dot > -0.2 && entity.distanceTo(player) <= range;  // ほぼ360度に近い判定
-            });
-        
-        ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-        String weaponName = weapon.getItem().getClass().getSimpleName();
-        
-        for (LivingEntity target : targets) {
-            // 基本ダメージ
-            float baseDamage = 18.0f;
-            float actualDamage = DamageCalculator.calculateDamage(player, target, baseDamage, weapon);
-
-            // ダッシュ攻撃のダメージ
-            target.hurt(player.damageSources().playerAttack(player), actualDamage);
-            
-            // 武器エフェクトを適用
-            DamageCalculator.applyWeaponEffects(player, target, actualDamage, weapon);
-            
-            // 強力なノックバック
-            target.setDeltaMovement(lookVec.scale(1.5).add(0, 0.4, 0));
-        }
+        // スキルスロットに応じたモーション実行
+        PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
+        String motionId = skillData.getMotion(AttackSlot.DASH);
+        MotionExecutor.executeMotion(motionId, player, 0.0f);
         
         // サウンド
         world.playSound(null, playerPos.x, playerPos.y, playerPos.z,

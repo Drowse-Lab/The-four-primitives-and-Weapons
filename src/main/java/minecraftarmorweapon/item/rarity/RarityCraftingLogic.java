@@ -41,11 +41,10 @@ public final class RarityCraftingLogic {
             {   1,  4, 15, 40, 40 },  // Level 8: NS×2
     };
 
-    /** 呪い系素材のアイテムID（薔薇・血の瓶）→ 禁忌確定 */
-    private static final Set<String> CURSED_ITEMS = Set.of(
-            "minecraft_armor_weapon:rose",
-            "minecraft_armor_weapon:blood_bottle"
-    );
+    /** 呪い系素材のアイテムID（薔薇・血の瓶）→ 両方揃えて禁忌確定 */
+    private static final String CURSED_ROSE = "minecraft_armor_weapon:rose";
+    private static final String CURSED_BLOOD_BOTTLE = "minecraft_armor_weapon:blood_bottle";
+    private static final Set<String> CURSED_ITEMS = Set.of(CURSED_ROSE, CURSED_BLOOD_BOTTLE);
 
     /** ネザースター系素材のアイテムID */
     private static final Set<String> NETHER_STAR_ITEMS = Set.of(
@@ -98,7 +97,8 @@ public final class RarityCraftingLogic {
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(material.getItem());
         String id = itemId.toString();
 
-        if (CURSED_ITEMS.contains(id)) return MaterialTier.CURSED;
+        // 呪い素材は単体ではBASIC扱い（ペア判定はhasCursedPairで行う）
+        if (CURSED_ITEMS.contains(id)) return MaterialTier.BASIC;
         if (NETHER_STAR_ITEMS.contains(id)) return MaterialTier.NETHER_STAR;
         if (DIAMOND_ITEMS.contains(id)) return MaterialTier.DIAMOND;
         if (IRON_ITEMS.contains(id)) return MaterialTier.IRON;
@@ -132,8 +132,8 @@ public final class RarityCraftingLogic {
      * 触媒2つの合算レベルでレアリティを決定
      */
     public static WeaponRarity rollRarity(ItemStack mat1, ItemStack mat2) {
-        // どちらかの触媒が呪い系なら禁忌確定
-        if (getMaterialTier(mat1) == MaterialTier.CURSED || getMaterialTier(mat2) == MaterialTier.CURSED) {
+        // 薔薇と血の瓶の両方が揃っていれば禁忌確定
+        if (hasCursedPair(mat1, mat2)) {
             return WeaponRarity.FORBIDDEN;
         }
 
@@ -167,7 +167,7 @@ public final class RarityCraftingLogic {
      * どちらかがCURSEDの場合はnullを返す（禁忌確定）
      */
     public static int[] getWeightsForCatalysts(ItemStack mat1, ItemStack mat2) {
-        if (getMaterialTier(mat1) == MaterialTier.CURSED || getMaterialTier(mat2) == MaterialTier.CURSED) {
+        if (hasCursedPair(mat1, mat2)) {
             return null;
         }
         int level = getMaterialTier(mat1).ordinal() + getMaterialTier(mat2).ordinal();
@@ -180,6 +180,17 @@ public final class RarityCraftingLogic {
      */
     public static double getCatalystBonus(ItemStack mat1, ItemStack mat2) {
         return getTierBonus(getMaterialTier(mat1)) + getTierBonus(getMaterialTier(mat2));
+    }
+
+    /**
+     * 薔薇と血の瓶が両方揃っているか判定（順不同）
+     */
+    private static boolean hasCursedPair(ItemStack mat1, ItemStack mat2) {
+        if (mat1.isEmpty() || mat2.isEmpty()) return false;
+        String id1 = ForgeRegistries.ITEMS.getKey(mat1.getItem()).toString();
+        String id2 = ForgeRegistries.ITEMS.getKey(mat2.getItem()).toString();
+        return (id1.equals(CURSED_ROSE) && id2.equals(CURSED_BLOOD_BOTTLE))
+            || (id1.equals(CURSED_BLOOD_BOTTLE) && id2.equals(CURSED_ROSE));
     }
 
     private static double getTierBonus(MaterialTier tier) {

@@ -40,7 +40,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Items;
 
 import minecraftarmorweapon.skill.PlayerSkillData;
-import minecraftarmorweapon.skill.PlayerSkillData.WeaponType;
+import minecraftarmorweapon.skill.PlayerSkillData.AttackSlot;
+import minecraftarmorweapon.skill.MotionExecutor;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModMobEffects;
 import minecraftarmorweapon.procedures.SwordOfNightTpProcedure;
 import minecraftarmorweapon.procedures.SwordOfNightShotProcedure;
@@ -377,36 +378,26 @@ public class ChargedAttackHandler {
 //            return;
 //        }
 //
-        // Lunaまたは他の直刀を持っている場合は自動的に直刀タイプに設定
-        WeaponType weaponType;
-        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
-            weaponType = WeaponType.STRAIGHT_SWORD;
-        } else {
-            weaponType = skillData.getSelectedWeaponType();
-        }
-        
         // ReplicaSwordOfLightの固有スキル（ガード）
         if (itemName.equals("ReplicaSwordOfLightItem") && skillData.isUniqueSkillEnabled("ReplicaSwordOfLight")) {
             player.addEffect(new MobEffectInstance(MinecraftArmorWeaponModMobEffects.GUARD.get(), 100, 0));
-            //player.displayClientMessage(Component.literal("§b光の加護！"), true);
         }
-        
+
         // SwordOfNightの固有スキル（テレポート攻撃）
         if (itemName.equals("SwordOfNightItem") && skillData.isUniqueSkillEnabled("SwordOfNight")) {
             SwordOfNightTpProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
             return;
         }
-        
-        if (weaponType == WeaponType.STRAIGHT_SWORD) {
-            // 直刀: 強力な突き一撃
+
+        // 直刀のチャージ突進攻撃
+        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
             performChargedThrust(player, world, lookVec, playerPos, chargePercent, isCooldown);
-        } else if (weaponType == WeaponType.KATANA) {
-            // 刀: 周囲回転斬り
-            performSpinSlash(player, world, playerPos, chargePercent);
-        } else {
-            // デフォルト強化攻撃
-            performDefaultChargedAttack(player, world, playerPos, chargePercent);
+            return;
         }
+
+        // CHARGEDスロットに設定されたモーションを実行
+        String motionId = skillData.getMotion(AttackSlot.CHARGED);
+        MotionExecutor.executeMotion(motionId, player, chargePercent);
     }
     
     private static void performChargedThrust(Player player, Level world, Vec3 lookVec, Vec3 playerPos, float chargePercent) {
@@ -488,129 +479,8 @@ public class ChargedAttackHandler {
         //player.displayClientMessage(Component.literal("§c貫通突き！"), true);
     }
     
-    private static void performSpinSlash(Player player, Level world, Vec3 playerPos, float chargePercent) {
-        float baseDamage = 12.0f * (1.0f + chargePercent * 1.5f);
-        double range = 4.0f + chargePercent * 2.0f;
-        
-        // 回転斬りエフェクト
-        if (!world.isClientSide) {
-            ServerLevel serverWorld = (ServerLevel) world;
-            
-            // 複数の円を描く
-            for (int ring = 0; ring < 3; ring++) {
-                double r = range * (ring + 1) / 3.0;
-                for (int i = 0; i < 360; i += 10) {
-                    double rad = Math.toRadians(i);
-                    serverWorld.sendParticles(
-                        ring == 0 ? ParticleTypes.SWEEP_ATTACK : ParticleTypes.CRIT,
-                        playerPos.x + Math.cos(rad) * r,
-                        playerPos.y + 1 + ring * 0.3,
-                        playerPos.z + Math.sin(rad) * r,
-                        1, 0, 0, 0, 0
-                    );
-                }
-            }
-            
-            if (chargePercent >= 1.0f) {
-                // 最大チャージで追加エフェクト
-                for (int i = 0; i < 8; i++) {
-                    double angle = Math.PI * 2 * i / 8;
-                    serverWorld.sendParticles(
-                        ParticleTypes.ELECTRIC_SPARK,
-                        playerPos.x + Math.cos(angle) * range,
-                        playerPos.y + 1,
-                        playerPos.z + Math.sin(angle) * range,
-                        10, 0.2, 0.5, 0.2, 0.1
-                    );
-                }
-            }
-        }
-        
-        // 周囲の敵全てにダメージ
-        AABB searchArea = new AABB(
-            playerPos.x - range, playerPos.y - 1, playerPos.z - range,
-            playerPos.x + range, playerPos.y + 3, playerPos.z + range
-        );
-        
-        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> entity != player && entity.distanceTo(player) <= range);
-        
-        for (LivingEntity target : targets) {
-            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-            float actualDamage = DamageCalculator.dealDamage(player, target, baseDamage, weapon);
-            
-            // 円形ノックバック
-            Vec3 knockback = target.position().subtract(playerPos).normalize().scale(1.0 + chargePercent);
-            target.setDeltaMovement(knockback.x, 0.4, knockback.z);
-            
-            if (chargePercent >= 1.0f) {
-                // スタン効果（仮）
-                target.setDeltaMovement(0, target.getDeltaMovement().y, 0);
-            }
-        }
-        
-        // プレイヤーも回転
-        player.setYRot(player.getYRot() + 720);
-        
-        world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
-            SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.5f, 0.7f);
-        //player.displayClientMessage(Component.literal("§e旋風斬！"), true);
-    }
-    
-    private static void performDefaultChargedAttack(Player player, Level world, Vec3 playerPos, float chargePercent) {
-        float baseDamage = 8.0f * (1.0f + chargePercent * 2.0f);
-        float range = 3.0f + chargePercent * 2.0f;
-        
-        world.playSound(null, player.getX(), player.getY(), player.getZ(),
-                chargePercent >= 1.0f ? SoundEvents.LIGHTNING_BOLT_IMPACT : SoundEvents.PLAYER_ATTACK_SWEEP,
-                SoundSource.PLAYERS, 1.0f, 0.8f + chargePercent * 0.4f);
-        
-        if (!world.isClientSide) {
-            ServerLevel serverWorld = (ServerLevel) world;
-            for (int i = 0; i < 360; i += 15) {
-                double rad = Math.toRadians(i);
-                double x = player.getX() + Math.cos(rad) * range;
-                double z = player.getZ() + Math.sin(rad) * range;
-                
-                serverWorld.sendParticles(
-                    chargePercent >= 1.0f ? ParticleTypes.ENCHANTED_HIT : ParticleTypes.CRIT,
-                    x, player.getY() + 1, z,
-                    3, 0.1, 0.1, 0.1, 0.1
-                );
-            }
-        }
-        
-        AABB searchArea = new AABB(
-            playerPos.x - range, playerPos.y - 1, playerPos.z - range,
-            playerPos.x + range, playerPos.y + 2, playerPos.z + range
-        );
-        
-        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> entity != player && entity.distanceTo(player) <= range);
-        
-        for (LivingEntity target : targets) {
-            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-            float actualDamage = DamageCalculator.dealDamage(player, target, baseDamage, weapon);
-            
-            double knockbackStrength = 0.5 + chargePercent;
-            Vec3 knockback = target.position().subtract(playerPos).normalize().scale(knockbackStrength);
-            target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.3, knockback.z));
-            
-            if (chargePercent >= 1.0f) {
-                target.setSecondsOnFire(3);
-            }
-        }
-        
-        //player.displayClientMessage(
-        //    Component.literal(String.format("§6強化攻撃！ (チャージ: %.0f%%)", chargePercent * 100)),
-        //    true
-        //);
-    }
-    
     public static void performNormalAttack(Player player) {
         Level world = player.level();
-        Vec3 lookVec = player.getLookAngle();
-        Vec3 playerPos = player.position();
 
         // プレイヤーのスキルデータを取得
         PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
@@ -626,14 +496,6 @@ public class ChargedAttackHandler {
             ForbiddenRarityHandler.reflectNearbyProjectiles(player);
         }
 
-        // Lunaまたは他の直刀を持っている場合は自動的に直刀タイプに設定
-        WeaponType weaponType;
-        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
-            weaponType = WeaponType.STRAIGHT_SWORD;
-        } else {
-            weaponType = skillData.getSelectedWeaponType();
-        }
-        
         if (itemName.equals("SwordOfNightItem") && skillData.isUniqueSkillEnabled("SwordOfNight")) {
             // Sword of Night Effectがアクティブな間はショットを撃たない
             if (!player.hasEffect(MinecraftArmorWeaponModMobEffects.SWORD_OF_NIGHT_EFFECT.get())) {
@@ -642,238 +504,42 @@ public class ChargedAttackHandler {
             }
             return;
         }
-        
-        // Lunaの固有スキル（直刀の場合のみ）
-        if (itemName.equals("LunaItem") && weaponType == WeaponType.STRAIGHT_SWORD && skillData.isUniqueSkillEnabled("Luna")) {
-            // Lunaの特殊攻撃
+
+        // Lunaの固有スキル
+        if (itemName.equals("LunaItem") && skillData.isUniqueSkillEnabled("Luna")) {
             minecraftarmorweapon.procedures.LunaenteiteigaaitemuwoZhentutaShiProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
             return;
         }
-        
-        // コンボカウンターを取得
-        UUID playerId = player.getUUID();
-        ChargeData data = playerChargeData.computeIfAbsent(playerId, k -> new ChargeData());
-        
-        if (weaponType == WeaponType.STRAIGHT_SWORD) {
-            // 直刀: 素早い突きの連打
-            performThrustAttack(player, world, lookVec, playerPos);
-        } else if (weaponType == WeaponType.KATANA) {
-            // 刀: 三段斬り
-            performKatanaCombo(player, world, lookVec, playerPos, data);
-        } else {
-            // デフォルト攻撃
-            performDefaultAttack(player, world, lookVec, playerPos);
-        }
-    }
-    
-    private static void performThrustAttack(Player player, Level world, Vec3 lookVec, Vec3 playerPos) {
-        // Luna専用の突き攻撃処理
-        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-        String itemName = mainHand.getItem().getClass().getSimpleName();
 
+        // 直刀の固有突き攻撃
         if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
-            // 直刀の通常突き攻撃を実行
             minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.executeNormalThrust(
                 world, player.getX(), player.getY(), player.getZ(), player
             );
             return;
         }
 
-        // 突き攻撃のエフェクト
-        if (!world.isClientSide) {
-            ServerLevel serverWorld = (ServerLevel) world;
-            
-            // 直線的な突きエフェクト（横に広がるように）
-            for (int i = 0; i < 5; i++) {
-                double d = i * 0.5 + 1;
-                Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
-                
-                // 中央のエフェクト
-                serverWorld.sendParticles(
-                    ParticleTypes.CRIT,
-                    playerPos.x + lookVec.x * d,
-                    playerPos.y + 1,
-                    playerPos.z + lookVec.z * d,
-                    2, 0.05, 0.05, 0.05, 0
-                );
-                
-                // 左右のエフェクト
-                for (double side = -1.5; side <= 1.5; side += 0.5) {
-                    if (side != 0) {
-                        serverWorld.sendParticles(
-                            ParticleTypes.ENCHANTED_HIT,
-                            playerPos.x + lookVec.x * d + rightVec.x * side,
-                            playerPos.y + 1,
-                            playerPos.z + lookVec.z * d + rightVec.z * side,
-                            1, 0.02, 0.02, 0.02, 0
-                        );
-                    }
-                }
-            }
-        }
-        
-        // 突き攻撃（横に広い範囲、長いリーチ）
-        double range = 5.0;  // 前方リーチ
-        double horizontalWidth = 2.5;  // 横幅を大幅に拡大（0.8 → 2.5）
-        double verticalHeight = 1.0;  // 縦の高さは控えめに
-        
-        // 右ベクトルを計算（横方向）
-        Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
-        
-        // 攻撃範囲を手動で構築（横長の矩形）
-        Vec3 minPoint = playerPos.add(lookVec.scale(0.5))
-            .add(rightVec.scale(-horizontalWidth))
-            .add(0, -verticalHeight * 0.5, 0);
-        Vec3 maxPoint = playerPos.add(lookVec.scale(range))
-            .add(rightVec.scale(horizontalWidth))
-            .add(0, verticalHeight * 1.5, 0);
-        
-        AABB attackBox = new AABB(minPoint, maxPoint);
-        
-        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, attackBox,
-            entity -> entity != player);
-        
-        for (LivingEntity target : targets) {
-            float baseDamage = 7.0f;
-            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-            DamageCalculator.dealDamage(player, target, baseDamage, weapon);
+        // コンボカウンターを取得
+        UUID playerId = player.getUUID();
+        ChargeData data = playerChargeData.computeIfAbsent(playerId, k -> new ChargeData());
 
-            // 突きによる後退
-            target.setDeltaMovement(lookVec.scale(0.8).add(0, 0.1, 0));
-        }
-        
-        world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
-            SoundEvents.PLAYER_ATTACK_KNOCKBACK, SoundSource.PLAYERS, 1.0f, 1.2f);
-    }
-    
-    private static void performKatanaCombo(Player player, Level world, Vec3 lookVec, Vec3 playerPos, ChargeData data) {
-        // コンボ段階に応じた攻撃
+        // コンボ段階に応じたスロットを決定
         int combo = data.comboCounter % 3;
-        
-        // 攻撃範囲の竹を破壊
-        breakBambooInPath(world, playerPos, lookVec, 5.0);
-        
-        if (!world.isClientSide) {
-            ServerLevel serverWorld = (ServerLevel) world;
-            
-            // コンボに応じたエフェクト
-            if (combo == 0) {
-                // 左上から右下への斬撃
-                for (int i = -2; i <= 2; i++) {
-                    serverWorld.sendParticles(ParticleTypes.SWEEP_ATTACK,
-                        playerPos.x + lookVec.x * 2 - 0.5 + i * 0.2,
-                        playerPos.y + 1.5 - i * 0.2,
-                        playerPos.z + lookVec.z * 2,
-                        1, 0, 0, 0, 0);
-                }
-                player.displayClientMessage(Component.literal("§7左上斬り"), true);
-            } else if (combo == 1) {
-                // 右上から左下への斬撃
-                for (int i = -2; i <= 2; i++) {
-                    serverWorld.sendParticles(ParticleTypes.SWEEP_ATTACK,
-                        playerPos.x + lookVec.x * 2 + 0.5 - i * 0.2,
-                        playerPos.y + 1.5 - i * 0.2,
-                        playerPos.z + lookVec.z * 2,
-                        1, 0, 0, 0, 0);
-                }
-                player.displayClientMessage(Component.literal("§7右上斬り"), true);
-            } else {
-                // 横一文字斬り
-                Vec3 rightVec = lookVec.cross(new Vec3(0, 1, 0)).normalize();
-                for (int i = -3; i <= 3; i++) {
-                    serverWorld.sendParticles(ParticleTypes.SWEEP_ATTACK,
-                        playerPos.x + lookVec.x * 2 + rightVec.x * i * 0.3,
-                        playerPos.y + 1,
-                        playerPos.z + lookVec.z * 2 + rightVec.z * i * 0.3,
-                        1, 0, 0, 0, 0);
-                }
-                player.displayClientMessage(Component.literal("§7横一文字"), true);
-            }
+        AttackSlot slot;
+        if (combo == 0) {
+            slot = AttackSlot.FIRST_HIT;
+        } else if (combo == 1) {
+            slot = AttackSlot.SECOND_HIT;
+        } else {
+            slot = AttackSlot.THIRD_HIT;
         }
-        
-        // 攻撃範囲と処理（横に広い範囲）
-        double forwardRange = 4.5;  // 前方リーチ
-        double horizontalRange = 3.0;  // 横幅を大幅に拡大
-        float baseDamage = combo == 2 ? 12.0f : 9.0f;
-        
-        // 右ベクトルを計算
-        Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
-        
-        // 横長の攻撃範囲を構築
-        Vec3 minPoint = playerPos.add(lookVec.scale(-0.5))
-            .add(rightVec.scale(-horizontalRange))
-            .add(0, -0.5, 0);
-        Vec3 maxPoint = playerPos.add(lookVec.scale(forwardRange))
-            .add(rightVec.scale(horizontalRange))
-            .add(0, 2.5, 0);
-        
-        AABB searchArea = new AABB(minPoint, maxPoint);
-        
-        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> {
-                if (entity == player) return false;
-                Vec3 toEntity = entity.position().subtract(playerPos).normalize();
-                double dot = lookVec.dot(toEntity);
-                // より広い横方向の判定（180度近い範囲）
-                return dot > -0.3 && entity.distanceTo(player) <= forwardRange + horizontalRange;
-            });
-        
-        for (LivingEntity target : targets) {
-            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-            float actualDamage = DamageCalculator.dealDamage(player, target, baseDamage, weapon);
-            
-            Vec3 knockback = target.position().subtract(playerPos).normalize().scale(0.4);
-            target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.1, knockback.z));
-        }
-        
-        world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
-            SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 
-            1.0f, 0.9f + combo * 0.1f);
-        
+
+        // スロットに設定されたモーションを実行
+        String motionId = skillData.getMotion(slot);
+        MotionExecutor.executeMotion(motionId, player, 0.0f);
+
         // コンボカウンターを増やす
         data.comboCounter++;
-    }
-    
-    private static void performDefaultAttack(Player player, Level world, Vec3 lookVec, Vec3 playerPos) {
-        // デフォルト攻撃処理
-        if (!world.isClientSide) {
-            ServerLevel serverWorld = (ServerLevel) world;
-            for (int i = 0; i < 4; i++) {
-                serverWorld.sendParticles(
-                    ParticleTypes.SWEEP_ATTACK,
-                    playerPos.x + lookVec.x * (i + 1),
-                    playerPos.y + 1,
-                    playerPos.z + lookVec.z * (i + 1),
-                    1, 0, 0, 0, 0
-                );
-            }
-        }
-        
-        double range = 4.5;  // 範囲を3.0から4.5に拡大
-        AABB searchArea = new AABB(
-            playerPos.x - range, playerPos.y - 1, playerPos.z - range,
-            playerPos.x + range, playerPos.y + 3, playerPos.z + range
-        );
-        
-        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> {
-                if (entity == player) return false;
-                Vec3 toEntity = entity.position().subtract(playerPos).normalize();
-                double dot = lookVec.dot(toEntity);
-                return dot > 0.3 && entity.distanceTo(player) <= range;  // 判定角度を0.5から0.3に緩和
-            });
-        
-        for (LivingEntity target : targets) {
-            float baseDamage = 8.0f;
-            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-            DamageCalculator.dealDamage(player, target, baseDamage, weapon);
-
-            Vec3 knockback = target.position().subtract(playerPos).normalize().scale(0.5);
-            target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.15, knockback.z));
-        }
-        
-        world.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 1.0f);
     }
     
     private static void displayChargeEffect(Player player, int chargeTime) {

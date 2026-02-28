@@ -68,7 +68,7 @@ public class WeaponRarityEventHandler {
         // 禁忌レアリティの特殊能力表示
         if (rarity == WeaponRarity.FORBIDDEN) {
             event.getToolTip().add(nextIdx,
-                    Component.literal("\u00A74\u7981\u5fcc\u306e\u529b: \u00A7c\u98db\u3073\u9053\u5177\u53cd\u5c04"));
+                    Component.literal("\u00A74Forbidden Power: \u00A7cProjectile Reflection"));
         }
     }
 }

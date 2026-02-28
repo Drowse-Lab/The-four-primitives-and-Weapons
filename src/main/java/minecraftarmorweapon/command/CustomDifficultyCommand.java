@@ -144,7 +144,9 @@ public class CustomDifficultyCommand {
         
         // NBTに保存
         net.minecraft.nbt.CompoundTag customData = level.getServer().getWorldData().getCustomBossEvents();
-        customData.putString(NBT_KEY, newDifficulty.getName());
+        if (customData != null) {
+            customData.putString(NBT_KEY, newDifficulty.getName());
+        }
         
         // カスタム難易度の情報を表示
         String message = String.format(
@@ -195,13 +197,13 @@ public class CustomDifficultyCommand {
     @SubscribeEvent
     public static void onServerStarted(net.minecraftforge.event.server.ServerStartedEvent event) {
         net.minecraft.nbt.CompoundTag customData = event.getServer().getWorldData().getCustomBossEvents();
-        if (customData.contains(NBT_KEY)) {
+        if (customData != null && customData.contains(NBT_KEY)) {
             String savedDifficulty = customData.getString(NBT_KEY);
             currentDifficulty = CustomDifficulty.byName(savedDifficulty);
-            
+
             // ベース難易度も設定
             event.getServer().setDifficulty(currentDifficulty.getBaseDifficulty(), true);
-            
+
             System.out.println("カスタム難易度を復元: " + currentDifficulty.getName());
         }
     }

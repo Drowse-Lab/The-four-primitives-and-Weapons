@@ -23,7 +23,7 @@ public enum WeaponRarity {
     RARE(2, "Rare", "\u00A79", ChatFormatting.BLUE, 2),
     EPIC(3, "Epic", "\u00A75", ChatFormatting.DARK_PURPLE, 4),
     LEGENDARY(4, "Legendary", "\u00A76", ChatFormatting.GOLD, 7),
-    FORBIDDEN(5, "\u7981\u5fcc", "\u00A74", ChatFormatting.DARK_RED, 8);
+    FORBIDDEN(5, "Forbidden", "\u00A74", ChatFormatting.DARK_RED, 8);
 
     private static final String NBT_KEY = "WeaponRarity";
     private static final String CATALYST_BONUS_KEY = "CatalystBonus";

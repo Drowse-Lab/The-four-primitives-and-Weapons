@@ -1,6 +1,5 @@
 package minecraftarmorweapon.client.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
@@ -8,49 +7,48 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.network.SkillSelectionPacket;
 import minecraftarmorweapon.skill.PlayerSkillData;
-import minecraftarmorweapon.skill.PlayerSkillData.SkillType;
-import minecraftarmorweapon.skill.PlayerSkillData.WeaponType;
+import minecraftarmorweapon.skill.PlayerSkillData.AttackSlot;
 import minecraftarmorweapon.skill.SkillRegistry;
-import minecraftarmorweapon.skill.SkillRegistry.SkillInfo;
+import minecraftarmorweapon.skill.SkillRegistry.MotionInfo;
+import minecraftarmorweapon.skill.SkillRegistry.MotionCategory;
 
 import java.util.List;
+import java.util.Set;
 
 public class SkillSelectionScreen extends Screen {
 
-    // GUI全体のサイズ
-    private static final int GUI_WIDTH = 280;
-    private static final int GUI_HEIGHT = 200;
+    private static final int GUI_WIDTH = 340;
+    private static final int GUI_HEIGHT = 230;
 
     // 色定義
-    private static final int COLOR_BG = 0xCC1A1A2E;           // 背景（暗い紫）
-    private static final int COLOR_HEADER = 0xFF2D6A4F;        // ヘッダー（緑）
-    private static final int COLOR_HEADER_TEXT = 0xFFFFFFFF;    // ヘッダー文字
-    private static final int COLOR_TAB_SELECTED = 0xFF2D6A4F;  // 選択中タブ（緑）
-    private static final int COLOR_TAB_NORMAL = 0xFF333344;     // 通常タブ
-    private static final int COLOR_TAB_HOVER = 0xFF444466;      // ホバータブ
-    private static final int COLOR_CARD_NORMAL = 0xFF2A2A3D;    // スキルカード通常
-    private static final int COLOR_CARD_SELECTED = 0xFF1B5E20;  // スキルカード選択中（深緑）
-    private static final int COLOR_CARD_HOVER = 0xFF3A3A55;     // スキルカードホバー
-    private static final int COLOR_BORDER = 0xFF4CAF50;         // 選択中ボーダー（緑）
-    private static final int COLOR_SECTION_TITLE = 0xFFFFD700;  // セクションタイトル（金）
-    private static final int COLOR_SKILL_NAME = 0xFFFFFFFF;     // スキル名
-    private static final int COLOR_DESCRIPTION = 0xFFAAAAAA;    // 説明文
-    private static final int COLOR_FOOTER = 0xFF2D6A4F;        // フッター（緑）
-    private static final int COLOR_FOOTER_TEXT = 0xFFCCCCCC;    // フッター文字
+    private static final int COLOR_BG = 0xCC1A1A2E;
+    private static final int COLOR_HEADER = 0xFF2D6A4F;
+    private static final int COLOR_HEADER_TEXT = 0xFFFFFFFF;
+    private static final int COLOR_BTN_NORMAL = 0xFF2A2A3D;
+    private static final int COLOR_BTN_SELECTED = 0xFF1B5E20;
+    private static final int COLOR_BTN_HOVER = 0xFF3A3A55;
+    private static final int COLOR_BTN_SPECIAL = 0xFF2A2040;
+    private static final int COLOR_BORDER = 0xFF4CAF50;
+    private static final int COLOR_SLOT_LABEL = 0xFFFFD700;
+    private static final int COLOR_FOOTER = 0xFF2D6A4F;
+    private static final int COLOR_FOOTER_TEXT = 0xFFCCCCCC;
+    private static final int COLOR_LOCK_BTN = 0xFF4A2040;
+    private static final int COLOR_LOCK_BTN_HOVER = 0xFF6A3060;
 
-    private WeaponType currentWeaponType;
     private PlayerSkillData.SkillStorage skillData;
-    private String hoveredSkillDescription = null;
+    private String hoveredDescription = null;
 
     private int guiLeft;
     private int guiTop;
+    private int weaponLockSectionY;
 
     public SkillSelectionScreen() {
-        super(Component.literal("技の選択"));
+        super(Component.literal("\u6280\u306E\u9078\u629E"));
     }
 
     @Override
@@ -64,105 +62,66 @@ public class SkillSelectionScreen extends Screen {
         if (player == null) return;
 
         skillData = PlayerSkillData.getSkillData(player);
-        currentWeaponType = skillData.getSelectedWeaponType();
-
-        buildSkillWidgets();
+        buildWidgets();
     }
 
-    private void buildSkillWidgets() {
+    private void buildWidgets() {
         this.clearWidgets();
 
-        int tabX = guiLeft + 4;
-        int tabY = guiTop + 28;
-        int tabWidth = 50;
-        int tabHeight = 18;
+        Set<String> unlockedSpecials = skillData.getUnlockedSpecials();
 
-        // 武器タイプ選択タブ
-        for (WeaponType type : WeaponType.values()) {
-            final WeaponType weaponType = type;
-            final int btnY = tabY;
-            addRenderableWidget(new AbstractButton(tabX, btnY, tabWidth, tabHeight, Component.literal(type.getDisplayName())) {
-                @Override
-                public void onPress() {
-                    currentWeaponType = weaponType;
-                    skillData.setSelectedWeaponType(weaponType);
-                    MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
-                        new SkillSelectionPacket(weaponType, null, null, null)
-                    );
-                    buildSkillWidgets();
-                }
+        int rowY = guiTop + 30;
+        int labelWidth = 50;
+        int btnHeight = 18;
+        int btnGap = 2;
+        int rowGap = 5;
+        int btnAreaLeft = guiLeft + 8 + labelWidth;
 
-                @Override
-                public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float pt) {
-                    boolean isSelected = currentWeaponType == weaponType;
-                    int bgColor = isSelected ? COLOR_TAB_SELECTED : (this.isHoveredOrFocused() ? COLOR_TAB_HOVER : COLOR_TAB_NORMAL);
-                    g.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, bgColor);
-                    if (isSelected) {
-                        drawBorder(g, this.getX(), this.getY(), this.width, this.height, COLOR_BORDER);
-                    }
-                    g.drawCenteredString(font, this.getMessage(),
-                        this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2,
-                        isSelected ? 0xFFFFFF : 0xAAAAAA);
-                }
+        // === 5つの攻撃スロット行 ===
+        for (AttackSlot slot : AttackSlot.values()) {
+            List<MotionInfo> motions = SkillRegistry.getAvailableMotions(slot, unlockedSpecials);
 
-                @Override
-                protected void updateWidgetNarration(NarrationElementOutput n) {
-                    this.defaultButtonNarrationText(n);
-                }
-            });
-            tabY += tabHeight + 3;
-        }
+            int btnX = btnAreaLeft;
+            for (MotionInfo motion : motions) {
+                int btnWidth = Math.max(36, font.width(motion.getDisplayName()) + 10);
+                final AttackSlot finalSlot = slot;
+                final MotionInfo finalMotion = motion;
 
-        // スキル選択カード
-        int cardAreaX = guiLeft + 60;
-        int cardAreaY = guiTop + 28;
-        int cardWidth = 66;
-        int cardHeight = 36;
-        int cardGap = 4;
-
-        for (SkillType skillType : SkillType.values()) {
-            List<SkillInfo> skills = SkillRegistry.getSkills(currentWeaponType, skillType);
-
-            int cx = cardAreaX;
-            for (SkillInfo skill : skills) {
-                final SkillInfo currentSkill = skill;
-                final SkillType currentSkillType = skillType;
-                addRenderableWidget(new AbstractButton(cx, cardAreaY, cardWidth, cardHeight, Component.literal(skill.getDisplayName())) {
+                addRenderableWidget(new AbstractButton(btnX, rowY, btnWidth, btnHeight,
+                        Component.literal(motion.getDisplayName())) {
                     @Override
                     public void onPress() {
-                        skillData.setSelectedSkill(currentSkillType, currentSkill.getId());
+                        skillData.setMotion(finalSlot, finalMotion.getId());
                         MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
-                            new SkillSelectionPacket(null, currentSkillType, currentSkill.getId(), null)
+                            SkillSelectionPacket.selectMotion(finalSlot, finalMotion.getId())
                         );
-                        buildSkillWidgets();
+                        buildWidgets();
                     }
 
                     @Override
                     public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float pt) {
-                        boolean isSelected = currentSkill.getId().equals(skillData.getSelectedSkill(currentSkillType));
+                        boolean isSelected = finalMotion.getId().equals(skillData.getMotion(finalSlot));
                         boolean isHover = this.isHoveredOrFocused();
+                        boolean isSpecial = finalMotion.getCategory() == MotionCategory.SPECIAL;
 
-                        int bgColor = isSelected ? COLOR_CARD_SELECTED : (isHover ? COLOR_CARD_HOVER : COLOR_CARD_NORMAL);
-                        g.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, bgColor);
+                        int bgColor;
+                        if (isSelected) bgColor = COLOR_BTN_SELECTED;
+                        else if (isHover) bgColor = COLOR_BTN_HOVER;
+                        else bgColor = isSpecial ? COLOR_BTN_SPECIAL : COLOR_BTN_NORMAL;
+
+                        g.fill(this.getX(), this.getY(),
+                            this.getX() + this.width, this.getY() + this.height, bgColor);
 
                         if (isSelected) {
                             drawBorder(g, this.getX(), this.getY(), this.width, this.height, COLOR_BORDER);
                         }
 
-                        // スキル名
-                        g.drawCenteredString(font, currentSkill.getDisplayName(),
-                            this.getX() + this.width / 2, this.getY() + 6,
-                            isSelected ? 0x7FFF7F : COLOR_SKILL_NAME);
+                        g.drawCenteredString(font, this.getMessage(),
+                            this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2,
+                            isSelected ? 0x7FFF7F : 0xFFFFFF);
 
-                        // 選択マーク
-                        if (isSelected) {
-                            g.drawCenteredString(font, "\u2714",
-                                this.getX() + this.width / 2, this.getY() + 22, 0x00FF00);
-                        }
-
-                        // ホバー時に説明を更新
                         if (isHover) {
-                            hoveredSkillDescription = currentSkill.getDescription();
+                            hoveredDescription = finalMotion.getDescription();
                         }
                     }
 
@@ -171,66 +130,163 @@ public class SkillSelectionScreen extends Screen {
                         this.defaultButtonNarrationText(n);
                     }
                 });
-                cx += cardWidth + cardGap;
+                btnX += btnWidth + btnGap;
             }
-            cardAreaY += cardHeight + 16;
+            rowY += btnHeight + rowGap;
+        }
+
+        weaponLockSectionY = rowY + 4;
+
+        // === 武器ロックボタン ===
+        Player player = Minecraft.getInstance().player;
+        if (player != null) {
+            ItemStack mainHand = player.getMainHandItem();
+            if (!mainHand.isEmpty()) {
+                String weaponClass = mainHand.getItem().getClass().getSimpleName();
+                List<String> specialIds = SkillRegistry.getSpecialIdsForWeapon(weaponClass);
+
+                // 未解放の特殊スキルがあるか確認
+                boolean hasNewSpecials = false;
+                for (String sid : specialIds) {
+                    if (!skillData.isSpecialUnlocked(sid)) {
+                        hasNewSpecials = true;
+                        break;
+                    }
+                }
+
+                if (hasNewSpecials) {
+                    String lockText = mainHand.getHoverName().getString() + " \u3092\u30ED\u30C3\u30AF";
+                    int lockBtnWidth = Math.max(120, font.width(lockText) + 16);
+                    int lockBtnX = guiLeft + (GUI_WIDTH - lockBtnWidth) / 2;
+
+                    addRenderableWidget(new AbstractButton(lockBtnX, weaponLockSectionY + 14, lockBtnWidth, 20,
+                            Component.literal(lockText)) {
+                        @Override
+                        public void onPress() {
+                            MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                                SkillSelectionPacket.lockWeapon(weaponClass)
+                            );
+                            buildWidgets();
+                        }
+
+                        @Override
+                        public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float pt) {
+                            boolean isHover = this.isHoveredOrFocused();
+                            int bgColor = isHover ? COLOR_LOCK_BTN_HOVER : COLOR_LOCK_BTN;
+
+                            g.fill(this.getX(), this.getY(),
+                                this.getX() + this.width, this.getY() + this.height, bgColor);
+                            drawBorder(g, this.getX(), this.getY(), this.width, this.height, 0xFFFF4444);
+
+                            g.drawCenteredString(font, this.getMessage(),
+                                this.getX() + this.width / 2, this.getY() + 6, 0xFFFF4444);
+
+                            if (isHover) {
+                                hoveredDescription = "\u30E1\u30A4\u30F3\u30CF\u30F3\u30C9\u306E\u6B66\u5668\u3092\u6D88\u8CBB\u3057\u3066\u7279\u6B8A\u6280\u3092\u89E3\u653E\u3057\u307E\u3059\uFF08\u5143\u306B\u623B\u305B\u307E\u305B\u3093\uFF09";
+                            }
+                        }
+
+                        @Override
+                        protected void updateWidgetNarration(NarrationElementOutput n) {
+                            this.defaultButtonNarrationText(n);
+                        }
+                    });
+                }
+            }
         }
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        hoveredSkillDescription = null;
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        hoveredDescription = null;
 
         // 背景の暗転
-        this.renderBackground(guiGraphics);
+        this.renderBackground(g);
 
         // メインの背景パネル
-        guiGraphics.fill(guiLeft, guiTop, guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT, COLOR_BG);
-        drawBorder(guiGraphics, guiLeft, guiTop, GUI_WIDTH, GUI_HEIGHT, 0xFF555577);
+        g.fill(guiLeft, guiTop, guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT, COLOR_BG);
+        drawBorder(g, guiLeft, guiTop, GUI_WIDTH, GUI_HEIGHT, 0xFF555577);
 
-        // ヘッダー（緑のバー）
-        guiGraphics.fill(guiLeft, guiTop, guiLeft + GUI_WIDTH, guiTop + 24, COLOR_HEADER);
-        guiGraphics.drawCenteredString(font, Component.literal("\u2694 \u6280\u306E\u9078\u629E \u2694"),
+        // ヘッダー
+        g.fill(guiLeft, guiTop, guiLeft + GUI_WIDTH, guiTop + 24, COLOR_HEADER);
+        g.drawCenteredString(font, Component.literal("\u2694 \u6280\u306E\u9078\u629E \u2694"),
             guiLeft + GUI_WIDTH / 2, guiTop + 8, COLOR_HEADER_TEXT);
 
-        // セクションタイトル（技タイプ名）
-        int sectionY = guiTop + 28;
-        int cardHeight = 36;
-        for (SkillType skillType : SkillType.values()) {
-            guiGraphics.drawString(font, Component.literal(skillType.getDisplayName()),
-                guiLeft + 62, sectionY - 1, COLOR_SECTION_TITLE, false);
-            sectionY += cardHeight + 16;
+        // スロットラベル（5行）
+        int rowY = guiTop + 30;
+        int btnHeight = 18;
+        int rowGap = 5;
+        for (AttackSlot slot : AttackSlot.values()) {
+            g.drawString(font, Component.literal(slot.getDisplayName()),
+                guiLeft + 8, rowY + (btnHeight - 8) / 2, COLOR_SLOT_LABEL, false);
+            rowY += btnHeight + rowGap;
+        }
+
+        // 特殊技解放セクション
+        g.drawString(font, Component.literal("\u25BC \u7279\u6B8A\u6280\u89E3\u653E"),
+            guiLeft + 8, weaponLockSectionY + 2, COLOR_SLOT_LABEL, false);
+
+        // 解放済みスキル表示
+        Set<String> unlocked = skillData.getUnlockedSpecials();
+        if (!unlocked.isEmpty()) {
+            StringBuilder sb = new StringBuilder("\u89E3\u653E\u6E08: ");
+            boolean first = true;
+            for (String sid : unlocked) {
+                MotionInfo info = SkillRegistry.getById(sid);
+                if (info != null) {
+                    if (!first) sb.append(", ");
+                    sb.append(info.getDisplayName());
+                    first = false;
+                }
+            }
+            g.drawString(font, Component.literal(sb.toString()),
+                guiLeft + 80, weaponLockSectionY + 2, 0xFF88FF88, false);
+        }
+
+        // ロック済み武器一覧
+        List<ItemStack> lockedWeapons = skillData.getLockedWeapons();
+        if (!lockedWeapons.isEmpty()) {
+            int weaponX = guiLeft + 8;
+            int weaponY = weaponLockSectionY + 38;
+            g.drawString(font, Component.literal("\u30ED\u30C3\u30AF\u6E08: "),
+                weaponX, weaponY, 0xFFAA6666, false);
+            int textX = weaponX + font.width("\u30ED\u30C3\u30AF\u6E08: ");
+            for (int i = 0; i < lockedWeapons.size(); i++) {
+                ItemStack w = lockedWeapons.get(i);
+                String name = w.getHoverName().getString();
+                if (i > 0) {
+                    g.drawString(font, Component.literal(", "), textX, weaponY, 0xFFAA6666, false);
+                    textX += font.width(", ");
+                }
+                g.drawString(font, Component.literal(name), textX, weaponY, 0xFFFF8888, false);
+                textX += font.width(name);
+            }
         }
 
         // ボタン描画
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.render(g, mouseX, mouseY, partialTick);
 
-        // フッター（緑のバー）- システム情報
-        int footerY = guiTop + GUI_HEIGHT - 30;
-        guiGraphics.fill(guiLeft, footerY, guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT, COLOR_FOOTER);
+        // フッター
+        int footerY = guiTop + GUI_HEIGHT - 26;
+        g.fill(guiLeft, footerY, guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT, COLOR_FOOTER);
 
-        // ホバー中のスキル説明を表示
-        if (hoveredSkillDescription != null) {
-            guiGraphics.drawCenteredString(font, Component.literal(hoveredSkillDescription),
-                guiLeft + GUI_WIDTH / 2, footerY + 5, 0xFFFFFF);
-            guiGraphics.drawCenteredString(font, Component.literal("\u30AF\u30EA\u30C3\u30AF\u3067\u9078\u629E"),
-                guiLeft + GUI_WIDTH / 2, footerY + 17, COLOR_FOOTER_TEXT);
+        if (hoveredDescription != null) {
+            g.drawCenteredString(font, Component.literal(hoveredDescription),
+                guiLeft + GUI_WIDTH / 2, footerY + 4, 0xFFFFFF);
+            g.drawCenteredString(font, Component.literal("\u30AF\u30EA\u30C3\u30AF\u3067\u9078\u629E"),
+                guiLeft + GUI_WIDTH / 2, footerY + 14, COLOR_FOOTER_TEXT);
         } else {
-            // 現在の装備情報
-            guiGraphics.drawCenteredString(font, Component.literal(
-                "\u6B66\u5668\u30BF\u30A4\u30D7: " + currentWeaponType.getDisplayName() + " | K\u30AD\u30FC\u3067\u958B\u9589"),
-                guiLeft + GUI_WIDTH / 2, footerY + 5, COLOR_FOOTER_TEXT);
-            guiGraphics.drawCenteredString(font, Component.literal(
-                "\u6280\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044"),
-                guiLeft + GUI_WIDTH / 2, footerY + 17, COLOR_FOOTER_TEXT);
+            g.drawCenteredString(font, Component.literal(
+                "\u30E2\u30FC\u30B7\u30E7\u30F3\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u9078\u629E | K\u30AD\u30FC\u3067\u9589\u3058\u308B"),
+                guiLeft + GUI_WIDTH / 2, footerY + 9, COLOR_FOOTER_TEXT);
         }
     }
 
     private static void drawBorder(GuiGraphics g, int x, int y, int w, int h, int color) {
-        g.fill(x, y, x + w, y + 1, color);             // top
-        g.fill(x, y + h - 1, x + w, y + h, color);     // bottom
-        g.fill(x, y, x + 1, y + h, color);              // left
-        g.fill(x + w - 1, y, x + w, y + h, color);      // right
+        g.fill(x, y, x + w, y + 1, color);
+        g.fill(x, y + h - 1, x + w, y + h, color);
+        g.fill(x, y, x + 1, y + h, color);
+        g.fill(x + w - 1, y, x + w, y + h, color);
     }
 
     @Override
@@ -240,12 +296,10 @@ public class SkillSelectionScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // Kキーで閉じる
         if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_K) {
             this.onClose();
             return true;
         }
-        // Eキーでも閉じる（インベントリキー）
         if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_E) {
             this.onClose();
             return true;
