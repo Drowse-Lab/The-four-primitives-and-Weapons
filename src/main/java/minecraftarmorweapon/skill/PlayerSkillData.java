@@ -2,7 +2,6 @@ package minecraftarmorweapon.skill;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
@@ -47,15 +46,85 @@ public class PlayerSkillData {
         }
     }
 
+    // 武器ごとの技設定
+    public static class WeaponLoadout implements INBTSerializable<CompoundTag> {
+        private final ItemStack weapon;
+        private final Map<AttackSlot, String> motions = new EnumMap<>(AttackSlot.class);
+
+        public WeaponLoadout(ItemStack weapon) {
+            this.weapon = weapon.copy();
+            // デフォルトモーション
+            motions.put(AttackSlot.FIRST_HIT, "upper_left_slash");
+            motions.put(AttackSlot.SECOND_HIT, "upper_right_slash");
+            motions.put(AttackSlot.THIRD_HIT, "horizontal_slash");
+            motions.put(AttackSlot.CHARGED, "spin_slash");
+            motions.put(AttackSlot.DASH, "thrust");
+        }
+
+        // NBT復元用
+        private WeaponLoadout(ItemStack weapon, Map<AttackSlot, String> motions) {
+            this.weapon = weapon;
+            this.motions.putAll(motions);
+        }
+
+        public String getWeaponClass() {
+            return weapon.getItem().getClass().getSimpleName();
+        }
+
+        public ItemStack getWeapon() {
+            return weapon.copy();
+        }
+
+        public String getMotion(AttackSlot slot) {
+            return motions.getOrDefault(slot, "thrust");
+        }
+
+        public void setMotion(AttackSlot slot, String motionId) {
+            if (slot != null && motionId != null && !motionId.isEmpty()) {
+                motions.put(slot, motionId);
+            }
+        }
+
+        @Override
+        public CompoundTag serializeNBT() {
+            CompoundTag tag = new CompoundTag();
+            tag.put("weapon", weapon.save(new CompoundTag()));
+            CompoundTag motionTag = new CompoundTag();
+            for (Map.Entry<AttackSlot, String> e : motions.entrySet()) {
+                motionTag.putString(e.getKey().getId(), e.getValue());
+            }
+            tag.put("motions", motionTag);
+            return tag;
+        }
+
+        @Override
+        public void deserializeNBT(CompoundTag tag) {
+            // 使用しない（staticファクトリを使う）
+        }
+
+        public static WeaponLoadout fromNBT(CompoundTag tag) {
+            ItemStack weapon = ItemStack.of(tag.getCompound("weapon"));
+            Map<AttackSlot, String> motions = new EnumMap<>(AttackSlot.class);
+            if (tag.contains("motions")) {
+                CompoundTag motionTag = tag.getCompound("motions");
+                for (AttackSlot slot : AttackSlot.values()) {
+                    String id = motionTag.getString(slot.getId());
+                    if (!id.isEmpty()) {
+                        motions.put(slot, id);
+                    }
+                }
+            }
+            return new WeaponLoadout(weapon, motions);
+        }
+    }
+
     // プレイヤーごとのスキルデータ
     public static class SkillStorage implements INBTSerializable<CompoundTag> {
-        // 各スロットに設定されたモーションID
+        // デフォルト技設定（スロット未登録武器用）
         private final Map<AttackSlot, String> selectedMotions = new EnumMap<>(AttackSlot.class);
-        // ロックされた武器（消費済み、取り出し不可）
-        private final List<ItemStack> lockedWeapons = new ArrayList<>();
-        // 解放された特殊スキルID
-        private final Set<String> unlockedSpecials = new HashSet<>();
-        // 固有スキルのON/OFF
+        // 武器ロードアウト（武器ごとの技設定）
+        private final List<WeaponLoadout> weaponLoadouts = new ArrayList<>();
+        // 固有スキルのON/OFF（内部利用）
         private final Map<String, Boolean> uniqueSkillToggle = new HashMap<>();
 
         public SkillStorage() {
@@ -67,7 +136,7 @@ public class PlayerSkillData {
             selectedMotions.put(AttackSlot.DASH, "thrust");
         }
 
-        // === モーション選択 ===
+        // === デフォルトモーション設定 ===
 
         public String getMotion(AttackSlot slot) {
             return selectedMotions.getOrDefault(slot, "thrust");
@@ -79,33 +148,44 @@ public class PlayerSkillData {
             }
         }
 
-        // === 特殊スキル解放 ===
+        // === 武器ロードアウト ===
 
-        public boolean isSpecialUnlocked(String specialId) {
-            return unlockedSpecials.contains(specialId);
+        public int addWeaponLoadout(ItemStack weapon) {
+            weaponLoadouts.add(new WeaponLoadout(weapon));
+            return weaponLoadouts.size() - 1;
         }
 
-        public void unlockSpecial(String specialId) {
-            unlockedSpecials.add(specialId);
+        public ItemStack removeWeaponLoadout(int index) {
+            if (index < 0 || index >= weaponLoadouts.size()) return ItemStack.EMPTY;
+            return weaponLoadouts.remove(index).getWeapon();
         }
 
-        public Set<String> getUnlockedSpecials() {
-            return Collections.unmodifiableSet(unlockedSpecials);
+        public List<WeaponLoadout> getWeaponLoadouts() {
+            return Collections.unmodifiableList(weaponLoadouts);
         }
 
-        // === ロック済み武器 ===
+        public void setLoadoutMotion(int loadoutIndex, AttackSlot slot, String motionId) {
+            if (loadoutIndex < 0 || loadoutIndex >= weaponLoadouts.size()) return;
+            weaponLoadouts.get(loadoutIndex).setMotion(slot, motionId);
+        }
 
-        public void lockWeapon(ItemStack weapon) {
-            if (!weapon.isEmpty()) {
-                lockedWeapons.add(weapon.copy());
+        /**
+         * 持ち物の武器クラスに対応するロードアウトを探し、その技IDを返す。
+         * 見つからない場合はデフォルト設定を返す。
+         */
+        public String getMotionForWeapon(AttackSlot slot, ItemStack heldItem) {
+            if (!heldItem.isEmpty()) {
+                String weaponClass = heldItem.getItem().getClass().getSimpleName();
+                for (WeaponLoadout loadout : weaponLoadouts) {
+                    if (loadout.getWeaponClass().equals(weaponClass)) {
+                        return loadout.getMotion(slot);
+                    }
+                }
             }
+            return selectedMotions.getOrDefault(slot, "thrust");
         }
 
-        public List<ItemStack> getLockedWeapons() {
-            return Collections.unmodifiableList(lockedWeapons);
-        }
-
-        // === 固有スキルトグル（互換性維持） ===
+        // === 固有スキルトグル ===
 
         public boolean isUniqueSkillEnabled(String itemId) {
             return uniqueSkillToggle.getOrDefault(itemId, true);
@@ -115,32 +195,35 @@ public class PlayerSkillData {
             uniqueSkillToggle.put(itemId, enabled);
         }
 
+        /**
+         * 指定クラスの武器が既にロードアウトに登録済みかどうか
+         */
+        public boolean hasLoadoutForWeapon(String weaponClass) {
+            for (WeaponLoadout loadout : weaponLoadouts) {
+                if (loadout.getWeaponClass().equals(weaponClass)) return true;
+            }
+            return false;
+        }
+
         // === NBTシリアライズ ===
 
         @Override
         public CompoundTag serializeNBT() {
             CompoundTag tag = new CompoundTag();
 
-            // モーション選択
+            // デフォルトモーション選択
             CompoundTag motions = new CompoundTag();
             for (Map.Entry<AttackSlot, String> e : selectedMotions.entrySet()) {
                 motions.putString(e.getKey().getId(), e.getValue());
             }
             tag.put("motions", motions);
 
-            // ロック済み武器
-            ListTag weaponList = new ListTag();
-            for (ItemStack w : lockedWeapons) {
-                weaponList.add(w.save(new CompoundTag()));
+            // 武器ロードアウト
+            ListTag loadoutList = new ListTag();
+            for (WeaponLoadout loadout : weaponLoadouts) {
+                loadoutList.add(loadout.serializeNBT());
             }
-            tag.put("lockedWeapons", weaponList);
-
-            // 解放済み特殊スキル
-            ListTag specialList = new ListTag();
-            for (String s : unlockedSpecials) {
-                specialList.add(StringTag.valueOf(s));
-            }
-            tag.put("unlockedSpecials", specialList);
+            tag.put("weaponLoadouts", loadoutList);
 
             // 固有スキルトグル
             CompoundTag uniqueSkills = new CompoundTag();
@@ -154,7 +237,7 @@ public class PlayerSkillData {
 
         @Override
         public void deserializeNBT(CompoundTag tag) {
-            // モーション選択
+            // デフォルトモーション選択
             if (tag.contains("motions")) {
                 CompoundTag motions = tag.getCompound("motions");
                 for (AttackSlot slot : AttackSlot.values()) {
@@ -164,27 +247,16 @@ public class PlayerSkillData {
                     }
                 }
             }
-            // 旧フォーマット（selectedSkills）からの移行 → デフォルトにリセット
-            // 新フォーマットがない場合はコンストラクタのデフォルトが使われる
 
-            // ロック済み武器
-            lockedWeapons.clear();
-            if (tag.contains("lockedWeapons")) {
-                ListTag weaponList = tag.getList("lockedWeapons", Tag.TAG_COMPOUND);
-                for (int i = 0; i < weaponList.size(); i++) {
-                    ItemStack weapon = ItemStack.of(weaponList.getCompound(i));
-                    if (!weapon.isEmpty()) {
-                        lockedWeapons.add(weapon);
+            // 武器ロードアウト
+            weaponLoadouts.clear();
+            if (tag.contains("weaponLoadouts")) {
+                ListTag loadoutList = tag.getList("weaponLoadouts", Tag.TAG_COMPOUND);
+                for (int i = 0; i < loadoutList.size(); i++) {
+                    WeaponLoadout loadout = WeaponLoadout.fromNBT(loadoutList.getCompound(i));
+                    if (!loadout.getWeapon().isEmpty()) {
+                        weaponLoadouts.add(loadout);
                     }
-                }
-            }
-
-            // 解放済み特殊スキル
-            unlockedSpecials.clear();
-            if (tag.contains("unlockedSpecials")) {
-                ListTag specialList = tag.getList("unlockedSpecials", Tag.TAG_STRING);
-                for (int i = 0; i < specialList.size(); i++) {
-                    unlockedSpecials.add(specialList.getString(i));
                 }
             }
 

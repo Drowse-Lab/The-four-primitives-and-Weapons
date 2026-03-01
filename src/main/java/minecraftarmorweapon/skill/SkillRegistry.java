@@ -11,7 +11,7 @@ public class SkillRegistry {
 
     public enum MotionCategory {
         UNIVERSAL,  // 最初から全スロットで選択可能
-        SPECIAL     // 武器をロックして解放が必要
+        SPECIAL     // 武器をスロットに登録すると利用可能
     }
 
     public static class MotionInfo {
@@ -58,7 +58,7 @@ public class SkillRegistry {
         register("spin_slash", "回転斬り", "360度の範囲攻撃",
                 MotionCategory.UNIVERSAL, allSlots, null);
 
-        // === 特殊技（武器ロックで解放） ===
+        // === 特殊技（武器をスロットに登録すると使用可能） ===
         register("electric_beam", "電撃ビーム", "前方に電撃のビームを放つ",
                 MotionCategory.SPECIAL, allSlots, "KurikarakenItem");
         register("electric_slash", "電撃斬り", "電気を纏った斬撃波",
@@ -78,15 +78,18 @@ public class SkillRegistry {
     }
 
     /**
-     * 指定スロットで使用可能なモーション一覧を取得
+     * 指定スロットで使用可能なモーション一覧を取得（武器クラス指定）
+     * UNIVERSAL + その武器クラスに対応したSPECIALを返す
      */
-    public static List<MotionInfo> getAvailableMotions(AttackSlot slot, Set<String> unlockedSpecials) {
+    public static List<MotionInfo> getAvailableMotions(AttackSlot slot, String weaponClass) {
         List<MotionInfo> result = new ArrayList<>();
         for (MotionInfo info : BY_ID.values()) {
             if (!info.compatibleSlots.contains(slot)) continue;
             if (info.category == MotionCategory.UNIVERSAL) {
                 result.add(info);
-            } else if (info.category == MotionCategory.SPECIAL && unlockedSpecials.contains(info.id)) {
+            } else if (info.category == MotionCategory.SPECIAL
+                    && weaponClass != null
+                    && weaponClass.equals(info.requiredWeaponClass)) {
                 result.add(info);
             }
         }
@@ -127,7 +130,7 @@ public class SkillRegistry {
     }
 
     /**
-     * 武器クラス名から解放される特殊スキルIDリストを取得
+     * 武器クラス名から対応する特殊スキルIDリストを取得
      */
     public static List<String> getSpecialIdsForWeapon(String weaponClassName) {
         List<String> result = new ArrayList<>();

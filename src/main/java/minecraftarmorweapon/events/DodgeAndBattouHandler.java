@@ -391,7 +391,7 @@ public class DodgeAndBattouHandler {
         
         // スキルスロットに応じたモーション実行
         PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
-        String motionId = skillData.getMotion(AttackSlot.DASH);
+        String motionId = skillData.getMotionForWeapon(AttackSlot.DASH, player.getMainHandItem());
         MotionExecutor.executeMotion(motionId, player, 0.0f);
         
         // サウンド

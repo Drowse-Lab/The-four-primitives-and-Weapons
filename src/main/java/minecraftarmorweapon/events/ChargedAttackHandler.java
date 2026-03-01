@@ -396,7 +396,7 @@ public class ChargedAttackHandler {
         }
 
         // CHARGEDスロットに設定されたモーションを実行
-        String motionId = skillData.getMotion(AttackSlot.CHARGED);
+        String motionId = skillData.getMotionForWeapon(AttackSlot.CHARGED, player.getMainHandItem());
         MotionExecutor.executeMotion(motionId, player, chargePercent);
     }
     
@@ -535,7 +535,7 @@ public class ChargedAttackHandler {
         }
 
         // スロットに設定されたモーションを実行
-        String motionId = skillData.getMotion(slot);
+        String motionId = skillData.getMotionForWeapon(slot, player.getMainHandItem());
         MotionExecutor.executeMotion(motionId, player, 0.0f);
 
         // コンボカウンターを増やす

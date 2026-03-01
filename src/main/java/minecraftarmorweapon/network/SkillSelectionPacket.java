@@ -12,45 +12,45 @@ import minecraftarmorweapon.skill.PlayerSkillData.AttackSlot;
 import minecraftarmorweapon.skill.SkillRegistry;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
-import java.util.List;
 import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class SkillSelectionPacket {
 
     public enum PacketType {
-        SELECT_MOTION,     // モーション選択
-        LOCK_WEAPON,       // 武器ロック（消費して特殊技解放）
-        TOGGLE_UNIQUE_SKILL // 固有スキルのON/OFF
+        SELECT_LOADOUT_MOTION,  // ロードアウト（または既定）の技選択
+        ADD_WEAPON_LOADOUT,     // 主手の武器をロードアウトに追加
+        REMOVE_WEAPON_LOADOUT   // ロードアウトから武器を取り出し
     }
 
     private final PacketType type;
-    private final String slotId;     // for SELECT_MOTION
-    private final String motionId;   // for SELECT_MOTION
-    private final String itemId;     // for LOCK_WEAPON / TOGGLE_UNIQUE_SKILL
-    private final Boolean enabled;   // for TOGGLE_UNIQUE_SKILL
+    // SELECT_LOADOUT_MOTION: slotId = loadoutIndex or "-1" (default), motionId = motionId, itemId = AttackSlot id
+    // REMOVE_WEAPON_LOADOUT: itemId = loadout index as string
+    private final String slotId;
+    private final String motionId;
+    private final String itemId;
 
-    // モーション選択用
-    public static SkillSelectionPacket selectMotion(AttackSlot slot, String motionId) {
-        return new SkillSelectionPacket(PacketType.SELECT_MOTION, slot.getId(), motionId, null, null);
+    // 技選択（loadoutIndex = -1 でデフォルト設定）
+    public static SkillSelectionPacket selectLoadoutMotion(int loadoutIndex, AttackSlot attackSlot, String motionId) {
+        return new SkillSelectionPacket(PacketType.SELECT_LOADOUT_MOTION,
+            String.valueOf(loadoutIndex), motionId, attackSlot.getId());
     }
 
-    // 武器ロック用
-    public static SkillSelectionPacket lockWeapon(String weaponClassName) {
-        return new SkillSelectionPacket(PacketType.LOCK_WEAPON, null, null, weaponClassName, null);
+    // 武器追加
+    public static SkillSelectionPacket addWeaponLoadout() {
+        return new SkillSelectionPacket(PacketType.ADD_WEAPON_LOADOUT, null, null, null);
     }
 
-    // 固有スキルトグル用
-    public static SkillSelectionPacket toggleUniqueSkill(String itemId, boolean enabled) {
-        return new SkillSelectionPacket(PacketType.TOGGLE_UNIQUE_SKILL, null, null, itemId, enabled);
+    // 武器取り出し
+    public static SkillSelectionPacket removeWeaponLoadout(int index) {
+        return new SkillSelectionPacket(PacketType.REMOVE_WEAPON_LOADOUT, null, null, String.valueOf(index));
     }
 
-    private SkillSelectionPacket(PacketType type, String slotId, String motionId, String itemId, Boolean enabled) {
+    private SkillSelectionPacket(PacketType type, String slotId, String motionId, String itemId) {
         this.type = type;
         this.slotId = slotId;
         this.motionId = motionId;
         this.itemId = itemId;
-        this.enabled = enabled;
     }
 
     public SkillSelectionPacket(FriendlyByteBuf buf) {
@@ -58,7 +58,6 @@ public class SkillSelectionPacket {
         this.slotId = buf.readBoolean() ? buf.readUtf() : null;
         this.motionId = buf.readBoolean() ? buf.readUtf() : null;
         this.itemId = buf.readBoolean() ? buf.readUtf() : null;
-        this.enabled = buf.readBoolean() ? buf.readBoolean() : null;
     }
 
     public void encode(FriendlyByteBuf buf) {
@@ -72,9 +71,6 @@ public class SkillSelectionPacket {
 
         buf.writeBoolean(itemId != null);
         if (itemId != null) buf.writeUtf(itemId);
-
-        buf.writeBoolean(enabled != null);
-        if (enabled != null) buf.writeBoolean(enabled);
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
@@ -84,70 +80,84 @@ public class SkillSelectionPacket {
 
             player.getCapability(PlayerSkillData.SKILL_CAPABILITY).ifPresent(skillData -> {
                 switch (type) {
-                    case SELECT_MOTION -> handleSelectMotion(skillData);
-                    case LOCK_WEAPON -> handleLockWeapon(skillData, player);
-                    case TOGGLE_UNIQUE_SKILL -> handleToggleUniqueSkill(skillData);
+                    case SELECT_LOADOUT_MOTION -> handleSelectLoadoutMotion(skillData);
+                    case ADD_WEAPON_LOADOUT -> handleAddWeaponLoadout(skillData, player);
+                    case REMOVE_WEAPON_LOADOUT -> handleRemoveWeaponLoadout(skillData, player);
                 }
             });
         });
         ctx.get().setPacketHandled(true);
     }
 
-    private void handleSelectMotion(PlayerSkillData.SkillStorage skillData) {
-        if (slotId == null || motionId == null) return;
+    private void handleSelectLoadoutMotion(PlayerSkillData.SkillStorage skillData) {
+        if (slotId == null || motionId == null || itemId == null) return;
 
-        AttackSlot slot = AttackSlot.fromId(slotId);
-        if (slot == null) return;
+        AttackSlot attackSlot = AttackSlot.fromId(itemId);
+        if (attackSlot == null) return;
 
-        // モーションが有効か確認
         SkillRegistry.MotionInfo motion = SkillRegistry.getById(motionId);
         if (motion == null) return;
-        if (!motion.getCompatibleSlots().contains(slot)) return;
+        if (!motion.getCompatibleSlots().contains(attackSlot)) return;
 
-        // 特殊スキルの場合、解放済みか確認
-        if (motion.getCategory() == SkillRegistry.MotionCategory.SPECIAL
-            && !skillData.isSpecialUnlocked(motionId)) return;
+        int loadoutIndex;
+        try {
+            loadoutIndex = Integer.parseInt(slotId);
+        } catch (NumberFormatException e) {
+            return;
+        }
 
-        skillData.setMotion(slot, motionId);
+        if (loadoutIndex == -1) {
+            // デフォルト設定（UNIVERSAL のみ）
+            if (motion.getCategory() != SkillRegistry.MotionCategory.UNIVERSAL) return;
+            skillData.setMotion(attackSlot, motionId);
+        } else {
+            // 特定ロードアウトの設定
+            var loadouts = skillData.getWeaponLoadouts();
+            if (loadoutIndex < 0 || loadoutIndex >= loadouts.size()) return;
+
+            // SPECIALの場合、その武器クラスに対応しているか確認
+            if (motion.getCategory() == SkillRegistry.MotionCategory.SPECIAL) {
+                String weaponClass = loadouts.get(loadoutIndex).getWeaponClass();
+                if (!weaponClass.equals(motion.getRequiredWeaponClass())) return;
+            }
+
+            skillData.setLoadoutMotion(loadoutIndex, attackSlot, motionId);
+        }
     }
 
-    private void handleLockWeapon(PlayerSkillData.SkillStorage skillData, ServerPlayer player) {
-        if (itemId == null) return;
-
-        // プレイヤーのメインハンドの武器を確認
+    private void handleAddWeaponLoadout(PlayerSkillData.SkillStorage skillData, ServerPlayer player) {
         ItemStack mainHand = player.getMainHandItem();
         if (mainHand.isEmpty()) return;
 
         String weaponClass = mainHand.getItem().getClass().getSimpleName();
-        if (!weaponClass.equals(itemId)) return;
 
-        // この武器で解放される特殊スキルを取得
-        List<String> specialIds = SkillRegistry.getSpecialIdsForWeapon(weaponClass);
-        if (specialIds.isEmpty()) return;
+        // 同じ武器クラスが既に登録されていたら追加しない
+        if (skillData.hasLoadoutForWeapon(weaponClass)) return;
 
-        // すでに全て解放済みなら何もしない
-        boolean anyNew = false;
-        for (String sid : specialIds) {
-            if (!skillData.isSpecialUnlocked(sid)) {
-                anyNew = true;
-                break;
-            }
-        }
-        if (!anyNew) return;
-
-        // 武器を消費してロック
-        skillData.lockWeapon(mainHand.copy());
+        // 武器を1つ消費（スロットに保存）
+        ItemStack stored = mainHand.copy();
+        stored.setCount(1);
         mainHand.shrink(1);
 
-        // 特殊スキルを解放
-        for (String sid : specialIds) {
-            skillData.unlockSpecial(sid);
-        }
+        skillData.addWeaponLoadout(stored);
     }
 
-    private void handleToggleUniqueSkill(PlayerSkillData.SkillStorage skillData) {
-        if (itemId == null || enabled == null) return;
-        skillData.setUniqueSkillEnabled(itemId, enabled);
+    private void handleRemoveWeaponLoadout(PlayerSkillData.SkillStorage skillData, ServerPlayer player) {
+        if (itemId == null) return;
+        int index;
+        try {
+            index = Integer.parseInt(itemId);
+        } catch (NumberFormatException e) {
+            return;
+        }
+
+        ItemStack weapon = skillData.removeWeaponLoadout(index);
+        if (!weapon.isEmpty()) {
+            // プレイヤーのインベントリに返す（空きがなければドロップ）
+            if (!player.getInventory().add(weapon)) {
+                player.drop(weapon, false);
+            }
+        }
     }
 
     @SubscribeEvent
