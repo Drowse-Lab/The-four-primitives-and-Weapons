@@ -10,7 +10,9 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.client.gui.SkillSelectionScreen;
+import minecraftarmorweapon.network.OpenSkillScreenPacket;
 
 public class SkillScreenKeyHandler {
 
@@ -39,9 +41,9 @@ public class SkillScreenKeyHandler {
 
             if (SKILL_SCREEN_KEY.consumeClick()) {
                 if (mc.screen instanceof SkillSelectionScreen) {
-                    mc.setScreen(null);
+                    mc.player.closeContainer();
                 } else if (mc.screen == null) {
-                    mc.setScreen(new SkillSelectionScreen());
+                    MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new OpenSkillScreenPacket());
                 }
             }
         }

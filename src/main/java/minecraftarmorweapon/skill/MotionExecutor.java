@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 
 import minecraftarmorweapon.util.DamageCalculator;
+import minecraftarmorweapon.events.DashSkillHandler;
 import minecraftarmorweapon.procedures.SwordOfNightTpProcedure;
 import minecraftarmorweapon.procedures.MagicKatanaSpecialChargeProcedure;
 
@@ -47,6 +48,10 @@ public class MotionExecutor {
             case "upper_right_slash" -> performUpperRightSlash(player, world, lookVec, playerPos, chargePercent);
             case "horizontal_slash" -> performHorizontalSlash(player, world, lookVec, playerPos, chargePercent);
             case "spin_slash" -> performSpinSlash(player, world, playerPos, chargePercent);
+            // ダッシュ専用スキル
+            case "dash_rush" -> DashSkillHandler.activateDashRush(player);
+            case "leap_slash" -> DashSkillHandler.activateLeapSlash(player);
+            case "shadow_step" -> DashSkillHandler.activateShadowStep(player);
             // 特殊スキル
             case "electric_beam" -> ElectricBeamSkill.fire(player);
             case "electric_slash" -> ElectricSlashSkill.fire(player);

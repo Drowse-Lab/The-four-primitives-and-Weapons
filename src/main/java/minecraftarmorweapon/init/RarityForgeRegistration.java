@@ -3,6 +3,7 @@ package minecraftarmorweapon.init;
 import minecraftarmorweapon.block.RarityForgeBlock;
 import minecraftarmorweapon.block.entity.RarityForgeBlockEntity;
 import minecraftarmorweapon.client.gui.RarityForgeScreen;
+import minecraftarmorweapon.client.gui.SkillSelectionScreen;
 import minecraftarmorweapon.world.inventory.RarityForgeMenu;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.resources.ResourceLocation;
@@ -60,7 +61,10 @@ public class RarityForgeRegistration {
     public static class Client {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-            event.enqueueWork(() -> MenuScreens.register(menuType, RarityForgeScreen::new));
+            event.enqueueWork(() -> {
+                MenuScreens.register(menuType, RarityForgeScreen::new);
+                MenuScreens.register(SkillSelectionRegistration.getMenuType(), SkillSelectionScreen::new);
+            });
         }
     }
 }

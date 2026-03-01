@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.api.distmarker.Dist;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
+import minecraftarmorweapon.network.OpenSkillScreenPacket;
 
 /**
  * インベントリ画面の左上にスキル選択ボタンを追加する
@@ -39,7 +40,7 @@ public class SkillSelectionOverlay {
         AbstractButton skillButton = new AbstractButton(x, y, 20, 20, Component.literal("\u2694")) {
             @Override
             public void onPress() {
-                Minecraft.getInstance().setScreen(new SkillSelectionScreen());
+                MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new OpenSkillScreenPacket());
             }
 
             @Override

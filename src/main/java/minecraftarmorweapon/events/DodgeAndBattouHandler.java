@@ -42,6 +42,8 @@ import minecraftarmorweapon.util.DamageCalculator;
 import minecraftarmorweapon.skill.PlayerSkillData;
 import minecraftarmorweapon.skill.PlayerSkillData.AttackSlot;
 import minecraftarmorweapon.skill.MotionExecutor;
+import minecraftarmorweapon.MinecraftArmorWeaponMod;
+import minecraftarmorweapon.network.DodgeRequestPacket;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -231,8 +233,12 @@ public class DodgeAndBattouHandler {
         
         // 武器を持っている場合のみ回避を実行
         if (isWeapon(mainHand) || isWeapon(offHand)) {
-            // 通常の右クリック（回避）
+            // RightClickEmptyはクライアント専用イベント
+            // クライアント側のDodgeDataを更新しつつ、サーバーにパケットを送信
             performDodge(player);
+            if (player.level().isClientSide) {
+                MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new DodgeRequestPacket());
+            }
         }
     }
     
@@ -403,90 +409,42 @@ public class DodgeAndBattouHandler {
         player.displayClientMessage(Component.literal("§cダッシュ攻撃！"), true);
     }
     
-    // 回避処理
-    private static void performDodge(Player player) {
+    // 回避処理（選択中のダッシュスキルを発動）
+    // publicにしてDodgeRequestPacketから呼べるようにする
+    public static void performDodge(Player player) {
         Level world = VersionHelper.getLevel(player);
-        Vec3 lookVec = player.getLookAngle();
-        
-        // 垂直方向の視線を制限（真上や真下を向いている場合の対処）
-        Vec3 horizontalLookVec = new Vec3(lookVec.x, 0, lookVec.z).normalize();
-        if (horizontalLookVec.length() < 0.1) {
-            // プレイヤーがほぼ真上か真下を向いている場合、前方方向を使用
-            float yaw = player.getYRot();
-            horizontalLookVec = new Vec3(
-                -Math.sin(Math.toRadians(yaw)),
-                0,
-                Math.cos(Math.toRadians(yaw))
-            );
-        }
-        
-        Vec3 dodgeVec;
-        
+
         // 回避データを取得
         UUID playerId = player.getUUID();
         DodgeData data = playerDodgeData.computeIfAbsent(playerId, k -> new DodgeData());
-        
+
         // クールダウン中は回避できない
         if (!data.canDodge()) {
             player.displayClientMessage(
-                Component.literal(String.format("§c回避クールダウン中 (%.1f秒)", 
-                    (float)data.cooldownTimer / 20.0f)), 
+                Component.literal(String.format("\u00A7c\u56DE\u907F\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u4E2D (%.1f\u79D2)",
+                    (float)data.cooldownTimer / 20.0f)),
                 true
             );
             return;
         }
-        
+
         // 回避データを設定
         data.hasDodged = true;
         data.dodgeTimer = DODGE_WINDOW;
         data.cooldownTimer = DODGE_COOLDOWN;
         data.fallDamageImmunityTimer = FALL_DAMAGE_IMMUNITY_TIME;
-        
-        // 移動方向に基づいて回避方向を決定
-        float forward = player.zza;
-        float strafe = player.xxa;
-        
-        if (Math.abs(forward) > 0.01 || Math.abs(strafe) > 0.01) {
-            // プレイヤーの移動方向に回避
-            float yaw = player.getYRot();
-            float moveAngle = (float) Math.atan2(-strafe, forward);
-            float dodgeAngle = (float) Math.toRadians(yaw) + moveAngle;
-            
-            dodgeVec = new Vec3(
-                -Math.sin(dodgeAngle),
-                0,
-                Math.cos(dodgeAngle)
-            ).scale(0.8);  // 回避距離を減少（1.5→0.8）
-        } else {
-            // 前方回避（移動していない場合）- 水平方向のみ
-            dodgeVec = horizontalLookVec.scale(0.8);  // 回避距離を減少（1.5→0.8）
-        }
-        
-        // 回避移動（上方向の移動量を調整）
-        player.setDeltaMovement(
-            dodgeVec.x,
-            player.getDeltaMovement().y + 0.15,  // 上方向の加速を減少（0.3→0.15）
-            dodgeVec.z
-        );
-        
-        // エフェクト
+        data.dashAttackCooldown = 40; // ダッシュ攻撃の二重発動を防止
+
+        // サーバー側でのみスキル発動（PlayerSkillDataはサーバーにしか正しいデータがない）
         if (!world.isClientSide) {
-            ServerLevel serverWorld = (ServerLevel) world;
-            Vec3 pos = player.position();
-            
-            // 煙のエフェクト
-            serverWorld.sendParticles(
-                ParticleTypes.CLOUD,
-                pos.x, pos.y, pos.z,
-                20, 0.3, 0.5, 0.3, 0.05
-            );
+            PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
+            String motionId = skillData.getMotionForWeapon(AttackSlot.DASH, player.getMainHandItem());
+            MotionExecutor.executeMotion(motionId, player, 0.0f);
         }
-        
+
         // サウンド
         world.playSound(null, player.getX(), player.getY(), player.getZ(),
             SoundEvents.ENDER_PEARL_THROW, SoundSource.PLAYERS, 0.8f, 1.5f);
-        
-        player.displayClientMessage(Component.literal("§b回避成功！ §e今なら左クリックでダッシュ攻撃！"), true);
     }
     
     private static boolean isWeapon(ItemStack stack) {

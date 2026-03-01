@@ -1,29 +1,24 @@
 package minecraftarmorweapon.client.gui;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.network.SkillSelectionPacket;
-import minecraftarmorweapon.skill.PlayerSkillData;
 import minecraftarmorweapon.skill.PlayerSkillData.AttackSlot;
-import minecraftarmorweapon.skill.PlayerSkillData.WeaponLoadout;
 import minecraftarmorweapon.skill.SkillRegistry;
 import minecraftarmorweapon.skill.SkillRegistry.MotionInfo;
 import minecraftarmorweapon.skill.SkillRegistry.MotionCategory;
+import minecraftarmorweapon.world.inventory.SkillSelectionMenu;
 
 import java.util.List;
 
-public class SkillSelectionScreen extends Screen {
-
-    private static final int GUI_WIDTH = 360;
-    private static final int GUI_HEIGHT = 260;
+public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelectionMenu> {
 
     // 色定義
     private static final int COLOR_BG = 0xCC1A1A2E;
@@ -37,207 +32,113 @@ public class SkillSelectionScreen extends Screen {
     private static final int COLOR_SLOT_LABEL = 0xFFFFD700;
     private static final int COLOR_FOOTER = 0xFF2D6A4F;
     private static final int COLOR_FOOTER_TEXT = 0xFFCCCCCC;
-    private static final int COLOR_LOADOUT_EMPTY = 0xFF252535;
-    private static final int COLOR_LOADOUT_FILLED = 0xFF2A3A55;
-    private static final int COLOR_LOADOUT_SELECTED = 0xFF1A4A6F;
-    private static final int COLOR_LOADOUT_BORDER = 0xFF4488AA;
-    private static final int COLOR_REMOVE_BTN = 0xFF5A1A1A;
-    private static final int COLOR_REMOVE_BTN_HOVER = 0xFF8A2A2A;
+    private static final int COLOR_SLOT_BG = 0xFF1A1A30;
+    private static final int COLOR_SLOT_BORDER = 0xFF333355;
+    private static final int COLOR_SLOT_SELECTED_BORDER = 0xFF4CAF50;
+    private static final int COLOR_RADIO_ON = 0xFF4CAF50;
+    private static final int COLOR_RADIO_OFF = 0xFF555577;
 
-    private PlayerSkillData.SkillStorage skillData;
     private String hoveredDescription = null;
 
-    // -1 = デフォルト設定, 0以上 = ロードアウトインデックス
+    // -1 = デフォルト設定, 0以上 = 武器スロットインデックス
     private int selectedLoadoutIndex = -1;
 
-    private int guiLeft;
-    private int guiTop;
+    // レイアウト定数
+    private static final int HEADER_HEIGHT = 24;
+    private static final int WEAPON_SLOT_SECTION_Y = 28;
+    private static final int RADIO_ROW_Y = 50;
+    private static final int DIVIDER_Y = 64;
+    private static final int MOTION_ROW_Y = 72;
 
-    // 武器スロット行のY座標
-    private static final int LOADOUT_ROW_Y_OFFSET = 28;
-    // 技設定行の開始Y
-    private static final int MOTION_ROW_Y_OFFSET = 70;
-
-    public SkillSelectionScreen() {
-        super(Component.literal("\u6280\u306E\u9078\u629E"));
+    public SkillSelectionScreen(SkillSelectionMenu menu, Inventory inv, Component title) {
+        super(menu, inv, title);
+        this.imageWidth = 340;
+        this.imageHeight = 312;
+        // デフォルトのラベル描画を無効化
+        this.inventoryLabelY = 10000;
+        this.titleLabelY = 10000;
     }
 
     @Override
-    public void init() {
+    protected void init() {
         super.init();
-
-        guiLeft = (this.width - GUI_WIDTH) / 2;
-        guiTop = (this.height - GUI_HEIGHT) / 2;
-
-        Player player = Minecraft.getInstance().player;
-        if (player == null) return;
-
-        skillData = PlayerSkillData.getSkillData(player);
-
-        // 選択インデックスが範囲外になった場合はデフォルトに戻す
-        if (selectedLoadoutIndex >= skillData.getWeaponLoadouts().size()) {
-            selectedLoadoutIndex = -1;
-        }
 
         buildWidgets();
     }
 
-    private void buildWidgets() {
-        this.clearWidgets();
-
-        Player player = Minecraft.getInstance().player;
-        if (player == null) return;
-
-        // === 武器ロードアウトスロット ===
-        buildLoadoutSlots(player);
-
-        // === 技設定行 ===
-        buildMotionRows();
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        // スロット内容が変わった場合にウィジェットを再構築
+        rebuildIfNeeded();
     }
 
-    private void buildLoadoutSlots(Player player) {
-        List<WeaponLoadout> loadouts = skillData.getWeaponLoadouts();
-        int slotWidth = 80;
-        int slotHeight = 20;
-        int slotGap = 4;
-        int totalSlotWidth = loadouts.size() * (slotWidth + slotGap);
+    private String[] lastWeaponClasses = new String[SkillSelectionMenu.WEAPON_SLOTS];
 
-        // 武器スロットを左端から並べる
-        int startX = guiLeft + 8;
-        int slotY = guiTop + LOADOUT_ROW_Y_OFFSET;
-
-        for (int i = 0; i < loadouts.size(); i++) {
-            final int loadoutIdx = i;
-            final WeaponLoadout loadout = loadouts.get(i);
-            String weaponName = loadout.getWeapon().getHoverName().getString();
-            if (weaponName.length() > 10) weaponName = weaponName.substring(0, 9) + "…";
-            final String displayName = weaponName;
-
-            int btnX = startX + i * (slotWidth + slotGap);
-
-            // ロードアウト選択ボタン
-            addRenderableWidget(new AbstractButton(btnX, slotY, slotWidth, slotHeight,
-                    Component.literal(displayName)) {
-                @Override
-                public void onPress() {
-                    selectedLoadoutIndex = (selectedLoadoutIndex == loadoutIdx) ? -1 : loadoutIdx;
-                    buildWidgets();
-                }
-
-                @Override
-                public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float pt) {
-                    boolean isSelected = selectedLoadoutIndex == loadoutIdx;
-                    boolean isHover = this.isHoveredOrFocused();
-
-                    int bgColor = isSelected ? COLOR_LOADOUT_SELECTED : (isHover ? COLOR_BTN_HOVER : COLOR_LOADOUT_FILLED);
-                    g.fill(this.getX(), this.getY(),
-                        this.getX() + this.width, this.getY() + this.height, bgColor);
-                    drawBorder(g, this.getX(), this.getY(), this.width, this.height,
-                        isSelected ? COLOR_BORDER : COLOR_LOADOUT_BORDER);
-
-                    g.drawCenteredString(font, this.getMessage(),
-                        this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2,
-                        isSelected ? 0x7FD7FF : 0xCCCCCC);
-
-                    if (isHover) {
-                        hoveredDescription = loadout.getWeapon().getHoverName().getString() + " の技設定";
-                    }
-                }
-
-                @Override
-                protected void updateWidgetNarration(NarrationElementOutput n) {
-                    this.defaultButtonNarrationText(n);
-                }
-            });
-
-            // 取り出しボタン（×）
-            int removeBtnX = btnX + slotWidth - 10;
-            addRenderableWidget(new AbstractButton(removeBtnX, slotY, 10, slotHeight,
-                    Component.literal("\u00D7")) {
-                @Override
-                public void onPress() {
-                    MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
-                        SkillSelectionPacket.removeWeaponLoadout(loadoutIdx)
-                    );
-                    if (selectedLoadoutIndex >= loadoutIdx) {
-                        selectedLoadoutIndex = -1;
-                    }
-                    // サーバー反映前に楽観的更新
-                    skillData.removeWeaponLoadout(loadoutIdx);
-                    buildWidgets();
-                }
-
-                @Override
-                public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float pt) {
-                    boolean isHover = this.isHoveredOrFocused();
-                    g.fill(this.getX(), this.getY(),
-                        this.getX() + this.width, this.getY() + this.height,
-                        isHover ? COLOR_REMOVE_BTN_HOVER : COLOR_REMOVE_BTN);
-                    g.drawCenteredString(font, this.getMessage(),
-                        this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2,
-                        0xFF4444);
-
-                    if (isHover) {
-                        hoveredDescription = "武器を取り出す";
-                    }
-                }
-
-                @Override
-                protected void updateWidgetNarration(NarrationElementOutput n) {
-                    this.defaultButtonNarrationText(n);
-                }
-            });
+    private void rebuildIfNeeded() {
+        boolean changed = false;
+        for (int i = 0; i < SkillSelectionMenu.WEAPON_SLOTS; i++) {
+            ItemStack item = menu.getSlot(i).getItem();
+            String cls = item.isEmpty() ? "" : item.getItem().getClass().getSimpleName();
+            if (!cls.equals(lastWeaponClasses[i])) {
+                lastWeaponClasses[i] = cls;
+                changed = true;
+            }
         }
+        if (changed) {
+            // 選択中のスロットが空になったらデフォルトに戻す
+            if (selectedLoadoutIndex >= 0) {
+                ItemStack sel = menu.getSlot(selectedLoadoutIndex).getItem();
+                if (sel.isEmpty()) {
+                    selectedLoadoutIndex = -1;
+                }
+            }
+            buildWidgets();
+        }
+    }
 
-        // === 武器追加ボタン ===
-        ItemStack mainHand = player.getMainHandItem();
-        boolean canAdd = !mainHand.isEmpty()
-            && !SkillRegistry.getSpecialIdsForWeapon(mainHand.getItem().getClass().getSimpleName()).isEmpty()
-            && !skillData.hasLoadoutForWeapon(mainHand.getItem().getClass().getSimpleName());
+    private void buildWidgets() {
+        this.clearWidgets();
+        buildRadioButtons();
+        buildMotionRows();
 
-        int addBtnX = startX + loadouts.size() * (slotWidth + slotGap);
-        int addBtnColor = canAdd ? 0xFF2D6A4F : 0xFF3A3A3A;
-        int addBtnTextColor = canAdd ? 0xFF88FF88 : 0xFF666666;
+        // lastWeaponClasses を現在の状態で初期化
+        for (int i = 0; i < SkillSelectionMenu.WEAPON_SLOTS; i++) {
+            ItemStack item = menu.getSlot(i).getItem();
+            lastWeaponClasses[i] = item.isEmpty() ? "" : item.getItem().getClass().getSimpleName();
+        }
+    }
 
-        addRenderableWidget(new AbstractButton(addBtnX, slotY, 60, slotHeight,
-                Component.literal("+ 追加")) {
+    /**
+     * 武器スロットの下にラジオボタンを配置（どのロードアウトを編集するか選ぶ）
+     */
+    private void buildRadioButtons() {
+        int startX = leftPos + SkillSelectionMenu.WEAPON_SLOT_START_X;
+        int y = topPos + RADIO_ROW_Y;
+        int gap = SkillSelectionMenu.WEAPON_SLOT_GAP;
+
+        // デフォルトボタン（左端）
+        int defaultBtnX = leftPos + 4;
+        addRenderableWidget(new AbstractButton(defaultBtnX, y, 50, 12,
+                Component.literal("\u30C7\u30D5\u30A9\u30EB\u30C8")) {
             @Override
             public void onPress() {
-                if (!canAdd) return;
-                MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
-                    SkillSelectionPacket.addWeaponLoadout()
-                );
-                // 楽観的更新
-                ItemStack stored = mainHand.copy();
-                stored.setCount(1);
-                int newIdx = skillData.addWeaponLoadout(stored);
-                selectedLoadoutIndex = newIdx;
+                selectedLoadoutIndex = -1;
                 buildWidgets();
             }
 
             @Override
-            public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float pt) {
-                boolean isHover = this.isHoveredOrFocused() && canAdd;
-                int bgColor = isHover ? 0xFF3D8A6F : addBtnColor;
-                g.fill(this.getX(), this.getY(),
-                    this.getX() + this.width, this.getY() + this.height, bgColor);
-                drawBorder(g, this.getX(), this.getY(), this.width, this.height,
-                    canAdd ? COLOR_BORDER : 0xFF444444);
-                g.drawCenteredString(font, this.getMessage(),
-                    this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2,
-                    addBtnTextColor);
-
-                if (this.isHoveredOrFocused()) {
-                    if (canAdd) {
-                        hoveredDescription = mainHand.getHoverName().getString() + " をスロットに登録";
-                    } else if (mainHand.isEmpty()) {
-                        hoveredDescription = "主手に特殊技を持つ武器を持ってください";
-                    } else if (skillData.hasLoadoutForWeapon(mainHand.getItem().getClass().getSimpleName())) {
-                        hoveredDescription = "この武器は既に登録済みです";
-                    } else {
-                        hoveredDescription = "この武器には特殊技がありません";
-                    }
+            public void renderWidget(GuiGraphics g, int mx, int my, float pt) {
+                boolean selected = selectedLoadoutIndex == -1;
+                boolean hover = this.isHoveredOrFocused();
+                int bg = selected ? COLOR_BTN_SELECTED : (hover ? COLOR_BTN_HOVER : COLOR_BTN_NORMAL);
+                g.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, bg);
+                if (selected) {
+                    drawBorder(g, this.getX(), this.getY(), this.width, this.height, COLOR_BORDER);
                 }
+                g.drawCenteredString(font, this.getMessage(),
+                    this.getX() + this.width / 2, this.getY() + 2,
+                    selected ? 0x7FFF7F : 0xCCCCCC);
             }
 
             @Override
@@ -245,30 +146,75 @@ public class SkillSelectionScreen extends Screen {
                 this.defaultButtonNarrationText(n);
             }
         });
+
+        // 各武器スロット用の選択ボタン
+        for (int i = 0; i < SkillSelectionMenu.WEAPON_SLOTS; i++) {
+            final int slotIdx = i;
+            int btnX = startX + i * gap + 1;
+
+            addRenderableWidget(new AbstractButton(btnX, y, 16, 12,
+                    Component.literal("")) {
+                @Override
+                public void onPress() {
+                    ItemStack weapon = menu.getSlot(slotIdx).getItem();
+                    if (!weapon.isEmpty()) {
+                        selectedLoadoutIndex = (selectedLoadoutIndex == slotIdx) ? -1 : slotIdx;
+                        buildWidgets();
+                    }
+                }
+
+                @Override
+                public void renderWidget(GuiGraphics g, int mx, int my, float pt) {
+                    ItemStack weapon = menu.getSlot(slotIdx).getItem();
+                    boolean hasWeapon = !weapon.isEmpty();
+                    boolean selected = selectedLoadoutIndex == slotIdx;
+                    boolean hover = this.isHoveredOrFocused() && hasWeapon;
+
+                    // ラジオボタン風の丸（塗りつぶし四角で代用）
+                    int cx = this.getX() + this.width / 2;
+                    int cy = this.getY() + this.height / 2;
+                    int size = 4;
+
+                    if (hasWeapon) {
+                        int color = selected ? COLOR_RADIO_ON : (hover ? COLOR_BTN_HOVER : COLOR_RADIO_OFF);
+                        g.fill(cx - size, cy - size, cx + size, cy + size, color);
+                        if (selected) {
+                            // 内側を明るく
+                            g.fill(cx - 2, cy - 2, cx + 2, cy + 2, 0xFFFFFFFF);
+                        }
+                    } else {
+                        // 空スロット：薄い四角
+                        g.fill(cx - size, cy - size, cx + size, cy + size, 0xFF333344);
+                    }
+
+                    if (hover && hasWeapon) {
+                        hoveredDescription = weapon.getHoverName().getString() + " \u306E\u6280\u8A2D\u5B9A";
+                    }
+                }
+
+                @Override
+                protected void updateWidgetNarration(NarrationElementOutput n) {
+                    this.defaultButtonNarrationText(n);
+                }
+            });
+        }
     }
 
+    /**
+     * モーション選択ボタンを構築
+     */
     private void buildMotionRows() {
-        // 現在の選択に応じて技の選択肢を構築
-        String weaponClass = null;
-        if (selectedLoadoutIndex >= 0) {
-            List<WeaponLoadout> loadouts = skillData.getWeaponLoadouts();
-            if (selectedLoadoutIndex < loadouts.size()) {
-                weaponClass = loadouts.get(selectedLoadoutIndex).getWeaponClass();
-            } else {
-                selectedLoadoutIndex = -1;
-            }
-        }
-        final String finalWeaponClass = weaponClass;
+        String weaponClass = getSelectedWeaponClass();
 
-        int rowY = guiTop + MOTION_ROW_Y_OFFSET;
+        int rowY = topPos + MOTION_ROW_Y;
         int labelWidth = 52;
         int btnHeight = 18;
         int btnGap = 2;
         int rowGap = 5;
-        int btnAreaLeft = guiLeft + 8 + labelWidth;
+        int btnAreaLeft = leftPos + 4 + labelWidth;
 
         for (AttackSlot slot : AttackSlot.values()) {
-            List<MotionInfo> motions = SkillRegistry.getAvailableMotions(slot, finalWeaponClass);
+            List<MotionInfo> motions = SkillRegistry.getAvailableMotions(slot, weaponClass);
 
             int btnX = btnAreaLeft;
             for (MotionInfo motion : motions) {
@@ -281,9 +227,9 @@ public class SkillSelectionScreen extends Screen {
                     @Override
                     public void onPress() {
                         if (selectedLoadoutIndex == -1) {
-                            skillData.setMotion(finalSlot, finalMotion.getId());
+                            menu.setDefaultMotion(finalSlot, finalMotion.getId());
                         } else {
-                            skillData.setLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId());
+                            menu.setLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId());
                         }
                         MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
                             SkillSelectionPacket.selectLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId())
@@ -293,17 +239,7 @@ public class SkillSelectionScreen extends Screen {
 
                     @Override
                     public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float pt) {
-                        String currentMotion;
-                        if (selectedLoadoutIndex == -1) {
-                            currentMotion = skillData.getMotion(finalSlot);
-                        } else {
-                            List<WeaponLoadout> loadouts = skillData.getWeaponLoadouts();
-                            if (selectedLoadoutIndex < loadouts.size()) {
-                                currentMotion = loadouts.get(selectedLoadoutIndex).getMotion(finalSlot);
-                            } else {
-                                currentMotion = skillData.getMotion(finalSlot);
-                            }
-                        }
+                        String currentMotion = getCurrentMotion(finalSlot);
 
                         boolean isSelected = finalMotion.getId().equals(currentMotion);
                         boolean isHover = this.isHoveredOrFocused();
@@ -341,84 +277,112 @@ public class SkillSelectionScreen extends Screen {
         }
     }
 
+    private String getSelectedWeaponClass() {
+        if (selectedLoadoutIndex < 0 || selectedLoadoutIndex >= SkillSelectionMenu.WEAPON_SLOTS) {
+            return null;
+        }
+        ItemStack weapon = menu.getSlot(selectedLoadoutIndex).getItem();
+        if (weapon.isEmpty()) return null;
+        return weapon.getItem().getClass().getSimpleName();
+    }
+
+    private String getCurrentMotion(AttackSlot slot) {
+        if (selectedLoadoutIndex == -1) {
+            return menu.getDefaultMotion(slot);
+        } else {
+            return menu.getLoadoutMotion(selectedLoadoutIndex, slot);
+        }
+    }
+
     @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        hoveredDescription = null;
-
-        // 背景の暗転
-        this.renderBackground(g);
-
+    protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         // メインの背景パネル
-        g.fill(guiLeft, guiTop, guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT, COLOR_BG);
-        drawBorder(g, guiLeft, guiTop, GUI_WIDTH, GUI_HEIGHT, 0xFF555577);
+        g.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, COLOR_BG);
+        drawBorder(g, leftPos, topPos, imageWidth, imageHeight, 0xFF555577);
 
         // ヘッダー
-        g.fill(guiLeft, guiTop, guiLeft + GUI_WIDTH, guiTop + 24, COLOR_HEADER);
+        g.fill(leftPos, topPos, leftPos + imageWidth, topPos + HEADER_HEIGHT, COLOR_HEADER);
         g.drawCenteredString(font, Component.literal("\u2694 \u6280\u306E\u9078\u629E \u2694"),
-            guiLeft + GUI_WIDTH / 2, guiTop + 8, COLOR_HEADER_TEXT);
+            leftPos + imageWidth / 2, topPos + 8, COLOR_HEADER_TEXT);
 
         // 武器スロットセクションラベル
-        g.drawString(font, Component.literal("\u25BC \u6B66\u5668\u30ED\u30FC\u30C9\u30A2\u30A6\u30C8"),
-            guiLeft + 8, guiTop + 18, COLOR_SLOT_LABEL, false);
+        g.drawString(font, Component.literal("\u25BC \u6B66\u5668\u30B9\u30ED\u30C3\u30C8"),
+            leftPos + 4, topPos + 18, COLOR_SLOT_LABEL, false);
 
-        // 武器スロット行（空きスロットを視覚的に示す）
-        drawEmptyLoadoutSlotBackground(g);
+        // 武器スロットの背景と枠線
+        renderWeaponSlotBackgrounds(g);
 
         // 区切り線
-        int dividerY = guiTop + MOTION_ROW_Y_OFFSET - 6;
-        g.fill(guiLeft + 4, dividerY, guiLeft + GUI_WIDTH - 4, dividerY + 1, 0xFF444466);
+        int divY = topPos + DIVIDER_Y;
+        g.fill(leftPos + 4, divY, leftPos + imageWidth - 4, divY + 1, 0xFF444466);
 
         // 選択中ロードアウトの表示
         String editingLabel;
         if (selectedLoadoutIndex == -1) {
-            editingLabel = "[ デフォルト設定 ]";
+            editingLabel = "[ \u30C7\u30D5\u30A9\u30EB\u30C8\u8A2D\u5B9A ]";
         } else {
-            List<WeaponLoadout> loadouts = skillData.getWeaponLoadouts();
-            if (selectedLoadoutIndex < loadouts.size()) {
-                editingLabel = "[ " + loadouts.get(selectedLoadoutIndex).getWeapon().getHoverName().getString() + " ]";
+            ItemStack weapon = menu.getSlot(selectedLoadoutIndex).getItem();
+            if (!weapon.isEmpty()) {
+                editingLabel = "[ " + weapon.getHoverName().getString() + " ]";
             } else {
-                editingLabel = "[ デフォルト設定 ]";
+                editingLabel = "[ \u30C7\u30D5\u30A9\u30EB\u30C8\u8A2D\u5B9A ]";
             }
         }
         g.drawCenteredString(font, Component.literal(editingLabel),
-            guiLeft + GUI_WIDTH / 2, dividerY + 3, 0xFFAACCFF);
+            leftPos + imageWidth / 2, divY + 2, 0xFFAACCFF);
 
-        // スロットラベル（5行）
-        int rowY = guiTop + MOTION_ROW_Y_OFFSET;
+        // スロットラベル（5行：一撃目、二撃目、...）
+        int rowY = topPos + MOTION_ROW_Y;
         int btnHeight = 18;
         int rowGap = 5;
         for (AttackSlot slot : AttackSlot.values()) {
             g.drawString(font, Component.literal(slot.getDisplayName()),
-                guiLeft + 8, rowY + (btnHeight - 8) / 2, COLOR_SLOT_LABEL, false);
+                leftPos + 4, rowY + (btnHeight - 8) / 2, COLOR_SLOT_LABEL, false);
             rowY += btnHeight + rowGap;
         }
 
-        // ボタン描画
-        super.render(g, mouseX, mouseY, partialTick);
+        // プレイヤーインベントリ背景
+        int invY = topPos + SkillSelectionMenu.INV_START_Y - 12;
+        g.drawString(font, Component.literal("\u30A4\u30F3\u30D9\u30F3\u30C8\u30EA"),
+            leftPos + SkillSelectionMenu.INV_START_X, invY, 0xFF999999, false);
+    }
 
-        // フッター
-        int footerY = guiTop + GUI_HEIGHT - 26;
-        g.fill(guiLeft, footerY, guiLeft + GUI_WIDTH, guiTop + GUI_HEIGHT, COLOR_FOOTER);
+    private void renderWeaponSlotBackgrounds(GuiGraphics g) {
+        for (int i = 0; i < SkillSelectionMenu.WEAPON_SLOTS; i++) {
+            int slotX = leftPos + SkillSelectionMenu.WEAPON_SLOT_START_X + i * SkillSelectionMenu.WEAPON_SLOT_GAP;
+            int slotY = topPos + WEAPON_SLOT_SECTION_Y;
 
-        if (hoveredDescription != null) {
-            g.drawCenteredString(font, Component.literal(hoveredDescription),
-                guiLeft + GUI_WIDTH / 2, footerY + 4, 0xFFFFFF);
-            g.drawCenteredString(font, Component.literal("\u30AF\u30EA\u30C3\u30AF\u3067\u9078\u629E"),
-                guiLeft + GUI_WIDTH / 2, footerY + 14, COLOR_FOOTER_TEXT);
-        } else {
-            g.drawCenteredString(font, Component.literal(
-                "\u30B9\u30ED\u30C3\u30C8\u3092\u9078\u629E\u3057\u3066\u6280\u3092\u8A2D\u5B9A | K\u30AD\u30FC\u3067\u9589\u3058\u308B"),
-                guiLeft + GUI_WIDTH / 2, footerY + 9, COLOR_FOOTER_TEXT);
+            // 18x18 スロット背景
+            g.fill(slotX - 1, slotY - 1, slotX + 17, slotY + 17, COLOR_SLOT_BG);
+
+            // 選択中のスロットは緑枠、それ以外は薄い枠
+            int borderColor = (i == selectedLoadoutIndex) ? COLOR_SLOT_SELECTED_BORDER : COLOR_SLOT_BORDER;
+            drawBorder(g, slotX - 1, slotY - 1, 18, 18, borderColor);
         }
     }
 
-    private void drawEmptyLoadoutSlotBackground(GuiGraphics g) {
-        // 武器スロット行の背景として薄い枠を描く
-        int slotY = guiTop + LOADOUT_ROW_Y_OFFSET;
-        int slotHeight = 20;
-        int panelWidth = GUI_WIDTH - 16;
-        g.fill(guiLeft + 8, slotY - 1, guiLeft + 8 + panelWidth, slotY + slotHeight + 1, 0xFF1A1A30);
-        drawBorder(g, guiLeft + 8, slotY - 1, panelWidth, slotHeight + 2, 0xFF333355);
+    @Override
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        hoveredDescription = null;
+
+        this.renderBackground(g);
+        super.render(g, mouseX, mouseY, partialTick);
+        this.renderTooltip(g, mouseX, mouseY);
+
+        // フッター
+        int footerY = topPos + imageHeight - 26;
+        g.fill(leftPos, footerY, leftPos + imageWidth, topPos + imageHeight, COLOR_FOOTER);
+
+        if (hoveredDescription != null) {
+            g.drawCenteredString(font, Component.literal(hoveredDescription),
+                leftPos + imageWidth / 2, footerY + 4, 0xFFFFFF);
+            g.drawCenteredString(font, Component.literal("\u30AF\u30EA\u30C3\u30AF\u3067\u9078\u629E"),
+                leftPos + imageWidth / 2, footerY + 14, COLOR_FOOTER_TEXT);
+        } else {
+            g.drawCenteredString(font, Component.literal(
+                "\u6B66\u5668\u3092D&D\u3067\u30B9\u30ED\u30C3\u30C8\u306B | K\u30AD\u30FC\u3067\u9589\u3058\u308B"),
+                leftPos + imageWidth / 2, footerY + 9, COLOR_FOOTER_TEXT);
+        }
     }
 
     private static void drawBorder(GuiGraphics g, int x, int y, int w, int h, int color) {

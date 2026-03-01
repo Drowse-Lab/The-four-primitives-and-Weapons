@@ -45,18 +45,32 @@ public class SkillRegistry {
 
     static {
         Set<AttackSlot> allSlots = EnumSet.allOf(AttackSlot.class);
+        // 基本モーションはDASH以外のスロットで使用可能
+        Set<AttackSlot> combatSlots = EnumSet.of(
+                AttackSlot.FIRST_HIT, AttackSlot.SECOND_HIT,
+                AttackSlot.THIRD_HIT, AttackSlot.CHARGED);
 
-        // === 5つの基本モーション（全スロット、最初から使用可能） ===
+        // === 5つの基本モーション（一撃目〜チャージまで） ===
         register("thrust", "突き", "直線的な突き攻撃",
-                MotionCategory.UNIVERSAL, allSlots, null);
+                MotionCategory.UNIVERSAL, combatSlots, null);
         register("upper_left_slash", "左上斬り", "左上からの斜め斬り",
-                MotionCategory.UNIVERSAL, allSlots, null);
+                MotionCategory.UNIVERSAL, combatSlots, null);
         register("upper_right_slash", "右上斬り", "右上からの斜め斬り",
-                MotionCategory.UNIVERSAL, allSlots, null);
+                MotionCategory.UNIVERSAL, combatSlots, null);
         register("horizontal_slash", "横一文字", "広範囲の横薙ぎ",
-                MotionCategory.UNIVERSAL, allSlots, null);
+                MotionCategory.UNIVERSAL, combatSlots, null);
         register("spin_slash", "回転斬り", "360度の範囲攻撃",
-                MotionCategory.UNIVERSAL, allSlots, null);
+                MotionCategory.UNIVERSAL, combatSlots, null);
+
+        // === ダッシュ専用モーション（DASHスロットのみ） ===
+        Set<AttackSlot> dashOnly = EnumSet.of(AttackSlot.DASH);
+
+        register("dash_rush", "突進斬り", "走り抜けながら通過した場所の敵にダメージ",
+                MotionCategory.UNIVERSAL, dashOnly, null);
+        register("leap_slash", "跳ね斬り", "跳躍後の移動中に攻撃するとダメージ増加",
+                MotionCategory.UNIVERSAL, dashOnly, null);
+        register("shadow_step", "影歩き", "5tick無敵の黒い影で高速移動（攻撃/武器変更で解除）",
+                MotionCategory.UNIVERSAL, dashOnly, null);
 
         // === 特殊技（武器をスロットに登録すると使用可能） ===
         register("electric_beam", "電撃ビーム", "前方に電撃のビームを放つ",

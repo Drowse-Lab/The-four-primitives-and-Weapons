@@ -19,6 +19,8 @@ import java.util.*;
 
 public class PlayerSkillData {
 
+    public static final int MAX_WEAPON_SLOTS = 5;
+
     // 攻撃スロット（5種）
     public enum AttackSlot {
         FIRST_HIT("一撃目", "first_hit"),
@@ -48,7 +50,7 @@ public class PlayerSkillData {
 
     // 武器ごとの技設定
     public static class WeaponLoadout implements INBTSerializable<CompoundTag> {
-        private final ItemStack weapon;
+        private ItemStack weapon;
         private final Map<AttackSlot, String> motions = new EnumMap<>(AttackSlot.class);
 
         public WeaponLoadout(ItemStack weapon) {
@@ -58,7 +60,7 @@ public class PlayerSkillData {
             motions.put(AttackSlot.SECOND_HIT, "upper_right_slash");
             motions.put(AttackSlot.THIRD_HIT, "horizontal_slash");
             motions.put(AttackSlot.CHARGED, "spin_slash");
-            motions.put(AttackSlot.DASH, "thrust");
+            motions.put(AttackSlot.DASH, "dash_rush");
         }
 
         // NBT復元用
@@ -73,6 +75,10 @@ public class PlayerSkillData {
 
         public ItemStack getWeapon() {
             return weapon.copy();
+        }
+
+        public void setWeapon(ItemStack newWeapon) {
+            this.weapon = newWeapon.copy();
         }
 
         public String getMotion(AttackSlot slot) {
@@ -122,8 +128,8 @@ public class PlayerSkillData {
     public static class SkillStorage implements INBTSerializable<CompoundTag> {
         // デフォルト技設定（スロット未登録武器用）
         private final Map<AttackSlot, String> selectedMotions = new EnumMap<>(AttackSlot.class);
-        // 武器ロードアウト（武器ごとの技設定）
-        private final List<WeaponLoadout> weaponLoadouts = new ArrayList<>();
+        // 武器スロット（固定5枠、nullは空スロット）
+        private final WeaponLoadout[] weaponSlots = new WeaponLoadout[MAX_WEAPON_SLOTS];
         // 固有スキルのON/OFF（内部利用）
         private final Map<String, Boolean> uniqueSkillToggle = new HashMap<>();
 
@@ -133,7 +139,7 @@ public class PlayerSkillData {
             selectedMotions.put(AttackSlot.SECOND_HIT, "upper_right_slash");
             selectedMotions.put(AttackSlot.THIRD_HIT, "horizontal_slash");
             selectedMotions.put(AttackSlot.CHARGED, "spin_slash");
-            selectedMotions.put(AttackSlot.DASH, "thrust");
+            selectedMotions.put(AttackSlot.DASH, "dash_rush");
         }
 
         // === デフォルトモーション設定 ===
@@ -148,25 +154,44 @@ public class PlayerSkillData {
             }
         }
 
-        // === 武器ロードアウト ===
+        // === 武器スロット（固定配列） ===
 
-        public int addWeaponLoadout(ItemStack weapon) {
-            weaponLoadouts.add(new WeaponLoadout(weapon));
-            return weaponLoadouts.size() - 1;
+        public WeaponLoadout getLoadoutAt(int index) {
+            if (index < 0 || index >= MAX_WEAPON_SLOTS) return null;
+            return weaponSlots[index];
         }
 
-        public ItemStack removeWeaponLoadout(int index) {
-            if (index < 0 || index >= weaponLoadouts.size()) return ItemStack.EMPTY;
-            return weaponLoadouts.remove(index).getWeapon();
+        /**
+         * 指定スロットに武器を設定する。既存のモーション設定が同じ武器クラスなら維持する。
+         */
+        public void setLoadoutAt(int index, ItemStack weapon) {
+            if (index < 0 || index >= MAX_WEAPON_SLOTS) return;
+            if (weapon.isEmpty()) {
+                weaponSlots[index] = null;
+                return;
+            }
+            String newWeaponClass = weapon.getItem().getClass().getSimpleName();
+            WeaponLoadout existing = weaponSlots[index];
+            if (existing != null && existing.getWeaponClass().equals(newWeaponClass)) {
+                // 同じ武器クラスならモーション設定を維持し、アイテムだけ更新
+                existing.setWeapon(weapon);
+            } else {
+                // 新しい武器クラスなら新規ロードアウトを作成
+                weaponSlots[index] = new WeaponLoadout(weapon);
+            }
         }
 
-        public List<WeaponLoadout> getWeaponLoadouts() {
-            return Collections.unmodifiableList(weaponLoadouts);
+        public void clearLoadoutAt(int index) {
+            if (index < 0 || index >= MAX_WEAPON_SLOTS) return;
+            weaponSlots[index] = null;
         }
 
-        public void setLoadoutMotion(int loadoutIndex, AttackSlot slot, String motionId) {
-            if (loadoutIndex < 0 || loadoutIndex >= weaponLoadouts.size()) return;
-            weaponLoadouts.get(loadoutIndex).setMotion(slot, motionId);
+        public void setLoadoutMotion(int slotIndex, AttackSlot slot, String motionId) {
+            if (slotIndex < 0 || slotIndex >= MAX_WEAPON_SLOTS) return;
+            WeaponLoadout loadout = weaponSlots[slotIndex];
+            if (loadout != null) {
+                loadout.setMotion(slot, motionId);
+            }
         }
 
         /**
@@ -176,8 +201,8 @@ public class PlayerSkillData {
         public String getMotionForWeapon(AttackSlot slot, ItemStack heldItem) {
             if (!heldItem.isEmpty()) {
                 String weaponClass = heldItem.getItem().getClass().getSimpleName();
-                for (WeaponLoadout loadout : weaponLoadouts) {
-                    if (loadout.getWeaponClass().equals(weaponClass)) {
+                for (WeaponLoadout loadout : weaponSlots) {
+                    if (loadout != null && loadout.getWeaponClass().equals(weaponClass)) {
                         return loadout.getMotion(slot);
                     }
                 }
@@ -196,11 +221,22 @@ public class PlayerSkillData {
         }
 
         /**
-         * 指定クラスの武器が既にロードアウトに登録済みかどうか
+         * 指定クラスの武器が既にスロットに登録済みかどうか
          */
         public boolean hasLoadoutForWeapon(String weaponClass) {
-            for (WeaponLoadout loadout : weaponLoadouts) {
-                if (loadout.getWeaponClass().equals(weaponClass)) return true;
+            for (WeaponLoadout loadout : weaponSlots) {
+                if (loadout != null && loadout.getWeaponClass().equals(weaponClass)) return true;
+            }
+            return false;
+        }
+
+        /**
+         * 指定クラスの武器がスロットに登録済みかチェック（特定のスロットを除外可能）
+         */
+        public boolean hasLoadoutForWeaponExcluding(String weaponClass, int excludeIndex) {
+            for (int i = 0; i < MAX_WEAPON_SLOTS; i++) {
+                if (i == excludeIndex) continue;
+                if (weaponSlots[i] != null && weaponSlots[i].getWeaponClass().equals(weaponClass)) return true;
             }
             return false;
         }
@@ -218,12 +254,14 @@ public class PlayerSkillData {
             }
             tag.put("motions", motions);
 
-            // 武器ロードアウト
-            ListTag loadoutList = new ListTag();
-            for (WeaponLoadout loadout : weaponLoadouts) {
-                loadoutList.add(loadout.serializeNBT());
+            // 武器スロット（新形式: CompoundTag with indexed keys）
+            CompoundTag slotsTag = new CompoundTag();
+            for (int i = 0; i < MAX_WEAPON_SLOTS; i++) {
+                if (weaponSlots[i] != null) {
+                    slotsTag.put("slot_" + i, weaponSlots[i].serializeNBT());
+                }
             }
-            tag.put("weaponLoadouts", loadoutList);
+            tag.put("weaponSlots", slotsTag);
 
             // 固有スキルトグル
             CompoundTag uniqueSkills = new CompoundTag();
@@ -248,14 +286,26 @@ public class PlayerSkillData {
                 }
             }
 
-            // 武器ロードアウト
-            weaponLoadouts.clear();
-            if (tag.contains("weaponLoadouts")) {
+            // 武器スロット（新形式）
+            Arrays.fill(weaponSlots, null);
+            if (tag.contains("weaponSlots", Tag.TAG_COMPOUND)) {
+                CompoundTag slotsTag = tag.getCompound("weaponSlots");
+                for (int i = 0; i < MAX_WEAPON_SLOTS; i++) {
+                    String key = "slot_" + i;
+                    if (slotsTag.contains(key)) {
+                        WeaponLoadout loadout = WeaponLoadout.fromNBT(slotsTag.getCompound(key));
+                        if (!loadout.getWeapon().isEmpty()) {
+                            weaponSlots[i] = loadout;
+                        }
+                    }
+                }
+            } else if (tag.contains("weaponLoadouts", Tag.TAG_LIST)) {
+                // 旧形式（ListTag）からの移行
                 ListTag loadoutList = tag.getList("weaponLoadouts", Tag.TAG_COMPOUND);
-                for (int i = 0; i < loadoutList.size(); i++) {
+                for (int i = 0; i < Math.min(loadoutList.size(), MAX_WEAPON_SLOTS); i++) {
                     WeaponLoadout loadout = WeaponLoadout.fromNBT(loadoutList.getCompound(i));
                     if (!loadout.getWeapon().isEmpty()) {
-                        weaponLoadouts.add(loadout);
+                        weaponSlots[i] = loadout;
                     }
                 }
             }
