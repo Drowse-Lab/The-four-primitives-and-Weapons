@@ -44,18 +44,34 @@ import minecraftarmorweapon.skill.PlayerSkillData.AttackSlot;
 import minecraftarmorweapon.skill.MotionExecutor;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.network.DodgeRequestPacket;
+import minecraftarmorweapon.network.DashAttackPacket;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import com.mojang.blaze3d.platform.InputConstants;
+import org.lwjgl.glfw.GLFW;
 
 @Mod.EventBusSubscriber(modid = "minecraft_armor_weapon")
 public class DodgeAndBattouHandler {
     
-    private static final Map<UUID, DodgeData> playerDodgeData = new HashMap<>();
+    // クライアントとサーバーで別々のデータを保持（シングルプレイでの2重カウント防止）
+    private static final Map<UUID, DodgeData> clientDodgeData = new ConcurrentHashMap<>();
+    private static final Map<UUID, DodgeData> serverDodgeData = new ConcurrentHashMap<>();
+
+    private static DodgeData getOrCreateData(Player player) {
+        Map<UUID, DodgeData> map = player.level().isClientSide ? clientDodgeData : serverDodgeData;
+        return map.computeIfAbsent(player.getUUID(), k -> new DodgeData());
+    }
+
+    private static DodgeData getData(Player player) {
+        Map<UUID, DodgeData> map = player.level().isClientSide ? clientDodgeData : serverDodgeData;
+        return map.get(player.getUUID());
+    }
+
     private static final int DODGE_WINDOW = 30; // 回避後1.5秒間のウィンドウ（延長）
-    private static final int DODGE_COOLDOWN = 40; // 回避クールダウン2秒（20ticks × 2）
+    private static final int DODGE_COOLDOWN = 40; // 回避クールダウン2秒
     private static final int FALL_DAMAGE_IMMUNITY_TIME = 30; // 落下ダメージ無効時間1.5秒
     
     private static class DodgeData {
@@ -64,14 +80,12 @@ public class DodgeAndBattouHandler {
         int cooldownTimer = 0;
         int fallDamageImmunityTimer = 0;
         boolean isRightClickHeld = false; // 右クリック押し状態
-        boolean isDashReady = false; // ダッシュ攻撃準備状態
         int dashAttackCooldown = 0; // ダッシュ攻撃のクールダウン
         int airDashCount = 0; // 空中ダッシュ回数
         
         void reset() {
             dodgeTimer = 0;
             hasDodged = false;
-            isDashReady = false;
         }
         
         boolean canDodge() {
@@ -92,9 +106,8 @@ public class DodgeAndBattouHandler {
         if (event.phase != TickEvent.Phase.END) return;
         
         Player player = event.player;
-        UUID playerId = player.getUUID();
-        DodgeData data = playerDodgeData.computeIfAbsent(playerId, k -> new DodgeData());
-        
+        DodgeData data = getOrCreateData(player);
+
         // 回避タイマーのカウントダウン
         if (data.dodgeTimer > 0) {
             data.dodgeTimer--;
@@ -153,62 +166,76 @@ public class DodgeAndBattouHandler {
             data.airDashCount = 0;
         }
         
-        // クライアント側で同時押しを検出（通常のダッシュ攻撃用）
-        if (player.level().isClientSide) {
-            checkSimultaneousInput(player, data);
-        }
-        
         // クライアント側で左クリックを検出（回避後のダッシュ攻撃用）
         if (player.level().isClientSide && data.hasDodged && data.dodgeTimer > 0) {
             checkDashAttackInput(player, data);
         }
     }
     
-    @OnlyIn(Dist.CLIENT)
-    private static void checkSimultaneousInput(Player player, DodgeData data) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player != player) return;
-        
-        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-        
-        // 武器を持っていない場合はスキップ
-        if (!isWeapon(mainHand) && !isWeapon(offHand)) {
-            data.isDashReady = false;
-            return;
-        }
-        
-        boolean isRightClickHeld = mc.options.keyUse.isDown();
-        boolean isLeftClickHeld = mc.options.keyAttack.isDown();
-        
-        // シフトキーが押されている場合はダッシュ攻撃しない
-        if (player.isShiftKeyDown()) {
-            data.isDashReady = false;
-            return;
-        }
-        
-        // 右クリック＆左クリック同時押しでダッシュ攻撃
-        if (isRightClickHeld && isLeftClickHeld && !data.isDashReady) {
-            data.isDashReady = true;
-            performDashAttack(player);
-        } else if (!isRightClickHeld || !isLeftClickHeld) {
-            data.isDashReady = false;
+    // === ClientTickEvent で右クリック長押し自動回避を処理 ===
+    @Mod.EventBusSubscriber(modid = "minecraft_armor_weapon", value = Dist.CLIENT)
+    public static class ClientEvents {
+        @SubscribeEvent
+        public static void onClientTick(TickEvent.ClientTickEvent event) {
+            if (event.phase != TickEvent.Phase.END) return;
+            DodgeAndBattouHandler.handleAutoRepeatDodge();
         }
     }
-    
+
+    @OnlyIn(Dist.CLIENT)
+    static void handleAutoRepeatDodge() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null) return;
+        if (mc.screen != null) return; // GUI表示中は回避しない
+
+        Player player = mc.player;
+        DodgeData data = getData(player);
+        if (data == null) return;
+
+        // GLFWで直接右クリック状態を確認 + 武器を持っている + クールダウンが終わった → 自動で回避
+        if (isUseKeyHeld(mc) && !player.isShiftKeyDown() && data.canDodge()) {
+            ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+            ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
+            if (isWeapon(mainHand) || isWeapon(offHand)) {
+                if (performDodge(player)) {
+                    MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                            new DodgeRequestPacket(player.zza, player.xxa));
+                }
+            }
+        }
+    }
+
+    /**
+     * GLFWで直接入力状態を確認する。
+     * mc.options.keyUse.isDown() はPlayerTickEventで不安定な場合があるため、
+     * GLFWの低レベルAPIを使用して確実に入力を検出する。
+     */
+    @OnlyIn(Dist.CLIENT)
+    private static boolean isUseKeyHeld(Minecraft mc) {
+        long window = mc.getWindow().getWindow();
+        InputConstants.Key key = mc.options.keyUse.getKey();
+        if (key.getType() == InputConstants.Type.MOUSE) {
+            return GLFW.glfwGetMouseButton(window, key.getValue()) == GLFW.GLFW_PRESS;
+        } else {
+            return InputConstants.isKeyDown(window, key.getValue());
+        }
+    }
+
     @OnlyIn(Dist.CLIENT)
     private static void checkDashAttackInput(Player player, DodgeData data) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != player) return;
-        
+
+        // クールダウン中はパケットを送らない
+        if (!data.canDashAttack()) return;
+
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-        
-        // 回避後に左クリック（攻撃キー）が押された場合
-        // 武器をメインハンドかオフハンドに持っていればOK
+
+        // 回避後に左クリック（攻撃キー）が押された場合 → サーバーにパケット送信
         if (mc.options.keyAttack.isDown() && (isWeapon(mainHand) || isWeapon(offHand))) {
-            performDashAttack(player);
-            data.reset(); // ダッシュ攻撃後はリセット
+            MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new DashAttackPacket());
+            data.hasDodged = false; // クライアント側のみリセット（重複パケット防止、サーバーとは別データ）
         }
     }
     
@@ -217,27 +244,19 @@ public class DodgeAndBattouHandler {
         Player player = event.getEntity();
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-        
-        // シフトキーが押されている場合は納刀処理
+
+        // シフトキーが押されている場合は何もしない（納刀はRキーに移行）
         if (player.isShiftKeyDown()) {
-            // 武器を持っていて鞘もある場合、納刀する
-            if (isWeapon(mainHand) && isSaya(offHand)) {
-                performSheathing(player, mainHand, offHand, InteractionHand.MAIN_HAND, InteractionHand.OFF_HAND);
-                return;
-            } else if (isWeapon(offHand) && isSaya(mainHand)) {
-                performSheathing(player, offHand, mainHand, InteractionHand.OFF_HAND, InteractionHand.MAIN_HAND);
-                return;
-            }
             return;
         }
-        
+
         // 武器を持っている場合のみ回避を実行
         if (isWeapon(mainHand) || isWeapon(offHand)) {
             // RightClickEmptyはクライアント専用イベント
-            // クライアント側のDodgeDataを更新しつつ、サーバーにパケットを送信
-            performDodge(player);
-            if (player.level().isClientSide) {
-                MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new DodgeRequestPacket());
+            // クライアント側のDodgeDataを更新しつつ、サーバーにWASD方向付きパケットを送信
+            if (performDodge(player) && player.level().isClientSide) {
+                MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                        new DodgeRequestPacket(player.zza, player.xxa));
             }
         }
     }
@@ -250,36 +269,28 @@ public class DodgeAndBattouHandler {
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
 
-        // シフトキーが押されている場合は納刀処理をチェック
+        // シフトキーが押されている場合はブロック操作を許可（納刀はRキーに移行）
         if (player.isShiftKeyDown()) {
-            // 武器を持っていて鞘もある場合、納刀する
-            if (isWeapon(mainHand) && isSaya(offHand)) {
-                performSheathing(player, mainHand, offHand, InteractionHand.MAIN_HAND, InteractionHand.OFF_HAND);
-                event.setCanceled(true);
-                return;
-            } else if (isWeapon(offHand) && isSaya(mainHand)) {
-                performSheathing(player, offHand, mainHand, InteractionHand.OFF_HAND, InteractionHand.MAIN_HAND);
-                event.setCanceled(true);
-                return;
-            }
-            // それ以外の場合はブロック操作を許可
             return;
         }
-        
+
         // 刀を持っている場合、回避を実行
         if (isWeapon(mainHand) || isWeapon(offHand)) {
             // ブロックを持っていて設置しようとしている場合は許可
-            if (!player.getItemInHand(event.getHand()).isEmpty() && 
+            if (!player.getItemInHand(event.getHand()).isEmpty() &&
                 player.getItemInHand(event.getHand()).getItem() instanceof net.minecraft.world.item.BlockItem) {
                 return; // ブロック設置を許可
             }
-            
+
             // それ以外の場合は回避を実行
             event.setCanceled(true);
-            performDodge(player);
+            if (player.level().isClientSide && performDodge(player)) {
+                MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                        new DodgeRequestPacket(player.zza, player.xxa));
+            }
         }
     }
-    
+
     @SubscribeEvent
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         Player player = event.getEntity();
@@ -294,138 +305,91 @@ public class DodgeAndBattouHandler {
         
         // 武器を持っている場合は回避を優先
         if (isWeapon(mainHand) || isWeapon(offHand)) {
-            event.setCanceled(true);  // エンティティとの相互作用をキャンセル
-            performDodge(player);      // 回避を実行
+            event.setCanceled(true);
+            if (player.level().isClientSide && performDodge(player)) {
+                MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                        new DodgeRequestPacket(player.zza, player.xxa));
+            }
         }
     }
-    
+
     @SubscribeEvent
     public static void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
         Player player = event.getEntity();
-        
+
         // シフトキーが押されている場合は通常の相互作用を許可
         if (player.isShiftKeyDown()) {
             return;
         }
-        
+
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-        
+
         // 武器を持っている場合は回避を優先
         if (isWeapon(mainHand) || isWeapon(offHand)) {
-            event.setCanceled(true);  // エンティティとの相互作用をキャンセル
-            performDodge(player);      // 回避を実行
+            event.setCanceled(true);
+            if (player.level().isClientSide && performDodge(player)) {
+                MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                        new DodgeRequestPacket(player.zza, player.xxa));
+            }
         }
     }
-    
-    // ダッシュ攻撃（回避後の攻撃）
-    private static void performDashAttack(Player player) {
-        // ダッシュ攻撃のデータを取得
-        UUID playerId = player.getUUID();
-        DodgeData data = playerDodgeData.get(playerId);
-        if (data == null) {
-            data = new DodgeData();
-            playerDodgeData.put(playerId, data);
-        }
+
+    // ダッシュ攻撃（回避中に攻撃ボタンで発動、サーバー側で実行）
+    public static void performDashAttack(Player player) {
+        DodgeData data = getData(player);
+        if (data == null) return;
+
+        // 回避中でなければ実行しない
+        if (!data.hasDodged || data.dodgeTimer <= 0) return;
 
         // クールダウン中は実行しない
-        if (!data.canDashAttack()) {
-            player.displayClientMessage(
-                Component.literal(String.format("§cダッシュ攻撃クールダウン中 (%.1f秒)", 
-                    (float)data.dashAttackCooldown / 20.0f)), 
-                true
-            );
-            return;
-        }
-        
-        // 空中でのダッシュ制限（1回まで）
-        boolean isInAir = !player.onGround();
-        if (isInAir) {
-            // if (data.airDashCount >= 1) {
-            //     player.displayClientMessage(Component.literal("§c空中ダッシュは1回まで！"), true);
-            //     return;
-            // }
-            data.airDashCount++;
-        }
-        
+        if (!data.canDashAttack()) return;
+
+        // ダッシュスキル実行中は実行しない
+        if (DashSkillHandler.isAnyDashSkillActive(player)) return;
+
+        // クールダウンを設定＆回避ウィンドウをリセット
+        data.dashAttackCooldown = 60; // 3秒のクールダウン
+        data.reset();
+
         Level world = VersionHelper.getLevel(player);
         Vec3 lookVec = player.getLookAngle();
         Vec3 playerPos = player.position();
-        
+
         // 竹を破壊する
         breakBambooInPath(world, playerPos, lookVec, 7.0);
-        
-        // 前方への高速移動（空中では移動量を減少）
-        double dashStrength = isInAir ? 1.2 : 1.8;  // 空中では弱い推進力
-        
-        // 垂直方向の移動も制限
-        Vec3 dashVec = lookVec;
-        if (isInAir) {
-            // 空中では水平方向の移動を重視
-            dashVec = new Vec3(lookVec.x, Math.min(lookVec.y, 0.2), lookVec.z).normalize();
-        }
-        
-        player.setDeltaMovement(player.getDeltaMovement().add(dashVec.scale(dashStrength)));
-        
-        // クールダウンを設定（地上: 2秒、空中: 3秒）
-        data.dashAttackCooldown = isInAir ? 60 : 40;
-        
-        // エフェクト
-        if (!world.isClientSide) {
-            ServerLevel serverWorld = (ServerLevel) world;
-            
-            // ダッシュ攻撃のエフェクト（より派手に）
-            for (int i = 0; i < 10; i++) {
-                double d = i * 0.6;
-                serverWorld.sendParticles(
-                    ParticleTypes.SWEEP_ATTACK,
-                    playerPos.x + lookVec.x * d,
-                    playerPos.y + 1,
-                    playerPos.z + lookVec.z * d,
-                    2, 0, 0, 0, 0
-                );
-                
-                serverWorld.sendParticles(
-                    ParticleTypes.CLOUD,
-                    playerPos.x + lookVec.x * d,
-                    playerPos.y + 0.1,
-                    playerPos.z + lookVec.z * d,
-                    3, 0.3, 0, 0.3, 0.01
-                );
-            }
-        }
-        
-        // スキルスロットに応じたモーション実行
+
+        // スキルスロットに応じたモーション実行（DashSkillHandlerが移動・エフェクト・ダメージを処理）
         PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
         String motionId = skillData.getMotionForWeapon(AttackSlot.DASH, player.getMainHandItem());
         MotionExecutor.executeMotion(motionId, player, 0.0f);
-        
-        // サウンド
-        world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
-            SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.2f, 1.0f);
-        world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
-            SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 1.2f);
-        
-        player.displayClientMessage(Component.literal("§cダッシュ攻撃！"), true);
     }
     
     // 回避処理（選択中のダッシュスキルを発動）
     // publicにしてDodgeRequestPacketから呼べるようにする
-    public static void performDodge(Player player) {
+    // @return true=回避成功、false=クールダウン等でブロック
+    public static boolean performDodge(Player player) {
         Level world = VersionHelper.getLevel(player);
 
         // 回避データを取得
-        UUID playerId = player.getUUID();
-        DodgeData data = playerDodgeData.computeIfAbsent(playerId, k -> new DodgeData());
+        DodgeData data = getOrCreateData(player);
 
-        // クールダウン中は回避できない
+        // クールダウン中は回避できない（クライアント・サーバー両方でチェック）
         if (!data.canDodge()) {
-            player.displayClientMessage(
-                Component.literal(String.format("\u00A7c\u56DE\u907F\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u4E2D (%.1f\u79D2)",
-                    (float)data.cooldownTimer / 20.0f)),
-                true
-            );
-            return;
+            if (world.isClientSide) {
+                player.displayClientMessage(
+                    Component.literal(String.format("§c回避クールダウン中 (%.1f秒)",
+                        (float)data.cooldownTimer / 20.0f)),
+                    true
+                );
+            }
+            return false;
+        }
+
+        // ダッシュスキル実行中は再回避を防止
+        if (DashSkillHandler.isAnyDashSkillActive(player)) {
+            return false;
         }
 
         // 回避データを設定
@@ -433,21 +397,23 @@ public class DodgeAndBattouHandler {
         data.dodgeTimer = DODGE_WINDOW;
         data.cooldownTimer = DODGE_COOLDOWN;
         data.fallDamageImmunityTimer = FALL_DAMAGE_IMMUNITY_TIME;
-        data.dashAttackCooldown = 40; // ダッシュ攻撃の二重発動を防止
+        data.dashAttackCooldown = Math.max(data.dashAttackCooldown, 15); // 既存の長いクールダウンを上書きしない
 
-        // サーバー側でのみスキル発動（PlayerSkillDataはサーバーにしか正しいデータがない）
+        // サーバー側で選択中のダッシュスキルを実行（スキル選択画面で変更可能）
         if (!world.isClientSide) {
             PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
-            String motionId = skillData.getMotionForWeapon(AttackSlot.DASH, player.getMainHandItem());
-            MotionExecutor.executeMotion(motionId, player, 0.0f);
+            String dashMotionId = skillData.getMotionForWeapon(AttackSlot.DASH, player.getMainHandItem());
+            MotionExecutor.executeMotion(dashMotionId, player, 0.0f);
         }
 
         // サウンド
         world.playSound(null, player.getX(), player.getY(), player.getZ(),
             SoundEvents.ENDER_PEARL_THROW, SoundSource.PLAYERS, 0.8f, 1.5f);
+
+        return true;
     }
     
-    private static boolean isWeapon(ItemStack stack) {
+    public static boolean isWeapon(ItemStack stack) {
         if (stack.isEmpty()) return false;
 
         // SwordItemまたはカタナ系アイテムかチェック
@@ -472,7 +438,7 @@ public class DodgeAndBattouHandler {
                itemName.equals("RiversOfBloodItem") || itemName.equals("KatanaNiguHumerusItem");
     }
     
-    private static boolean isSaya(ItemStack stack) {
+    public static boolean isSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
         return itemName.equals("SayaItem") || itemName.equals("TyokutoSayaItem");
@@ -485,7 +451,7 @@ public class DodgeAndBattouHandler {
     }
     
     // 納刀処理
-    private static void performSheathing(Player player, ItemStack weaponStack, ItemStack sheathStack,
+    public static void performSheathing(Player player, ItemStack weaponStack, ItemStack sheathStack,
                                         InteractionHand weaponHand, InteractionHand sheathHand) {
         if (!isWeapon(weaponStack) || !isSaya(sheathStack)) return;
 
@@ -569,9 +535,8 @@ public class DodgeAndBattouHandler {
         
         // 落下ダメージかチェック
         if (event.getSource() == player.damageSources().fall()) {
-            UUID playerId = player.getUUID();
-            DodgeData data = playerDodgeData.get(playerId);
-            
+            DodgeData data = getData(player);
+
             // 落下ダメージ無効時間中はダメージをキャンセル
             if (data != null && data.isFallDamageImmune()) {
                 event.setCanceled(true);
@@ -673,7 +638,7 @@ public class DodgeAndBattouHandler {
         );
 
         // クールダウン設定
-        DodgeData data = playerDodgeData.get(player.getUUID());
+        DodgeData data = getData(player);
         if (data != null) {
             data.dashAttackCooldown = 30; // 1.5秒のクールダウン
             data.reset();

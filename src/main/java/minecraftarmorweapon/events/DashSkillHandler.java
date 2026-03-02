@@ -48,7 +48,7 @@ public class DashSkillHandler {
     private static final Map<UUID, ShadowStepState> shadowStepStates = new HashMap<>();
 
     static class ShadowStepState {
-        int remainingTicks = 5;
+        int remainingTicks = 60; // 3秒間
         String weaponClass;
     }
 
@@ -93,6 +93,7 @@ public class DashSkillHandler {
         // WASD方向に直線移動
         Vec3 moveDir = getMovementDirection(player);
         player.setDeltaMovement(moveDir.scale(2.5).add(0, 0.1, 0));
+        player.hurtMarked = true; // サーバー→クライアント速度同期
 
         // 開始音
         Level world = player.level();
@@ -100,7 +101,7 @@ public class DashSkillHandler {
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.2f, 1.4f);
 
         if (!world.isClientSide) {
-            player.displayClientMessage(Component.literal("\u00A7c\u7A81\u9032\u659C\u308A\uFF01"), true);
+            player.displayClientMessage(Component.literal("\u00A7c\u7A81\u9032\u65AC\u308A\uFF01"), true);
         }
     }
 
@@ -111,6 +112,7 @@ public class DashSkillHandler {
         // WASD方向に跳躍（上方向 + 水平方向の勢い）
         Vec3 moveDir = getMovementDirection(player);
         player.setDeltaMovement(moveDir.scale(1.5).add(0, 0.7, 0));
+        player.hurtMarked = true; // サーバー→クライアント速度同期
 
         // ダメージ増加バフ（Strength II, 40tick = 2秒間）
         player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 40, 1, false, true));
@@ -131,7 +133,7 @@ public class DashSkillHandler {
     }
 
     /**
-     * シャドーステップ: 5tick無敵、自由にWASD移動で高速移動
+     * シャドーステップ: 3秒間無敵＋透明＋超高速移動、黒い靄だけが見える
      */
     public static void activateShadowStep(Player player) {
         ShadowStepState state = new ShadowStepState();
@@ -139,9 +141,10 @@ public class DashSkillHandler {
                 : player.getMainHandItem().getItem().getClass().getSimpleName();
         shadowStepStates.put(player.getUUID(), state);
 
-        // 初期移動（WASD方向に高速移動）
+        // 初期移動（WASD方向に超高速移動）
         Vec3 moveDir = getMovementDirection(player);
-        player.setDeltaMovement(moveDir.scale(2.0));
+        player.setDeltaMovement(moveDir.scale(3.0));
+        player.hurtMarked = true;
 
         // 透明化
         player.setInvisible(true);
@@ -154,8 +157,11 @@ public class DashSkillHandler {
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
             Vec3 pos = player.position();
+            // 黒い靄の開始エフェクト
             serverWorld.sendParticles(ParticleTypes.LARGE_SMOKE,
-                    pos.x, pos.y + 1, pos.z, 15, 0.5, 0.5, 0.5, 0.05);
+                    pos.x, pos.y + 1, pos.z, 20, 0.6, 0.6, 0.6, 0.05);
+            serverWorld.sendParticles(ParticleTypes.SQUID_INK,
+                    pos.x, pos.y + 1, pos.z, 10, 0.4, 0.4, 0.4, 0.02);
             player.displayClientMessage(Component.literal("\u00A78\u30B7\u30E3\u30C9\u30FC\u30B9\u30C6\u30C3\u30D7..."), true);
         }
     }
@@ -228,14 +234,14 @@ public class DashSkillHandler {
         ServerLevel serverWorld = (ServerLevel) player.level();
         Vec3 pos = player.position();
 
-        // WASD入力に応じて自由に高速移動（入力があれば移動、なければ減速）
+        // WASD入力に応じて超高速移動
         float forward = player.zza;
         float strafe = player.xxa;
         if (forward != 0 || strafe != 0) {
             Vec3 moveDir = getMovementDirection(player);
-            player.setDeltaMovement(moveDir.scale(2.0));
+            player.setDeltaMovement(moveDir.scale(3.0));
+            player.hurtMarked = true;
         }
-        // 入力なしの場合は自然減速（setDeltaMovementを上書きしない）
 
         // 武器変更チェック（サーバー側）
         String currentWeaponClass = player.getMainHandItem().isEmpty() ? ""
@@ -245,11 +251,11 @@ public class DashSkillHandler {
             return;
         }
 
-        // 黒い影のパーティクル
+        // 黒い靄のパーティクル（位置に残る煙のみ）
         serverWorld.sendParticles(ParticleTypes.LARGE_SMOKE,
-                pos.x, pos.y + 0.5, pos.z, 5, 0.3, 0.5, 0.3, 0.01);
+                pos.x, pos.y + 0.5, pos.z, 8, 0.4, 0.6, 0.4, 0.02);
         serverWorld.sendParticles(ParticleTypes.SQUID_INK,
-                pos.x, pos.y + 1, pos.z, 3, 0.2, 0.3, 0.2, 0.01);
+                pos.x, pos.y + 1, pos.z, 4, 0.3, 0.4, 0.3, 0.01);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -293,5 +299,15 @@ public class DashSkillHandler {
 
     public static boolean isInShadowStep(Player player) {
         return shadowStepStates.containsKey(player.getUUID());
+    }
+
+    public static boolean isInDashRush(Player player) {
+        return dashRushStates.containsKey(player.getUUID());
+    }
+
+    /** いずれかのダッシュスキルが実行中かどうか */
+    public static boolean isAnyDashSkillActive(Player player) {
+        UUID id = player.getUUID();
+        return dashRushStates.containsKey(id) || shadowStepStates.containsKey(id);
     }
 }

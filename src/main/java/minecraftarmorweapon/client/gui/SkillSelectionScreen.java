@@ -63,7 +63,29 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
     protected void init() {
         super.init();
 
+        // メインハンドの武器に一致するスロットを自動選択
+        autoSelectHeldWeapon();
+
         buildWidgets();
+    }
+
+    /**
+     * プレイヤーのメインハンドの武器と一致するスロットがあれば自動選択する。
+     * これにより、ユーザーが手動でスロットを選ばなくてもすぐにロードアウトを編集できる。
+     */
+    private void autoSelectHeldWeapon() {
+        if (minecraft == null || minecraft.player == null) return;
+        ItemStack mainHand = minecraft.player.getMainHandItem();
+        if (mainHand.isEmpty()) return;
+
+        String heldClass = mainHand.getItem().getClass().getSimpleName();
+        for (int i = 0; i < SkillSelectionMenu.WEAPON_SLOTS; i++) {
+            ItemStack slotItem = menu.getSlot(i).getItem();
+            if (!slotItem.isEmpty() && slotItem.getItem().getClass().getSimpleName().equals(heldClass)) {
+                selectedLoadoutIndex = i;
+                return;
+            }
+        }
     }
 
     @Override
@@ -92,6 +114,10 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                 if (sel.isEmpty()) {
                     selectedLoadoutIndex = -1;
                 }
+            }
+            // まだデフォルトが選択されている場合、持っている武器の自動選択を試みる
+            if (selectedLoadoutIndex == -1) {
+                autoSelectHeldWeapon();
             }
             buildWidgets();
         }
