@@ -9,6 +9,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
+import minecraftarmorweapon.util.CuriosScabbardHelper;
+import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -108,6 +110,20 @@ public class SayaVisualUpdateHandler {
                 validateAndUpdateSaya(stack);
             }
         }
+
+        // Curiosスロット内の鞘もチェック
+        CuriosApi.getCuriosHelper().getCuriosHandler(player).ifPresent(handler -> {
+            for (String slotId : new String[]{"belt", "back"}) {
+                handler.getStacksHandler(slotId).ifPresent(stacksHandler -> {
+                    for (int i = 0; i < stacksHandler.getStacks().getSlots(); i++) {
+                        ItemStack stack = stacksHandler.getStacks().getStackInSlot(i);
+                        if (isSaya(stack)) {
+                            validateAndUpdateSaya(stack);
+                        }
+                    }
+                });
+            }
+        });
     }
     
     private static void validateAllSayas(Player player) {
@@ -152,25 +168,32 @@ public class SayaVisualUpdateHandler {
             return;
         }
         
-        // StoredKatanaの有無でCustomModelDataを更新
-        if (tag.contains("StoredKatana")) {
-            CompoundTag katanaTag = tag.getCompound("StoredKatana");
-            ItemStack katanaStack = ItemStack.of(katanaTag);
-            
+        // StoredKatanaまたはStoredSwordの有無でCustomModelDataを更新
+        String storedKey = tag.contains("StoredKatana") ? "StoredKatana" :
+                           tag.contains("StoredSword") ? "StoredSword" : null;
+        if (storedKey != null) {
+            CompoundTag weaponTag = tag.getCompound(storedKey);
+            ItemStack weaponStack = ItemStack.of(weaponTag);
+
             // 刀が有効かチェック
-            if (katanaStack.isEmpty()) {
-                // 無効な刀データの場合、削除
-                tag.remove("StoredKatana");
+            if (weaponStack.isEmpty()) {
+                // 無効なデータの場合、削除
+                tag.remove(storedKey);
                 tag.putInt("CustomModelData", 0);
             } else {
                 // 正しいモデルデータを設定
-                int modelData = getModelDataForKatana(katanaStack);
+                int modelData;
+                if (storedKey.equals("StoredSword")) {
+                    modelData = minecraftarmorweapon.item.TyokutoSayaItem.getSwordModelData(weaponStack);
+                } else {
+                    modelData = getModelDataForKatana(weaponStack);
+                }
                 if (tag.getInt("CustomModelData") != modelData) {
                     tag.putInt("CustomModelData", modelData);
                 }
             }
         } else {
-            // StoredKatanaがない場合は空の鞘
+            // 武器がない場合は空の鞘
             if (tag.getInt("CustomModelData") != 0) {
                 tag.putInt("CustomModelData", 0);
             }
@@ -181,7 +204,8 @@ public class SayaVisualUpdateHandler {
     
     private static boolean isSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        return stack.getItem() == MinecraftArmorWeaponModItems.SAYA.get();
+        return stack.getItem() == MinecraftArmorWeaponModItems.SAYA.get()
+            || stack.getItem() == MinecraftArmorWeaponModItems.TYOKUTO_SAYA.get();
     }
     
     private static int getModelDataForKatana(ItemStack katanaStack) {

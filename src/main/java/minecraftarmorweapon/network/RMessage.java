@@ -16,7 +16,7 @@ import net.minecraft.network.FriendlyByteBuf;
 
 import minecraftarmorweapon.procedures.RkigaYasaretatokiProcedure;
 import minecraftarmorweapon.events.DodgeAndBattouHandler;
-
+import minecraftarmorweapon.util.CuriosScabbardHelper;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
 import java.util.function.Supplier;
@@ -57,21 +57,45 @@ public class RMessage {
 		if (!world.hasChunkAt(entity.blockPosition()))
 			return;
 		if (type == 0) {
-			// 納刀チェック: 武器+鞘を持っていればRキーで納刀
 			ItemStack mainHand = entity.getItemInHand(InteractionHand.MAIN_HAND);
 			ItemStack offHand = entity.getItemInHand(InteractionHand.OFF_HAND);
-			if (DodgeAndBattouHandler.isWeapon(mainHand) && DodgeAndBattouHandler.isSaya(offHand)) {
+
+			// Bluepurgeアイテムは納刀せずCoverUp処理へ直行
+			boolean mainIsBluepurge = isBluepurge(mainHand);
+			boolean offIsBluepurge = isBluepurge(offHand);
+
+			// 納刀チェック: 武器+空の鞘を持っていればRキーで納刀（Bluepurgeは納刀しない、満杯鞘はスキップ）
+			if (!mainIsBluepurge && DodgeAndBattouHandler.isWeapon(mainHand) && DodgeAndBattouHandler.isSaya(offHand)
+					&& !CuriosScabbardHelper.hasStoredWeapon(offHand)) {
 				DodgeAndBattouHandler.performSheathing(entity, mainHand, offHand,
 						InteractionHand.MAIN_HAND, InteractionHand.OFF_HAND);
 				return;
-			} else if (DodgeAndBattouHandler.isWeapon(offHand) && DodgeAndBattouHandler.isSaya(mainHand)) {
+			} else if (!offIsBluepurge && DodgeAndBattouHandler.isWeapon(offHand) && DodgeAndBattouHandler.isSaya(mainHand)
+					&& !CuriosScabbardHelper.hasStoredWeapon(mainHand)) {
 				DodgeAndBattouHandler.performSheathing(entity, offHand, mainHand,
 						InteractionHand.OFF_HAND, InteractionHand.MAIN_HAND);
 				return;
 			}
 
+			// 手に鞘がない場合、Curiosスロットの鞘に納刀を試みる（Bluepurgeは納刀しない）
+			if (!mainIsBluepurge && DodgeAndBattouHandler.isWeapon(mainHand)) {
+				if (CuriosScabbardHelper.sheathIntoCurioSlot(entity, mainHand, InteractionHand.MAIN_HAND)) {
+					return;
+				}
+			} else if (!offIsBluepurge && DodgeAndBattouHandler.isWeapon(offHand)) {
+				if (CuriosScabbardHelper.sheathIntoCurioSlot(entity, offHand, InteractionHand.OFF_HAND)) {
+					return;
+				}
+			}
+
 			RkigaYasaretatokiProcedure.execute(entity);
 		}
+	}
+
+	private static boolean isBluepurge(ItemStack stack) {
+		if (stack.isEmpty()) return false;
+		String name = stack.getItem().getClass().getSimpleName();
+		return name.contains("Bluepurge");
 	}
 
 	@SubscribeEvent

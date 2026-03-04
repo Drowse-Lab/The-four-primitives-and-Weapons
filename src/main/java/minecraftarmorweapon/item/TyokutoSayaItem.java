@@ -13,12 +13,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
+import top.theillusivec4.curios.api.type.capability.ICurioItem;
+import top.theillusivec4.curios.api.SlotContext;
+
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 import minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure;
 
 import java.util.List;
 
-public class TyokutoSayaItem extends Item {
+public class TyokutoSayaItem extends Item implements ICurioItem {
     public TyokutoSayaItem() {
         super(new Item.Properties()
             
@@ -76,7 +79,7 @@ public class TyokutoSayaItem extends Item {
             list.add(Component.literal("§7納刀中: §f" + storedSword.getHoverName().getString()));
         } else {
             list.add(Component.literal("§7空の鞘"));
-            list.add(Component.literal("§8Shift+右クリックで納刀"));
+            list.add(Component.literal("§8Rキーで納刀"));
         }
     }
 
@@ -130,10 +133,21 @@ public class TyokutoSayaItem extends Item {
         }
     }
 
+    @Override
+    public boolean canEquip(SlotContext slotContext, ItemStack stack) {
+        String id = slotContext.identifier();
+        return id.equals("belt") || id.equals("back");
+    }
+
+    @Override
+    public boolean canEquipFromUse(SlotContext slotContext, ItemStack stack) {
+        return false;
+    }
+
     /**
-     * 直刀ごとのモデルデータを返す
+     * 直刀ごとのモデルデータを返す（publicにしてCurios納刀から参照可能）
      */
-    private static int getSwordModelData(ItemStack sword) {
+    public static int getSwordModelData(ItemStack sword) {
         String itemName = sword.getItem().getClass().getSimpleName();
 
         // 直刀ごとに異なるCustomModelDataを返す

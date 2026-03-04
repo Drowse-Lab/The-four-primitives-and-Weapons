@@ -12,6 +12,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.network.chat.Component;
 import minecraftarmorweapon.item.LokiTheTricksterItem;
+import minecraftarmorweapon.network.BattouFromCurioPacket;
+import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
 @Mod.EventBusSubscriber(modid = "minecraft_armor_weapon")
 public class SayaLeftClickHandler {
@@ -29,6 +31,10 @@ public class SayaLeftClickHandler {
         // オフハンドに鞘を持っている場合
         else if (isSaya(offHand)) {
             performBattou(player, offHand, InteractionHand.OFF_HAND, InteractionHand.MAIN_HAND);
+        }
+        // 手に鞘がない＋メインハンドが空 → Curiosスロットから抜刀（サーバーにパケット送信）
+        else if (mainHand.isEmpty()) {
+            MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new BattouFromCurioPacket());
         }
     }
     

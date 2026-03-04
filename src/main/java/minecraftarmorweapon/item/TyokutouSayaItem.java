@@ -76,7 +76,7 @@ public class TyokutouSayaItem extends Item {
             list.add(Component.literal("§7納刀中: §f" + storedSword.getHoverName().getString()));
         } else {
             list.add(Component.literal("§7空の鞘"));
-            list.add(Component.literal("§8Shift+右クリックで納刀"));
+            list.add(Component.literal("§8Rキーで納刀"));
         }
     }
 

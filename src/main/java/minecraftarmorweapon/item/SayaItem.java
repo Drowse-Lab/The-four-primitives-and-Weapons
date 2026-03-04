@@ -9,11 +9,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
 
+import top.theillusivec4.curios.api.type.capability.ICurioItem;
+import top.theillusivec4.curios.api.SlotContext;
+
 import minecraftarmorweapon.procedures.SayaRightclickedProcedure;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
-public class SayaItem extends Item {
+public class SayaItem extends Item implements ICurioItem {
 	public SayaItem() {
 		super(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON));
 	}
@@ -28,5 +31,16 @@ public class SayaItem extends Item {
 
 		SayaRightclickedProcedure.execute(world, entity, itemstack, hand);
 		return ar;
+	}
+
+	@Override
+	public boolean canEquip(SlotContext slotContext, ItemStack stack) {
+		String id = slotContext.identifier();
+		return id.equals("belt") || id.equals("back");
+	}
+
+	@Override
+	public boolean canEquipFromUse(SlotContext slotContext, ItemStack stack) {
+		return false;
 	}
 }

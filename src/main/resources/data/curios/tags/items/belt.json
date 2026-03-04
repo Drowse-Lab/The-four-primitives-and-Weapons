@@ -1,6 +1,7 @@
 {
-  "replace": "false",
+  "replace": false,
   "values": [
-    "minecraft:air"
+    "minecraft_armor_weapon:saya",
+    "minecraft_armor_weapon:tyokuto_saya"
   ]
 }
