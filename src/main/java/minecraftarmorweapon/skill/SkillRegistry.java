@@ -1,5 +1,6 @@
 package minecraftarmorweapon.skill;
 
+import minecraftarmorweapon.api.ISkillAction;
 import minecraftarmorweapon.skill.PlayerSkillData.AttackSlot;
 
 import java.util.*;
@@ -42,6 +43,7 @@ public class SkillRegistry {
     }
 
     private static final Map<String, MotionInfo> BY_ID = new LinkedHashMap<>();
+    private static final Map<String, ISkillAction> HANDLERS = new HashMap<>();
 
     static {
         Set<AttackSlot> allSlots = EnumSet.allOf(AttackSlot.class);
@@ -85,10 +87,39 @@ public class SkillRegistry {
                 MotionCategory.SPECIAL, allSlots, "MagischesFeenKatanaItem");
     }
 
-    private static void register(String id, String displayName, String description,
-                                  MotionCategory category, Set<AttackSlot> compatibleSlots,
-                                  String requiredWeaponClass) {
+    /**
+     * モーションを登録する（ハンドラーなし、内部モーション用）。
+     */
+    public static void register(String id, String displayName, String description,
+                                 MotionCategory category, Set<AttackSlot> compatibleSlots,
+                                 String requiredWeaponClass) {
         BY_ID.put(id, new MotionInfo(id, displayName, description, category, compatibleSlots, requiredWeaponClass));
+    }
+
+    /**
+     * モーションを登録する（ISkillActionハンドラー付き、外部mod用）。
+     *
+     * <pre>
+     * SkillRegistry.register("my_mod:fire_slash", "炎斬り", "炎を纏った斬撃",
+     *     MotionCategory.SPECIAL, EnumSet.allOf(AttackSlot.class), "MyWeaponItem",
+     *     (player, chargePercent) -> {
+     *         float damage = ChargeHelper.scaleDamage(10.0f, chargePercent, 2.0f);
+     *         ChargeHelper.damageEntitiesInFront(player, 5.0, 3.0, damage);
+     *     });
+     * </pre>
+     */
+    public static void register(String id, String displayName, String description,
+                                 MotionCategory category, Set<AttackSlot> compatibleSlots,
+                                 String requiredWeaponClass, ISkillAction handler) {
+        BY_ID.put(id, new MotionInfo(id, displayName, description, category, compatibleSlots, requiredWeaponClass));
+        HANDLERS.put(id, handler);
+    }
+
+    /**
+     * 登録済みハンドラーを取得する（なければnull）。
+     */
+    public static ISkillAction getHandler(String motionId) {
+        return HANDLERS.get(motionId);
     }
 
     /**

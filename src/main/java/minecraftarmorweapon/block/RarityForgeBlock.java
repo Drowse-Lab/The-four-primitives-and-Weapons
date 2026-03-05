@@ -37,8 +37,7 @@ public class RarityForgeBlock extends Block implements EntityBlock {
     public RarityForgeBlock() {
         super(BlockBehaviour.Properties.of()
                 .sound(SoundType.ANVIL)
-                .strength(5f, 1200f)
-                .requiresCorrectToolForDrops());
+                .strength(2.5f, 6f));
     }
 
     @Override

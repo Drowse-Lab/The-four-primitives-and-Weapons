@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
 
+import minecraftarmorweapon.api.ISkillAction;
 import minecraftarmorweapon.util.DamageCalculator;
 import minecraftarmorweapon.events.DashSkillHandler;
 import minecraftarmorweapon.procedures.SwordOfNightTpProcedure;
@@ -37,6 +38,13 @@ public class MotionExecutor {
      */
     public static void executeMotion(String motionId, Player player, float chargePercent) {
         if (motionId == null || motionId.isEmpty()) return;
+
+        // 外部登録されたハンドラーを優先的にチェック
+        ISkillAction handler = SkillRegistry.getHandler(motionId);
+        if (handler != null) {
+            handler.execute(player, chargePercent);
+            return;
+        }
 
         Level world = player.level();
         Vec3 lookVec = player.getLookAngle();

@@ -1,0 +1,8 @@
+{
+  "pattern": ["1", "2", "2"],
+  "key": {
+    "1": "minecraft:lapis_lazuli",
+    "2": "minecraft:iron_ingot"
+  },
+  "result": "minecraft_armor_weapon:bluepurge_utigatana"
+}

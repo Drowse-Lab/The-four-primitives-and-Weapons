@@ -44,18 +44,33 @@ public class ScabbardCurioRenderer implements ICurioRenderer {
 
         String slotId = slotContext.identifier();
 
+        // =============================================
+        // translate(X, Y, Z) — 位置の調整
+        //   X: +で右、-で左（背面視点）
+        //   Y: +で上、-で下
+        //   Z: +で背中から離れる、-で体に近づく
+        //
+        // ZP.rotationDegrees(角度) — 傾きの調整
+        //   +で反時計回り（柄が左上へ）、-で時計回り（柄が右上へ）
+        //
+        // YP.rotationDegrees(180) — アイテムモデルの前後反転（基本変更不要）
+        //
+        // scale(X, Y, Z) — サイズの調整
+        //   Y を大きくすると縦に伸びる、X/Z を大きくすると横に太くなる
+        // =============================================
+
         if ("belt".equals(slotId)) {
-            // 利き手でない方（左腰）の側面、反りが上向き
-            poseStack.translate(-0.35, 0.55, 0.1);
-            poseStack.mulPose(Axis.ZP.rotationDegrees(-80));
+            // === ベルト（左腰） ===
+            poseStack.translate(-0.35, 0.55, 0.1);   // 左腰の位置
+            poseStack.mulPose(Axis.ZP.rotationDegrees(-80));  // ほぼ水平
             poseStack.mulPose(Axis.YP.rotationDegrees(180));
             poseStack.scale(1.4f, 1.65f, 1.4f);
         } else if ("back".equals(slotId)) {
-            // 利き手側（右背中）、反りが上向き
-            poseStack.translate(0.05, 0.25, 0.3);
-            poseStack.mulPose(Axis.ZP.rotationDegrees(40));
+            // === 背中（斜め掛け） ===
+            poseStack.translate(0.05, 0.2, 0.15);    // 背中の中央やや右
+            poseStack.mulPose(Axis.ZP.rotationDegrees(35));   // 斜め35度
             poseStack.mulPose(Axis.YP.rotationDegrees(180));
-            poseStack.scale(1.1f, 1.3f, 1.1f);
+            poseStack.scale(1.15f, 1.35f, 1.15f);
         }
 
         // 鞘のアイテムモデルを描画（CustomModelDataが反映される）

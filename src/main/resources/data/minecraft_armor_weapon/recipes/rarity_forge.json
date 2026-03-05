@@ -1,22 +1,19 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "IDI",
-    "IOI",
+    "IRI",
+    "ISI",
     "SSS"
   ],
   "key": {
     "I": {
       "item": "minecraft:iron_ingot"
     },
-    "D": {
-      "item": "minecraft:diamond"
-    },
-    "O": {
-      "item": "minecraft:obsidian"
+    "R": {
+      "item": "minecraft:redstone"
     },
     "S": {
-      "item": "minecraft:smooth_stone"
+      "tag": "minecraft:planks"
     }
   },
   "result": {

@@ -1,0 +1,8 @@
+{
+  "pattern": ["11", "12", " 2"],
+  "key": {
+    "1": "minecraft:gold_ingot",
+    "2": "minecraft:stick"
+  },
+  "result": "minecraft:golden_axe"
+}

@@ -1,0 +1,8 @@
+{
+  "pattern": ["1", "1", "2"],
+  "key": {
+    "1": "minecraft:cobblestone",
+    "2": "minecraft:stick"
+  },
+  "result": "minecraft:stone_sword"
+}
