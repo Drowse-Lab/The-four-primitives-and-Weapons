@@ -3,6 +3,7 @@ package minecraftarmorweapon.client.gui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
@@ -26,16 +27,24 @@ public class SkillSelectionOverlay {
 
     @SubscribeEvent
     public static void onInventoryOpen(ScreenEvent.Init.Post event) {
-        if (!(event.getScreen() instanceof InventoryScreen inventoryScreen)) {
+        int guiLeft, guiTop;
+        if (event.getScreen() instanceof InventoryScreen invScreen) {
+            guiLeft = invScreen.getGuiLeft();
+            guiTop = invScreen.getGuiTop();
+        } else if (event.getScreen() instanceof CreativeModeInventoryScreen creativeScreen) {
+            guiLeft = creativeScreen.getGuiLeft();
+            guiTop = creativeScreen.getGuiTop();
+        } else {
             return;
         }
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
-        // インベントリの左上にスキルボタンを配置
-        int x = inventoryScreen.getGuiLeft() + 4;
-        int y = inventoryScreen.getGuiTop() - 22;
+        // スキルボタンを配置（クリエイティブはタブがあるので右上にずらす）
+        boolean isCreative = event.getScreen() instanceof CreativeModeInventoryScreen;
+        int x = isCreative ? guiLeft - 24 : guiLeft + 4;
+        int y = isCreative ? guiTop + 4 : guiTop - 22;
 
         AbstractButton skillButton = new AbstractButton(x, y, 20, 20, Component.literal("\u2694")) {
             @Override

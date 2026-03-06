@@ -4,6 +4,7 @@ import minecraftarmorweapon.util.DamageCalculator;
 
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.api.distmarker.Dist;
@@ -16,12 +17,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
 
 import java.util.*;
@@ -48,9 +49,13 @@ public class DashSkillHandler {
     private static final Map<UUID, ShadowStepState> shadowStepStates = new HashMap<>();
 
     static class ShadowStepState {
-        int remainingTicks = 60; // 3秒間
+        int remainingTicks = 100; // 5秒間
         String weaponClass;
     }
+
+    // === 跳ね斬りダメージバフ ===
+    private static final Map<UUID, Integer> leapSlashBuffTimers = new HashMap<>();
+    private static final float LEAP_SLASH_DAMAGE_MULTIPLIER = 1.5f;
 
     // === WASD入力から移動方向を計算 ===
 
@@ -90,10 +95,12 @@ public class DashSkillHandler {
         DashRushState state = new DashRushState();
         dashRushStates.put(player.getUUID(), state);
 
-        // WASD方向に直線移動
+        // 視線方向に突進（Y成分も含む）
+        Vec3 look = player.getLookAngle();
         Vec3 moveDir = getMovementDirection(player);
-        player.setDeltaMovement(moveDir.scale(2.5).add(0, 0.1, 0));
-        player.hurtMarked = true; // サーバー→クライアント速度同期
+        double yComponent = Math.max(look.y * 0.6, -0.2); // 下向きは控えめに
+        player.setDeltaMovement(moveDir.scale(2.5).add(0, yComponent + 0.1, 0));
+        player.hurtMarked = true;
 
         // 開始音
         Level world = player.level();
@@ -109,13 +116,22 @@ public class DashSkillHandler {
      * 跳ね斬り: WASD方向に跳躍し、勢いで遠くに飛ぶ。着地までダメージ増加
      */
     public static void activateLeapSlash(Player player) {
-        // WASD方向に跳躍（上方向 + 水平方向の勢い）
-        Vec3 moveDir = getMovementDirection(player);
-        player.setDeltaMovement(moveDir.scale(1.5).add(0, 0.7, 0));
-        player.hurtMarked = true; // サーバー→クライアント速度同期
+        // WASD入力がある場合のみ水平移動、なければその場で跳ねるだけ
+        float forward = player.zza;
+        float strafe = player.xxa;
+        if (forward != 0 || strafe != 0) {
+            Vec3 moveDir = getMovementDirection(player);
+            Vec3 look = player.getLookAngle();
+            double yComponent = Math.max(look.y * 0.5, 0.15);
+            player.setDeltaMovement(moveDir.scale(1.0).add(0, yComponent + 0.35, 0));
+        } else {
+            // その場ジャンプのみ
+            player.setDeltaMovement(0, 0.5, 0);
+        }
+        player.hurtMarked = true;
 
-        // ダメージ増加バフ（Strength II, 40tick = 2秒間）
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 40, 1, false, true));
+        // 独自ダメージ増加バフ（40tick = 2秒間）
+        leapSlashBuffTimers.put(player.getUUID(), 40);
 
         // エフェクトと音
         Level world = player.level();
@@ -146,8 +162,7 @@ public class DashSkillHandler {
         player.setDeltaMovement(moveDir.scale(3.0));
         player.hurtMarked = true;
 
-        // 透明化
-        player.setInvisible(true);
+        // レンダー側で完全非表示にする（setInvisibleは使わない）
 
         // 開始エフェクト
         Level world = player.level();
@@ -182,6 +197,16 @@ public class DashSkillHandler {
             dashRush.remainingTicks--;
             if (dashRush.remainingTicks <= 0) {
                 dashRushStates.remove(id);
+            }
+        }
+
+        // 跳ね斬りバフタイマー
+        Integer leapTimer = leapSlashBuffTimers.get(id);
+        if (leapTimer != null) {
+            if (leapTimer <= 1) {
+                leapSlashBuffTimers.remove(id);
+            } else {
+                leapSlashBuffTimers.put(id, leapTimer - 1);
             }
         }
 
@@ -251,11 +276,45 @@ public class DashSkillHandler {
             return;
         }
 
-        // 黒い靄のパーティクル（位置に残る煙のみ）
+        // 1ブロック障害物の自動ジャンプ
+        {
+            Vec3 moveDir2 = getMovementDirection(player);
+            // プレイヤーの幅を考慮して複数地点をチェック
+            for (double dist = 0.6; dist <= 1.5; dist += 0.4) {
+                double checkX = pos.x + moveDir2.x * dist;
+                double checkZ = pos.z + moveDir2.z * dist;
+                int bx = (int) Math.floor(checkX);
+                int by = (int) Math.floor(pos.y + 0.01);
+                int bz = (int) Math.floor(checkZ);
+                BlockPos wallPos = new BlockPos(bx, by, bz);
+
+                BlockState wallBlock = player.level().getBlockState(wallPos);
+                BlockState aboveWall = player.level().getBlockState(wallPos.above());
+                BlockState aboveWall2 = player.level().getBlockState(wallPos.above(2));
+
+                // 進行方向に壁があり、上2マスが空いていればジャンプ
+                if (!wallBlock.getCollisionShape(player.level(), wallPos).isEmpty()
+                        && aboveWall.getCollisionShape(player.level(), wallPos.above()).isEmpty()
+                        && aboveWall2.getCollisionShape(player.level(), wallPos.above(2)).isEmpty()) {
+                    Vec3 vel = player.getDeltaMovement();
+                    // まだジャンプ中でなければ
+                    if (vel.y < 0.2) {
+                        player.setDeltaMovement(vel.x, 0.55, vel.z);
+                        player.hurtMarked = true;
+                    }
+                    break;
+                }
+            }
+        }
+
+        // 影のパーティクル（黒い靄）
         serverWorld.sendParticles(ParticleTypes.LARGE_SMOKE,
                 pos.x, pos.y + 0.5, pos.z, 8, 0.4, 0.6, 0.4, 0.02);
         serverWorld.sendParticles(ParticleTypes.SQUID_INK,
                 pos.x, pos.y + 1, pos.z, 4, 0.3, 0.4, 0.3, 0.01);
+        // 足元に影っぽいパーティクル
+        serverWorld.sendParticles(ParticleTypes.ASH,
+                pos.x, pos.y + 0.1, pos.z, 6, 0.5, 0, 0.5, 0.01);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -272,7 +331,6 @@ public class DashSkillHandler {
     private static void endShadowStep(Player player, UUID id) {
         if (!shadowStepStates.containsKey(id)) return;
         shadowStepStates.remove(id);
-        player.setInvisible(false);
 
         if (!player.level().isClientSide) {
             ServerLevel serverWorld = (ServerLevel) player.level();
@@ -285,13 +343,37 @@ public class DashSkillHandler {
         }
     }
 
-    // === ダメージ無効化（シャドーステップ中） ===
+    // === ダメージ処理（シャドーステップ無効化 + 跳ね斬りバフ） ===
 
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
-        if (!(event.getEntity() instanceof Player player)) return;
-        if (shadowStepStates.containsKey(player.getUUID())) {
-            event.setCanceled(true);
+        // シャドーステップ中はダメージ無効
+        if (event.getEntity() instanceof Player player) {
+            if (shadowStepStates.containsKey(player.getUUID())) {
+                event.setCanceled(true);
+                return;
+            }
+        }
+
+        // 跳ね斬りバフ中の攻撃はダメージ増加
+        if (event.getSource().getEntity() instanceof Player attacker) {
+            if (leapSlashBuffTimers.containsKey(attacker.getUUID())) {
+                event.setAmount(event.getAmount() * LEAP_SLASH_DAMAGE_MULTIPLIER);
+            }
+        }
+    }
+
+    // === プレイヤー完全非表示（シャドーステップ中） ===
+
+    @Mod.EventBusSubscriber(modid = "minecraft_armor_weapon", value = Dist.CLIENT)
+    public static class ShadowStepClientHandler {
+        @SubscribeEvent
+        public static void onRenderLiving(RenderLivingEvent.Pre<?, ?> event) {
+            if (event.getEntity() instanceof Player player) {
+                if (isInShadowStep(player)) {
+                    event.setCanceled(true);
+                }
+            }
         }
     }
 
@@ -303,6 +385,10 @@ public class DashSkillHandler {
 
     public static boolean isInDashRush(Player player) {
         return dashRushStates.containsKey(player.getUUID());
+    }
+
+    public static boolean hasLeapSlashBuff(Player player) {
+        return leapSlashBuffTimers.containsKey(player.getUUID());
     }
 
     /** いずれかのダッシュスキルが実行中かどうか */
