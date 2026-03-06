@@ -82,7 +82,8 @@ public class DodgeAndBattouHandler {
         boolean isRightClickHeld = false; // 右クリック押し状態
         int dashAttackCooldown = 0; // ダッシュ攻撃のクールダウン
         int airDashCount = 0; // 空中ダッシュ回数
-        
+        boolean cooldownPending = false; // 頂点到達後にクールダウン開始
+
         void reset() {
             dodgeTimer = 0;
             hasDodged = false;
@@ -127,6 +128,16 @@ public class DodgeAndBattouHandler {
             }
         }
         
+        // 頂点到達後にクールダウン開始（上昇が終わったら）
+        if (data.cooldownPending) {
+            Vec3 vel = player.getDeltaMovement();
+            boolean peakReached = vel.y <= 0 && !DashSkillHandler.isAnyDashSkillActive(player);
+            if (peakReached || player.onGround()) {
+                data.cooldownPending = false;
+                data.cooldownTimer = DODGE_COOLDOWN;
+            }
+        }
+
         // クールダウンタイマーのカウントダウン
         if (data.cooldownTimer > 0) {
             data.cooldownTimer--;
@@ -395,7 +406,8 @@ public class DodgeAndBattouHandler {
         // 回避データを設定
         data.hasDodged = true;
         data.dodgeTimer = DODGE_WINDOW;
-        data.cooldownTimer = DODGE_COOLDOWN;
+        data.cooldownPending = true; // 頂点到達後にクールダウン開始
+        data.cooldownTimer = 0;
         data.fallDamageImmunityTimer = FALL_DAMAGE_IMMUNITY_TIME;
         data.dashAttackCooldown = Math.max(data.dashAttackCooldown, 15); // 既存の長いクールダウンを上書きしない
 

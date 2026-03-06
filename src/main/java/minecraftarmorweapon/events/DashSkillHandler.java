@@ -95,10 +95,10 @@ public class DashSkillHandler {
         DashRushState state = new DashRushState();
         dashRushStates.put(player.getUUID(), state);
 
-        // 視線方向に突進（Y成分も含む）
+        // 視線方向に突進（Y成分も含む、真上で約4ブロック）
         Vec3 look = player.getLookAngle();
         Vec3 moveDir = getMovementDirection(player);
-        double yComponent = Math.max(look.y * 0.6, -0.2); // 下向きは控えめに
+        double yComponent = Math.max(look.y * 0.85, -0.2);
         player.setDeltaMovement(moveDir.scale(2.5).add(0, yComponent + 0.1, 0));
         player.hurtMarked = true;
 
@@ -116,10 +116,23 @@ public class DashSkillHandler {
      * 跳ね斬り: WASD方向に跳躍し、勢いで遠くに飛ぶ。着地までダメージ増加
      */
     public static void activateLeapSlash(Player player) {
+        // 真上を向いている場合は何もしない
+        Vec3 lookCheck = player.getLookAngle();
+        if (lookCheck.y > 0.7) {
+            return;
+        }
+
         // WASD入力がある場合のみ水平移動、なければその場で跳ねるだけ
         float forward = player.zza;
         float strafe = player.xxa;
-        if (forward != 0 || strafe != 0) {
+        if ((forward != 0 || strafe != 0) && player.isSprinting()) {
+            // ダッシュ+WASD入力: 約7マス飛ぶ
+            Vec3 moveDir = getMovementDirection(player);
+            Vec3 look = player.getLookAngle();
+            double yComponent = Math.max(look.y * 0.5, 0.15);
+            player.setDeltaMovement(moveDir.scale(2.0).add(0, yComponent + 0.55, 0));
+        } else if (forward != 0 || strafe != 0) {
+            // 歩き+WASD入力: 短めに飛ぶ
             Vec3 moveDir = getMovementDirection(player);
             Vec3 look = player.getLookAngle();
             double yComponent = Math.max(look.y * 0.5, 0.15);
@@ -157,9 +170,11 @@ public class DashSkillHandler {
                 : player.getMainHandItem().getItem().getClass().getSimpleName();
         shadowStepStates.put(player.getUUID(), state);
 
-        // 初期移動（WASD方向に超高速移動）
+        // 初期移動（WASD方向に超高速移動、Y成分も含む。真上で約6ブロック）
+        Vec3 look = player.getLookAngle();
         Vec3 moveDir = getMovementDirection(player);
-        player.setDeltaMovement(moveDir.scale(3.0));
+        double yComponent = Math.max(look.y * 1.05, -0.2);
+        player.setDeltaMovement(moveDir.scale(3.0).add(0, yComponent, 0));
         player.hurtMarked = true;
 
         // レンダー側で完全非表示にする（setInvisibleは使わない）
@@ -259,12 +274,14 @@ public class DashSkillHandler {
         ServerLevel serverWorld = (ServerLevel) player.level();
         Vec3 pos = player.position();
 
-        // WASD入力に応じて超高速移動
+        // WASD入力に応じて超高速移動（Y成分も含む）
         float forward = player.zza;
         float strafe = player.xxa;
         if (forward != 0 || strafe != 0) {
+            Vec3 look = player.getLookAngle();
             Vec3 moveDir = getMovementDirection(player);
-            player.setDeltaMovement(moveDir.scale(3.0));
+            double yComp = Math.max(look.y * 1.05, -0.2);
+            player.setDeltaMovement(moveDir.scale(3.0).add(0, yComp, 0));
             player.hurtMarked = true;
         }
 
