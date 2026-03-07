@@ -15,8 +15,12 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
+
 import java.util.List;
-import java.util.Set;
 
 /**
  * 属性ダメージを適用するForgeイベントハンドラー
@@ -56,6 +60,16 @@ public class ElementalDamageEvent {
 
         // 属性に応じてダメージを計算
         float modifiedDamage = originalDamage;
+
+        // bookスロットの魔導書でカウンター属性を持っていれば無効化
+        if (ElementalDamageUtils.isElementNullifiedByBook(target, elementType)) {
+            if (target instanceof Player p) {
+                p.displayClientMessage(Component.literal("§b魔導書が" + elementType.getName() + "属性を無効化した！"), true);
+                target.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                    SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1.0f, 1.5f);
+            }
+            return; // 属性ダメージ倍率を適用しない（通常ダメージのまま）
+        }
 
         // 古いダメージタグをクリア
         clearDamageTags(target);

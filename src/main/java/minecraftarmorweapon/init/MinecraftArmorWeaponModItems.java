@@ -85,6 +85,10 @@ import minecraftarmorweapon.item.HammerItem;
 import minecraftarmorweapon.item.Halloween20231031SickleItem;
 import minecraftarmorweapon.item.GoldKatanaItem;
 import minecraftarmorweapon.item.FireworksBlackItem;
+import minecraftarmorweapon.item.HolyBookItem;
+import minecraftarmorweapon.item.IceBookItem;
+import minecraftarmorweapon.item.ElectricBookItem;
+import minecraftarmorweapon.item.CorrosionBookItem;
 import minecraftarmorweapon.item.FireballItem;
 import minecraftarmorweapon.item.DragonRedArmorItem;
 import minecraftarmorweapon.item.DragonGreenArmorItem;
@@ -263,6 +267,10 @@ public class MinecraftArmorWeaponModItems {
 			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.FLYING_ATTACKER, -1, -1, new Item.Properties()));
 	public static final RegistryObject<Item> SAYA = REGISTRY.register("saya", () -> new SayaItem());
 	public static final RegistryObject<Item> TYOKUTO_SAYA = REGISTRY.register("tyokuto_saya", () -> new TyokutoSayaItem());
+	public static final RegistryObject<Item> ICE_BOOK = REGISTRY.register("ice_book", () -> new IceBookItem());
+	public static final RegistryObject<Item> ELECTRIC_BOOK = REGISTRY.register("electric_book", () -> new ElectricBookItem());
+	public static final RegistryObject<Item> CORROSION_BOOK = REGISTRY.register("corrosion_book", () -> new CorrosionBookItem());
+	public static final RegistryObject<Item> HOLY_BOOK = REGISTRY.register("holy_book", () -> new HolyBookItem());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, Object tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()));

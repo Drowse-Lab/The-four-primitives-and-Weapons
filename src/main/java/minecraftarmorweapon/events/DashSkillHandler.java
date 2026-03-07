@@ -243,11 +243,17 @@ public class DashSkillHandler {
         }
         shadowStepStates.put(player.getUUID(), state);
 
-        // 初期移動（WASD方向に超高速移動、Y成分も含む。真上で約6ブロック）
-        Vec3 look = player.getLookAngle();
-        Vec3 moveDir = getMovementDirection(player);
-        double yComponent = Math.max(look.y * 1.05, -0.2);
-        player.setDeltaMovement(moveDir.scale(3.0).add(0, yComponent, 0));
+        // 初期移動（WASD入力があれば超高速移動、なければその場に留まる）
+        float fwd = player.zza;
+        float str = player.xxa;
+        if (fwd != 0 || str != 0) {
+            Vec3 look = player.getLookAngle();
+            Vec3 moveDir = getMovementDirection(player);
+            double yComponent = Math.max(look.y * 1.05, -0.2);
+            player.setDeltaMovement(moveDir.scale(3.0).add(0, yComponent, 0));
+        } else {
+            player.setDeltaMovement(0, 0, 0);
+        }
         player.hurtMarked = true;
 
         // レンダー側で完全非表示にする（setInvisibleは使わない）
@@ -278,6 +284,17 @@ public class DashSkillHandler {
         Player player = event.player;
         UUID id = player.getUUID();
 
+        // クライアント側はキャンセルチェックのみ（タイマー管理はサーバーのみ）
+        if (player.level().isClientSide) {
+            ShadowStepState shadowStep = shadowStepStates.get(id);
+            if (shadowStep != null) {
+                checkShadowStepCancelClient(player, shadowStep);
+            }
+            return;
+        }
+
+        // === 以下サーバー側のみ ===
+
         // 突進斬り処理
         DashRushState dashRush = dashRushStates.get(id);
         if (dashRush != null) {
@@ -301,11 +318,7 @@ public class DashSkillHandler {
         // シャドーステップ処理
         ShadowStepState shadowStep = shadowStepStates.get(id);
         if (shadowStep != null) {
-            if (player.level().isClientSide) {
-                checkShadowStepCancelClient(player, shadowStep);
-            } else {
-                tickShadowStepServer(player, shadowStep);
-            }
+            tickShadowStepServer(player, shadowStep);
             shadowStep.remainingTicks--;
             if (shadowStep.remainingTicks <= 0) {
                 endShadowStep(player, id);
@@ -353,7 +366,7 @@ public class DashSkillHandler {
         ServerLevel serverWorld = (ServerLevel) player.level();
         Vec3 pos = player.position();
 
-        // WASD入力に応じて超高速移動（Y成分も含む）
+        // WASD入力に応じて超高速移動、入力なしはその場に留まる
         float forward = player.zza;
         float strafe = player.xxa;
         if (forward != 0 || strafe != 0) {
@@ -361,6 +374,10 @@ public class DashSkillHandler {
             Vec3 moveDir = getMovementDirection(player);
             double yComp = Math.max(look.y * 1.05, -0.2);
             player.setDeltaMovement(moveDir.scale(3.0).add(0, yComp, 0));
+            player.hurtMarked = true;
+        } else {
+            // 入力なし: 移動を停止してその場に留まる
+            player.setDeltaMovement(0, Math.min(player.getDeltaMovement().y, 0), 0);
             player.hurtMarked = true;
         }
 

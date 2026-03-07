@@ -42,8 +42,10 @@ public class LivingEntityDamageMixin {
                 ElementType elementType = ElementalDamageUtils.getElementType(weapon);
                 int elementLevel = ElementalDamageUtils.getElementLevel(weapon);
 
-                System.out.println("[ElementalDamage] Element: " + elementType + " Level: " + elementLevel);
-                System.out.println("[ElementalDamage] Original damage: " + originalDamage);
+                // bookスロットの魔導書でカウンター属性を持っていれば無効化
+                if (ElementalDamageUtils.isElementNullifiedByBook(target, elementType)) {
+                    return originalDamage;
+                }
 
                 float modifiedDamage = originalDamage;
 
@@ -75,6 +77,11 @@ public class LivingEntityDamageMixin {
             IElementalDamageSource elementalSource = (IElementalDamageSource) source;
             ElementType elementType = elementalSource.getElementType();
             int elementLevel = elementalSource.getElementLevel();
+
+            // bookスロットの魔導書でカウンター属性を持っていれば無効化
+            if (ElementalDamageUtils.isElementNullifiedByBook(target, elementType)) {
+                return originalDamage;
+            }
 
             float modifiedDamage = originalDamage;
 

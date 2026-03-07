@@ -62,6 +62,9 @@ public class SafeTrueCrafterAI {
         int weaponSwitchCooldown = 0;
         int dodgeCooldown = 0;
         int blockPlaceCooldown = 0;
+        int blockBreakCooldown = 0;
+        int blockBreakProgress = 0; // ブロック破壊の進行度（0-9）
+        BlockPos breakingBlockPos = null; // 現在破壊中のブロック位置
         ItemStack meleeWeapon = ItemStack.EMPTY;
         ItemStack rangedWeapon = ItemStack.EMPTY;
         long lastUpdateTick = 0;
@@ -333,6 +336,11 @@ public class SafeTrueCrafterAI {
                 try {
                     enhanceMonster(monster);
                     enhancedEntities.add(entityId);
+
+                    // ゾンビにBreakDoorGoalを追加（ドア破壊AI）
+                    if (monster instanceof Zombie zombie) {
+                        zombie.goalSelector.addGoal(1, new BreakDoorGoal(zombie, e -> true));
+                    }
                 } catch (Exception e) {
                     // エラーをログに記録するが、クラッシュは防ぐ
                     System.err.println("Failed to enhance monster: " + e.getMessage());
@@ -779,48 +787,106 @@ public class SafeTrueCrafterAI {
             }
         }
         
-        // ゾンビのブロック設置と飛びかかり処理
+        // ゾンビのブロック設置・破壊と飛びかかり処理
         if (monster instanceof Zombie zombie) {
             LivingEntity target = zombie.getTarget();
             if (target != null) {
                 double distance = zombie.distanceToSqr(target);
-                
-                // ブロック設置処理（lunatic以上の難易度で有効）
+
+                // ブロック設置処理（True Crafterモードで有効）
                 if (data.blockPlaceCooldown == 0 && CustomDifficultyCommand.isTrueCrafterEnabled()) {
-                    // ターゲットが高い位置にいる場合
+                    // ターゲットが高い位置にいる場合 - ピラーアップ（自分の足元にブロックを積む）
                     if (target.getY() > zombie.getY() + 1.5) {
                         BlockPos zombiePos = zombie.blockPosition();
-                        BlockPos frontPos = zombiePos.relative(zombie.getDirection());
-                        
-                        // 前方にブロックを設置して登る
-                        if (zombie.level().getBlockState(frontPos).isAir() && 
-                            !zombie.level().getBlockState(frontPos.below()).isAir()) {
-                            zombie.level().setBlock(frontPos, Blocks.COBBLESTONE.defaultBlockState(), 3);
-                            data.blockPlaceCooldown = 40; // 2秒のクールダウン
-                            
-                            // 一時ブロックとして記録（15秒後に削除）
-                            temporaryBlocks.put(frontPos, System.currentTimeMillis());
+                        BlockPos belowPos = zombiePos.below();
+
+                        // 足元にブロックを置いてピラーアップ
+                        if (zombie.level().getBlockState(zombiePos).isAir() &&
+                            zombie.level().getBlockState(belowPos).isSolid()) {
+                            zombie.level().setBlock(zombiePos, Blocks.COBBLESTONE.defaultBlockState(), 3);
+                            temporaryBlocks.put(zombiePos, System.currentTimeMillis());
+                            // ジャンプして上に乗る
+                            zombie.setDeltaMovement(zombie.getDeltaMovement().x, 0.42, zombie.getDeltaMovement().z);
+                            zombie.hasImpulse = true;
+                            data.blockPlaceCooldown = 15; // 0.75秒のクールダウン（連続で積める）
                         }
-                        // 足元にブロックを設置して階段を作る
-                        else if (zombie.level().getBlockState(zombiePos.below()).isAir()) {
-                            zombie.level().setBlock(zombiePos.below(), Blocks.COBBLESTONE.defaultBlockState(), 3);
-                            data.blockPlaceCooldown = 30;
-                            temporaryBlocks.put(zombiePos.below(), System.currentTimeMillis());
+                        // 前方にブロックを設置して階段状に登る
+                        else {
+                            BlockPos frontPos = zombiePos.relative(zombie.getDirection());
+                            if (zombie.level().getBlockState(frontPos).isAir() &&
+                                zombie.level().getBlockState(frontPos.below()).isSolid()) {
+                                zombie.level().setBlock(frontPos, Blocks.COBBLESTONE.defaultBlockState(), 3);
+                                data.blockPlaceCooldown = 20;
+                                temporaryBlocks.put(frontPos, System.currentTimeMillis());
+                            }
                         }
                     }
-                    
+
                     // 谷や水を渡るための橋を作る
-                    BlockPos frontPos = zombie.blockPosition().relative(zombie.getDirection());
-                    BlockPos belowFront = frontPos.below();
-                    BlockState belowState = zombie.level().getBlockState(belowFront);
-                    
-                    if (belowState.isAir() || belowState.liquid()) {
-                        zombie.level().setBlock(belowFront, Blocks.COBBLESTONE.defaultBlockState(), 3);
-                        data.blockPlaceCooldown = 20;
-                        temporaryBlocks.put(belowFront, System.currentTimeMillis());
+                    if (data.blockPlaceCooldown == 0) {
+                        BlockPos frontPos = zombie.blockPosition().relative(zombie.getDirection());
+                        BlockPos belowFront = frontPos.below();
+                        BlockState belowState = zombie.level().getBlockState(belowFront);
+
+                        if (belowState.isAir() || belowState.liquid()) {
+                            zombie.level().setBlock(belowFront, Blocks.COBBLESTONE.defaultBlockState(), 3);
+                            data.blockPlaceCooldown = 20;
+                            temporaryBlocks.put(belowFront, System.currentTimeMillis());
+                        }
                     }
                 }
-                
+
+                // ブロック破壊処理（経路上の壁を壊して進軍）
+                if (data.blockBreakCooldown == 0 && CustomDifficultyCommand.isTrueCrafterEnabled()) {
+                    BlockPos zombiePos = zombie.blockPosition();
+                    BlockPos frontPos = zombiePos.relative(zombie.getDirection());
+                    BlockPos frontAbove = frontPos.above();
+
+                    // 前方のブロックをチェック（頭の高さと体の高さ）
+                    for (BlockPos checkPos : new BlockPos[]{frontPos, frontAbove}) {
+                        BlockState frontState = zombie.level().getBlockState(checkPos);
+
+                        // 破壊可能なブロックかチェック（岩盤・黒曜石など硬すぎるブロックは除外）
+                        if (!frontState.isAir() && !frontState.liquid() &&
+                            frontState.getDestroySpeed(zombie.level(), checkPos) >= 0 &&
+                            frontState.getDestroySpeed(zombie.level(), checkPos) < 50.0f) {
+
+                            // 同じブロックを破壊中なら進行度を進める
+                            if (checkPos.equals(data.breakingBlockPos)) {
+                                data.blockBreakProgress++;
+
+                                // 破壊アニメーション表示
+                                int stage = Math.min(data.blockBreakProgress / 3, 9);
+                                if (zombie.level() instanceof ServerLevel serverLevel) {
+                                    serverLevel.destroyBlockProgress(zombie.getId(), checkPos, stage);
+                                }
+
+                                // 硬さに応じた破壊速度（柔らかいブロックは速く壊れる）
+                                float hardness = frontState.getDestroySpeed(zombie.level(), checkPos);
+                                int breakTime = (int)(hardness * 5) + 10; // 最低10tick
+
+                                if (data.blockBreakProgress >= breakTime) {
+                                    // ブロック破壊
+                                    zombie.level().destroyBlock(checkPos, true);
+                                    if (zombie.level() instanceof ServerLevel serverLevel) {
+                                        serverLevel.destroyBlockProgress(zombie.getId(), checkPos, -1);
+                                    }
+                                    data.blockBreakProgress = 0;
+                                    data.breakingBlockPos = null;
+                                    data.blockBreakCooldown = 10;
+                                }
+                            } else {
+                                // 新しいブロックの破壊を開始
+                                data.breakingBlockPos = checkPos.immutable();
+                                data.blockBreakProgress = 0;
+                            }
+                            break; // 1つのブロックずつ処理
+                        }
+                    }
+                } else if (data.blockBreakCooldown > 0) {
+                    data.blockBreakCooldown--;
+                }
+
                 // 飛びかかり攻撃
                 if (data.dodgeCooldown == 0 && zombie.onGround()) {
                     if (distance > 9.0 && distance < 36.0) { // 3-6ブロック
@@ -830,7 +896,7 @@ public class SafeTrueCrafterAI {
                         data.dodgeCooldown = 60; // 3秒のクールダウン
                     }
                 }
-                
+
                 // 盾防御処理
                 if (!zombie.getOffhandItem().isEmpty() && zombie.getOffhandItem().is(Items.SHIELD)) {
                     if (distance < 16.0) {
@@ -839,6 +905,15 @@ public class SafeTrueCrafterAI {
                             zombie.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
                         }
                     }
+                }
+            } else {
+                // ターゲットがいない場合、破壊進行をリセット
+                if (data.breakingBlockPos != null) {
+                    if (zombie.level() instanceof ServerLevel serverLevel) {
+                        serverLevel.destroyBlockProgress(zombie.getId(), data.breakingBlockPos, -1);
+                    }
+                    data.breakingBlockPos = null;
+                    data.blockBreakProgress = 0;
                 }
             }
         }

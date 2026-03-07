@@ -1,7 +1,10 @@
 package minecraftarmorweapon.damage;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import top.theillusivec4.curios.api.CuriosApi;
 
 /**
  * 属性ダメージ用のユーティリティクラス
@@ -88,6 +91,101 @@ public class ElementalDamageUtils {
         if (tag != null) {
             tag.remove(ELEMENT_TYPE_KEY);
             tag.remove(ELEMENT_LEVEL_KEY);
+        }
+    }
+
+    /**
+     * Curiosのbookスロットにある魔導書の属性を取得
+     */
+    public static ElementType getBookSlotElement(Player player) {
+        try {
+            java.util.concurrent.atomic.AtomicReference<ElementType> result =
+                    new java.util.concurrent.atomic.AtomicReference<>(ElementType.NONE);
+            CuriosApi.getCuriosHelper().getCuriosHandler(player).ifPresent(handler -> {
+                handler.getStacksHandler("book").ifPresent(stacksHandler -> {
+                    for (int i = 0; i < stacksHandler.getStacks().getSlots(); i++) {
+                        ItemStack stack = stacksHandler.getStacks().getStackInSlot(i);
+                        if (!stack.isEmpty()) {
+                            String itemName = stack.getItem().getClass().getSimpleName();
+                            switch (itemName) {
+                                case "FireballItem":      result.set(ElementType.FIRE); return;
+                                case "ThunderboltItem":   result.set(ElementType.THUNDER); return;
+                                case "BubbleshotItem":    result.set(ElementType.WATER); return;
+                                case "StormItem":
+                                case "WindStepItem":      result.set(ElementType.WIND); return;
+                                case "DarknessItem":      result.set(ElementType.DARK); return;
+                                case "IceBookItem":       result.set(ElementType.ICE); return;
+                                case "ElectricBookItem":  result.set(ElementType.ELECTRIC); return;
+                                case "CorrosionBookItem": result.set(ElementType.CORROSION); return;
+                                case "HolyBookItem":      result.set(ElementType.HOLY); return;
+                            }
+                        }
+                    }
+                });
+            });
+            return result.get();
+        } catch (Exception e) {
+            return ElementType.NONE;
+        }
+    }
+
+    /**
+     * ターゲットがbookスロットの魔導書で属性ダメージを無効化できるかチェック
+     * @param target ダメージを受けるエンティティ
+     * @param damageElement 受ける属性ダメージのタイプ
+     * @return true = 無効化できる
+     */
+    public static boolean isElementNullifiedByBook(LivingEntity target, ElementType damageElement) {
+        if (damageElement == ElementType.NONE) return false;
+        if (!(target instanceof Player player)) return false;
+
+        ElementType bookElement = getBookSlotElement(player);
+        if (bookElement == ElementType.NONE) return false;
+
+        // 通常のカウンターチェック
+        ElementType counterElement = damageElement.getCounterElement();
+        if (bookElement == counterElement) return true;
+
+        // StormはWIND+WATER+THUNDERのキメラ: 3つ分のカウンター属性を全て防ぐ
+        if (bookElement == ElementType.WIND && isStormBookEquipped(player)) {
+            // WIND counters: ELECTRIC, THUNDER
+            // WATER counters: FIRE, CORROSION
+            // THUNDER counters: WATER
+            switch (damageElement) {
+                case ELECTRIC:
+                case THUNDER:
+                case FIRE:
+                case CORROSION:
+                case WATER:
+                    return true;
+                default:
+                    break;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * bookスロットにStormItem（キメラ魔導書）が装備されているかチェック
+     */
+    private static boolean isStormBookEquipped(Player player) {
+        try {
+            java.util.concurrent.atomic.AtomicBoolean result = new java.util.concurrent.atomic.AtomicBoolean(false);
+            CuriosApi.getCuriosHelper().getCuriosHandler(player).ifPresent(handler -> {
+                handler.getStacksHandler("book").ifPresent(stacksHandler -> {
+                    for (int i = 0; i < stacksHandler.getStacks().getSlots(); i++) {
+                        ItemStack stack = stacksHandler.getStacks().getStackInSlot(i);
+                        if (!stack.isEmpty() && stack.getItem().getClass().getSimpleName().equals("StormItem")) {
+                            result.set(true);
+                            return;
+                        }
+                    }
+                });
+            });
+            return result.get();
+        } catch (Exception e) {
+            return false;
         }
     }
 }

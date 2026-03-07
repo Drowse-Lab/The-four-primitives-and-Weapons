@@ -150,7 +150,7 @@ public class CustomDifficultyCommand {
         
         // カスタム難易度の情報を表示
         String message = String.format(
-            "難易度を %s に設定しました (ダメージ倍率: %.1fx)",
+            "難易度を %s に設定しました (Mobダメージ倍率: %.1fx)",
             newDifficulty.getName(),
             newDifficulty.getDamageMultiplier()
         );

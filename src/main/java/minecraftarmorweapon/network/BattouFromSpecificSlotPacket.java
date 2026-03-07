@@ -60,16 +60,15 @@ public class BattouFromSpecificSlotPacket {
 
             ScabbardLocation location = ScabbardLocation.values()[message.locationType];
 
-            // HANDの場合は手に鞘を持っている前提、それ以外は手が空である必要
+            // HANDの場合は手に鞘を持っている前提、それ以外は手のアイテムをインベントリに退避
             if (location != ScabbardLocation.HAND) {
-                // 手に鞘を持っている場合はインベントリに移す
                 ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
                 if (!mainHand.isEmpty()) {
-                    if (CuriosScabbardHelper.isScabbard(mainHand)) {
-                        if (!player.getInventory().add(mainHand.copy())) return;
-                        player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-                    } else {
-                        return;
+                    // 先にメインハンドを空にしてからインベントリに追加
+                    // （add()がスタック可能アイテムを同じスロットに戻すのを防ぐ）
+                    player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    if (!player.getInventory().add(mainHand)) {
+                        player.drop(mainHand, false);
                     }
                 }
             }
@@ -136,10 +135,12 @@ public class BattouFromSpecificSlotPacket {
         if (hand == InteractionHand.OFF_HAND) {
             ItemStack mainHandItem = player.getItemInHand(InteractionHand.MAIN_HAND);
             if (!mainHandItem.isEmpty()) {
-                if (!player.getInventory().add(mainHandItem.copy())) {
-                    player.drop(mainHandItem.copy(), false);
-                }
+                // 先にメインハンドを空にしてからインベントリに追加
+                // （add()がスタック可能アイテムを同じスロットに戻すのを防ぐ）
                 player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                if (!player.getInventory().add(mainHandItem)) {
+                    player.drop(mainHandItem, false);
+                }
             }
         }
 

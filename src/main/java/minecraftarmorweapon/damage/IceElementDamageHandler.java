@@ -8,6 +8,10 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * 氷属性ダメージハンドラー
  * - 氷で固まっている時(Slowness効果)に攻撃をすると多くダメージが入る
@@ -22,6 +26,9 @@ public class IceElementDamageHandler {
     // 時間経過ボーナスの最大倍率
     private static final float MAX_TIME_BONUS = 0.5f;
 
+    // 同一tickでの二重適用を防ぐ（MixinとEventの両方から呼ばれるため）
+    private static final Map<UUID, Long> lastAppliedTick = new ConcurrentHashMap<>();
+
     /**
      * 氷属性ダメージを計算
      * @param target ターゲットエンティティ
@@ -32,50 +39,58 @@ public class IceElementDamageHandler {
     public static float calculateDamage(LivingEntity target, float originalDamage, int elementLevel) {
         float damageMultiplier = 1.0f;
 
-        // ターゲットが凍結状態(Slowness効果)を持っているか確認
+        // ダメージ倍率は常に計算する（既存のSlow効果がある場合のボーナス）
         if (target.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
             MobEffectInstance slownessEffect = target.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
 
             if (slownessEffect != null) {
-                // 効果レベルを取得
-                int slownessLevel = slownessEffect.getAmplifier() + 1; // 0始まりなので+1
-
-                // ダメージ倍率を計算
-                // 基礎倍率 + (レベル × レベル倍率)
+                int slownessLevel = slownessEffect.getAmplifier() + 1;
                 damageMultiplier = BASE_DAMAGE_MULTIPLIER + (slownessLevel * LEVEL_DAMAGE_MULTIPLIER);
 
-                // 時間経過でダメージが増加
                 int duration = slownessEffect.getDuration();
                 if (duration > 0) {
-                    // 残り時間が長いほどダメージが増加
                     float timeBonus = Math.min(duration / 60.0f, 1.0f) * MAX_TIME_BONUS;
                     damageMultiplier += timeBonus;
                 }
-
-                // 凍結効果を延長 (1秒追加、最大10秒にキャップ)
-                int newDuration = Math.min(duration + 20, 200);
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,
-                    newDuration, slownessLevel - 1, false, false));
             }
-        } else {
-            // Slowness効果がない場合は付与 (5秒間、レベルは属性レベルに応じて)
-            int slownessLevel = Math.min(elementLevel, 3);
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,
-                100, slownessLevel, false, true));
         }
 
-        // 凍結状態の視覚効果: Frozen状態を設定（パウダースノーで凍った見た目、最大値をキャップ）
-        int maxFrozen = target.getTicksRequiredToFreeze() + 40;
-        target.setTicksFrozen(Math.min(target.getTicksFrozen() + 60, maxFrozen));
+        // 副作用（Slowness付与・frozen ticks）は同一tickで1回だけ適用
+        long currentTick = target.level().getGameTime();
+        Long lastTick = lastAppliedTick.get(target.getUUID());
+        if (lastTick != null && lastTick == currentTick) {
+            // 同一tickの2回目以降 → ダメージ倍率だけ返す（効果は重複させない）
+            return originalDamage * damageMultiplier;
+        }
+        lastAppliedTick.put(target.getUUID(), currentTick);
+
+        // Slowness効果を適用
+        if (target.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
+            MobEffectInstance slownessEffect = target.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+            if (slownessEffect != null) {
+                int duration = slownessEffect.getDuration();
+                // 凍結効果を延長（最大60tickにキャップ、frozen tickの減衰と同期）
+                int newDuration = Math.min(duration + 20, 60);
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,
+                    newDuration, slownessEffect.getAmplifier(), false, false));
+            }
+        } else {
+            // 初回: Slowness付与（3秒間、amplifier最大2）
+            int slownessLevel = Math.min(elementLevel, 2);
+            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,
+                60, slownessLevel, false, true));
+        }
+
+        // 凍結状態の視覚効果: Frozen状態を設定（100%を超えないようにキャップ）
+        int maxFrozen = target.getTicksRequiredToFreeze();
+        target.setTicksFrozen(Math.min(target.getTicksFrozen() + 40, maxFrozen));
 
         // 氷のパーティクルエフェクト
         if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {
-            // 氷の結晶パーティクル
             serverLevel.sendParticles(ParticleTypes.SNOWFLAKE,
                 target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                 20, 0.3, 0.5, 0.3, 0.05);
 
-            // 冷気のパーティクル
             serverLevel.sendParticles(ParticleTypes.ITEM_SNOWBALL,
                 target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                 15, 0.4, 0.4, 0.4, 0.1);

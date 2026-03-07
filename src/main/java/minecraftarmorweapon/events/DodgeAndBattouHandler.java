@@ -101,7 +101,7 @@ public class DodgeAndBattouHandler {
         }
         
         boolean canDodge() {
-            return cooldownTimer <= 0;
+            return cooldownTimer <= 0 && !cooldownPending;
         }
         
         boolean isFallDamageImmune() {
@@ -475,8 +475,8 @@ public class DodgeAndBattouHandler {
             return false;
         }
 
-        // ダッシュスキル実行中は再回避を防止
-        if (DashSkillHandler.isAnyDashSkillActive(player)) {
+        // ダッシュスキル実行中は再回避を防止（サーバー側のみチェック、スキル状態はサーバーのみ管理）
+        if (!world.isClientSide && DashSkillHandler.isAnyDashSkillActive(player)) {
             return false;
         }
 
