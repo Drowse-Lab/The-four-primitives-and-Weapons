@@ -52,9 +52,10 @@ public class IceElementDamageHandler {
                     damageMultiplier += timeBonus;
                 }
 
-                // 凍結効果を延長 (1秒追加)
+                // 凍結効果を延長 (1秒追加、最大10秒にキャップ)
+                int newDuration = Math.min(duration + 20, 200);
                 target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,
-                    duration + 20, slownessLevel - 1, false, false));
+                    newDuration, slownessLevel - 1, false, false));
             }
         } else {
             // Slowness効果がない場合は付与 (5秒間、レベルは属性レベルに応じて)
@@ -63,8 +64,9 @@ public class IceElementDamageHandler {
                 100, slownessLevel, false, true));
         }
 
-        // 凍結状態の視覚効果: Frozen状態を設定（パウダースノーで凍った見た目）
-        target.setTicksFrozen(Math.min(target.getTicksFrozen() + 140, target.getTicksRequiredToFreeze() + 100));
+        // 凍結状態の視覚効果: Frozen状態を設定（パウダースノーで凍った見た目、最大値をキャップ）
+        int maxFrozen = target.getTicksRequiredToFreeze() + 40;
+        target.setTicksFrozen(Math.min(target.getTicksFrozen() + 60, maxFrozen));
 
         // 氷のパーティクルエフェクト
         if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {

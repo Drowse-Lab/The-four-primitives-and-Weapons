@@ -8,10 +8,16 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 侵食/闇属性ダメージハンドラー
@@ -30,6 +36,9 @@ public class CorrosionElementDamageHandler {
 
     // 防御力減少用のUUID
     private static final UUID ARMOR_REDUCTION_UUID = UUID.fromString("a3b4c5d6-e7f8-9012-3456-789abcdef012");
+
+    // 防御力減少の残り時間を追跡（エンティティUUID → 残りtick）
+    private static final Map<UUID, Integer> armorReductionTimers = new ConcurrentHashMap<>();
 
     /**
      * 侵食属性ダメージを計算
@@ -87,10 +96,10 @@ public class CorrosionElementDamageHandler {
      * @param duration 持続時間
      */
     private static void applyArmorReduction(LivingEntity entity, double amount, int duration) {
-        var armorAttribute = entity.getAttribute(Attributes.ARMOR);
+        AttributeInstance armorAttribute = entity.getAttribute(Attributes.ARMOR);
         if (armorAttribute != null) {
             // 既存の修正を削除
-            var existingModifier = armorAttribute.getModifier(ARMOR_REDUCTION_UUID);
+            AttributeModifier existingModifier = armorAttribute.getModifier(ARMOR_REDUCTION_UUID);
             if (existingModifier != null) {
                 armorAttribute.removeModifier(ARMOR_REDUCTION_UUID);
             }
@@ -104,19 +113,41 @@ public class CorrosionElementDamageHandler {
             );
             armorAttribute.addTransientModifier(modifier);
 
-            // 一定時間後に効果を削除
-            entity.getServer().execute(() -> {
-                scheduleArmorReductionRemoval(entity, duration);
-            });
+            // タイマーを設定（tickハンドラーで減少させる）
+            armorReductionTimers.put(entity.getUUID(), duration);
         }
     }
 
     /**
-     * 防御力減少効果の削除をスケジュール
+     * 毎tickで防御力減少タイマーを更新し、期限切れの効果を削除する。
      */
-    private static void scheduleArmorReductionRemoval(LivingEntity entity, int ticks) {
-        // 簡易的な実装：MobEffectを使用して時間管理
-        // 実際の実装では、カスタムMobEffectを作成することを推奨
+    @Mod.EventBusSubscriber(modid = "minecraft_armor_weapon")
+    public static class CorrosionTickHandler {
+        @SubscribeEvent
+        public static void onServerTick(TickEvent.ServerTickEvent event) {
+            if (event.phase != TickEvent.Phase.END) return;
+            if (event.getServer() == null) return;
+
+            armorReductionTimers.entrySet().removeIf(entry -> {
+                int remaining = entry.getValue() - 1;
+                if (remaining <= 0) {
+                    // 全レベルからエンティティを検索して防御力修正を削除
+                    for (ServerLevel level : event.getServer().getAllLevels()) {
+                        net.minecraft.world.entity.Entity entity = level.getEntity(entry.getKey());
+                        if (entity instanceof LivingEntity living) {
+                            AttributeInstance armorAttr = living.getAttribute(Attributes.ARMOR);
+                            if (armorAttr != null) {
+                                armorAttr.removeModifier(ARMOR_REDUCTION_UUID);
+                            }
+                            break;
+                        }
+                    }
+                    return true; // マップから削除
+                }
+                entry.setValue(remaining);
+                return false;
+            });
+        }
     }
 
     /**

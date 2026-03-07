@@ -8,7 +8,12 @@ public enum ElementType {
     ICE("ice"),            // 氷属性
     ELECTRIC("electric"),  // 電気/雷属性
     CORROSION("corrosion"), // 侵食/闇属性
-    HOLY("holy");          // 聖属性
+    HOLY("holy"),          // 聖属性
+    DARK("dark"),          // 闇属性
+    FIRE("fire"),          // 火属性
+    WIND("wind"),          // 風属性
+    THUNDER("thunder"),    // 雷属性
+    WATER("water");        // 水属性
 
     private final String name;
 

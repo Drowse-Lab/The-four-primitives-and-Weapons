@@ -33,7 +33,16 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.PotionItem;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.DiggerItem;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments;
@@ -45,6 +54,8 @@ import minecraftarmorweapon.skill.MotionExecutor;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.network.DodgeRequestPacket;
 import minecraftarmorweapon.network.DashAttackPacket;
+import minecraftarmorweapon.damage.ElementType;
+import minecraftarmorweapon.config.DodgeConfig;
 
 import java.util.Map;
 import java.util.UUID;
@@ -134,7 +145,16 @@ public class DodgeAndBattouHandler {
             boolean peakReached = vel.y <= 0 && !DashSkillHandler.isAnyDashSkillActive(player);
             if (peakReached || player.onGround()) {
                 data.cooldownPending = false;
-                data.cooldownTimer = DODGE_COOLDOWN;
+                // 属性によるクールダウン短縮
+                ElementType dashElement = DashSkillHandler.getLastDashElement(player);
+                boolean wasShadow = DashSkillHandler.wasLastDashShadowStep(player);
+                int cd = DODGE_COOLDOWN;
+                if (dashElement == ElementType.DARK && wasShadow) {
+                    cd = 25; // DARK + シャドステ: CD短縮（40→25）
+                } else if (dashElement == ElementType.THUNDER && !wasShadow) {
+                    cd = 25; // THUNDER + 非シャドステ: CD短縮（40→25）
+                }
+                data.cooldownTimer = cd;
             }
         }
 
@@ -205,9 +225,7 @@ public class DodgeAndBattouHandler {
 
         // GLFWで直接右クリック状態を確認 + 武器を持っている + クールダウンが終わった → 自動で回避
         if (isUseKeyHeld(mc) && !player.isShiftKeyDown() && data.canDodge()) {
-            ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-            ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-            if (isWeapon(mainHand) || isWeapon(offHand)) {
+            if (canDodgeWithHands(player)) {
                 if (performDodge(player)) {
                     MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
                             new DodgeRequestPacket(player.zza, player.xxa));
@@ -253,16 +271,14 @@ public class DodgeAndBattouHandler {
     @SubscribeEvent
     public static void onRightClick(PlayerInteractEvent.RightClickEmpty event) {
         Player player = event.getEntity();
-        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
 
         // シフトキーが押されている場合は何もしない（納刀はRキーに移行）
         if (player.isShiftKeyDown()) {
             return;
         }
 
-        // 武器を持っている場合のみ回避を実行
-        if (isWeapon(mainHand) || isWeapon(offHand)) {
+        // 武器を持っている場合のみ回避を実行（オフハンドのみ武器の場合はメインハンドが空の時のみ）
+        if (canDodgeWithHands(player)) {
             // RightClickEmptyはクライアント専用イベント
             // クライアント側のDodgeDataを更新しつつ、サーバーにWASD方向付きパケットを送信
             if (performDodge(player) && player.level().isClientSide) {
@@ -277,19 +293,61 @@ public class DodgeAndBattouHandler {
         if (event.isCanceled()) return;
 
         Player player = event.getEntity();
-        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
+
+        // メインハンドがツール（つるはし等）でオフハンドが鞘の場合、ブロック操作を許可
+        ItemStack mainHandItem = player.getItemInHand(InteractionHand.MAIN_HAND);
+        ItemStack offHandItem = player.getItemInHand(InteractionHand.OFF_HAND);
+        if (mainHandItem.getItem() instanceof DiggerItem && isSaya(offHandItem)) {
+            return; // ツールによるブロック操作を許可
+        }
+
+        // functionalBlockRequiresShift設定がONの場合
+        if (DodgeConfig.functionalBlockRequiresShift) {
+            // メインハンドがブロックアイテムの場合
+            if (mainHandItem.getItem() instanceof BlockItem) {
+                // Shift+右クリックで回避、通常はブロック設置
+                if (!player.isShiftKeyDown()) {
+                    return; // ブロック設置を許可
+                }
+                // Shift押下時は回避を試行
+                if (canDodgeWithHands(player)) {
+                    event.setCanceled(true);
+                    if (player.level().isClientSide && performDodge(player)) {
+                        MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                                new DodgeRequestPacket(player.zza, player.xxa));
+                    }
+                }
+                return;
+            }
+
+            // クリック先がファンクショナルブロック（チェスト、かまど等）の場合
+            if (isFunctionalBlock(player.level(), event.getPos())) {
+                // Shift+右クリックで回避、通常はブロックを開く
+                if (!player.isShiftKeyDown()) {
+                    return; // ブロック操作を許可
+                }
+                // Shift押下時は回避を試行
+                if (canDodgeWithHands(player)) {
+                    event.setCanceled(true);
+                    if (player.level().isClientSide && performDodge(player)) {
+                        MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                                new DodgeRequestPacket(player.zza, player.xxa));
+                    }
+                }
+                return;
+            }
+        }
 
         // シフトキーが押されている場合はブロック操作を許可（納刀はRキーに移行）
         if (player.isShiftKeyDown()) {
             return;
         }
 
-        // 刀を持っている場合、回避を実行
-        if (isWeapon(mainHand) || isWeapon(offHand)) {
+        // 刀を持っている場合、回避を実行（オフハンドのみ武器の場合はメインハンドが空の時のみ）
+        if (canDodgeWithHands(player)) {
             // ブロックを持っていて設置しようとしている場合は許可
             if (!player.getItemInHand(event.getHand()).isEmpty() &&
-                player.getItemInHand(event.getHand()).getItem() instanceof net.minecraft.world.item.BlockItem) {
+                player.getItemInHand(event.getHand()).getItem() instanceof BlockItem) {
                 return; // ブロック設置を許可
             }
 
@@ -302,20 +360,42 @@ public class DodgeAndBattouHandler {
         }
     }
 
+    /**
+     * ファンクショナルブロック（GUI付きブロック）かどうか判定。
+     * チェスト、かまど、作業台、エンチャント台、金床など。
+     */
+    private static boolean isFunctionalBlock(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        Block block = state.getBlock();
+        // MenuProviderを持つブロック（チェスト、かまど、醸造台、ホッパー等）
+        if (state.getMenuProvider(level, pos) != null) return true;
+        // 作業台はMenuProviderを直接返さないがBaseEntityBlockではない特殊ケース
+        if (block instanceof net.minecraft.world.level.block.CraftingTableBlock) return true;
+        if (block instanceof net.minecraft.world.level.block.EnchantmentTableBlock) return true;
+        if (block instanceof net.minecraft.world.level.block.AnvilBlock) return true;
+        if (block instanceof net.minecraft.world.level.block.LoomBlock) return true;
+        if (block instanceof net.minecraft.world.level.block.CartographyTableBlock) return true;
+        if (block instanceof net.minecraft.world.level.block.GrindstoneBlock) return true;
+        if (block instanceof net.minecraft.world.level.block.StonecutterBlock) return true;
+        if (block instanceof net.minecraft.world.level.block.SmithingTableBlock) return true;
+        if (block instanceof net.minecraft.world.level.block.BedBlock) return true;
+        if (block instanceof net.minecraft.world.level.block.DoorBlock) return true;
+        if (block instanceof net.minecraft.world.level.block.FenceGateBlock) return true;
+        if (block instanceof net.minecraft.world.level.block.TrapDoorBlock) return true;
+        return false;
+    }
+
     @SubscribeEvent
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         Player player = event.getEntity();
-        
+
         // シフトキーが押されている場合は通常の相互作用を許可
         if (player.isShiftKeyDown()) {
             return;
         }
-        
-        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-        
-        // 武器を持っている場合は回避を優先
-        if (isWeapon(mainHand) || isWeapon(offHand)) {
+
+        // 武器を持っている場合は回避を優先（オフハンドのみ武器の場合はメインハンドが空の時のみ）
+        if (canDodgeWithHands(player)) {
             event.setCanceled(true);
             if (player.level().isClientSide && performDodge(player)) {
                 MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
@@ -333,11 +413,8 @@ public class DodgeAndBattouHandler {
             return;
         }
 
-        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-
-        // 武器を持っている場合は回避を優先
-        if (isWeapon(mainHand) || isWeapon(offHand)) {
+        // 武器を持っている場合は回避を優先（オフハンドのみ武器の場合はメインハンドが空の時のみ）
+        if (canDodgeWithHands(player)) {
             event.setCanceled(true);
             if (player.level().isClientSide && performDodge(player)) {
                 MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
@@ -425,6 +502,67 @@ public class DodgeAndBattouHandler {
         return true;
     }
     
+    /**
+     * 回避可能かどうかの武器判定。
+     * メインハンドが武器ならOK。オフハンドが武器でもメインハンドが空でなければNG。
+     * dodgeWithInertItems設定ON時: メインハンドが「何もしないアイテム」でもオフハンド武器があれば回避可能。
+     */
+    public static boolean canDodgeWithHands(Player player) {
+        ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
+        if (isWeapon(mainHand)) return true;
+        if (isWeapon(offHand) && mainHand.isEmpty()) return true;
+        if (isWeapon(offHand) && !mainHand.isEmpty()) {
+            if (DodgeConfig.dodgeWithInertItems && isInertItem(mainHand)) return true;
+            if (DodgeConfig.dodgeWithActiveItems && isActiveItem(mainHand)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 右クリックしても何も起きない「不活性アイテム」かどうか判定。
+     * ブロック、食べ物、弓、クロスボウ、盾、ポーション、バケツ、スポーンエッグ、
+     * ツール（つるはし等）は除外。
+     */
+    private static boolean isInertItem(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        net.minecraft.world.item.Item item = stack.getItem();
+        if (item instanceof BlockItem) return false;
+        if (item instanceof BowItem) return false;
+        if (item instanceof CrossbowItem) return false;
+        if (item instanceof ShieldItem) return false;
+        if (item instanceof PotionItem) return false;
+        if (item instanceof BucketItem) return false;
+        if (item instanceof SpawnEggItem) return false;
+        if (item instanceof DiggerItem) return false;
+        if (stack.getFoodProperties(null) != null) return false;
+        if (isWeapon(stack)) return false;
+        if (isSaya(stack)) return false;
+        return true;
+    }
+
+    /**
+     * 右クリックで作用がある「アクティブアイテム」かどうか判定。
+     * 弓、クロスボウ、盾、ポーション、バケツ、スポーンエッグ、食べ物など。
+     */
+    private static boolean isActiveItem(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        net.minecraft.world.item.Item item = stack.getItem();
+        if (item instanceof BowItem) return true;
+        if (item instanceof CrossbowItem) return true;
+        if (item instanceof ShieldItem) return true;
+        if (item instanceof PotionItem) return true;
+        if (item instanceof BucketItem) return true;
+        if (item instanceof SpawnEggItem) return true;
+        if (stack.getFoodProperties(null) != null) return true;
+        if (isWeapon(stack)) return false;
+        if (isSaya(stack)) return false;
+        if (item instanceof BlockItem) return false;
+        if (item instanceof DiggerItem) return false;
+        if (isInertItem(stack)) return false;
+        return true;
+    }
+
     public static boolean isWeapon(ItemStack stack) {
         if (stack.isEmpty()) return false;
 

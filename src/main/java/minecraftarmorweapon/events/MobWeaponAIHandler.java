@@ -11,6 +11,8 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.InteractionHand;
 
 import minecraftarmorweapon.ai.PlayerLikeAIGoal;
+import minecraftarmorweapon.entity.CommonSoldierEntity;
+import minecraftarmorweapon.entity.EliteSoldierEntity;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 
 import java.util.HashSet;
@@ -48,6 +50,11 @@ public class MobWeaponAIHandler {
         // 既に処理済みのMobはスキップ
         UUID mobId = mob.getUUID();
         if (processedMobs.contains(mobId)) {
+            return;
+        }
+
+        // このmodの専用エンティティ（一般兵・精鋭兵）以外はスキルを使わせない
+        if (!(mob instanceof CommonSoldierEntity) && !(mob instanceof EliteSoldierEntity)) {
             return;
         }
 

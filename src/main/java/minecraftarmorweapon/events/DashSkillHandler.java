@@ -1,6 +1,8 @@
 package minecraftarmorweapon.events;
 
 import minecraftarmorweapon.util.DamageCalculator;
+import minecraftarmorweapon.damage.ElementType;
+import minecraftarmorweapon.damage.ElementalDamageUtils;
 
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -24,6 +26,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
+import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.*;
 
@@ -43,6 +46,7 @@ public class DashSkillHandler {
         int remainingTicks = 10;
         float baseDamage = 8.0f;
         Set<Integer> hitEntities = new HashSet<>();
+        ElementType element = ElementType.NONE;
     }
 
     // === シャドーステップ (Shadow Step) ===
@@ -51,11 +55,63 @@ public class DashSkillHandler {
     static class ShadowStepState {
         int remainingTicks = 100; // 5秒間
         String weaponClass;
+        ElementType element = ElementType.NONE;
     }
 
     // === 跳ね斬りダメージバフ ===
     private static final Map<UUID, Integer> leapSlashBuffTimers = new HashMap<>();
     private static final float LEAP_SLASH_DAMAGE_MULTIPLIER = 1.5f;
+
+    // === 最後に使用したダッシュスキルの属性と種類を記録 ===
+    private static final Map<UUID, ElementType> lastDashElement = new HashMap<>();
+    private static final Map<UUID, Boolean> lastDashWasShadowStep = new HashMap<>();
+
+    // === 武器属性取得ヘルパー ===
+    private static ElementType getWeaponElement(Player player) {
+        // まず武器のNBTから属性を取得
+        ElementType weaponElement = ElementalDamageUtils.getElementType(player.getMainHandItem());
+        if (weaponElement != ElementType.NONE) {
+            return weaponElement;
+        }
+        // 武器に属性がなければCuriosのbookスロットの魔導書から属性を取得
+        return getBookSlotElement(player);
+    }
+
+    /**
+     * Curiosのbookスロットにある魔導書から属性を判定する
+     */
+    private static ElementType getBookSlotElement(Player player) {
+        try {
+            java.util.concurrent.atomic.AtomicReference<ElementType> result =
+                    new java.util.concurrent.atomic.AtomicReference<>(ElementType.NONE);
+            CuriosApi.getCuriosHelper().getCuriosHandler(player).ifPresent(handler -> {
+                handler.getStacksHandler("book").ifPresent(stacksHandler -> {
+                    for (int i = 0; i < stacksHandler.getStacks().getSlots(); i++) {
+                        ItemStack stack = stacksHandler.getStacks().getStackInSlot(i);
+                        if (!stack.isEmpty()) {
+                            String itemName = stack.getItem().getClass().getSimpleName();
+                            switch (itemName) {
+                                case "FireballItem":
+                                    result.set(ElementType.FIRE); return;
+                                case "ThunderboltItem":
+                                    result.set(ElementType.THUNDER); return;
+                                case "BubbleshotItem":
+                                    result.set(ElementType.WATER); return;
+                                case "StormItem":
+                                case "WindStepItem":
+                                    result.set(ElementType.WIND); return;
+                                case "DarknessItem":
+                                    result.set(ElementType.DARK); return;
+                            }
+                        }
+                    }
+                });
+            });
+            return result.get();
+        } catch (Exception e) {
+            return ElementType.NONE;
+        }
+    }
 
     // === WASD入力から移動方向を計算 ===
 
@@ -93,13 +149,18 @@ public class DashSkillHandler {
      */
     public static void activateDashRush(Player player) {
         DashRushState state = new DashRushState();
+        state.element = getWeaponElement(player);
+        lastDashElement.put(player.getUUID(), state.element);
+        lastDashWasShadowStep.put(player.getUUID(), false);
         dashRushStates.put(player.getUUID(), state);
 
         // 視線方向に突進（Y成分も含む、真上で約4ブロック）
         Vec3 look = player.getLookAngle();
         Vec3 moveDir = getMovementDirection(player);
         double yComponent = Math.max(look.y * 0.85, -0.2);
-        player.setDeltaMovement(moveDir.scale(2.5).add(0, yComponent + 0.1, 0));
+        // WIND: 機動力UP（速度1.3倍）
+        double speedScale = state.element == ElementType.WIND ? 3.25 : 2.5;
+        player.setDeltaMovement(moveDir.scale(speedScale).add(0, yComponent + 0.1, 0));
         player.hurtMarked = true;
 
         // 開始音
@@ -125,18 +186,23 @@ public class DashSkillHandler {
         // WASD入力がある場合のみ水平移動、なければその場で跳ねるだけ
         float forward = player.zza;
         float strafe = player.xxa;
+        ElementType element = getWeaponElement(player);
+        lastDashElement.put(player.getUUID(), element);
+        lastDashWasShadowStep.put(player.getUUID(), false);
+        // WIND: 機動力UP（速度1.3倍）
+        double windMult = element == ElementType.WIND ? 1.3 : 1.0;
         if ((forward != 0 || strafe != 0) && player.isSprinting()) {
             // ダッシュ+WASD入力: 約7マス飛ぶ
             Vec3 moveDir = getMovementDirection(player);
             Vec3 look = player.getLookAngle();
             double yComponent = Math.max(look.y * 0.5, 0.15);
-            player.setDeltaMovement(moveDir.scale(2.0).add(0, yComponent + 0.55, 0));
+            player.setDeltaMovement(moveDir.scale(2.0 * windMult).add(0, yComponent + 0.55, 0));
         } else if (forward != 0 || strafe != 0) {
             // 歩き+WASD入力: 短めに飛ぶ
             Vec3 moveDir = getMovementDirection(player);
             Vec3 look = player.getLookAngle();
             double yComponent = Math.max(look.y * 0.5, 0.15);
-            player.setDeltaMovement(moveDir.scale(1.0).add(0, yComponent + 0.35, 0));
+            player.setDeltaMovement(moveDir.scale(1.0 * windMult).add(0, yComponent + 0.35, 0));
         } else {
             // その場ジャンプのみ
             player.setDeltaMovement(0, 0.5, 0);
@@ -168,6 +234,13 @@ public class DashSkillHandler {
         ShadowStepState state = new ShadowStepState();
         state.weaponClass = player.getMainHandItem().isEmpty() ? ""
                 : player.getMainHandItem().getItem().getClass().getSimpleName();
+        state.element = getWeaponElement(player);
+        lastDashElement.put(player.getUUID(), state.element);
+        lastDashWasShadowStep.put(player.getUUID(), true);
+        // DARK: 効果時間延長（100tick→150tick）
+        if (state.element == ElementType.DARK) {
+            state.remainingTicks = 150;
+        }
         shadowStepStates.put(player.getUUID(), state);
 
         // 初期移動（WASD方向に超高速移動、Y成分も含む。真上で約6ブロック）
@@ -258,9 +331,15 @@ public class DashSkillHandler {
             ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
             DamageCalculator.dealDamage(player, target, state.baseDamage, weapon);
 
-            // ノックバック
-            Vec3 knockback = target.position().subtract(pos).normalize().scale(0.5);
+            // ノックバック（WATER: 強化ノックバック）
+            double knockScale = state.element == ElementType.WATER ? 1.2 : 0.5;
+            Vec3 knockback = target.position().subtract(pos).normalize().scale(knockScale);
             target.setDeltaMovement(knockback.x, 0.3, knockback.z);
+
+            // FIRE: 引火
+            if (state.element == ElementType.FIRE) {
+                target.setSecondsOnFire(3);
+            }
         }
 
         // 軌跡パーティクル
@@ -320,6 +399,24 @@ public class DashSkillHandler {
                         player.hurtMarked = true;
                     }
                     break;
+                }
+            }
+        }
+
+        // FIRE/WATER: 通過した敵に効果を与える
+        if (state.element == ElementType.FIRE || state.element == ElementType.WATER) {
+            AABB areaBox = new AABB(
+                    pos.x - 1.5, pos.y, pos.z - 1.5,
+                    pos.x + 1.5, pos.y + 2, pos.z + 1.5);
+            List<LivingEntity> nearby = player.level().getEntitiesOfClass(LivingEntity.class, areaBox,
+                    e -> e != player);
+            for (LivingEntity target : nearby) {
+                if (state.element == ElementType.FIRE) {
+                    target.setSecondsOnFire(3);
+                } else {
+                    // WATER: ノックバック
+                    Vec3 knockback = target.position().subtract(pos).normalize().scale(1.0);
+                    target.setDeltaMovement(knockback.x, 0.3, knockback.z);
                 }
             }
         }
@@ -412,5 +509,15 @@ public class DashSkillHandler {
     public static boolean isAnyDashSkillActive(Player player) {
         UUID id = player.getUUID();
         return dashRushStates.containsKey(id) || shadowStepStates.containsKey(id);
+    }
+
+    /** 最後に使用したダッシュスキルの属性を取得 */
+    public static ElementType getLastDashElement(Player player) {
+        return lastDashElement.getOrDefault(player.getUUID(), ElementType.NONE);
+    }
+
+    /** 最後に使用したダッシュスキルがシャドーステップだったか */
+    public static boolean wasLastDashShadowStep(Player player) {
+        return lastDashWasShadowStep.getOrDefault(player.getUUID(), false);
     }
 }
