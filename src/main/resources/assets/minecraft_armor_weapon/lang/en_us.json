@@ -286,6 +286,6 @@
   "block.minecraft_armor_weapon.rarity_forge": "Rarity Forge",
   "item.minecraft_armor_weapon.ice_book": "§bIce Book",
   "item.minecraft_armor_weapon.electric_book": "§eElectric Book",
-  "item.minecraft_armor_weapon.corrosion_book": "§2Corrosion Book",
+  "item.minecraft_armor_weapon.corrosion_book": "§dCorrosion Book",
   "item.minecraft_armor_weapon.holy_book": "§6Holy Book"
 }

@@ -60,16 +60,14 @@ public class BattouFromSpecificSlotPacket {
 
             ScabbardLocation location = ScabbardLocation.values()[message.locationType];
 
-            // HANDの場合は手に鞘を持っている前提、それ以外は手のアイテムをインベントリに退避
-            if (location != ScabbardLocation.HAND) {
+            // メインハンドが空でない場合は抜刀しない（HAND+MAIN_HANDの場合は鞘自体を持っているのでOK）
+            if (location == ScabbardLocation.HAND && message.slotIndex == 0) {
+                // メインハンドに鞘を持っている場合はそのまま抜刀
+            } else {
                 ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-                if (!mainHand.isEmpty()) {
-                    // 先にメインハンドを空にしてからインベントリに追加
-                    // （add()がスタック可能アイテムを同じスロットに戻すのを防ぐ）
-                    player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-                    if (!player.getInventory().add(mainHand)) {
-                        player.drop(mainHand, false);
-                    }
+                if (!mainHand.isEmpty() && location != ScabbardLocation.HAND) {
+                    // メインハンドにアイテムがある場合は抜刀しない
+                    return;
                 }
             }
 
@@ -131,24 +129,18 @@ public class BattouFromSpecificSlotPacket {
         ItemStack weapon = CuriosScabbardHelper.extractWeaponFromScabbard(scabbard);
         if (weapon.isEmpty()) return;
 
-        // オフハンドの鞘から抜刀する場合、メインハンドのアイテムをインベントリに退避
-        if (hand == InteractionHand.OFF_HAND) {
-            ItemStack mainHandItem = player.getItemInHand(InteractionHand.MAIN_HAND);
-            if (!mainHandItem.isEmpty()) {
-                // 先にメインハンドを空にしてからインベントリに追加
-                // （add()がスタック可能アイテムを同じスロットに戻すのを防ぐ）
-                player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-                if (!player.getInventory().add(mainHandItem)) {
-                    player.drop(mainHandItem, false);
-                }
-            }
-        }
-
         // 鞘を空にする
         CuriosScabbardHelper.clearWeaponFromScabbard(scabbard);
 
-        // 武器をメインハンドに配置
-        player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
+        if (hand == InteractionHand.OFF_HAND) {
+            // オフハンドの鞘から抜刀：メインハンドが空でなければ抜刀しない
+            ItemStack mainHandItem = player.getItemInHand(InteractionHand.MAIN_HAND);
+            if (!mainHandItem.isEmpty()) return;
+            player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
+        } else {
+            // メインハンドの鞘から抜刀
+            player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
+        }
 
         if (hand == InteractionHand.OFF_HAND) {
             // オフハンドの場合: 空の鞘はオフハンドに残す
