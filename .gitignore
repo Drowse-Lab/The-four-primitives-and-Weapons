@@ -2,6 +2,8 @@
 
 *.md linguist-detectable=true
 
+node_modules/
+
 .claude/
 
 run/
