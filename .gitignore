@@ -2,9 +2,10 @@
 
 *.md linguist-detectable=true
 
-node_modules/
+
 
 .claude/
+node_modules/
 
 run/
 !run/**/*.nbt
