@@ -165,7 +165,6 @@ public class MobWeaponAIHandler {
         // ティア2: エリート兵
         if (weapon.getItem() == MinecraftArmorWeaponModItems.NETHERITE_KATANA.get() ||
             weapon.getItem() == MinecraftArmorWeaponModItems.WITHER_KATANA.get() ||
-            weapon.getItem() == MinecraftArmorWeaponModItems.MOTO_WITHER_KATANA.get() ||
             itemName.contains("Netherite") ||
             itemName.contains("Wither")) {
             return 2;

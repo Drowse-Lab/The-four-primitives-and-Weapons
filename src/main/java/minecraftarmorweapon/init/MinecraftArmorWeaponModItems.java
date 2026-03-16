@@ -55,7 +55,7 @@ import minecraftarmorweapon.item.NiguShieldItem;
 import minecraftarmorweapon.item.NetheriteKatanaItem;
 import minecraftarmorweapon.item.NaihazunoRingItem;
 import minecraftarmorweapon.item.MyTestIronKatanaItem;
-import minecraftarmorweapon.item.MotoWitherKatanaItem;
+
 import minecraftarmorweapon.item.MotaseruItem;
 import minecraftarmorweapon.item.MagischesFeenKatanaItem;
 import minecraftarmorweapon.item.MagicwandItem;
@@ -230,9 +230,6 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> CHUZUME_HUSK_ARMOR_CHESTPLATE = REGISTRY.register("chuzume_husk_armor_chestplate", () -> new ChuzumeHuskArmorItem.Chestplate());
 	public static final RegistryObject<Item> CHUZUME_HUSK_ARMOR_LEGGINGS = REGISTRY.register("chuzume_husk_armor_leggings", () -> new ChuzumeHuskArmorItem.Leggings());
 	public static final RegistryObject<Item> CHUZUME_HUSK_ARMOR_BOOTS = REGISTRY.register("chuzume_husk_armor_boots", () -> new ChuzumeHuskArmorItem.Boots());
-	public static final RegistryObject<Item> MOTO_WITHER_KATANA = REGISTRY.register("moto_wither_katana", () -> new MotoWitherKatanaItem());
-	public static final RegistryObject<Item> MOTO_WITHER_KATANA_BLOCK_1 = block(MinecraftArmorWeaponModBlocks.MOTO_WITHER_KATANA_BLOCK_1, MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO);
-	public static final RegistryObject<Item> MOTO_WITHER_KATANA_BLOCK = block(MinecraftArmorWeaponModBlocks.MOTO_WITHER_KATANA_BLOCK, MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO);
 	public static final RegistryObject<Item> WITHER_KATANA = REGISTRY.register("wither_katana", () -> new WitherKatanaItem());
 	public static final RegistryObject<Item> WITHER_SKELETON_SPAWNER = block(MinecraftArmorWeaponModBlocks.WITHER_SKELETON_SPAWNER, MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO);
 	public static final RegistryObject<Item> SKIN_OF_DRAGON = REGISTRY.register("skin_of_dragon", () -> new SkinOfDragonItem());

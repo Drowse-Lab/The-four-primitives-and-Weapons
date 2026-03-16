@@ -156,7 +156,7 @@ public class DamageCalculator {
         }
 
         // WitherKatanaのウィザー効果
-        if (weaponName.equals("WitherKatanaItem") || weaponName.equals("MotoWitherKatanaItem")) {
+        if (weaponName.equals("WitherKatanaItem")) {
             applyWitherKatanaEffect(attacker, target, damage);
         }
 

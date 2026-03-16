@@ -4,7 +4,7 @@
 	"texture_size": [32, 32],
 	"textures": {
 		"0": "minecraft_armor_weapon:item/saya",
-		"1": "minecraft_armor_weapon:block/motowitherkatana3d",
+		"1": "minecraft_armor_weapon:block/witherkatana3d",
 		"particle": "minecraft_armor_weapon:item/saya"
 	},
 	"elements": [

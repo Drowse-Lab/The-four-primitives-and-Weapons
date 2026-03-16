@@ -20,7 +20,6 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.GOLD_KATANA);
 			event.accept(MinecraftArmorWeaponModItems.NETHERITE_KATANA);
 			event.accept(MinecraftArmorWeaponModItems.WITHER_KATANA);
-			event.accept(MinecraftArmorWeaponModItems.MOTO_WITHER_KATANA);
 			event.accept(MinecraftArmorWeaponModItems.MY_TEST_IRON_KATANA);
 			event.accept(MinecraftArmorWeaponModItems.MAGICAL_KATANA);
 			event.accept(MinecraftArmorWeaponModItems.MAGISCHES_FEEN_KATANA);
@@ -55,6 +54,10 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.STORM);
 			event.accept(MinecraftArmorWeaponModItems.WIND_STEP);
 			event.accept(MinecraftArmorWeaponModItems.DARKNESS);
+			event.accept(MinecraftArmorWeaponModItems.ICE_BOOK);
+			event.accept(MinecraftArmorWeaponModItems.ELECTRIC_BOOK);
+			event.accept(MinecraftArmorWeaponModItems.CORROSION_BOOK);
+			event.accept(MinecraftArmorWeaponModItems.HOLY_BOOK);
 			event.accept(MinecraftArmorWeaponModItems.MAGICWAND);
 			event.accept(MinecraftArmorWeaponModItems.IMITATION);
 			event.accept(MinecraftArmorWeaponModItems.TUKAENA);
@@ -99,8 +102,6 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.STONE_KATANA_BLOCK);
 			event.accept(MinecraftArmorWeaponModItems.STONE_KATANA_BLOCK_1);
 			event.accept(MinecraftArmorWeaponModItems.MAKIWARIDAI);
-			event.accept(MinecraftArmorWeaponModItems.MOTO_WITHER_KATANA_BLOCK);
-			event.accept(MinecraftArmorWeaponModItems.MOTO_WITHER_KATANA_BLOCK_1);
 			event.accept(MinecraftArmorWeaponModItems.WITHER_SKELETON_SPAWNER);
 			event.accept(MinecraftArmorWeaponModItems.A);
 			event.accept(MinecraftArmorWeaponModItems.A_2);

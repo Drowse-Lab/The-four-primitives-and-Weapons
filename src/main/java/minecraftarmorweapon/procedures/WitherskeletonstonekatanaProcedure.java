@@ -41,7 +41,7 @@ public class WitherskeletonstonekatanaProcedure {
 		if (entity instanceof WitherSkeleton) {
 			if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.STONE_KATANA.get() && Mth.nextInt(RandomSource.create(), 0, 5) == 1) {
 				if (entity instanceof LivingEntity _entity) {
-					ItemStack _setstack = new ItemStack(MinecraftArmorWeaponModItems.MOTO_WITHER_KATANA.get());
+					ItemStack _setstack = new ItemStack(MinecraftArmorWeaponModItems.STONE_KATANA.get());
 					_setstack.setCount(1);
 					_entity.setItemInHand(InteractionHand.MAIN_HAND, _setstack);
 					if (_entity instanceof Player _player)

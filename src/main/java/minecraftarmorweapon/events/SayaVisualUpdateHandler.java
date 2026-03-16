@@ -219,7 +219,6 @@ public class SayaVisualUpdateHandler {
         if (itemName.equals("StoneKatanaItem")) return 3;
         if (itemName.equals("NetheriteKatanaItem")) return 4;
         if (itemName.equals("WitherKatanaItem")) return 5;
-        if (itemName.equals("MotoWitherKatanaItem")) return 6;
         if (itemName.equals("DarknessKatanaItem")) return 7;
         if (itemName.equals("MagicalKatanaItem")) return 8;
         if (itemName.equals("MagischesFeenKatanaItem")) return 9;

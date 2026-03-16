@@ -357,7 +357,7 @@ public class SmithingTableGui2konoGUIgaKaikareteiruJiannoteitukuProcedure {
 				_player.containerMenu.broadcastChanges();
 			}
 		} else if ((entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(1)).getItem() : ItemStack.EMPTY)
-				.getItem() == MinecraftArmorWeaponModItems.MOTO_WITHER_KATANA.get()
+				.getItem() == MinecraftArmorWeaponModItems.STONE_KATANA.get()
 				&& (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(2)).getItem() : ItemStack.EMPTY).getItem() == Items.NETHER_STAR
 				&& (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(3)).getItem() : ItemStack.EMPTY).getItem() == Items.WITHER_SKELETON_SKULL
 				&& 8 <= new Object() {
@@ -370,7 +370,7 @@ public class SmithingTableGui2konoGUIgaKaikareteiruJiannoteitukuProcedure {
 						return 0;
 					}
 				}.getAmount(3) || (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(1)).getItem() : ItemStack.EMPTY)
-						.getItem() == MinecraftArmorWeaponModItems.MOTO_WITHER_KATANA.get()
+						.getItem() == MinecraftArmorWeaponModItems.STONE_KATANA.get()
 						&& (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(3)).getItem() : ItemStack.EMPTY).getItem() == Items.NETHER_STAR
 						&& (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(2)).getItem() : ItemStack.EMPTY)
 								.getItem() == Items.WITHER_SKELETON_SKULL
@@ -385,7 +385,7 @@ public class SmithingTableGui2konoGUIgaKaikareteiruJiannoteitukuProcedure {
 							}
 						}.getAmount(2)
 				|| (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(2)).getItem() : ItemStack.EMPTY)
-						.getItem() == MinecraftArmorWeaponModItems.MOTO_WITHER_KATANA.get()
+						.getItem() == MinecraftArmorWeaponModItems.STONE_KATANA.get()
 						&& (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(3)).getItem() : ItemStack.EMPTY).getItem() == Items.NETHER_STAR
 						&& (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(1)).getItem() : ItemStack.EMPTY)
 								.getItem() == Items.WITHER_SKELETON_SKULL
@@ -400,7 +400,7 @@ public class SmithingTableGui2konoGUIgaKaikareteiruJiannoteitukuProcedure {
 							}
 						}.getAmount(1)
 				|| (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(2)).getItem() : ItemStack.EMPTY)
-						.getItem() == MinecraftArmorWeaponModItems.MOTO_WITHER_KATANA.get()
+						.getItem() == MinecraftArmorWeaponModItems.STONE_KATANA.get()
 						&& (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(1)).getItem() : ItemStack.EMPTY).getItem() == Items.NETHER_STAR
 						&& (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(3)).getItem() : ItemStack.EMPTY)
 								.getItem() == Items.WITHER_SKELETON_SKULL
@@ -415,7 +415,7 @@ public class SmithingTableGui2konoGUIgaKaikareteiruJiannoteitukuProcedure {
 							}
 						}.getAmount(3)
 				|| (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(3)).getItem() : ItemStack.EMPTY)
-						.getItem() == MinecraftArmorWeaponModItems.MOTO_WITHER_KATANA.get()
+						.getItem() == MinecraftArmorWeaponModItems.STONE_KATANA.get()
 						&& (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(2)).getItem() : ItemStack.EMPTY).getItem() == Items.NETHER_STAR
 						&& (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(1)).getItem() : ItemStack.EMPTY)
 								.getItem() == Items.WITHER_SKELETON_SKULL
@@ -430,7 +430,7 @@ public class SmithingTableGui2konoGUIgaKaikareteiruJiannoteitukuProcedure {
 							}
 						}.getAmount(1)
 				|| (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(3)).getItem() : ItemStack.EMPTY)
-						.getItem() == MinecraftArmorWeaponModItems.MOTO_WITHER_KATANA.get()
+						.getItem() == MinecraftArmorWeaponModItems.STONE_KATANA.get()
 						&& (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(1)).getItem() : ItemStack.EMPTY).getItem() == Items.NETHER_STAR
 						&& (entity instanceof ServerPlayer _plrSlotItem && _plrSlotItem.containerMenu instanceof Supplier _splr && _splr.get() instanceof Map _slt ? ((Slot) _slt.get(2)).getItem() : ItemStack.EMPTY)
 								.getItem() == Items.WITHER_SKELETON_SKULL

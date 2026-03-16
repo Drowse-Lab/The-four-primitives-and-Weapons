@@ -60,7 +60,7 @@
   "entity.minecraft_armor_weapon.killotiru": "Otiruyo",
   "item.minecraft_armor_weapon.das_herz_einer_fee_armor_boots": "das herz einer fee armor boots",
   "effect.minecraft_armor_weapon.kitterukitteru": "subetekirisuteru",
-  "block.minecraft_armor_weapon.moto_wither_katana_block_1": "Moto Wither Katana Block",
+
   "effect.minecraft_armor_weapon.kill_effect_true_or_false": "kill effect true of false",
   "item.minecraft_armor_weapon.imitation": "Book of Transmutation",
   "tooltip.minecraft_armor_weapon.feyn.sigiled": "封",
@@ -105,7 +105,7 @@
   "entity.minecraft.villager.minecraft_armor_weapon.minecraft_armor_and_weapon": "Minecraft Armor And Weapon",
   "advancements.magical_katana_progress.title": "魔力の結晶大量じゃ～！",
   "item.minecraft_armor_weapon.kurikarakenutigatana": "§5倶利伽羅剣",
-  "item.minecraft_armor_weapon.moto_wither_katana": "§7Stone Katana",
+
   "effect.minecraft_armor_weapon.zanngekikai": "aa",
   "item.minecraft_armor_weapon.kenti": "Kenti",
   "block.minecraft_armor_weapon.custom_smithing_table": "Custom Smithing Table",
@@ -144,7 +144,7 @@
   "gui.minecraft_armor_weapon.rpg_book_gui.button_vampire": "吸血鬼",
   "effect.minecraft_armor_weapon.bubbleshot_effect": "BubbleshoteEffect",
   "effect.minecraft_armor_weapon.chuzume_husk_armor_knock_back": "knock back",
-  "block.minecraft_armor_weapon.moto_wither_katana_block": "Moto Wither Katana Block",
+
   "advancements.sword_progress.title": "初めの一歩",
   "item.minecraft_armor_weapon.desporn_kenti": "Kenti",
   "item.minecraft_armor_weapon.questbook": "Quest book",
