@@ -145,6 +145,7 @@ public class ElementalDamageUtils {
                                 case "ElectricBookItem":  result.set(ElementType.ELECTRIC); return;
                                 case "CorrosionBookItem": result.set(ElementType.CORROSION); return;
                                 case "HolyBookItem":      result.set(ElementType.HOLY); return;
+                                case "ErrorBookItem":     result.set(ElementType.ERROR); return;
                             }
                         }
                     }

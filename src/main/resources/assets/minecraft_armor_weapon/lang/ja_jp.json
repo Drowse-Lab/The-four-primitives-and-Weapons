@@ -283,5 +283,6 @@
   "effect.minecraft_armor_weapon.tp_attack": "tp",
   "item.minecraft_armor_weapon.tukaena": "Tukaena",
   "item.minecraft_armor_weapon.throwing_knife": "投げナイフ",
-  "block.minecraft_armor_weapon.rarity_forge": "レアリティ強化台"
+  "block.minecraft_armor_weapon.rarity_forge": "レアリティ強化台",
+  "item.minecraft_armor_weapon.error_book": "§4error_book"
 }

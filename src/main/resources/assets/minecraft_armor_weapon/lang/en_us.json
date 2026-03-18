@@ -287,5 +287,6 @@
   "item.minecraft_armor_weapon.ice_book": "§bice_book",
   "item.minecraft_armor_weapon.electric_book": "§eelectric_book",
   "item.minecraft_armor_weapon.corrosion_book": "§dcorrosion_book",
-  "item.minecraft_armor_weapon.holy_book": "§6holy_book"
+  "item.minecraft_armor_weapon.holy_book": "§6holy_book",
+  "item.minecraft_armor_weapon.error_book": "§4error_book"
 }

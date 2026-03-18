@@ -23,8 +23,10 @@ public class HolyBookItem extends Item implements ICurioItem {
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
 		int lv = ElementalDamageUtils.getElementLevel(stack);
-		if (lv > 0) {
+		if (lv >= 1 && lv <= 10) {
 			tooltip.add(Component.literal("§6聖属性  Lv." + lv));
+		} else if (lv != 0) {
+			tooltip.add(ErrorBookItem.buildErrorComponent());
 		}
 	}
 

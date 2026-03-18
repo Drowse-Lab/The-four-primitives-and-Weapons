@@ -13,7 +13,8 @@ public enum ElementType {
     FIRE("fire"),          // 火属性
     WIND("wind"),          // 風属性
     THUNDER("thunder"),    // 雷属性
-    WATER("water");        // 水属性
+    WATER("water"),        // 水属性
+    ERROR("error");        // エラー属性（混沌）
 
     private final String name;
 
@@ -49,6 +50,7 @@ public enum ElementType {
             case DARK:      return HOLY;      // 聖は闇を浄化する
             case WATER:     return THUNDER;   // 雷は水を蒸発させる
             case WIND:      return ICE;       // 氷は風を凍てつかせる
+            case ERROR:     return NONE;      // エラー属性は無効化不可
             default:        return NONE;
         }
     }
