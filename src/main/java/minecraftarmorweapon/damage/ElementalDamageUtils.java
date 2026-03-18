@@ -95,6 +95,33 @@ public class ElementalDamageUtils {
     }
 
     /**
+     * Curiosのbookスロットにある魔導書のレベルを取得
+     */
+    public static int getBookSlotLevel(Player player) {
+        try {
+            java.util.concurrent.atomic.AtomicInteger result =
+                    new java.util.concurrent.atomic.AtomicInteger(0);
+            CuriosApi.getCuriosHelper().getCuriosHandler(player).ifPresent(handler -> {
+                handler.getStacksHandler("book").ifPresent(stacksHandler -> {
+                    for (int i = 0; i < stacksHandler.getStacks().getSlots(); i++) {
+                        ItemStack stack = stacksHandler.getStacks().getStackInSlot(i);
+                        if (!stack.isEmpty()) {
+                            int lv = getElementLevel(stack);
+                            if (lv > 0) {
+                                result.set(lv);
+                                return;
+                            }
+                        }
+                    }
+                });
+            });
+            return result.get();
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /**
      * Curiosのbookスロットにある魔導書の属性を取得
      */
     public static ElementType getBookSlotElement(Player player) {

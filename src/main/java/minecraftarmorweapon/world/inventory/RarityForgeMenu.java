@@ -1,6 +1,12 @@
 package minecraftarmorweapon.world.inventory;
 
+import minecraftarmorweapon.damage.ElementType;
+import minecraftarmorweapon.damage.ElementalDamageUtils;
 import minecraftarmorweapon.init.RarityForgeRegistration;
+import minecraftarmorweapon.item.CorrosionBookItem;
+import minecraftarmorweapon.item.ElectricBookItem;
+import minecraftarmorweapon.item.HolyBookItem;
+import minecraftarmorweapon.item.IceBookItem;
 import minecraftarmorweapon.item.rarity.RarityCraftingLogic;
 import minecraftarmorweapon.item.rarity.RarityForgeRecipe;
 import minecraftarmorweapon.item.rarity.RarityForgeRecipes;
@@ -148,8 +154,14 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
 
         // 結果アイテム作成
         ItemStack result = new ItemStack(recipe.getResult());
-        WeaponRarity.setToStack(result, rarity);
-        WeaponRarity.setCatalystBonus(result, catalystBonus);
+        if (recipe.isBookRecipe()) {
+            // magic bookレシピ: ElementType + ElementLevel NBTを設定
+            ElementType elementType = getElementTypeForBook(recipe.getResult());
+            ElementalDamageUtils.setElement(result, elementType, recipe.getElementLevel());
+        } else {
+            WeaponRarity.setToStack(result, rarity);
+            WeaponRarity.setCatalystBonus(result, catalystBonus);
+        }
 
         // グリッドから素材消費
         recipe.consumeIngredients(grid);
@@ -173,6 +185,14 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
                     sp.getX(), sp.getY(), sp.getZ(),
                     SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
         }
+    }
+
+    private ElementType getElementTypeForBook(net.minecraft.world.item.Item item) {
+        if (item instanceof IceBookItem)       return ElementType.ICE;
+        if (item instanceof ElectricBookItem)  return ElementType.ELECTRIC;
+        if (item instanceof CorrosionBookItem) return ElementType.CORROSION;
+        if (item instanceof HolyBookItem)      return ElementType.HOLY;
+        return ElementType.NONE;
     }
 
     @Override

@@ -1,0 +1,9 @@
+{
+  "pattern": ["TTT", "TLT", "TTT"],
+  "key": {
+    "T": "minecraft:glowstone_dust",
+    "L": "minecraft:gold_ingot"
+  },
+  "result": "minecraft_armor_weapon:holy_book",
+  "element_level": 4
+}

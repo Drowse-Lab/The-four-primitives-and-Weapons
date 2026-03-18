@@ -17,16 +17,30 @@ public class RarityForgeRecipe {
     private final int patternWidth;
     private final int patternHeight;
     private final Item result;
+    private final int elementLevel; // 0 = 通常レシピ, 1-10 = magic bookレベル
 
     public RarityForgeRecipe(Item result, Item[][] pattern, int width, int height) {
+        this(result, pattern, width, height, 0);
+    }
+
+    public RarityForgeRecipe(Item result, Item[][] pattern, int width, int height, int elementLevel) {
         this.result = result;
         this.pattern = pattern;
         this.patternWidth = width;
         this.patternHeight = height;
+        this.elementLevel = elementLevel;
     }
 
     public Item getResult() {
         return result;
+    }
+
+    public int getElementLevel() {
+        return elementLevel;
+    }
+
+    public boolean isBookRecipe() {
+        return elementLevel > 0;
     }
 
     public Item[][] getPattern() {

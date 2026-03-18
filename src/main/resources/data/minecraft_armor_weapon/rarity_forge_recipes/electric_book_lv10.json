@@ -1,0 +1,9 @@
+{
+  "pattern": ["TTT", "TLT", "TTT"],
+  "key": {
+    "T": "minecraft:copper_ingot",
+    "L": "minecraft:beacon"
+  },
+  "result": "minecraft_armor_weapon:electric_book",
+  "element_level": 10
+}

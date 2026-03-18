@@ -117,9 +117,9 @@ import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
 public class MinecraftArmorWeaponModItems {
 	public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, MinecraftArmorWeaponMod.MODID);
-	public static final RegistryObject<Item> BUBBLESHOT = REGISTRY.register("bubbleshot", () -> new BubbleshotItem());
-	public static final RegistryObject<Item> FIREBALL = REGISTRY.register("fireball", () -> new FireballItem());
-	public static final RegistryObject<Item> THUNDERBOLT = REGISTRY.register("thunderbolt", () -> new ThunderboltItem());
+	public static final RegistryObject<Item> BUBBLESHOT = REGISTRY.register("bubbles_book", () -> new BubbleshotItem());
+	public static final RegistryObject<Item> FIREBALL = REGISTRY.register("fire_book", () -> new FireballItem());
+	public static final RegistryObject<Item> THUNDERBOLT = REGISTRY.register("thunder_book", () -> new ThunderboltItem());
 	public static final RegistryObject<Item> ITEM_WEAPONSWORD = REGISTRY.register("item_weaponsword", () -> new ItemWeaponswordItem());
 	public static final RegistryObject<Item> NETHERITE_KATANA = REGISTRY.register("netherite_katana", () -> new NetheriteKatanaItem());
 	public static final RegistryObject<Item> ROSE = block(MinecraftArmorWeaponModBlocks.ROSE, null);
@@ -144,7 +144,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> WARABITETOU = REGISTRY.register("warabitetou", () -> new WarabitetouItem());
 	public static final RegistryObject<Item> A_2 = REGISTRY.register("a_2", () -> new A2Item());
 	public static final RegistryObject<Item> OTIRUYO_SPAWN_EGG = REGISTRY.register("otiruyo_spawn_egg", () -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.OTIRUYO, -1, -1, new Item.Properties()));
-	public static final RegistryObject<Item> WIND_STEP = REGISTRY.register("wind_step", () -> new WindStepItem());
+	public static final RegistryObject<Item> WIND_STEP = REGISTRY.register("wind_book", () -> new WindStepItem());
 	public static final RegistryObject<Item> STRAY_OUTER_ARMOR_HELMET = REGISTRY.register("stray_outer_armor_helmet", () -> new StrayOuterArmorItem.Helmet());
 	public static final RegistryObject<Item> STRAY_OUTER_ARMOR_CHESTPLATE = REGISTRY.register("stray_outer_armor_chestplate", () -> new StrayOuterArmorItem.Chestplate());
 	public static final RegistryObject<Item> STRAY_OUTER_ARMOR_LEGGINGS = REGISTRY.register("stray_outer_armor_leggings", () -> new StrayOuterArmorItem.Leggings());
@@ -186,7 +186,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> KURIKARAKEN_BLOCK = block(MinecraftArmorWeaponModBlocks.KURIKARAKEN_BLOCK, MinecraftArmorWeaponModTabs.TAB_YOPKEINAMONO);
 	public static final RegistryObject<Item> PROTOTYPE_KATANA = REGISTRY.register("prototype_katana", () -> new PrototypeKatanaItem());
 	public static final RegistryObject<Item> AAA = REGISTRY.register("aaa", () -> new AaaItem());
-	public static final RegistryObject<Item> STORM = REGISTRY.register("storm", () -> new StormItem());
+	public static final RegistryObject<Item> STORM = REGISTRY.register("storm_book", () -> new StormItem());
 	public static final RegistryObject<Item> ONINOMEN_HELMET = REGISTRY.register("oninomen_helmet", () -> new OninomenItem.Helmet());
 	public static final RegistryObject<Item> SMALL_SWORD = REGISTRY.register("small_sword", () -> new SmallSwordItem());
 	public static final RegistryObject<Item> KATANA_NIGU_HUMERUS = REGISTRY.register("katana_nigu_humerus", () -> new KatanaNiguHumerusItem());
@@ -215,7 +215,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> BLACKHOLE_SPAWN_EGG = REGISTRY.register("blackhole_spawn_egg",
 			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.BLACKHOLE, -16777216, -16777216, new Item.Properties()));
 	public static final RegistryObject<Item> DESPORN_KENTI = REGISTRY.register("desporn_kenti", () -> new DespornKentiItem());
-	public static final RegistryObject<Item> DARKNESS = REGISTRY.register("darkness", () -> new DarknessItem());
+	public static final RegistryObject<Item> DARKNESS = REGISTRY.register("darkness_book", () -> new DarknessItem());
 	public static final RegistryObject<Item> DARKNESS_KATANA = REGISTRY.register("darkness_katana", () -> new DarknessKatanaItem());
 	public static final RegistryObject<Item> FIREWORKS_BLACK = REGISTRY.register("fireworks_black", () -> new FireworksBlackItem());
 	public static final RegistryObject<Item> SCYTHE = REGISTRY.register("scythe", () -> new ScytheItem());

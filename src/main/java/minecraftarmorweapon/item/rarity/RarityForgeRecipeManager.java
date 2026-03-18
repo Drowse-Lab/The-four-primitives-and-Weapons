@@ -116,6 +116,11 @@ public class RarityForgeRecipeManager extends SimpleJsonResourceReloadListener {
             }
         }
 
-        return new RarityForgeRecipe(resultItem, grid, width, height);
+        int elementLevel = 0;
+        if (json.has("element_level")) {
+            elementLevel = json.get("element_level").getAsInt();
+        }
+
+        return new RarityForgeRecipe(resultItem, grid, width, height, elementLevel);
     }
 }

@@ -1,0 +1,18 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "minecraft_armor_weapon:font/static_noise.png",
+      "ascent": 7,
+      "height": 8,
+      "chars": [
+        " !\"#$%&'()*+,-./",
+        "0123456789:;<=>?",
+        "@ABCDEFGHIJKLMNO",
+        "PQRSTUVWXYZ[\\]^_",
+        "`abcdefghijklmno",
+        "pqrstuvwxyz{|}~\u0000"
+      ]
+    }
+  ]
+}
