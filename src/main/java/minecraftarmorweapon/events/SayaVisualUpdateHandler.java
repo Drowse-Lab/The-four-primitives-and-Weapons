@@ -210,9 +210,17 @@ public class SayaVisualUpdateHandler {
     
     private static int getModelDataForKatana(ItemStack katanaStack) {
         if (katanaStack.isEmpty()) return 0;
-        
+
         String itemName = katanaStack.getItem().getClass().getSimpleName();
-        
+
+        // 霊刀: Feyn="sigiled"の場合は封印鞘モデル
+        if (itemName.equals("ReitouItem")) {
+            if (katanaStack.hasTag() && "sigiled".equals(katanaStack.getTag().getString("Feyn"))) {
+                return 17; // 封印鞘（bandage/sigiled）
+            }
+            return 16; // 通常の霊刀鞘
+        }
+
         // 各刀タイプに対応するカスタムモデルデータ
         if (itemName.equals("IronKatanaItem")) return 1;
         if (itemName.equals("GoldKatanaItem")) return 2;

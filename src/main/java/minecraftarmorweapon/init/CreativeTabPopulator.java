@@ -44,6 +44,7 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE_UTIGATANA);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE_TYOKUTOU);
+			event.accept(MinecraftArmorWeaponModItems.OFUDA);
 		}
 
 		// === TAB_MAGIC_BOOKS ===

@@ -1,0 +1,13 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"ingredients": [
+		{"item": "minecraft_armor_weapon:saya"},
+		{"item": "minecraft_armor_weapon:ofuda"},
+		{"item": "minecraft:string"}
+	],
+	"result": {
+		"item": "minecraft_armor_weapon:saya",
+		"count": 1,
+		"nbt": "{Feyn:\"sigiled\"}"
+	}
+}

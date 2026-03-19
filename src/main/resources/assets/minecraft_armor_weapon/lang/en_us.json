@@ -292,5 +292,7 @@
   "item.minecraft_armor_weapon.reitou": "§5§lSacred Sword",
   "tooltip.minecraft_armor_weapon.reitou.desc1": "Object of the Fox's Faith",
   "tooltip.minecraft_armor_weapon.reitou.desc2": "A cursed blade harboring grudge",
-  "tooltip.minecraft_armor_weapon.reitou.desc3": "Attacking enemies with other weapons restores durability"
+  "tooltip.minecraft_armor_weapon.reitou.desc3": "Attacking enemies with other weapons restores durability",
+  "item.minecraft_armor_weapon.ofuda": "§bSeal Talisman",
+  "tooltip.minecraft_armor_weapon.ofuda": "A talisman with the power of sealing"
 }

@@ -16,6 +16,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.BlockItem;
 
+import minecraftarmorweapon.item.OfudaItem;
 import minecraftarmorweapon.item.WitherKatanaItem;
 import minecraftarmorweapon.item.WitherBoneItem;
 import minecraftarmorweapon.item.WindStepItem;
@@ -272,6 +273,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> HOLY_BOOK = REGISTRY.register("holy_book", () -> new HolyBookItem());
 	public static final RegistryObject<Item> ERROR_BOOK = REGISTRY.register("error_book", () -> new ErrorBookItem());
 	public static final RegistryObject<Item> REITOU = REGISTRY.register("reitou", () -> new ReitouItem());
+	public static final RegistryObject<Item> OFUDA = REGISTRY.register("ofuda", () -> new OfudaItem());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, Object tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()));

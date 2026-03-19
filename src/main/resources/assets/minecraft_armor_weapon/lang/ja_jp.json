@@ -288,5 +288,7 @@
   "item.minecraft_armor_weapon.reitou": "§5§l霊刀",
   "tooltip.minecraft_armor_weapon.reitou.desc1": "狐の信仰の対象",
   "tooltip.minecraft_armor_weapon.reitou.desc2": "怨念の力を宿す呪いの刀",
-  "tooltip.minecraft_armor_weapon.reitou.desc3": "他の武器で敵を攻撃すると耐久度が回復する"
+  "tooltip.minecraft_armor_weapon.reitou.desc3": "他の武器で敵を攻撃すると耐久度が回復する",
+  "item.minecraft_armor_weapon.ofuda": "§b封のお札",
+  "tooltip.minecraft_armor_weapon.ofuda": "封印の力を持つ護符"
 }

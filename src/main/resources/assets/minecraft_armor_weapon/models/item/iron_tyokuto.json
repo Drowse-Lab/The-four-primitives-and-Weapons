@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft_armor_weapon:custom/luna",
+  "textures": {
+    "1": "minecraft_armor_weapon:block/iron_tyokuto3d",
+    "particle": "minecraft_armor_weapon:item/iron_tyokuto"
+  }
+}

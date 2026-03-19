@@ -92,6 +92,18 @@
 				"custom_model_data": 15
 			},
 			"model": "minecraft_armor_weapon:custom/saya_loki_the_trick_ster_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 16
+			},
+			"model": "minecraft_armor_weapon:custom/saya_reitou"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 17
+			},
+			"model": "minecraft_armor_weapon:custom/saya_reitou_sigiled"
 		}
 	]
 }
