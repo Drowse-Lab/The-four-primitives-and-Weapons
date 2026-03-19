@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft_armor_weapon:custom/reitou3d",
+  "textures": {
+    "0": "minecraft_armor_weapon:block/reitou3d",
+    "particle": "minecraft_armor_weapon:block/reitou3d"
+  }
+}

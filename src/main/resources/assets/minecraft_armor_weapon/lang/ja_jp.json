@@ -284,5 +284,9 @@
   "item.minecraft_armor_weapon.tukaena": "Tukaena",
   "item.minecraft_armor_weapon.throwing_knife": "投げナイフ",
   "block.minecraft_armor_weapon.rarity_forge": "レアリティ強化台",
-  "item.minecraft_armor_weapon.error_book": "§4error_book"
+  "item.minecraft_armor_weapon.error_book": "§4error_book",
+  "item.minecraft_armor_weapon.reitou": "§5§l霊刀",
+  "tooltip.minecraft_armor_weapon.reitou.desc1": "狐の信仰の対象",
+  "tooltip.minecraft_armor_weapon.reitou.desc2": "怨念の力を宿す呪いの刀",
+  "tooltip.minecraft_armor_weapon.reitou.desc3": "他の武器で敵を攻撃すると耐久度が回復する"
 }

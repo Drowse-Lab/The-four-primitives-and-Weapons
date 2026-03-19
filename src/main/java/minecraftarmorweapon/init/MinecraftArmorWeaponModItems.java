@@ -89,6 +89,7 @@ import minecraftarmorweapon.item.HolyBookItem;
 import minecraftarmorweapon.item.IceBookItem;
 import minecraftarmorweapon.item.ElectricBookItem;
 import minecraftarmorweapon.item.CorrosionBookItem;
+import minecraftarmorweapon.item.ReitouItem;
 import minecraftarmorweapon.item.ErrorBookItem;
 import minecraftarmorweapon.item.FireballItem;
 import minecraftarmorweapon.item.DragonRedArmorItem;
@@ -270,6 +271,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> CORROSION_BOOK = REGISTRY.register("corrosion_book", () -> new CorrosionBookItem());
 	public static final RegistryObject<Item> HOLY_BOOK = REGISTRY.register("holy_book", () -> new HolyBookItem());
 	public static final RegistryObject<Item> ERROR_BOOK = REGISTRY.register("error_book", () -> new ErrorBookItem());
+	public static final RegistryObject<Item> REITOU = REGISTRY.register("reitou", () -> new ReitouItem());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, Object tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()));

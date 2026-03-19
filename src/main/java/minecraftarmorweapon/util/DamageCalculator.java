@@ -169,6 +169,11 @@ public class DamageCalculator {
         if (weaponName.equals("MagicalKatanaItem") || weaponName.equals("MagischesFeenKatanaItem")) {
             applyMagicEffect(attacker, target, damage);
         }
+
+        // 霊刀の怨念効果
+        if (weaponName.equals("ReitouItem")) {
+            applyReitouEffect(attacker, target, damage);
+        }
     }
 
     /**
@@ -286,5 +291,31 @@ public class DamageCalculator {
 
         attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
             SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 0.5f, 1.2f);
+    }
+
+    private static void applyReitouEffect(LivingEntity attacker, LivingEntity target, float damage) {
+        // 怨念の呪いチェック
+        boolean isCursed = target.getPersistentData().contains("Feyn") &&
+                           "cursed".equals(target.getPersistentData().getString("Feyn"));
+
+        // 怨念ダメージ（呪われた敵には強化）
+        float spiritDamage = isCursed ? damage * 0.4f : damage * 0.15f;
+        target.hurt(target.damageSources().magic(), spiritDamage);
+
+        // 呪い付与
+        target.getPersistentData().putString("Feyn", "cursed");
+
+        // 黒いモヤエフェクト
+        if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(ParticleTypes.SMOKE,
+                target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+                15, 0.4, 0.4, 0.4, 0.05);
+            serverLevel.sendParticles(ParticleTypes.SOUL,
+                target.getX(), target.getY() + 1, target.getZ(),
+                5, 0.3, 0.3, 0.3, 0.02);
+        }
+
+        attacker.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+            SoundEvents.WITHER_SKELETON_HURT, SoundSource.PLAYERS, 0.5f, 0.5f);
     }
 }

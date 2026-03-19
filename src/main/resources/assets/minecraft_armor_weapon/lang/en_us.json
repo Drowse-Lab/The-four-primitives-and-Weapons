@@ -288,5 +288,9 @@
   "item.minecraft_armor_weapon.electric_book": "§eelectric_book",
   "item.minecraft_armor_weapon.corrosion_book": "§dcorrosion_book",
   "item.minecraft_armor_weapon.holy_book": "§6holy_book",
-  "item.minecraft_armor_weapon.error_book": "§4error_book"
+  "item.minecraft_armor_weapon.error_book": "§4error_book",
+  "item.minecraft_armor_weapon.reitou": "§5§lSacred Sword",
+  "tooltip.minecraft_armor_weapon.reitou.desc1": "Object of the Fox's Faith",
+  "tooltip.minecraft_armor_weapon.reitou.desc2": "A cursed blade harboring grudge",
+  "tooltip.minecraft_armor_weapon.reitou.desc3": "Attacking enemies with other weapons restores durability"
 }
