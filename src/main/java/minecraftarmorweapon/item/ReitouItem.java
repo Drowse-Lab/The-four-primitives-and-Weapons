@@ -48,7 +48,7 @@ public class ReitouItem extends SwordItem {
 	public ReitouItem() {
 		super(new Tier() {
 			public int getUses() {
-				return 500; // 耐久度あり（怨念で回復する仕組み）
+				return 0; // 耐久度無限
 			}
 
 			public float getSpeed() {
