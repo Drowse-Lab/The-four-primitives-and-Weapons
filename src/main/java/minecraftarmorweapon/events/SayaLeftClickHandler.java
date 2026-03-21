@@ -101,7 +101,14 @@ public class SayaLeftClickHandler {
 
                 // 鞘から刀の情報を削除（空の鞘にする）
                 tag.remove(storedKey);
-                tag.putInt("CustomModelData", 0); // 空の鞘のモデル
+                // 封印鞘なら封印モデル、霊刀スタイルならそのモデル、それ以外は空
+                if ("sigiled".equals(tag.getString("Feyn"))) {
+                    tag.putInt("CustomModelData", 18); // 封印鞘（空）
+                } else if ("reitou".equals(tag.getString("SayaStyle"))) {
+                    tag.putInt("CustomModelData", 16); // 霊刀スタイル鞘（空）
+                } else {
+                    tag.putInt("CustomModelData", 0); // 通常の空の鞘
+                }
 
                 // タグをItemStackに適用
                 sheathStack.setTag(tag);

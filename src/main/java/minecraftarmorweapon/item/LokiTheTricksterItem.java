@@ -29,7 +29,7 @@ public class LokiTheTricksterItem extends SwordItem {
 	private static final String DISARM_MODE = "disarm";
 	private static final String DECOY_MODE = "decoy";
 	private static final int CHARGE_TIME = 20; // 1秒(20tick)
-	private static final int HUNGER_COST = 2; // 満腹度コスト(1つ分)
+	private static final int HUNGER_COST = 6; // 満腹度コスト(3つ分)
 
 	public LokiTheTricksterItem() {
 		super(new Tier() {
@@ -42,7 +42,7 @@ public class LokiTheTricksterItem extends SwordItem {
 			}
 
 			public float getAttackDamageBonus() {
-				return 2f;
+				return 5.5f;
 			}
 
 			public int getLevel() {
@@ -56,7 +56,7 @@ public class LokiTheTricksterItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -1.4f, new Item.Properties());
+		}, 0, -2f, new Item.Properties());
 	}
 
 	// モード取得（publicに変更してイベントハンドラーから使える様に）

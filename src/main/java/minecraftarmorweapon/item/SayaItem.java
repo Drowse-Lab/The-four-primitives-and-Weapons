@@ -8,6 +8,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.CompoundTag;
 
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
 import top.theillusivec4.curios.api.SlotContext;
@@ -15,6 +17,8 @@ import top.theillusivec4.curios.api.SlotContext;
 import minecraftarmorweapon.procedures.SayaRightclickedProcedure;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
+
+import java.util.List;
 
 public class SayaItem extends Item implements ICurioItem {
 	public SayaItem() {
@@ -31,6 +35,19 @@ public class SayaItem extends Item implements ICurioItem {
 
 		SayaRightclickedProcedure.execute(world, entity, itemstack, hand);
 		return ar;
+	}
+
+	@Override
+	public void appendHoverText(ItemStack stack, Level world, List<Component> list, net.minecraft.world.item.TooltipFlag flag) {
+		super.appendHoverText(stack, world, list, flag);
+
+		if (stack.hasTag() && stack.getTag().contains("StoredKatana")) {
+			ItemStack storedKatana = ItemStack.of(stack.getTag().getCompound("StoredKatana"));
+			list.add(Component.literal("§7納刀中: §f" + storedKatana.getHoverName().getString()));
+		} else {
+			list.add(Component.literal("§7空の鞘"));
+			list.add(Component.literal("§8Rキーで納刀"));
+		}
 	}
 
 	@Override

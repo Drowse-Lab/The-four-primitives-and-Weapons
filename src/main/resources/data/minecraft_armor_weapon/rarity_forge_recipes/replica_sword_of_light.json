@@ -1,0 +1,10 @@
+{
+  "pattern": ["121", "131", " 4 "],
+  "key": {
+    "1": "minecraft:iron_ingot",
+    "2": "minecraft:golden_apple",
+    "3": "minecraft:golden_sword",
+    "4": "minecraft:shield"
+  },
+  "result": "minecraft_armor_weapon:replica_sword_of_light"
+}

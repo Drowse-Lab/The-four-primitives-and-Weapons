@@ -40,6 +40,11 @@ public class GuardposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 			if (world instanceof ServerLevel _level) {
 				spawnGuardArmorStand(_level, x, y, z, Items.BLACK_STAINED_GLASS_PANE, 0.5f, 0.5f, 0.5f);
 			}
+		} else {
+			// その他の刀/剣: 白いガラスパネでガードエフェクト
+			if (world instanceof ServerLevel _level) {
+				spawnGuardArmorStand(_level, x, y, z, Items.WHITE_STAINED_GLASS_PANE, 0.8f, 0.8f, 0.8f);
+			}
 		}
 		entity.getPersistentData().putDouble("minecraft_armor_weapon:muteki_x_chuzume", (entity.getX()));
 		entity.getPersistentData().putDouble("minecraft_armor_weapon:muteki_y_chuzume", (entity.getY()));
@@ -60,12 +65,18 @@ public class GuardposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 				_serverPlayer.connection.teleport((entity.getPersistentData().getDouble("minecraft_armor_weapon:muteki_x_chuzume")), (entity.getPersistentData().getDouble("minecraft_armor_weapon:muteki_y_chuzume")),
 						(entity.getPersistentData().getDouble("minecraft_armor_weapon:muteki_z_chuzume")), _ent.getYRot(), _ent.getXRot());
 		}
-		if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
-			_entity.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE,
-					entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.GUARD.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.GUARD.get()).getDuration() : 0, 5, true, false));
-		if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
-			_entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS,
-					entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.GUARD.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.GUARD.get()).getDuration() : 0, 10, true, false));
+		// Replicaガード（amplifier=0）のみResistance Vを付与（完全防御）
+		// 通常ガード（amplifier=1）は25%カットのみ（SwordGuardHandlerで処理）
+		if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide()) {
+			MobEffectInstance guardEff = _entity.getEffect(MinecraftArmorWeaponModMobEffects.GUARD.get());
+			int guardDuration = guardEff != null ? guardEff.getDuration() : 0;
+			int guardAmplifier = guardEff != null ? guardEff.getAmplifier() : 0;
+			if (guardAmplifier == 0) {
+				// Replica: 完全防御
+				_entity.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, guardDuration, 5, true, false));
+			}
+			_entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, guardDuration, 10, true, false));
+		}
 		MinecraftArmorWeaponMod.queueServerWork(entity instanceof LivingEntity _livEnt && _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.GUARD.get()) ? _livEnt.getEffect(MinecraftArmorWeaponModMobEffects.GUARD.get()).getDuration() : 0, () -> {
 			killNearestGuardArmorStand(entity);
 			((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).setBaseValue((entity.getPersistentData().getDouble("minecraft_armor_weapon:muteki_speed")));
@@ -103,7 +114,7 @@ public class GuardposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 		level.sendParticles(new DustParticleOptions(new Vector3f(r, g, b), 0.5f), x, y + 1, z, 35, 0.25, 0.25, 0.25, 1);
 	}
 
-	static void killNearestGuardArmorStand(Entity entity) {
+	public static void killNearestGuardArmorStand(Entity entity) {
 		if (entity.level() instanceof ServerLevel serverLevel) {
 			ArmorStand nearest = null;
 			double nearestDist = Double.MAX_VALUE;

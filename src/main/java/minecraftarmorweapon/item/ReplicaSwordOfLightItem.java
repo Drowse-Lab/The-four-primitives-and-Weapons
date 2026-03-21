@@ -32,7 +32,7 @@ public class ReplicaSwordOfLightItem extends SwordItem {
 			}
 
 			public float getAttackDamageBonus() {
-				return 2f;
+				return 5.5f;
 			}
 
 			public int getLevel() {
@@ -46,7 +46,7 @@ public class ReplicaSwordOfLightItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -1.4f, new Item.Properties());
+		}, 0, -2.4f, new Item.Properties());
 	}
 
 	@Override

@@ -104,6 +104,12 @@
 				"custom_model_data": 17
 			},
 			"model": "minecraft_armor_weapon:custom/saya_reitou_sigiled"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 18
+			},
+			"model": "minecraft_armor_weapon:custom/saya_reitou_sigiled_empty"
 		}
 	]
 }

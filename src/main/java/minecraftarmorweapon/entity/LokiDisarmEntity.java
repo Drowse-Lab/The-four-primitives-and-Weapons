@@ -20,6 +20,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.util.RandomSource;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.server.level.ServerLevel;
@@ -101,6 +103,10 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 					}
 					livingEntity.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
 				}
+
+				// 状態異常: Slowness II (2秒) + Wither I (1秒)
+				livingEntity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 1)); // Slowness II, 2s
+				livingEntity.addEffect(new MobEffectInstance(MobEffects.WITHER, 20, 0)); // Wither I, 1s
 
 				// サウンド再生
 				this.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(),
@@ -188,8 +194,8 @@ public class LokiDisarmEntity extends ThrowableItemProjectile {
 			}
 		}
 
-		// 一定時間経過後は強制的に戻る
-		if (tickCount > 100 && !returning) {
+		// 15tick後に強制的に戻る（データパック準拠）
+		if (tickCount > 15 && !returning) {
 			chasing = false;
 			returning = true;
 		}
