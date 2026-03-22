@@ -10,6 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -106,6 +107,40 @@ public class ElementalDamageEvent {
         // ダメージを変更
         if (modifiedDamage != originalDamage) {
             event.setAmount(modifiedDamage);
+        }
+    }
+
+    /**
+     * [Phase 1] LivingDamageEvent HIGH: アーマー・エンチャント・耐性の貫通
+     * バニラ＋他modのアーマー軽減後、Heart Stop等の他modエフェクトが動く前に実行
+     */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onLivingDamagePhase1(LivingDamageEvent event) {
+        LivingEntity target = event.getEntity();
+        if (!ErrorElementDamageHandler.hasPendingHurt(target.getUUID())) {
+            return;
+        }
+
+        float result = ErrorElementDamageHandler.applyArmorPenetration(target, event.getAmount());
+        if (result != event.getAmount()) {
+            event.setAmount(result);
+        }
+    }
+
+    /**
+     * [Phase 2] LivingDamageEvent LOWEST: 他modエフェクト（Heart Stop等）の貫通
+     * Heart Stop等がNORMAL優先度でダメージを0にした後に実行し、貫通分を復元
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onLivingDamagePhase2(LivingDamageEvent event) {
+        LivingEntity target = event.getEntity();
+        if (!ErrorElementDamageHandler.hasPendingEffect(target.getUUID())) {
+            return;
+        }
+
+        float result = ErrorElementDamageHandler.applyEffectPenetration(target, event.getAmount());
+        if (result != event.getAmount()) {
+            event.setAmount(result);
         }
     }
 
