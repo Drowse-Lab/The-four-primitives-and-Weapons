@@ -11,6 +11,7 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
@@ -21,10 +22,13 @@ import minecraftarmorweapon.procedures.IronKatanaturuwoShoudeChituteiruJiannotei
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
 public class ReplicaSwordOfLightItem extends SwordItem {
+	// RPGish-HPDisplay データパック連携用タグ
+	private static final String TAG_HOLY_DAMAGE = "minecraft_armor_weapon.mh_rpgish.holy_damage";
+
 	public ReplicaSwordOfLightItem() {
 		super(new Tier() {
 			public int getUses() {
-				return 0;
+				return 250;
 			}
 
 			public float getSpeed() {
@@ -47,6 +51,13 @@ public class ReplicaSwordOfLightItem extends SwordItem {
 				return Ingredient.of();
 			}
 		}, 0, -2.4f, new Item.Properties());
+	}
+
+	@Override
+	public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+		// RPGish-HPDisplay 用: 聖属性ダメージタグを付与（金色で表示される）
+		target.addTag(TAG_HOLY_DAMAGE);
+		return super.hurtEnemy(stack, target, attacker);
 	}
 
 	@Override
