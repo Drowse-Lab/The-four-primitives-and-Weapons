@@ -34,6 +34,7 @@ public class ElementalDamageEvent {
     private static final String TAG_ELECTRIC_DAMAGE = "minecraft_armor_weapon.mh_rpgish.electric_damage";
     private static final String TAG_CORROSION_DAMAGE = "minecraft_armor_weapon.mh_rpgish.corrosion_damage";
     private static final String TAG_HOLY_DAMAGE = "minecraft_armor_weapon.mh_rpgish.holy_damage";
+    private static final String TAG_ERROR_DAMAGE = "minecraft_armor_weapon.mh_rpgish.error_damage";
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onLivingHurt(LivingHurtEvent event) {
@@ -94,6 +95,10 @@ public class ElementalDamageEvent {
                 modifiedDamage = HolyElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
                 target.addTag(TAG_HOLY_DAMAGE);
                 break;
+            case ERROR:
+                modifiedDamage = ErrorElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                target.addTag(TAG_ERROR_DAMAGE);
+                break;
             default:
                 break;
         }
@@ -112,6 +117,7 @@ public class ElementalDamageEvent {
         entity.removeTag(TAG_ELECTRIC_DAMAGE);
         entity.removeTag(TAG_CORROSION_DAMAGE);
         entity.removeTag(TAG_HOLY_DAMAGE);
+        entity.removeTag(TAG_ERROR_DAMAGE);
     }
 
     /**
