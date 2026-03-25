@@ -294,5 +294,7 @@
   "tooltip.minecraft_armor_weapon.reitou.desc2": "A cursed blade harboring grudge",
   "tooltip.minecraft_armor_weapon.reitou.desc3": "Attacking enemies with other weapons restores durability",
   "item.minecraft_armor_weapon.ofuda": "§bSeal Talisman",
-  "tooltip.minecraft_armor_weapon.ofuda": "A talisman with the power of sealing"
+  "tooltip.minecraft_armor_weapon.ofuda": "A talisman with the power of sealing",
+  "entity.minecraft_armor_weapon.debug_mob": "Debug Mob",
+  "item.minecraft_armor_weapon.debug_mob_spawn_egg": "Debug Mob Spawn Egg"
 }

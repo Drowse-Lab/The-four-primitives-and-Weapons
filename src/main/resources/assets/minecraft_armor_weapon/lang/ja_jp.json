@@ -290,5 +290,7 @@
   "tooltip.minecraft_armor_weapon.reitou.desc2": "怨念の力を宿す呪いの刀",
   "tooltip.minecraft_armor_weapon.reitou.desc3": "他の武器で敵を攻撃すると耐久度が回復する",
   "item.minecraft_armor_weapon.ofuda": "§b封のお札",
-  "tooltip.minecraft_armor_weapon.ofuda": "封印の力を持つ護符"
+  "tooltip.minecraft_armor_weapon.ofuda": "封印の力を持つ護符",
+  "entity.minecraft_armor_weapon.debug_mob": "デバッグMob",
+  "item.minecraft_armor_weapon.debug_mob_spawn_egg": "デバッグMobのスポーンエッグ"
 }

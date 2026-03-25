@@ -16,6 +16,7 @@ import minecraftarmorweapon.entity.CommonSoldierEntity;
 import minecraftarmorweapon.entity.EliteSoldierEntity;
 import minecraftarmorweapon.entity.SingularityEntity;
 import minecraftarmorweapon.entity.HeroicTierEntity;
+import minecraftarmorweapon.entity.DebugMobEntity;
 
 /**
  * カスタムエンティティの登録用クラス（A-Life AI Mobs専用）
@@ -69,6 +70,16 @@ public class CustomEntityInit {
                 .sized(0.6f, 1.8f)
                 .build("heroic_tier"));
 
+    // デバッグ用Mob（サンドバッグ）
+    public static final RegistryObject<EntityType<DebugMobEntity>> DEBUG_MOB =
+        CUSTOM_ENTITIES.register("debug_mob",
+            () -> EntityType.Builder.<DebugMobEntity>of(DebugMobEntity::new, MobCategory.MISC)
+                .setShouldReceiveVelocityUpdates(true)
+                .setTrackingRange(64)
+                .setUpdateInterval(3)
+                .sized(0.6f, 1.8f)
+                .build("debug_mob"));
+
     // スポーンエッグ
     public static final RegistryObject<Item> COMMON_SOLDIER_SPAWN_EGG =
         CUSTOM_ITEMS.register("common_soldier_spawn_egg",
@@ -90,12 +101,18 @@ public class CustomEntityInit {
             () -> new ForgeSpawnEggItem(HEROIC_TIER, 0xFFD700, 0xFF8C00,
                 new Item.Properties()));
 
+    public static final RegistryObject<Item> DEBUG_MOB_SPAWN_EGG =
+        CUSTOM_ITEMS.register("debug_mob_spawn_egg",
+            () -> new ForgeSpawnEggItem(DEBUG_MOB, 0x00FF00, 0xFF0000,
+                new Item.Properties()));
+
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(COMMON_SOLDIER.get(), CommonSoldierEntity.createAttributes().build());
         event.put(ELITE_SOLDIER.get(), EliteSoldierEntity.createAttributes().build());
         event.put(SINGULARITY.get(), SingularityEntity.createAttributes().build());
         event.put(HEROIC_TIER.get(), HeroicTierEntity.createAttributes().build());
+        event.put(DEBUG_MOB.get(), DebugMobEntity.createAttributes().build());
     }
 
     // Modのコンストラクタやメインクラスで呼び出す必要があります

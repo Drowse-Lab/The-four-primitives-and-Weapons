@@ -10,6 +10,7 @@ import minecraftarmorweapon.client.renderer.CommonSoldierRenderer;
 import minecraftarmorweapon.client.renderer.EliteSoldierRenderer;
 import minecraftarmorweapon.client.renderer.SingularityRenderer;
 import minecraftarmorweapon.client.renderer.HeroicTierRenderer;
+import minecraftarmorweapon.client.renderer.DebugMobRenderer;
 import minecraftarmorweapon.client.renderer.DarkProjectileRenderer;
 import minecraftarmorweapon.client.renderer.TornadoRenderer;
 import minecraftarmorweapon.init.CustomEntityInit;
@@ -33,5 +34,6 @@ public class CustomEntityRenderers {
         event.registerEntityRenderer(CustomEntityInit.ELITE_SOLDIER.get(), EliteSoldierRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.SINGULARITY.get(), SingularityRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.HEROIC_TIER.get(), HeroicTierRenderer::new);
+        event.registerEntityRenderer(CustomEntityInit.DEBUG_MOB.get(), DebugMobRenderer::new);
     }
 }
