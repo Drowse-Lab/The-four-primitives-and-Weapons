@@ -123,7 +123,7 @@ Slows the target's movement speed by applying Slowness.
 
 ---
 
-### 🌬️ 風属性 / Wind
+### 風属性 / Wind
 
 攻撃力を上昇させます。  
 Increases attack damage.
