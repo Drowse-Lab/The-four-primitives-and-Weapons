@@ -45,7 +45,7 @@ ElectricElementDamageHandler.addConductorItems(conductorItems);
 
 ---
 
-### 3. 侵食/闇属性 (Corrosion Element)
+### 3. 侵食 (Corrosion Element)
 - **効果**: 防御力を一時的に落とす
 - **特徴**:
   - ダメージに比例して防御力減少
