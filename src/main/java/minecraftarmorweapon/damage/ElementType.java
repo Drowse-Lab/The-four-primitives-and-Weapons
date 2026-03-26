@@ -14,7 +14,7 @@ public enum ElementType {
     WIND("wind"),          // 風属性
     THUNDER("thunder"),    // 雷属性
     WATER("water"),        // 水属性
-    ERROR("error");        // エラー属性（混沌）
+    ERROR("error");        // エラー属性
 
     private final String name;
 
