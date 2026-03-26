@@ -12,7 +12,7 @@ The attribute level is shown in the item tooltip in Roman numerals, similar to e
 
 ## 属性一覧 / Element List
 
-### ❄️ 氷属性 / Ice
+### 氷属性 / Ice
 
 凍結中の敵に追加ダメージを与え、Slowness（鈍化）効果を付与します。  
 Deals bonus damage to frozen enemies and applies Slowness.
@@ -23,11 +23,11 @@ Deals bonus damage to frozen enemies and applies Slowness.
 | レベル倍率 / Per level | +0.25× |
 | Slowness継続中ボーナス / Slowness bonus | 最大 +0.5× / Up to +0.5× |
 | 付与効果 / Applied effect | Slowness |
-| 弱点属性 / Weak against | 🔥 Fire |
+| 弱点属性 / Weak against | Fire |
 
 ---
 
-### 🔥 火属性 / Fire
+### 火属性 / Fire
 
 バニラの炎と同じ挙動で敵を炎上させます。  
 Behaves like vanilla fire — ignites the target.
@@ -36,11 +36,11 @@ Behaves like vanilla fire — ignites the target.
 |---|---|
 | 基礎倍率 / Base multiplier | 1.0× |
 | 付与効果 / Applied effect | 炎上 / On Fire |
-| 弱点属性 / Weak against | 💧 Water |
+| 弱点属性 / Weak against |  Water |
 
 ---
 
-### ⚡ 電気属性 / Electric
+### 電気属性 / Electric
 
 水中で範囲攻撃（AOE）が発生します。導体装備の敵ほど威力が上がります。  
 Triggers AOE damage in water. Bonus damage against enemies wearing conductive armor.
@@ -50,11 +50,11 @@ Triggers AOE damage in water. Bonus damage against enemies wearing conductive ar
 | 基礎倍率 / Base multiplier | 1.2× |
 | 水中倍率 / In water | 1.5× |
 | 導体装備ボーナス / Per conductive item | +0.3× |
-| 弱点属性 / Weak against | 🌬️ Wind |
+| 弱点属性 / Weak against | Wind |
 
 ---
 
-### 🌩️ 雷属性 / Thunder
+### 雷属性 / Thunder
 
 電気属性と同じ挙動です。  
 Behaves the same as the Electric element.
@@ -68,7 +68,7 @@ Behaves the same as the Electric element.
 
 ---
 
-### 🌑 侵食属性 / Corrosion
+###  侵食属性 / Corrosion
 
 攻撃するたびに敵の防御力を削り取ります。高レベルでは Wither 効果も付与します。  
 Reduces enemy armor on every hit. Higher levels also apply Wither.
@@ -78,11 +78,11 @@ Reduces enemy armor on every hit. Higher levels also apply Wither.
 | 基礎倍率 / Base multiplier | 1.1× |
 | 防御力減少 / Armor reduction | −(2.0 + ダメージ × 0.5) |
 | 付与効果 / Applied effect | Weakness（高Lvで Wither） |
-| 弱点属性 / Weak against | 💧 Water |
+| 弱点属性 / Weak against | Water |
 
 ---
 
-### ✨ 聖属性 / Holy
+### 聖属性 / Holy
 
 アンデッドに強力な特攻ダメージを与えます。高レベルでは炎上効果も付与します。  
 Deals massive bonus damage to undead. Higher levels also set enemies on fire.
@@ -93,11 +93,11 @@ Deals massive bonus damage to undead. Higher levels also set enemies on fire.
 | アンデッド特攻 / vs. Undead | 2.5× |
 | レベル倍率 / Per level | +0.3× |
 | 付与効果 / Applied effect | 炎上（高Lv） / On Fire (high lv) |
-| 弱点属性 / Weak against | 🌑 Dark |
+| 弱点属性 / Weak against | Dark |
 
 ---
 
-### 🌑 闇属性 / Dark
+### 闇属性 / Dark
 
 > ⚠️ **未実装 / Not yet implemented**
 
@@ -106,11 +106,11 @@ Details are currently being planned.
 
 | パラメータ | 値 |
 |---|---|
-| 弱点属性 / Weak against | ✨ Holy |
+| 弱点属性 / Weak against | Holy |
 
 ---
 
-### 💧 水属性 / Water
+### 水属性 / Water
 
 敵の移動速度を低下させます（Slowness 付与）。  
 Slows the target's movement speed by applying Slowness.
@@ -119,7 +119,7 @@ Slows the target's movement speed by applying Slowness.
 |---|---|
 | 基礎倍率 / Base multiplier | 1.0× |
 | 付与効果 / Applied effect | Slowness |
-| 弱点属性 / Weak against | 🌩️ Thunder |
+| 弱点属性 / Weak against | Thunder |
 
 ---
 
@@ -132,7 +132,7 @@ Increases attack damage.
 |---|---|
 | 基礎倍率 / Base multiplier | 1.0× |
 | 効果 / Effect | 攻撃力上昇 / Attack damage boost |
-| 弱点属性 / Weak against | ❄️ Ice |
+| 弱点属性 / Weak against | Ice |
 
 ---
 
@@ -141,18 +141,18 @@ Increases attack damage.
 属性には「弱点属性」が設定されており、弱点属性の攻撃を受けるとダメージが増加します。  
 Each element has a counter element that deals increased damage against it.
 
-| 属性 / Element | 弱点 / Weak against | 理由 / Reason |
+| 属性 / Element | 弱点 / Weak against |
 |---|---|---|
-| ❄️ Ice | 🔥 Fire | 火は氷を溶かす / Fire melts ice |
-| 🔥 Fire | 💧 Water | 水は火を消す / Water extinguishes fire |
-| ⚡ Electric | 🌬️ Wind | 風は雷を散らす / Wind disperses lightning |
-| 🌩️ Thunder | 🌬️ Wind | 風は雷を散らす / Wind disperses lightning |
-| 🌑 Corrosion | 💧 Water | 水は腐食を洗い流す / Water washes away corrosion |
-| ✨ Holy | 🌑 Dark | 闇は聖を打ち消す / Darkness nullifies holy |
-| 🌑 Dark | ✨ Holy | 聖は闇を浄化する / Holy purifies darkness |
-| 💧 Water | 🌩️ Thunder | 雷は水を蒸発させる / Thunder evaporates water |
-| 🌬️ Wind | ❄️ Ice | 氷は風を凍てつかせる / Ice freezes the wind |
-| ❌ Error | — | エラー属性は無効化不可 / Cannot be countered |
+| Ice | Fire |
+| Fire | Water |
+| Electric | Wind |
+| Thunder | Wind |
+| Corrosion | Water |
+| Holy | Dark |
+| Dark | Holy |
+| Water | Thunder |
+| Wind | Ice |
+| Error | — |
 
 ---
 
@@ -166,4 +166,3 @@ Each element has a counter element that deals increased damage against it.
 ```
 
 ---
-
