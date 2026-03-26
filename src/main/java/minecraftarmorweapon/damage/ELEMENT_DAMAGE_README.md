@@ -1,189 +1,169 @@
-# 属性ダメージシステム
+# 属性ダメージシステム / Elemental Damage System
 
-Minecraftに4つの属性ダメージシステムを追加します。
+## 概要 / Overview
 
-**NBTタグベースのシステムなので、すべてのアイテムに属性を付与できます！**
+NBTタグベースの属性ダメージシステムです。すべてのアイテムに属性を付与できます。
+ツールチップにはエンチャント風にローマ数字でレベルが表示されます。
 
-## 実装された属性
-
-### 1. 氷属性 (Ice Element)
-- **効果**: 氷で固まっている時に攻撃をすると多くダメージが入る
-- **特徴**:
-  - 時間経過でダメージが大きくなる
-  - レベルによってダメージが変わる
-  - Slowness効果を付与・延長
-- **実装クラス**: `IceElementDamageHandler`, `IceDamageSource`
-
-#### 使用例
-```java
-// 氷属性ダメージを与える
-IceElementDamageHandler.applyIceDamage(target, 10.0f, attacker, 2);
-```
+An NBT-tag-based elemental damage system. Any item can be given an elemental attribute.
+The attribute level is shown in the item tooltip in Roman numerals, similar to enchantments.
 
 ---
 
-### 2. 電気/雷属性 (Electric Element)
-- **効果**: 水中にいるとその周りにもダメージが入る
-- **特徴**:
-  - 鉄防具などの導体を身につけているとダメージが増加
-  - Configファイルで導体アイテムを追加可能
-  - 水中では範囲ダメージ
-- **実装クラス**: `ElectricElementDamageHandler`, `ElectricDamageSource`
+## 属性一覧 / Element List
 
-#### 使用例
-```java
-// 電気属性ダメージを与える
-ElectricElementDamageHandler.applyElectricDamage(target, 10.0f, attacker, 2);
+### ❄️ 氷属性 / Ice
 
-// 導体アイテムを追加
-List<String> conductorItems = Arrays.asList(
-    "minecraft:golden_helmet",
-    "minecraft:golden_chestplate"
-);
-ElectricElementDamageHandler.addConductorItems(conductorItems);
-```
+凍結中の敵に追加ダメージを与え、Slowness（鈍化）効果を付与します。  
+Deals bonus damage to frozen enemies and applies Slowness.
+
+| パラメータ | 値 |
+|---|---|
+| 基礎倍率 / Base multiplier | 1.5× |
+| レベル倍率 / Per level | +0.25× |
+| Slowness継続中ボーナス / Slowness bonus | 最大 +0.5× / Up to +0.5× |
+| 付与効果 / Applied effect | Slowness |
+| 弱点属性 / Weak against | 🔥 Fire |
 
 ---
 
-### 3. 侵食 (Corrosion Element)
-- **効果**: 防御力を一時的に落とす
-- **特徴**:
-  - ダメージに比例して防御力減少
-  - Weakness効果を付与
-  - 高レベルでWither効果も付与
-- **実装クラス**: `CorrosionElementDamageHandler`, `CorrosionDamageSource`
+### 🔥 火属性 / Fire
 
-#### 使用例
-```java
-// 侵食属性ダメージを与える
-CorrosionElementDamageHandler.applyCorrosionDamage(target, 10.0f, attacker, 2);
-```
+バニラの炎と同じ挙動で敵を炎上させます。  
+Behaves like vanilla fire — ignites the target.
+
+| パラメータ | 値 |
+|---|---|
+| 基礎倍率 / Base multiplier | 1.0× |
+| 付与効果 / Applied effect | 炎上 / On Fire |
+| 弱点属性 / Weak against | 💧 Water |
 
 ---
 
-### 4. 聖属性 (Holy Element)
-- **効果**: アンデットに多くダメージが入る
-- **特徴**:
-  - アンデット系モブへ2.5倍ダメージ
-  - 高レベルで炎上効果
-  - 発光効果を付与
-- **実装クラス**: `HolyElementDamageHandler`, `HolyDamageSource`
+### ⚡ 電気属性 / Electric
 
-#### 使用例
-```java
-// 聖属性ダメージを与える
-HolyElementDamageHandler.applyHolyDamage(target, 10.0f, attacker, 2);
-```
+水中で範囲攻撃（AOE）が発生します。導体装備の敵ほど威力が上がります。  
+Triggers AOE damage in water. Bonus damage against enemies wearing conductive armor.
+
+| パラメータ | 値 |
+|---|---|
+| 基礎倍率 / Base multiplier | 1.2× |
+| 水中倍率 / In water | 1.5× |
+| 導体装備ボーナス / Per conductive item | +0.3× |
+| 弱点属性 / Weak against | 🌬️ Wind |
 
 ---
 
-## 技術仕様
+### 🌩️ 雷属性 / Thunder
 
-### 特徴
-- ✅ **通常攻撃と強化攻撃に自動適用**: 攻撃時に自動的に属性ダメージが計算されます
-- ✅ **エンチャント風の表示**: ツールチップにエンチャントのように色付きで表示されます
-- ✅ **すべてのアイテムに対応**: どんな武器でも属性を付与できます
+電気属性と同じ挙動です。  
+Behaves the same as the Electric element.
 
-### Mixinの使用
-このシステムはMixinを使用してMinecraftのコアクラスに介入しています。
+| パラメータ | 値 |
+|---|---|
+| 基礎倍率 / Base multiplier | 1.2× |
+| 水中倍率 / In water | 1.5× |
+| 導体装備ボーナス / Per conductive item | +0.3× |
+| 弱点属性 / Weak against | 🌬️ Wind |
 
-- `DamageSourceMixin`: DamageSourceに属性データを追加
-- `LivingEntityDamageMixin`: ダメージ計算時にNBTタグから属性を読み取り、属性ダメージを適用
-- `ItemStackTooltipMixin`: すべてのアイテムのツールチップに属性情報を自動表示
+---
 
-### 属性タイプ
-```java
-public enum ElementType {
-    NONE,       // 無属性
-    ICE,        // 氷属性
-    ELECTRIC,   // 電気/雷属性
-    CORROSION,  // 侵食/闇属性
-    HOLY        // 聖属性
+### 🌑 侵食属性 / Corrosion
+
+攻撃するたびに敵の防御力を削り取ります。高レベルでは Wither 効果も付与します。  
+Reduces enemy armor on every hit. Higher levels also apply Wither.
+
+| パラメータ | 値 |
+|---|---|
+| 基礎倍率 / Base multiplier | 1.1× |
+| 防御力減少 / Armor reduction | −(2.0 + ダメージ × 0.5) |
+| 付与効果 / Applied effect | Weakness（高Lvで Wither） |
+| 弱点属性 / Weak against | 💧 Water |
+
+---
+
+### ✨ 聖属性 / Holy
+
+アンデッドに強力な特攻ダメージを与えます。高レベルでは炎上効果も付与します。  
+Deals massive bonus damage to undead. Higher levels also set enemies on fire.
+
+| パラメータ | 値 |
+|---|---|
+| 基礎倍率 / Base multiplier | 1.1× |
+| アンデッド特攻 / vs. Undead | 2.5× |
+| レベル倍率 / Per level | +0.3× |
+| 付与効果 / Applied effect | 炎上（高Lv） / On Fire (high lv) |
+| 弱点属性 / Weak against | 🌑 Dark |
+
+---
+
+### 🌑 闇属性 / Dark
+
+> ⚠️ **未実装 / Not yet implemented**
+
+仕様は現在検討中です。  
+Details are currently being planned.
+
+| パラメータ | 値 |
+|---|---|
+| 弱点属性 / Weak against | ✨ Holy |
+
+---
+
+### 💧 水属性 / Water
+
+敵の移動速度を低下させます（Slowness 付与）。  
+Slows the target's movement speed by applying Slowness.
+
+| パラメータ | 値 |
+|---|---|
+| 基礎倍率 / Base multiplier | 1.0× |
+| 付与効果 / Applied effect | Slowness |
+| 弱点属性 / Weak against | 🌩️ Thunder |
+
+---
+
+### 🌬️ 風属性 / Wind
+
+攻撃力を上昇させます。  
+Increases attack damage.
+
+| パラメータ | 値 |
+|---|---|
+| 基礎倍率 / Base multiplier | 1.0× |
+| 効果 / Effect | 攻撃力上昇 / Attack damage boost |
+| 弱点属性 / Weak against | ❄️ Ice |
+
+---
+
+## 属性相性表 / Counter Chart
+
+属性には「弱点属性」が設定されており、弱点属性の攻撃を受けるとダメージが増加します。  
+Each element has a counter element that deals increased damage against it.
+
+| 属性 / Element | 弱点 / Weak against | 理由 / Reason |
+|---|---|---|
+| ❄️ Ice | 🔥 Fire | 火は氷を溶かす / Fire melts ice |
+| 🔥 Fire | 💧 Water | 水は火を消す / Water extinguishes fire |
+| ⚡ Electric | 🌬️ Wind | 風は雷を散らす / Wind disperses lightning |
+| 🌩️ Thunder | 🌬️ Wind | 風は雷を散らす / Wind disperses lightning |
+| 🌑 Corrosion | 💧 Water | 水は腐食を洗い流す / Water washes away corrosion |
+| ✨ Holy | 🌑 Dark | 闇は聖を打ち消す / Darkness nullifies holy |
+| 🌑 Dark | ✨ Holy | 聖は闇を浄化する / Holy purifies darkness |
+| 💧 Water | 🌩️ Thunder | 雷は水を蒸発させる / Thunder evaporates water |
+| 🌬️ Wind | ❄️ Ice | 氷は風を凍てつかせる / Ice freezes the wind |
+| ❌ Error | — | エラー属性は無効化不可 / Cannot be countered |
+
+---
+
+## NBTタグ構造 / NBT Tag Structure
+
+```json
+{
+  "ElementType": "ice",
+  "ElementLevel": 2
 }
 ```
 
-### カスタムダメージソースの作成
-```java
-// 例: 氷属性ダメージソースの作成
-IElementalDamageSource elementalSource = (IElementalDamageSource) new IceDamageSource("ice");
-elementalSource.setElementType(ElementType.ICE);
-elementalSource.setElementLevel(2);
-
-// ダメージを適用
-target.hurt((DamageSource) elementalSource, 10.0f);
-```
-
 ---
 
-## 武器への実装例
-
-属性を持つ武器を作成する場合の実装例：
-
-```java
-public class IceKatanaItem extends SwordItem {
-
-    @Override
-    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        // 氷属性ダメージを適用
-        IceElementDamageHandler.applyIceDamage(target, 5.0f, attacker, 2);
-        return super.hurtEnemy(stack, target, attacker);
-    }
-}
-```
-
----
-
-## ダメージ倍率の設定
-
-各属性のダメージ倍率は対応するHandlerクラスで定義されています：
-
-### 氷属性
-- 基礎倍率: 1.5x
-- レベル倍率: +0.25x/レベル
-- 時間ボーナス: 最大+0.5x
-
-### 電気/雷属性
-- 基礎倍率: 1.2x
-- 水中倍率: 1.5x
-- 導体倍率: +0.3x/導体
-
-### 侵食/闇属性
-- 基礎倍率: 1.1x
-- 防御力減少: 2.0 + (ダメージ × 0.5)
-
-### 聖属性
-- 基礎倍率: 1.1x
-- アンデット倍率: 2.5x
-- レベル倍率: +0.3x/レベル
-
----
-
-## 設定ファイル
-
-電気属性の導体アイテムは、プログラム内で動的に追加できます：
-
-```java
-ElectricElementDamageHandler.addConductorItems(Arrays.asList(
-    "modid:custom_armor",
-    "modid:metal_sword"
-));
-```
-
----
-
-## 注意事項
-
-1. Mixinの設定は`minecraft_armor_weapon.mixins.json`で管理されています
-2. `mods.toml`にMixin設定が追加されていることを確認してください
-3. 属性ダメージは既存のダメージ計算に加算されます
-4. 各属性のエフェクトは重複適用される場合があります
-
----
-
-## 今後の拡張案
-
-- [ ] Config GUIの追加
-- [ ] 属性耐性システムの実装
-- [ ] 属性の相互作用（氷と炎など）
-- [ ] パーティクルエフェクトの追加
-- [ ] サウンドエフェクトの追加
