@@ -4,19 +4,23 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
 import org.joml.Vector3f;
 
+import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModMobEffects;
+import minecraftarmorweapon.network.GuardSyncPacket;
 
 /**
  * Shift+右クリックで全SwordItemにガード発動
@@ -91,6 +95,12 @@ public class SwordGuardHandler {
                     SoundEvents.ARMOR_EQUIP_GOLD, SoundSource.PLAYERS, 1f, 1f);
         }
 
+        // ガード状態をクライアントに同期（腕ポーズ用）
+        if (player instanceof ServerPlayer serverPlayer) {
+            GuardSyncPacket packet = new GuardSyncPacket(player.getId(), true);
+            MinecraftArmorWeaponMod.PACKET_HANDLER.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> serverPlayer), packet);
+        }
+
         // クールダウン
         player.getCooldowns().addCooldown(mainHand.getItem(), duration + GUARD_COOLDOWN);
 
@@ -148,6 +158,12 @@ public class SwordGuardHandler {
         double origKBRes = data.getDouble("SwordGuardOrigKBRes");
         player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE).setBaseValue(origKBRes);
         data.remove("SwordGuardOrigKBRes");
+
+        // ガード終了をクライアントに同期（腕ポーズ解除）
+        if (player instanceof ServerPlayer serverPlayer) {
+            GuardSyncPacket packet = new GuardSyncPacket(player.getId(), false);
+            MinecraftArmorWeaponMod.PACKET_HANDLER.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> serverPlayer), packet);
+        }
 
         // 終了サウンド
         if (player.level() instanceof ServerLevel serverLevel) {

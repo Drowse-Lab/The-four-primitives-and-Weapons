@@ -10,6 +10,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import minecraftarmorweapon.item.base.Base3DModelItem;
 import minecraftarmorweapon.item.base.Base3DModelSwordItem;
 import minecraftarmorweapon.item.BluepurgeItem;
+import minecraftarmorweapon.item.SayaItem;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
 @OnlyIn(Dist.CLIENT)
@@ -31,6 +32,29 @@ public class ItemPropertyInit {
                     // Return a float value based on the variant
                     // This will be used in the item model JSON to select the correct texture
                     return getVariantIndex(variant);
+                });
+        }
+
+        // 鞘アイテム用: feyn と saya_nbt プロパティ
+        if (item instanceof SayaItem) {
+            // feyn: Feyn="sigiled"なら1.0、それ以外0.0
+            ItemProperties.register(item, new ResourceLocation(MinecraftArmorWeaponMod.MODID, "feyn"),
+                (stack, world, entity, seed) -> {
+                    CompoundTag tag = stack.getTag();
+                    if (tag != null && "sigiled".equals(tag.getString("Feyn"))) {
+                        return 1.0f;
+                    }
+                    return 0.0f;
+                });
+
+            // saya_nbt: SayaNBT=1なら1.0、それ以外0.0
+            ItemProperties.register(item, new ResourceLocation(MinecraftArmorWeaponMod.MODID, "saya_nbt"),
+                (stack, world, entity, seed) -> {
+                    CompoundTag tag = stack.getTag();
+                    if (tag != null && tag.getInt("SayaNBT") >= 1) {
+                        return 1.0f;
+                    }
+                    return 0.0f;
                 });
         }
 

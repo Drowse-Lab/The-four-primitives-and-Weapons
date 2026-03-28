@@ -66,6 +66,31 @@ public class ThunderElementDamageHandler {
     }
 
     /**
+     * レベル指定で雷属性ダメージ計算（魔導書経由用）
+     */
+    public static float calculateDamage(LivingEntity attacker, LivingEntity target, float baseDmg, int level) {
+        float multiplier = BASE_MULTIPLIER;
+        if (target.isInWater()) {
+            multiplier = WATER_MULTIPLIER;
+            net.minecraft.world.level.Level world = target.level();
+            List<LivingEntity> nearby = world.getEntitiesOfClass(
+                    LivingEntity.class,
+                    new AABB(
+                            target.getX() - AOE_RADIUS, target.getY() - AOE_RADIUS, target.getZ() - AOE_RADIUS,
+                            target.getX() + AOE_RADIUS, target.getY() + AOE_RADIUS, target.getZ() + AOE_RADIUS
+                    )
+            );
+            for (LivingEntity nearby_entity : nearby) {
+                if (nearby_entity != target && nearby_entity != attacker && nearby_entity.isInWater()) {
+                    nearby_entity.hurt(world.damageSources().lightningBolt(), baseDmg * multiplier * 0.5f);
+                }
+            }
+        }
+        multiplier += CONDUCTOR_BONUS * countConductorArmor(target);
+        return baseDmg * multiplier;
+    }
+
+    /**
      * 対象の装備スロットにある導体アイテム（鉄・金・チェーン）の数を返す。
      */
     private static int countConductorArmor(LivingEntity entity) {

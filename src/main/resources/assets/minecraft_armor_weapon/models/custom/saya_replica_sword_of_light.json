@@ -1,15 +1,15 @@
 {
 	"format_version": "1.9.0",
 	"credit": "Made with Blockbench",
+	"texture_size": [16, 16],
 	"textures": {
-		"0": "minecraft_armor_weapon:item/saya_reitou",
-		"1": "minecraft_armor_weapon:block/reitou3d",
-		"2": "minecraft_armor_weapon:item/obitori_reitou",
-		"particle": "minecraft_armor_weapon:item/saya_reitou"
+		"0": "minecraft_armor_weapon:item/saya",
+		"1": "minecraft_armor_weapon:block/goldenkatana3d",
+		"particle": "minecraft_armor_weapon:item/saya"
 	},
 	"elements": [
 		{
-			"name": "柄の下部分",
+			"__comment": "柄の下部分",
 			"from": [8, 4.05, 8.8],
 			"to": [8.8, 5.65, 9.6],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
@@ -23,7 +23,7 @@
 			}
 		},
 		{
-			"name": "柄の中部分",
+			"__comment": "柄の中部分",
 			"from": [8, 5.65, 8.8],
 			"to": [8.8, 6.05, 9.4],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
@@ -37,7 +37,7 @@
 			}
 		},
 		{
-			"name": "柄の上部分",
+			"__comment": "柄の上部分",
 			"from": [8, 6.05, 8.6],
 			"to": [8.8, 7.8, 9.4],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
@@ -51,7 +51,7 @@
 			}
 		},
 		{
-			"name": "鍔",
+			"__comment": "鍔",
 			"from": [7.6, 7.8, 7.95],
 			"to": [9.2, 8.05, 10.05],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11, 6.4, 3.45]},
@@ -65,7 +65,7 @@
 			}
 		},
 		{
-			"name": "鞘本体の先端部分",
+			"__comment": "鞘本体の先端部分",
 			"from": [8, 18, 9.525],
 			"to": [8.8, 19.3, 10.375],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 16.4, 4.2]},
@@ -79,7 +79,7 @@
 			}
 		},
 		{
-			"name": "鞘本体の中央部分1",
+			"__comment": "鞘本体の中央部分1",
 			"from": [8, 13, 8.775],
 			"to": [8.8, 16, 9.725],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 11.4, 3.45]},
@@ -93,7 +93,7 @@
 			}
 		},
 		{
-			"name": "鞘本体の中央部分2",
+			"__comment": "鞘本体の中央部分2",
 			"from": [8, 16, 9.025],
 			"to": [8.8, 17, 9.975],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 14.4, 3.7]},
@@ -107,7 +107,7 @@
 			}
 		},
 		{
-			"name": "鞘本体のメイン部分",
+			"__comment": "鞘本体のメイン部分",
 			"from": [8, 8, 8.55],
 			"to": [8.8, 13, 9.45],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 8.4, 3.2]},
@@ -121,7 +121,7 @@
 			}
 		},
 		{
-			"name": "鞘本体の先端部分2",
+			"__comment": "鞘本体の先端部分2",
 			"from": [8, 17, 9.225],
 			"to": [8.8, 18, 10.175],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 15.4, 3.9]},
@@ -132,118 +132,6 @@
 				"west": {"uv": [6, 14, 8, 16], "texture": "#0"},
 				"up": {"uv": [16, 8, 14, 6], "texture": "#0"},
 				"down": {"uv": [10, 14, 8, 16], "texture": "#0"}
-			}
-		},
-		{
-			"name": "帯執_巻き_北面",
-			"from": [7.9, 9.2, 8.45],
-			"to": [8.9, 9.7, 8.55],
-			"rotation": {"angle": 0, "axis": "y", "origin": [8.4, 9, 9]},
-			"faces": {
-				"north": {"uv": [0, 0, 4, 2], "texture": "#2"},
-				"east": {"uv": [0, 0, 0.5, 2], "texture": "#2"},
-				"south": {"uv": [0, 0, 4, 2], "texture": "#2"},
-				"west": {"uv": [0, 0, 0.5, 2], "texture": "#2"},
-				"up": {"uv": [0, 2, 4, 2.5], "texture": "#2"},
-				"down": {"uv": [0, 2, 4, 2.5], "texture": "#2"}
-			}
-		},
-		{
-			"name": "帯執_巻き_南面",
-			"from": [7.9, 9.2, 9.45],
-			"to": [8.9, 9.7, 9.55],
-			"rotation": {"angle": 0, "axis": "y", "origin": [8.4, 9, 9]},
-			"faces": {
-				"north": {"uv": [0, 0, 4, 2], "texture": "#2"},
-				"east": {"uv": [0, 0, 0.5, 2], "texture": "#2"},
-				"south": {"uv": [0, 0, 4, 2], "texture": "#2"},
-				"west": {"uv": [0, 0, 0.5, 2], "texture": "#2"},
-				"up": {"uv": [0, 2, 4, 2.5], "texture": "#2"},
-				"down": {"uv": [0, 2, 4, 2.5], "texture": "#2"}
-			}
-		},
-		{
-			"name": "帯執_巻き_西面",
-			"from": [7.9, 9.2, 8.45],
-			"to": [8, 9.7, 9.55],
-			"rotation": {"angle": 0, "axis": "y", "origin": [8.4, 9, 9]},
-			"faces": {
-				"north": {"uv": [0, 0, 0.5, 2], "texture": "#2"},
-				"east": {"uv": [0, 0, 4, 2], "texture": "#2"},
-				"south": {"uv": [0, 0, 0.5, 2], "texture": "#2"},
-				"west": {"uv": [0, 0, 4, 2], "texture": "#2"},
-				"up": {"uv": [0, 2, 0.5, 6], "texture": "#2"},
-				"down": {"uv": [0, 2, 0.5, 6], "texture": "#2"}
-			}
-		},
-		{
-			"name": "帯執_巻き_東面",
-			"from": [8.8, 9.2, 8.45],
-			"to": [8.9, 9.7, 9.55],
-			"rotation": {"angle": 0, "axis": "y", "origin": [8.4, 9, 9]},
-			"faces": {
-				"north": {"uv": [0, 0, 0.5, 2], "texture": "#2"},
-				"east": {"uv": [0, 0, 4, 2], "texture": "#2"},
-				"south": {"uv": [0, 0, 0.5, 2], "texture": "#2"},
-				"west": {"uv": [0, 0, 4, 2], "texture": "#2"},
-				"up": {"uv": [0, 2, 0.5, 6], "texture": "#2"},
-				"down": {"uv": [0, 2, 0.5, 6], "texture": "#2"}
-			}
-		},
-		{
-			"name": "帯執_栗形",
-			"from": [8.85, 9.3, 8.75],
-			"to": [9.05, 9.6, 9.2],
-			"rotation": {"angle": 0, "axis": "y", "origin": [8.4, 9, 9]},
-			"faces": {
-				"north": {"uv": [4, 0, 5, 1.5], "texture": "#2"},
-				"east": {"uv": [4, 0, 6, 1.5], "texture": "#2"},
-				"south": {"uv": [4, 0, 5, 1.5], "texture": "#2"},
-				"west": {"uv": [4, 0, 6, 1.5], "texture": "#2"},
-				"up": {"uv": [4, 2, 5, 4], "texture": "#2"},
-				"down": {"uv": [4, 2, 5, 4], "texture": "#2"}
-			}
-		},
-		{
-			"name": "帯執_結び目",
-			"from": [8.95, 9, 8.6],
-			"to": [9.45, 9.85, 9.4],
-			"rotation": {"angle": 0, "axis": "y", "origin": [8.4, 9, 9]},
-			"faces": {
-				"north": {"uv": [6, 0, 8, 3.5], "texture": "#2"},
-				"east": {"uv": [8, 0, 11, 3.5], "texture": "#2"},
-				"south": {"uv": [6, 0, 8, 3.5], "texture": "#2"},
-				"west": {"uv": [8, 0, 11, 3.5], "texture": "#2"},
-				"up": {"uv": [6, 4, 8, 7], "texture": "#2"},
-				"down": {"uv": [6, 4, 8, 7], "texture": "#2"}
-			}
-		},
-		{
-			"name": "帯執_垂れ布1",
-			"from": [9, 7.2, 8.7],
-			"to": [9.3, 9, 8.85],
-			"rotation": {"angle": -22.5, "axis": "z", "origin": [9.15, 9, 8.8]},
-			"faces": {
-				"north": {"uv": [11, 0, 12, 7], "texture": "#2"},
-				"east": {"uv": [12, 0, 12.5, 7], "texture": "#2"},
-				"south": {"uv": [11, 0, 12, 7], "texture": "#2"},
-				"west": {"uv": [12, 0, 12.5, 7], "texture": "#2"},
-				"up": {"uv": [11, 7, 12, 7.5], "texture": "#2"},
-				"down": {"uv": [11, 7, 12, 7.5], "texture": "#2"}
-			}
-		},
-		{
-			"name": "帯執_垂れ布2",
-			"from": [9.1, 6.8, 9.05],
-			"to": [9.4, 9, 9.2],
-			"rotation": {"angle": -22.5, "axis": "z", "origin": [9.25, 9, 9.1]},
-			"faces": {
-				"north": {"uv": [13, 0, 14, 8.5], "texture": "#2"},
-				"east": {"uv": [14, 0, 14.5, 8.5], "texture": "#2"},
-				"south": {"uv": [13, 0, 14, 8.5], "texture": "#2"},
-				"west": {"uv": [14, 0, 14.5, 8.5], "texture": "#2"},
-				"up": {"uv": [13, 8.5, 14, 9], "texture": "#2"},
-				"down": {"uv": [13, 8.5, 14, 9], "texture": "#2"}
 			}
 		}
 	],
@@ -301,13 +189,6 @@
 			"origin": [8, 8, 8],
 			"color": 0,
 			"children": [4, 5, 6, 7, 8]
-		},
-		{
-			"name": "obitori",
-			"origin": [8, 8, 8],
-			"color": 0,
-			"children": [9, 10, 11, 12, 13, 14, 15, 16]
 		}
-	],
-	"made": "hrmcngs"
+	]
 }

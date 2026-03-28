@@ -1,6 +1,7 @@
 package minecraftarmorweapon.damage;
 
 import minecraftarmorweapon.util.VersionHelper;
+import net.minecraft.world.item.ItemStack;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -115,5 +116,12 @@ public class HolyElementDamageHandler {
 
         // ダメージを適用
         target.hurt(ds, damage);
+    }
+
+    public static float handleHolyDamage(LivingEntity attacker, LivingEntity target, ItemStack weapon, float baseDmg) {
+        int level = ElementalDamageUtils.getElementLevel(weapon);
+        float damage = calculateDamage(target, baseDmg, level);
+        applyHolyDamage(target, damage - baseDmg, attacker, level);
+        return damage;
     }
 }

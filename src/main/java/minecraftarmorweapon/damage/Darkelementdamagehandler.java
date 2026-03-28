@@ -69,4 +69,26 @@ public class DarkElementDamageHandler {
 
         return baseDmg * multiplier;
     }
+
+    /**
+     * レベル指定で闇属性ダメージ計算（魔導書経由用）
+     */
+    public static float calculateDamage(LivingEntity attacker, LivingEntity target, float baseDmg, int level) {
+        float multiplier = BASE_MULTIPLIER;
+
+        int lightLevel = attacker.level().getBrightness(
+                net.minecraft.world.level.LightLayer.BLOCK, attacker.blockPosition());
+        if (lightLevel <= DARKNESS_LIGHT_THRESHOLD) {
+            multiplier = DARKNESS_MULTIPLIER;
+        }
+
+        int blindDuration = BASE_BLINDNESS_DURATION + BLINDNESS_DURATION_PER_LV * Math.max(level - 1, 0);
+        target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, blindDuration, 0, false, true));
+
+        if (level >= WITHER_MIN_LEVEL) {
+            target.addEffect(new MobEffectInstance(MobEffects.WITHER, 60, level - WITHER_MIN_LEVEL, false, true));
+        }
+
+        return baseDmg * multiplier;
+    }
 }

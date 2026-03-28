@@ -42,6 +42,7 @@ public class MinecraftArmorWeaponModVariables {
 	public static void init(FMLCommonSetupEvent event) {
 		MinecraftArmorWeaponMod.addNetworkMessage(SavedDataSyncMessage.class, SavedDataSyncMessage::buffer, SavedDataSyncMessage::new, SavedDataSyncMessage::handler);
 		MinecraftArmorWeaponMod.addNetworkMessage(PlayerVariablesSyncMessage.class, PlayerVariablesSyncMessage::buffer, PlayerVariablesSyncMessage::new, PlayerVariablesSyncMessage::handler);
+		MinecraftArmorWeaponMod.addNetworkMessage(GuardSyncPacket.class, GuardSyncPacket::encode, GuardSyncPacket::new, GuardSyncPacket::handle);
 	}
 
 	@SubscribeEvent

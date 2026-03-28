@@ -41,16 +41,16 @@ public enum ElementType {
      */
     public ElementType getCounterElement() {
         switch (this) {
-            case ICE:       return FIRE;      // 火は氷を溶かす
-            case FIRE:      return WATER;     // 水は火を消す
-            case ELECTRIC:  return WIND;      // 風は雷を散らす
-            case THUNDER:   return WIND;      // 風は雷を散らす
-            case CORROSION: return WATER;     // 水は腐食を洗い流す
-            case HOLY:      return DARK;      // 闇は聖を打ち消す
-            case DARK:      return HOLY;      // 聖は闇を浄化する
-            case WATER:     return THUNDER;   // 雷は水を蒸発させる
-            case WIND:      return ICE;       // 氷は風を凍てつかせる
-            case ERROR:     return NONE;      // エラー属性は無効化不可
+            case ICE:       return FIRE;     
+            case FIRE:      return WATER;  
+            case ELECTRIC:  return WIND;      
+            case THUNDER:   return WIND;   
+            case CORROSION: return WATER;     
+            case HOLY:      return DARK;     
+            case DARK:      return HOLY;   
+            case WATER:     return THUNDER; 
+            case WIND:      return ICE;     
+            case ERROR:     return NONE;   
             default:        return NONE;
         }
     }

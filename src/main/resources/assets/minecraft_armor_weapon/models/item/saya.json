@@ -79,14 +79,12 @@
 			},
 			"model": "minecraft_armor_weapon:custom/saya_riversofblood"
 		},
-		
 		{
 			"predicate": {
 				"custom_model_data": 14
 			},
 			"model": "minecraft_armor_weapon:custom/saya_katananiguzyouwankotu3d"
-		},		
-
+		},
 		{
 			"predicate": {
 				"custom_model_data": 15
@@ -95,19 +93,26 @@
 		},
 		{
 			"predicate": {
-				"custom_model_data": 16
+				"custom_model_data": 19
 			},
-			"model": "minecraft_armor_weapon:custom/saya_reitou"
+			"model": "minecraft_armor_weapon:custom/saya_replica_sword_of_light"
 		},
 		{
 			"predicate": {
-				"custom_model_data": 17
+				"minecraft_armor_weapon:saya_nbt": 1
 			},
 			"model": "minecraft_armor_weapon:custom/saya_reitou_sigiled"
 		},
 		{
 			"predicate": {
-				"custom_model_data": 18
+				"minecraft_armor_weapon:feyn": 1
+			},
+			"model": "minecraft_armor_weapon:custom/tousinnukisaya"
+		},
+		{
+			"predicate": {
+				"minecraft_armor_weapon:feyn": 1,
+				"minecraft_armor_weapon:saya_nbt": 1
 			},
 			"model": "minecraft_armor_weapon:custom/saya_reitou_sigiled_empty"
 		}

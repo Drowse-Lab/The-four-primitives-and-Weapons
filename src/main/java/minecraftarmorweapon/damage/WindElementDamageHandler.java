@@ -49,4 +49,16 @@ public class WindElementDamageHandler {
         float attackBoost = ATTACK_BOOST_BASE + ATTACK_BOOST_PER_LEVEL * (level - 1);
         return baseDmg * (BASE_MULTIPLIER + attackBoost);
     }
+
+    /**
+     * レベル指定で風属性ダメージ計算（魔導書経由用）
+     */
+    public static float calculateDamage(LivingEntity attacker, LivingEntity target, float baseDmg, int level) {
+        int duration = BUFF_DURATION + BUFF_DURATION_PER_LV * Math.max(level - 1, 0);
+        int amplifier = Math.min(level - 1, 1);
+        attacker.addEffect(new MobEffectInstance(
+                MobEffects.DAMAGE_BOOST, duration, amplifier, false, true));
+        float attackBoost = ATTACK_BOOST_BASE + ATTACK_BOOST_PER_LEVEL * Math.max(level - 1, 0);
+        return baseDmg * (BASE_MULTIPLIER + attackBoost);
+    }
 }

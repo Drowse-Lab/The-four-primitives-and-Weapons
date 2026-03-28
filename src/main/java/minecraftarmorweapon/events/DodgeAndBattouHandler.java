@@ -635,6 +635,12 @@ public class DodgeAndBattouHandler {
             CompoundTag weaponData = weaponStack.save(new CompoundTag());
             sheathTag.put("StoredKatana", weaponData);
 
+            // SayaNBTタグを更新（霊刀スタイル判定用）
+            String weaponItemName = weaponStack.getItem().getClass().getSimpleName();
+            if (weaponItemName.equals("ReitouItem")) {
+                sheathTag.putInt("SayaNBT", 1);
+            }
+
             // 鞘の見た目を更新（CustomModelDataで刀が入っている状態を示す）
             sheathTag.putInt("CustomModelData", getWeaponModelData(weaponStack, sheathTag));
 
@@ -655,16 +661,10 @@ public class DodgeAndBattouHandler {
     }
     
     private static int getWeaponModelData(ItemStack weapon, CompoundTag sheathTag) {
-        // 鞘のスタイルを先にチェック（どの刀が入っていても鞘の見た目を優先）
-        if (sheathTag != null) {
-            if ("sigiled".equals(sheathTag.getString("Feyn"))) return 17; // 封印鞘（刀入り・柄あり）
-            if ("reitou".equals(sheathTag.getString("SayaStyle"))) return 16; // 霊刀スタイル鞘
-        }
-
-        // 鞘にスタイルがない場合は刀の種類で判定
         String itemName = weapon.getItem().getClass().getSimpleName();
 
-        if (itemName.equals("ReitouItem")) return 16;
+        // 霊刀はSayaNBT + feyn predicateで処理するのでCustomModelDataは0
+        if (itemName.equals("ReitouItem")) return 0;
         if (itemName.equals("IronKatanaItem")) return 1;
         if (itemName.equals("GoldKatanaItem")) return 2;
         if (itemName.equals("StoneKatanaItem")) return 3;
@@ -679,6 +679,10 @@ public class DodgeAndBattouHandler {
         if (itemName.equals("RiversOfBloodItem")) return 13;
         if (itemName.equals("KatanaNiguHumerusItem")) return 14;
         if (itemName.equals("LokiTheTricksterItem")) return 15;
+        if (itemName.equals("ReplicaSwordOfLightItem")) return 19;
+
+        // リストにない武器でもSwordItemなら鉄刀の鞘モデルをフォールバック
+        if (weapon.getItem() instanceof SwordItem) return 1;
 
         return 0; // デフォルト（空の鞘）
     }

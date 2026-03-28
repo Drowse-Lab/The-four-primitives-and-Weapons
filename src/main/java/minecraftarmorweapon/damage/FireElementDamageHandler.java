@@ -34,4 +34,13 @@ public class FireElementDamageHandler {
 
         return baseDmg * BASE_MULTIPLIER;
     }
+
+    /**
+     * レベル指定で火属性ダメージ計算（魔導書経由用）
+     */
+    public static float calculateDamage(LivingEntity target, float baseDmg, int level) {
+        int fireTicks = BASE_FIRE_TICKS + FIRE_TICKS_PER_LV * Math.max(level - 1, 0);
+        target.setSecondsOnFire(fireTicks / 20);
+        return baseDmg * BASE_MULTIPLIER;
+    }
 }

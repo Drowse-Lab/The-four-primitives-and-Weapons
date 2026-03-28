@@ -144,4 +144,12 @@ public class ElectricElementDamageHandler {
         // ダメージを適用
         target.hurt(ds, damage);
     }
+
+    public static float handleElectricDamage(LivingEntity attacker, LivingEntity target, ItemStack weapon, float baseDmg) {
+        int level = ElementalDamageUtils.getElementLevel(weapon);
+        DamageSource ds = attacker.damageSources().magic();
+        float damage = calculateDamage(target, baseDmg, level, ds);
+        applyElectricDamage(target, damage - baseDmg, attacker, level);
+        return damage;
+    }
 }

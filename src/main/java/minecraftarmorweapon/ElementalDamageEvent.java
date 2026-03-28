@@ -47,14 +47,27 @@ public class ElementalDamageEvent {
         // 攻撃者の武器を取得
         ItemStack weapon = attacker.getMainHandItem();
 
-        // 武器に属性が設定されているかチェック
-        if (!ElementalDamageUtils.hasElement(weapon)) {
+        // 属性情報を取得（武器 → 魔導書の順でチェック）
+        ElementType elementType;
+        int elementLevel;
+        boolean fromBook = false;
+
+        if (ElementalDamageUtils.hasElement(weapon)) {
+            // 武器自体に属性がある場合
+            elementType = ElementalDamageUtils.getElementType(weapon);
+            elementLevel = ElementalDamageUtils.getElementLevel(weapon);
+        } else if (attacker instanceof Player attackerPlayer) {
+            // 武器に属性がない場合、魔導書の属性を使用
+            elementType = ElementalDamageUtils.getBookSlotElement(attackerPlayer);
+            elementLevel = ElementalDamageUtils.getBookSlotLevel(attackerPlayer);
+            fromBook = true;
+        } else {
             return;
         }
 
-        // 属性情報を取得
-        ElementType elementType = ElementalDamageUtils.getElementType(weapon);
-        int elementLevel = ElementalDamageUtils.getElementLevel(weapon);
+        if (elementType == ElementType.NONE || elementLevel <= 0) {
+            return;
+        }
 
         // ターゲットとオリジナルダメージを取得
         LivingEntity target = event.getEntity();
@@ -63,7 +76,7 @@ public class ElementalDamageEvent {
         // 属性に応じてダメージを計算
         float modifiedDamage = originalDamage;
 
-        // bookスロットの魔導書でカウンター属性を持っていれば無効化
+        // bookスロットの魔導書でカウンター属性を持っていれば無効化（防御側）
         if (ElementalDamageUtils.isElementNullifiedByBook(target, elementType)) {
             if (target instanceof Player p) {
                 p.displayClientMessage(Component.literal("§b魔導書が" + elementType.getName() + "属性を無効化した！"), true);
@@ -72,6 +85,10 @@ public class ElementalDamageEvent {
             }
             return; // 属性ダメージ倍率を適用しない（通常ダメージのまま）
         }
+
+        // === カウンター属性による弱体化ボーナス（攻撃側） ===
+        // ターゲットの武器/魔導書属性を取得し、攻撃属性がカウンターなら追加ダメージ
+        float counterBonus = getCounterBonus(target, elementType, elementLevel);
 
         // 古いダメージタグをクリア
         clearDamageTags(target);
@@ -82,9 +99,7 @@ public class ElementalDamageEvent {
                 target.addTag(TAG_ICE_DAMAGE);
                 break;
             case ELECTRIC:
-                // 電気属性の伝染処理は後で行う（再帰を避けるため）
                 modifiedDamage = ElectricElementDamageHandler.calculateDamage(target, originalDamage, elementLevel, event.getSource());
-                // 水中での伝染ダメージを処理
                 applyElectricChainDamage(target, attacker, originalDamage, elementLevel);
                 target.addTag(TAG_ELECTRIC_DAMAGE);
                 break;
@@ -100,9 +115,27 @@ public class ElementalDamageEvent {
                 modifiedDamage = ErrorElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
                 target.addTag(TAG_ERROR_DAMAGE);
                 break;
+            case FIRE:
+                modifiedDamage = FireElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                break;
+            case WATER:
+                modifiedDamage = WaterElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                break;
+            case WIND:
+                modifiedDamage = WindElementDamageHandler.calculateDamage(attacker, target, originalDamage, elementLevel);
+                break;
+            case THUNDER:
+                modifiedDamage = ThunderElementDamageHandler.calculateDamage(attacker, target, originalDamage, elementLevel);
+                break;
+            case DARK:
+                modifiedDamage = DarkElementDamageHandler.calculateDamage(attacker, target, originalDamage, elementLevel);
+                break;
             default:
                 break;
         }
+
+        // カウンターボーナスを加算
+        modifiedDamage += counterBonus;
 
         // ダメージを変更
         if (modifiedDamage != originalDamage) {
@@ -204,5 +237,34 @@ public class ElementalDamageEvent {
             float chainDamage = originalDamage * 0.5f;
             nearby.hurt(nearby.damageSources().lightningBolt(), chainDamage);
         }
+    }
+
+    /**
+     * カウンター属性ボーナスダメージを計算
+     * 攻撃属性がターゲットの属性のカウンターである場合、追加ダメージを与える
+     * 例：攻撃=FIRE、ターゲット=ICE → ICEのカウンターはFIRE → 弱点ボーナス発動
+     */
+    private static float getCounterBonus(LivingEntity target, ElementType attackElement, int attackLevel) {
+        // ターゲットの属性を取得（武器 → 魔導書の順）
+        ElementType targetElement = ElementType.NONE;
+
+        ItemStack targetWeapon = target.getMainHandItem();
+        if (ElementalDamageUtils.hasElement(targetWeapon)) {
+            targetElement = ElementalDamageUtils.getElementType(targetWeapon);
+        } else if (target instanceof Player targetPlayer) {
+            targetElement = ElementalDamageUtils.getBookSlotElement(targetPlayer);
+        }
+
+        if (targetElement == ElementType.NONE || targetElement == ElementType.ERROR) return 0f;
+
+        // ターゲットの属性のカウンターが攻撃属性と一致 → 弱点攻撃
+        if (targetElement.getCounterElement() == attackElement) {
+            // 弱点ボーナス：基礎3ダメージ + レベル×1.0
+            float bonus = 3.0f + attackLevel * 1.0f;
+
+            return bonus;
+        }
+
+        return 0f;
     }
 }

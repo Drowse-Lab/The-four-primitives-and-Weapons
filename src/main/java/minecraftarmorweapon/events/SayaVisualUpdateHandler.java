@@ -133,21 +133,21 @@ public class SayaVisualUpdateHandler {
             if (isSaya(stack)) {
                 CompoundTag tag = stack.getTag();
                 if (tag != null) {
+                    updateSayaNBT(tag);
                     if (tag.contains("StoredKatana")) {
                         CompoundTag katanaTag = tag.getCompound("StoredKatana");
                         ItemStack katanaStack = ItemStack.of(katanaTag);
                         int expectedModelData = getModelDataForKatana(katanaStack, tag);
                         if (tag.getInt("CustomModelData") != expectedModelData) {
                             tag.putInt("CustomModelData", expectedModelData);
-                            stack.setTag(tag);
                         }
                     } else {
                         int emptyModelData = getEmptyModelData(tag);
                         if (tag.getInt("CustomModelData") != emptyModelData) {
                             tag.putInt("CustomModelData", emptyModelData);
-                            stack.setTag(tag);
                         }
                     }
+                    stack.setTag(tag);
                 }
             }
         }
@@ -165,6 +165,9 @@ public class SayaVisualUpdateHandler {
             return;
         }
         
+        // SayaNBTタグを更新（霊刀スタイル判定用、クライアントのitem propertyで使用）
+        updateSayaNBT(tag);
+
         // StoredKatanaまたはStoredSwordの有無でCustomModelDataを更新
         String storedKey = tag.contains("StoredKatana") ? "StoredKatana" :
                            tag.contains("StoredSword") ? "StoredSword" : null;
@@ -196,7 +199,7 @@ public class SayaVisualUpdateHandler {
                 tag.putInt("CustomModelData", emptyModelData);
             }
         }
-        
+
         sayaStack.setTag(tag);
     }
     
@@ -206,25 +209,48 @@ public class SayaVisualUpdateHandler {
             || stack.getItem() == MinecraftArmorWeaponModItems.TYOKUTO_SAYA.get();
     }
     
+    /**
+     * SayaNBTタグを更新（霊刀スタイル判定用）
+     * クライアント側のitem propertyで saya_nbt として使用される
+     */
+    private static void updateSayaNBT(CompoundTag tag) {
+        boolean isReitouStyle = false;
+
+        // SayaStyle="reitou" の場合
+        if ("reitou".equals(tag.getString("SayaStyle"))) {
+            isReitouStyle = true;
+        }
+
+        // StoredKatana が ReitouItem の場合
+        if (!isReitouStyle && tag.contains("StoredKatana")) {
+            CompoundTag katanaTag = tag.getCompound("StoredKatana");
+            String id = katanaTag.getString("id");
+            if (id.contains("reitou")) {
+                isReitouStyle = true;
+            }
+        }
+
+        int current = tag.getInt("SayaNBT");
+        int target = isReitouStyle ? 1 : 0;
+        if (current != target) {
+            tag.putInt("SayaNBT", target);
+        }
+    }
+
     private static int getEmptyModelData(CompoundTag tag) {
-        if ("sigiled".equals(tag.getString("Feyn"))) return 18;
-        if ("reitou".equals(tag.getString("SayaStyle"))) return 16;
+        // feyn/saya_nbt はクライアントのpredicateで処理するのでCustomModelDataは0
         return 0;
     }
 
     private static int getModelDataForKatana(ItemStack katanaStack, CompoundTag sayaTag) {
         if (katanaStack.isEmpty()) return 0;
 
-        // 鞘のスタイルを先にチェック（どの刀が入っていても鞘の見た目を優先）
-        if (sayaTag != null) {
-            if ("sigiled".equals(sayaTag.getString("Feyn"))) return 17; // 封印鞘（刀入り・柄あり）
-            if ("reitou".equals(sayaTag.getString("SayaStyle"))) return 16; // 霊刀スタイル鞘
-        }
-
-        // 鞘にスタイルがない場合は刀の種類で判定
         String itemName = katanaStack.getItem().getClass().getSimpleName();
 
-        if (itemName.equals("ReitouItem")) return 16;
+        // 霊刀はSayaNBT + feyn predicateで処理するのでCustomModelDataは0
+        if (itemName.equals("ReitouItem")) return 0;
+
+        // 各刀タイプに対応するカスタムモデルデータ
         if (itemName.equals("IronKatanaItem")) return 1;
         if (itemName.equals("GoldKatanaItem")) return 2;
         if (itemName.equals("StoneKatanaItem")) return 3;
@@ -239,7 +265,11 @@ public class SayaVisualUpdateHandler {
         if (itemName.equals("RiversOfBloodItem")) return 13;
         if (itemName.equals("KatanaNiguHumerusItem")) return 14;
         if (itemName.equals("LokiTheTricksterItem")) return 15;
+        if (itemName.equals("ReplicaSwordOfLightItem")) return 19;
 
-        return 0; // デフォルト（空の鞘）
+        // リストにない武器でもSwordItemなら鉄刀の鞘モデルをフォールバック
+        if (katanaStack.getItem() instanceof net.minecraft.world.item.SwordItem) return 1;
+
+        return 0;
     }
 }

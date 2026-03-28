@@ -44,4 +44,14 @@ public class WaterElementDamageHandler {
 
         return baseDmg * BASE_MULTIPLIER;
     }
+
+    /**
+     * レベル指定で水属性ダメージ計算（魔導書経由用）
+     */
+    public static float calculateDamage(LivingEntity target, float baseDmg, int level) {
+        int duration = BASE_SLOWNESS_DURATION + SLOWNESS_DURATION_PER_LV * Math.max(level - 1, 0);
+        target.addEffect(new MobEffectInstance(
+                MobEffects.MOVEMENT_SLOWDOWN, duration, SLOWNESS_AMPLIFIER, false, true));
+        return baseDmg * BASE_MULTIPLIER;
+    }
 }
