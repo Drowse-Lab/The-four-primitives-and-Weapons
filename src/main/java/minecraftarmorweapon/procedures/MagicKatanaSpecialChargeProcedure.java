@@ -897,7 +897,7 @@ public class MagicKatanaSpecialChargeProcedure {
         Vec3 eyePos = player.getEyePosition();
 
         // 斬撃の到達距離
-        double slashRange = 12.0;
+        double slashRange = 20.0;
         float errBonus = 1.0f + elementLevel * 0.3f;
 
         // === 交互の斬撃方向を決定 ===
@@ -921,8 +921,8 @@ public class MagicKatanaSpecialChargeProcedure {
         double tiltAngle = Math.toRadians(25); // 25度傾き
 
         // 斬撃サイズ（大きく）
-        double slashSize = 3.5;  // 斬撃の長さ（上端→下端）
-        double endSize = 0.8;    // 下端の広がり
+        double slashSize = 5.5;  // 斬撃の長さ（上端→下端）
+        double endSize = 1.2;    // 下端の広がり
 
         // 斬撃ラインの始点と終点（ローカル座標、rightとupの係数）
         double startR, startU, endR, endU;
@@ -940,97 +940,59 @@ public class MagicKatanaSpecialChargeProcedure {
             endU = -Math.cos(tiltAngle) * endSize;
         }
 
-        // 斬撃カラー
+        // 斬撃カラー（薄い1本線）
         DustParticleOptions slashCore = new DustParticleOptions(
-            new Vector3f(0.05f, 0.0f, 0.08f), 2.2f);   // 暗黒の芯（大きめ）
+            new Vector3f(0.05f, 0.0f, 0.08f), 1.2f);   // 暗黒の芯（細め）
         DustParticleOptions slashEdge = new DustParticleOptions(
-            new Vector3f(0.5f, 0.0f, 0.9f), 1.5f);      // 紫の縁
-        DustParticleOptions noiseDust = new DustParticleOptions(
-            new Vector3f(0.3f, 0.05f, 0.6f), 1.0f);     // ノイズ用
-        DustParticleOptions noiseGlitch = new DustParticleOptions(
-            new Vector3f(0.15f, 0.0f, 0.4f), 1.3f);     // グリッチノイズ（暗め）
+            new Vector3f(0.5f, 0.0f, 0.9f), 0.8f);      // 紫の縁（細め）
 
         // === 斬撃パーティクル生成 ===
         if (world instanceof ServerLevel serverLevel) {
-            // 距離ごとにノイズオフセットを生成（上下左右にちょくちょくずれる）
-            // 同じ距離面のパーティクルは同じオフセットを共有→斬撃の形ごとずれる
+            // 軸のノイズ：不規則な間隔でカクッとずれるデジタルノイズ
+            // ずれの区間をランダムな長さで事前生成
+            double currentR = 0, currentU = 0;
+            double nextShiftDist = 1.0 + Math.random() * 1.5; // 最初のずれが起きる距離
+            double shiftR = 0, shiftU = 0;
+
             for (double dist = 1.0; dist <= slashRange; dist += 0.35) {
                 // 前方の基準点
                 double baseX = eyePos.x + forward.x * dist;
                 double baseY = eyePos.y + forward.y * dist;
                 double baseZ = eyePos.z + forward.z * dist;
 
-                // この距離面全体のノイズオフセット（斬撃形状ごとずれる）
-                double sliceNoiseR = (Math.random() - 0.5) * 0.6;  // 左右ずれ
-                double sliceNoiseU = (Math.random() - 0.5) * 0.5;  // 上下ずれ
-                double sliceNoiseF = (Math.random() - 0.5) * 0.15; // 前後ずれ
+                // 次のずれポイントに達したらカクッと新しいオフセットに変わる
+                if (dist >= nextShiftDist) {
+                    shiftR = (Math.random() - 0.5) * 0.9;
+                    shiftU = (Math.random() - 0.5) * 0.7;
+                    // 次にずれるまでの距離もランダム（不規則な間隔）
+                    nextShiftDist = dist + 0.7 + Math.random() * 2.5;
+                }
+                double axisR = shiftR;
+                double axisU = shiftU;
 
                 // 斬撃ラインに沿ってパーティクルを配置
                 int slashPoints = 18;
                 for (int s = 0; s < slashPoints; s++) {
                     double t = s / (double)(slashPoints - 1);
-                    // 斬撃ライン上の位置（始点→終点を補間）
-                    double localR = startR + (endR - startR) * t + sliceNoiseR;
-                    double localU = startU + (endU - startU) * t + sliceNoiseU;
+                    // 斬撃ライン上の位置 + 軸ノイズ（斬撃の形を保ったまま位置がずれる）
+                    double localR = startR + (endR - startR) * t + axisR;
+                    double localU = startU + (endU - startU) * t + axisU;
 
-                    // 個々のパーティクルにも細かいノイズ
-                    double fineNoiseR = (Math.random() - 0.5) * 0.12;
-                    double fineNoiseU = (Math.random() - 0.5) * 0.12;
-
-                    double px = baseX + right.x * (localR + fineNoiseR) + up.x * (localU + fineNoiseU) + forward.x * sliceNoiseF;
-                    double py = baseY + right.y * (localR + fineNoiseR) + up.y * (localU + fineNoiseU) + forward.y * sliceNoiseF;
-                    double pz = baseZ + right.z * (localR + fineNoiseR) + up.z * (localU + fineNoiseU) + forward.z * sliceNoiseF;
+                    double px = baseX + right.x * localR + up.x * localU;
+                    double py = baseY + right.y * localR + up.y * localU;
+                    double pz = baseZ + right.z * localR + up.z * localU;
 
                     // 芯の暗黒パーティクル
                     serverLevel.sendParticles(slashCore,
-                        px, py, pz, 1, 0.01, 0.01, 0.01, 0);
+                        px, py, pz, 1, 0.005, 0.005, 0.005, 0);
 
-                    // 縁の紫パーティクル（斬撃の両側にずらして配置）
-                    double edgeOffset = 0.15;
-                    serverLevel.sendParticles(slashEdge,
-                        px + right.x * edgeOffset + (Math.random() - 0.5) * 0.08,
-                        py + right.y * edgeOffset + (Math.random() - 0.5) * 0.08,
-                        pz + right.z * edgeOffset + (Math.random() - 0.5) * 0.08,
-                        1, 0.01, 0.01, 0.01, 0);
-                    serverLevel.sendParticles(slashEdge,
-                        px - right.x * edgeOffset + (Math.random() - 0.5) * 0.08,
-                        py - right.y * edgeOffset + (Math.random() - 0.5) * 0.08,
-                        pz - right.z * edgeOffset + (Math.random() - 0.5) * 0.08,
-                        1, 0.01, 0.01, 0.01, 0);
-
-                    // ノイズパーティクル（斬撃からはみ出すように散らす）
-                    if (Math.random() < 0.5) {
-                        double nx = px + (Math.random() - 0.5) * 0.8;
-                        double ny = py + (Math.random() - 0.5) * 0.8;
-                        double nz = pz + (Math.random() - 0.5) * 0.8;
-                        serverLevel.sendParticles(noiseDust,
-                            nx, ny, nz, 1, 0.03, 0.03, 0.03, 0);
+                    // 縁の紫パーティクル（片側だけ、薄く）
+                    if (s % 2 == 0) {
+                        double edgeOffset = 0.06;
+                        serverLevel.sendParticles(slashEdge,
+                            px + right.x * edgeOffset, py + right.y * edgeOffset, pz + right.z * edgeOffset,
+                            1, 0.005, 0.005, 0.005, 0);
                     }
-
-                    // グリッチノイズ（大きくずれた位置に断片的に出現）
-                    if (Math.random() < 0.25) {
-                        double gx = px + (Math.random() - 0.5) * 1.5;
-                        double gy = py + (Math.random() - 0.5) * 1.2;
-                        double gz = pz + (Math.random() - 0.5) * 1.5;
-                        serverLevel.sendParticles(noiseGlitch,
-                            gx, gy, gz, 1, 0.02, 0.02, 0.02, 0);
-                    }
-
-                    // REVERSE_PORTALでグリッチ感
-                    if (Math.random() < 0.2) {
-                        serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL,
-                            px + (Math.random() - 0.5) * 0.3,
-                            py + (Math.random() - 0.5) * 0.3,
-                            pz + (Math.random() - 0.5) * 0.3,
-                            3, 0.05, 0.05, 0.05, 0.3);
-                    }
-                }
-
-                // 斬撃の軌跡にDRAGON_BREATH
-                if (dist % 1.2 < 0.35) {
-                    serverLevel.sendParticles(ParticleTypes.DRAGON_BREATH,
-                        baseX + sliceNoiseR * right.x * 0.5, baseY, baseZ + sliceNoiseR * right.z * 0.5,
-                        5, 0.5, 0.5, 0.5, 0.02);
                 }
             }
 
