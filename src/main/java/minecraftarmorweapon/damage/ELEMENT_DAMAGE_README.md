@@ -164,5 +164,7 @@ Each element has a counter element that deals increased damage against it.
   "ElementLevel": 2
 }
 ```
-
+---
+## Test command
+/give @s minecraft_armor_weapon:kurikarakenutigatana{ElementType:"ELECTRIC",ElementLevel:1}
 ---

@@ -2,6 +2,7 @@
 package minecraftarmorweapon.item;
 
 import minecraftarmorweapon.damage.ElementalDamageUtils;
+import minecraftarmorweapon.ElementalTooltipEvent;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
 import top.theillusivec4.curios.api.SlotContext;
 
@@ -24,7 +25,7 @@ public class IceBookItem extends Item implements ICurioItem {
 	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
 		int lv = ElementalDamageUtils.getElementLevel(stack);
 		if (lv >= 1 && lv <= 10) {
-			tooltip.add(Component.literal("§b氷属性  Lv." + lv));
+			tooltip.add(Component.literal("§b").append(Component.translatable("tooltip.minecraft_armor_weapon.element.ice")).append(Component.literal(" " + ElementalTooltipEvent.toRoman(lv))));
 		} else if (lv != 0) {
 			tooltip.add(ErrorBookItem.buildErrorComponent());
 		}

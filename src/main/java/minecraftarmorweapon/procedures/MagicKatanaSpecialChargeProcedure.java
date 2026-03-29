@@ -942,9 +942,9 @@ public class MagicKatanaSpecialChargeProcedure {
 
         // 斬撃カラー（薄い1本線）
         DustParticleOptions slashCore = new DustParticleOptions(
-            new Vector3f(0.05f, 0.0f, 0.08f), 1.2f);   // 暗黒の芯（細め）
+            new Vector3f(0.8f, 0.0f, 0.0f), 1.2f);     // 赤エラーの芯
         DustParticleOptions slashEdge = new DustParticleOptions(
-            new Vector3f(0.5f, 0.0f, 0.9f), 0.8f);      // 紫の縁（細め）
+            new Vector3f(1.0f, 0.15f, 0.1f), 0.8f);     // 明るい赤の縁
 
         // === 斬撃パーティクル生成 ===
         if (world instanceof ServerLevel serverLevel) {

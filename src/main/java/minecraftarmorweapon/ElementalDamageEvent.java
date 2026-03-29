@@ -6,10 +6,13 @@ import minecraftarmorweapon.damage.*;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -21,6 +24,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -236,6 +240,50 @@ public class ElementalDamageEvent {
             // 周囲のエンティティには50%のダメージ（通常のDamageSourceで再帰を防ぐ）
             float chainDamage = originalDamage * 0.5f;
             nearby.hurt(nearby.damageSources().lightningBolt(), chainDamage);
+        }
+    }
+
+    /**
+     * 聖属性魔導書のデバフ自動解除（プレイヤーTickで処理）
+     * Lv1: 200tickごと、Lv10: 毎tick常時解除
+     * MobEffectCategory.HARMFULで判定するため他modのデバフも解除可能
+     */
+    @SubscribeEvent
+    public static void onPlayerTickHolyCleanse(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        Player player = event.player;
+        if (player.level().isClientSide()) return;
+
+        ElementType bookElement = ElementalDamageUtils.getBookSlotElement(player);
+        if (bookElement != ElementType.HOLY) return;
+
+        int level = ElementalDamageUtils.getBookSlotLevel(player);
+        if (level <= 0) return;
+
+        // 解除間隔：Lv10=毎tick、Lv1=200tick
+        int interval = level >= 10 ? 1 : Math.max(5, 200 - (level - 1) * 22);
+
+        if (player.tickCount % interval != 0) return;
+
+        // HARMFUL（有害）カテゴリのエフェクトを全て除去（他mod含む）
+        List<MobEffectInstance> debuffs = new ArrayList<>();
+        for (MobEffectInstance effect : player.getActiveEffects()) {
+            if (effect.getEffect().getCategory() == MobEffectCategory.HARMFUL) {
+                debuffs.add(effect);
+            }
+        }
+
+        if (!debuffs.isEmpty()) {
+            for (MobEffectInstance debuff : debuffs) {
+                player.removeEffect(debuff.getEffect());
+            }
+
+            // 浄化エフェクト
+            if (player.level() instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.WAX_ON,
+                    player.getX(), player.getY() + 1, player.getZ(),
+                    8, 0.3, 0.4, 0.3, 0.05);
+            }
         }
     }
 

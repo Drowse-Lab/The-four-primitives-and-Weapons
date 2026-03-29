@@ -32,11 +32,9 @@ public class GuardSyncPacket {
 
     public static void handle(GuardSyncPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            if (!ctx.get().getDirection().getReceptionSide().isServer()) {
-                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-                    minecraftarmorweapon.client.GuardClientState.setGuarding(msg.entityId, msg.guarding);
-                });
-            }
+            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                minecraftarmorweapon.client.GuardClientState.setGuarding(msg.entityId, msg.guarding);
+            });
         });
         ctx.get().setPacketHandled(true);
     }

@@ -2,6 +2,7 @@
 package minecraftarmorweapon.item;
 
 import minecraftarmorweapon.damage.ElementalDamageUtils;
+import minecraftarmorweapon.ElementalTooltipEvent;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
 import top.theillusivec4.curios.api.SlotContext;
 
@@ -24,7 +25,7 @@ public class HolyBookItem extends Item implements ICurioItem {
 	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
 		int lv = ElementalDamageUtils.getElementLevel(stack);
 		if (lv >= 1 && lv <= 10) {
-			tooltip.add(Component.literal("§6聖属性  Lv." + lv));
+			tooltip.add(Component.literal("§6").append(Component.translatable("tooltip.minecraft_armor_weapon.element.holy")).append(Component.literal(" " + ElementalTooltipEvent.toRoman(lv))));
 		} else if (lv != 0) {
 			tooltip.add(ErrorBookItem.buildErrorComponent());
 		}

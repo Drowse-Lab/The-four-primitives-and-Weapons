@@ -292,5 +292,11 @@
   "item.minecraft_armor_weapon.ofuda": "§b封のお札",
   "tooltip.minecraft_armor_weapon.ofuda": "封印の力を持つ護符",
   "entity.minecraft_armor_weapon.debug_mob": "デバッグMob",
-  "item.minecraft_armor_weapon.debug_mob_spawn_egg": "デバッグMobのスポーンエッグ"
+  "item.minecraft_armor_weapon.debug_mob_spawn_egg": "デバッグMobのスポーンエッグ",
+  "tooltip.minecraft_armor_weapon.element.ice": "氷属性",
+  "tooltip.minecraft_armor_weapon.element.electric": "電気属性",
+  "tooltip.minecraft_armor_weapon.element.corrosion": "侵食属性",
+  "tooltip.minecraft_armor_weapon.element.holy": "聖属性",
+  "tooltip.minecraft_armor_weapon.element.error": "error属性",
+  "tooltip.minecraft_armor_weapon.element.x": "X"
 }

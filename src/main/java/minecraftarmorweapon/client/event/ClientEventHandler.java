@@ -25,14 +25,12 @@ import java.util.List;
 @Mod.EventBusSubscriber(value = Dist.CLIENT)
 public class ClientEventHandler {
 
-    // カスタム難易度のリスト
     private static final CustomDifficulty[] DIFFICULTIES = CustomDifficulty.values();
     private static int currentDifficultyIndex = 2; // デフォルト: NORMAL
 
     @SubscribeEvent
     public static void onScreenInit(ScreenEvent.Init.Post event) {
         if (event.getScreen() instanceof ControlsScreen controlsScreen) {
-            // Controls画面に「回避設定...」ボタンを追加
             Button dodgeConfigButton = Button.builder(
                     Component.literal("回避設定..."),
                     btn -> Minecraft.getInstance().setScreen(new DodgeConfigScreen(controlsScreen)))
@@ -42,44 +40,55 @@ public class ClientEventHandler {
         }
 
         if (event.getScreen() instanceof OptionsScreen optionsScreen) {
-            // 現在のカスタム難易度のインデックスを同期
             syncCurrentDifficultyIndex();
 
-            // 「Difficulty:」ボタンを探して差し替え
-            List<AbstractWidget> toRemove = new ArrayList<>();
+            // バニラの「Difficulty:」ボタンを探す
+            AbstractWidget difficultyWidget = null;
+
             for (var listener : event.getListenersList()) {
                 if (listener instanceof AbstractWidget widget) {
                     String msg = widget.getMessage().getString();
                     if (msg.contains("Difficulty") || msg.contains("難易度")) {
-                        toRemove.add(widget);
+                        difficultyWidget = widget;
+                        break;
                     }
                 }
             }
 
-            for (AbstractWidget widget : toRemove) {
-                // 元のボタンの位置を使う
-                int x = widget.getX();
-                int y = widget.getY();
-                int w = widget.getWidth();
-                int h = widget.getHeight();
+            if (difficultyWidget != null) {
+                int x = difficultyWidget.getX();
+                int y = difficultyWidget.getY();
+                int h = difficultyWidget.getHeight();
 
-                event.removeListener(widget);
+                // 難易度ボタン自体を非表示
+                difficultyWidget.visible = false;
+                difficultyWidget.active = false;
 
-                // カスタム難易度ボタンを追加
+                // 難易度ボタンのX以降（右側）にある同じY座標のウィジェットも非表示（ロックボタン）
+                for (var listener : event.getListenersList()) {
+                    if (listener instanceof AbstractWidget widget && widget != difficultyWidget) {
+                        if (widget.getY() == y && widget.getX() >= x) {
+                            widget.visible = false;
+                            widget.active = false;
+                        }
+                    }
+                }
+
+                // 難易度ボタンと同じ位置、右端までの幅でカスタムボタンを配置
+                int rightEdge = optionsScreen.width / 2 + 155;
+                int w = rightEdge - x;
+
                 Button customDiffButton = Button.builder(
                         Component.literal(getDifficultyDisplayName()),
                         btn -> {
-                            // 次の難易度に切り替え
                             currentDifficultyIndex = (currentDifficultyIndex + 1) % DIFFICULTIES.length;
                             CustomDifficulty newDiff = DIFFICULTIES[currentDifficultyIndex];
                             btn.setMessage(Component.literal(getDifficultyDisplayName()));
 
-                            // サーバーにパケットを送信
                             MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
                                     new CustomDifficultyPacket(newDiff.getName())
                             );
 
-                            // クライアント側も同期（シングルプレイ対応）
                             CustomDifficultyCommand.setCurrentDifficulty(newDiff);
                         })
                         .bounds(x, y, w, h)
@@ -101,6 +110,6 @@ public class ClientEventHandler {
 
     private static String getDifficultyDisplayName() {
         CustomDifficulty diff = DIFFICULTIES[currentDifficultyIndex];
-        return "難易度: " + diff.getName() + " (x" + String.format("%.1f", diff.getDamageMultiplier()) + ")";
+        return "Difficulty: " + diff.getName();
     }
 }

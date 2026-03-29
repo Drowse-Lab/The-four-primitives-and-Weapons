@@ -129,10 +129,10 @@ public class ItemStackTooltipMixin {
      */
     private String getElementName(ElementType type) {
         switch (type) {
-            case ICE: return "氷属性";
-            case ELECTRIC: return "電気属性";
-            case CORROSION: return "侵食属性";
-            case HOLY: return "聖属性";
+            case ICE: return Component.translatable("tooltip.minecraft_armor_weapon.element.ice").getString();
+            case ELECTRIC: return Component.translatable("tooltip.minecraft_armor_weapon.element.electric").getString();
+            case CORROSION: return Component.translatable("tooltip.minecraft_armor_weapon.element.corrosion").getString();
+            case HOLY: return Component.translatable("tooltip.minecraft_armor_weapon.element.holy").getString();
             default: return "";
         }
     }

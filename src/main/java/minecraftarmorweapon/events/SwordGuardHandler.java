@@ -12,8 +12,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.Rotations;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 
 import org.joml.Vector3f;
 
@@ -80,7 +86,7 @@ public class SwordGuardHandler {
                 player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE).getBaseValue());
         player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0);
 
-        // パーティクルとサウンド
+        // パーティクルとサウンド + ArmorStandガードエフェクト
         if (player.level() instanceof ServerLevel serverLevel) {
             float r = isReplica ? 1f : 0.8f;
             float g = isReplica ? 1f : 0.8f;
@@ -93,6 +99,26 @@ public class SwordGuardHandler {
                     SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 1.5f, 2f);
             serverLevel.playSound(null, player.blockPosition(),
                     SoundEvents.ARMOR_EQUIP_GOLD, SoundSource.PLAYERS, 1f, 1f);
+
+            // ガラスパネArmorStandを生成
+            Item glassPane = Items.WHITE_STAINED_GLASS_PANE;
+            if (isReplica) {
+                glassPane = Items.YELLOW_STAINED_GLASS_PANE;
+            } else if (mainHand.getItem() == MinecraftArmorWeaponModItems.LOKI_THE_TRICKSTER.get()) {
+                glassPane = Items.LIGHT_GRAY_STAINED_GLASS_PANE;
+            } else if (mainHand.getItem() == MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get()) {
+                glassPane = Items.BLACK_STAINED_GLASS_PANE;
+            }
+            ArmorStand stand = new ArmorStand(serverLevel, player.getX(), player.getY(), player.getZ());
+            stand.setNoGravity(true);
+            stand.setInvisible(true);
+            stand.setInvulnerable(true);
+            stand.addTag("minecraft_armor_weapon_guard_bind");
+            stand.setLeftArmPose(new Rotations(0f, 90f, -90f));
+            stand.setRightArmPose(new Rotations(0f, -90f, 90f));
+            stand.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(glassPane));
+            stand.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(glassPane));
+            serverLevel.addFreshEntity(stand);
         }
 
         // ガード状態をクライアントに同期（腕ポーズ用）
@@ -126,7 +152,7 @@ public class SwordGuardHandler {
         double gz = data.getDouble(GUARD_POS_Z);
         player.teleportTo(gx, gy, gz);
 
-        // ガード中パーティクル（毎tick）
+        // ガード中パーティクル（毎tick）+ ArmorStand回転
         if (player.level() instanceof ServerLevel serverLevel) {
             boolean isFull = data.getBoolean(GUARD_FULL_TAG);
             float r = isFull ? 1f : 0.7f;
@@ -136,6 +162,16 @@ public class SwordGuardHandler {
                     new DustParticleOptions(new Vector3f(r, g, b), 0.5f),
                     player.getX(), player.getY() + 1, player.getZ(),
                     5, 0.3, 0.5, 0.3, 0.01);
+
+            // ArmorStandを回転させる
+            for (Entity e : serverLevel.getAllEntities()) {
+                if (e instanceof ArmorStand stand && stand.getTags().contains("minecraft_armor_weapon_guard_bind")
+                        && stand.distanceToSqr(player) < 4.0) {
+                    stand.setYRot(stand.getYRot() + 15f);
+                    stand.setPos(player.getX(), player.getY(), player.getZ());
+                    break;
+                }
+            }
         }
 
         // タイマー減算
@@ -163,6 +199,17 @@ public class SwordGuardHandler {
         if (player instanceof ServerPlayer serverPlayer) {
             GuardSyncPacket packet = new GuardSyncPacket(player.getId(), false);
             MinecraftArmorWeaponMod.PACKET_HANDLER.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> serverPlayer), packet);
+        }
+
+        // ArmorStandを削除
+        if (player.level() instanceof ServerLevel serverLevel) {
+            for (Entity e : serverLevel.getAllEntities()) {
+                if (e instanceof ArmorStand stand && stand.getTags().contains("minecraft_armor_weapon_guard_bind")
+                        && stand.distanceToSqr(player) < 16.0) {
+                    stand.discard();
+                    break;
+                }
+            }
         }
 
         // 終了サウンド

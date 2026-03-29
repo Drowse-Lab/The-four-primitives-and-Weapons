@@ -1,6 +1,7 @@
 package minecraftarmorweapon.item;
 
 import minecraftarmorweapon.damage.ElementalDamageUtils;
+import minecraftarmorweapon.ElementalTooltipEvent;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
 import top.theillusivec4.curios.api.SlotContext;
 
@@ -31,7 +32,7 @@ public class ErrorBookItem extends Item implements ICurioItem {
                                 List<Component> tooltip, TooltipFlag flag) {
         int lv = ElementalDamageUtils.getElementLevel(stack);
         if (lv >= 1 && lv <= 10) {
-            tooltip.add(Component.literal("error属性  Lv." + lv)
+            tooltip.add(Component.translatable("tooltip.minecraft_armor_weapon.element.error").append(Component.literal(" " + ElementalTooltipEvent.toRoman(lv)))
                     .withStyle(Style.EMPTY
                             .withColor(ChatFormatting.DARK_RED)
                             .withFont(NOISE_FONT)));

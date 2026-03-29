@@ -31,11 +31,11 @@ public class ElementalTooltipEvent {
             int level = ElementalDamageUtils.getElementLevel(stack);
 
             // 属性表示コンポーネントを作成
-            String elementName = getElementName(type);
+            String translationKey = getElementTranslationKey(type);
             String romanLevel = toRoman(level);
             String colorHex = getElementColorHex(type);
 
-            Component elementText = Component.literal(elementName + " " + romanLevel)
+            Component elementText = Component.translatable(translationKey).append(Component.literal(" " + romanLevel))
                 .setStyle(Style.EMPTY.withColor(TextColor.parseColor(colorHex)).withItalic(false));
 
             // 挿入位置を決定：エンチャントの後、攻撃力などの属性の前
@@ -76,12 +76,12 @@ public class ElementalTooltipEvent {
     /**
      * 属性名を取得
      */
-    private static String getElementName(ElementType type) {
+    private static String getElementTranslationKey(ElementType type) {
         switch (type) {
-            case ICE: return "氷属性";
-            case ELECTRIC: return "電気属性";
-            case CORROSION: return "侵食属性";
-            case HOLY: return "聖属性";
+            case ICE: return "tooltip.minecraft_armor_weapon.element.ice";
+            case ELECTRIC: return "tooltip.minecraft_armor_weapon.element.electric";
+            case CORROSION: return "tooltip.minecraft_armor_weapon.element.corrosion";
+            case HOLY: return "tooltip.minecraft_armor_weapon.element.holy";
             default: return "";
         }
     }
@@ -102,7 +102,7 @@ public class ElementalTooltipEvent {
     /**
      * 数字をローマ数字に変換
      */
-    private static String toRoman(int num) {
+    public static String toRoman(int num) {
         if (num <= 0) return "";
         if (num == 1) return "I";
         if (num == 2) return "II";

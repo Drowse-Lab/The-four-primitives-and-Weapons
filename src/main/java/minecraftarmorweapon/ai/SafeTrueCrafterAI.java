@@ -41,33 +41,50 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import minecraftarmorweapon.command.CustomDifficultyCommand.CustomDifficulty;
 
 /**
  * 安全なTrue Crafter Mode実装
  * AIゴールの変更を安全に行い、ConcurrentModificationExceptionを防ぐ
+ *
+ * 難易度別の段階的強化:
+ *   aiLevel 0: 強化なし
+ *   aiLevel 1: 基本装備のみ（革/木、盾低確率）
+ *   aiLevel 2: 中装備、武器切替、盾あり、回避行動
+ *   aiLevel 3: 高装備、ブロック設置/破壊、壁越し感知、飛びかかり
+ *   aiLevel 4: 最高装備、高速行動、バフ効果、ベッド睡眠無効
+ *   aiLevel 5: 全機能最大、ネザライト/MOD装備、超高速行動
  */
 @Mod.EventBusSubscriber
 public class SafeTrueCrafterAI {
-    
+
     // エンティティごとの強化状態を管理
     private static final Set<UUID> enhancedEntities = ConcurrentHashMap.newKeySet();
     private static final Map<UUID, MobEnhancementData> enhancementData = new ConcurrentHashMap<>();
-    
+
     // 一時ブロックの管理
     private static final Map<BlockPos, Long> temporaryBlocks = new ConcurrentHashMap<>();
     private static final long BLOCK_DECAY_TIME = 15000; // 15秒
-    
+
     private static class MobEnhancementData {
         boolean isEnhanced = false;
         int weaponSwitchCooldown = 0;
         int dodgeCooldown = 0;
         int blockPlaceCooldown = 0;
         int blockBreakCooldown = 0;
-        int blockBreakProgress = 0; // ブロック破壊の進行度（0-9）
-        BlockPos breakingBlockPos = null; // 現在破壊中のブロック位置
+        int blockBreakProgress = 0;
+        BlockPos breakingBlockPos = null;
         ItemStack meleeWeapon = ItemStack.EMPTY;
         ItemStack rangedWeapon = ItemStack.EMPTY;
         long lastUpdateTick = 0;
+        int mobTier = 0; // このMobの個別ティア（0-2）
+
+        // ブロック設置/破壊用の停滞追跡
+        int standstillTicks = 0;     // 停滞しているtick数
+        double lastX = 0, lastZ = 0; // 前回座標
+        boolean bridgeMode = false;   // 橋建設モード中か
+        int bridgeEndTimer = 0;       // 橋終了カウンタ
+        int digProgress = 0;          // 掘削進行度（0-40）
     }
     
     // 革防具に色を付けるヘルパーメソッド
@@ -365,9 +382,18 @@ public class SafeTrueCrafterAI {
     
     private static void enhanceSkeleton(Skeleton skeleton) {
         RandomSource random = skeleton.getRandom();
-        
-        // ティアシステム（0: 通常, 1: 精鋭, 2: チャンピオン）
-        int tier = random.nextFloat() < 0.7f ? 0 : (random.nextFloat() < 0.8f ? 1 : 2);
+        CustomDifficulty diff = CustomDifficultyCommand.getCurrentDifficulty();
+
+        // ティアシステム — 難易度のeliteSpawnChanceで精鋭/チャンピオン出現率が変化
+        int tier;
+        float roll = random.nextFloat();
+        if (roll < diff.getEliteSpawnChance()) {
+            tier = 2; // チャンピオン
+        } else if (roll < diff.getEliteSpawnChance() + 0.15f + diff.getAiLevel() * 0.05f) {
+            tier = 1; // 精鋭
+        } else {
+            tier = 0; // 通常
+        }
         
         // 弓の設定（ティアに応じて強化）
         ItemStack bow = new ItemStack(Items.BOW);
@@ -494,9 +520,18 @@ public class SafeTrueCrafterAI {
     
     private static void enhanceZombie(Zombie zombie) {
         RandomSource random = zombie.getRandom();
-        
-        // ティアシステム（0: 通常, 1: 戦士, 2: バーサーカー）
-        int tier = random.nextFloat() < 0.6f ? 0 : (random.nextFloat() < 0.75f ? 1 : 2);
+        CustomDifficulty diff = CustomDifficultyCommand.getCurrentDifficulty();
+
+        // ティアシステム — 難易度のeliteSpawnChanceで戦士/バーサーカー出現率が変化
+        int tier;
+        float roll = random.nextFloat();
+        if (roll < diff.getEliteSpawnChance()) {
+            tier = 2; // バーサーカー
+        } else if (roll < diff.getEliteSpawnChance() + 0.15f + diff.getAiLevel() * 0.05f) {
+            tier = 1; // 戦士
+        } else {
+            tier = 0; // 通常
+        }
         
         // 防具の設定（ティアとランダム性）
         int armorColor = getRandomArmorColor(random, tier);
@@ -787,133 +822,240 @@ public class SafeTrueCrafterAI {
             }
         }
         
-        // ゾンビのブロック設置・破壊と飛びかかり処理
+        // ============================
+        // 全モンスター共通: ブロック設置・破壊処理
+        // EnhancedAI + NESM + True Crafter Mode 準拠
+        // ============================
+        CustomDifficulty diff = CustomDifficultyCommand.getCurrentDifficulty();
+        LivingEntity commonTarget = monster.getTarget();
+
+        if (commonTarget != null) {
+            // --- スタック判定 (EnhancedAI方式: 位置追跡 + NESM方式: canReach) ---
+            double dx = monster.getX() - data.lastX;
+            double dz = monster.getZ() - data.lastZ;
+            double moveSq = dx * dx + dz * dz;
+            data.lastX = monster.getX();
+            data.lastZ = monster.getZ();
+
+            if (moveSq < 0.01) {
+                data.standstillTicks++;
+            } else {
+                if (!data.bridgeMode) {
+                    data.standstillTicks = Math.max(0, data.standstillTicks - 2);
+                }
+            }
+
+            // NESM方式: パスが到達不能ならスタック扱い
+            boolean pathUnreachable = false;
+            try {
+                var path = monster.getNavigation().getPath();
+                if (path != null && !path.canReach()) {
+                    pathUnreachable = true;
+                }
+                // パスがnull = ナビゲーションできていない = スタック
+                if (path == null && monster.getNavigation().isDone() && commonTarget.distanceToSqr(monster) > 9.0) {
+                    pathUnreachable = true;
+                }
+            } catch (Exception ignored) {}
+
+            // canReach失敗時はスタックカウンタを即座にブースト
+            if (pathUnreachable) {
+                data.standstillTicks = Math.max(data.standstillTicks, 10);
+            }
+
+            // ターゲット方向ベクトル
+            double toTargetX = commonTarget.getX() - monster.getX();
+            double toTargetZ = commonTarget.getZ() - monster.getZ();
+            double horizontalDist = Math.sqrt(toTargetX * toTargetX + toTargetZ * toTargetZ);
+            double yDiff = commonTarget.getY() - monster.getY();
+
+            // 正規化した方向からBlockPosオフセットを計算
+            int dirX = 0, dirZ = 0;
+            if (horizontalDist > 0.5) {
+                dirX = (int) Math.round(toTargetX / horizontalDist);
+                dirZ = (int) Math.round(toTargetZ / horizontalDist);
+                if (dirX == 0 && dirZ == 0) {
+                    dirX = toTargetX >= 0 ? 1 : -1;
+                }
+            } else {
+                dirX = monster.getDirection().getStepX();
+                dirZ = monster.getDirection().getStepZ();
+            }
+
+            // スタック判定: 10tickで発動（以前は20tick）、またはパス到達不能
+            boolean isStuck = data.standstillTicks >= 10 || pathUnreachable;
+
+            // --- ブロック設置処理 ---
+            if (diff.isBlockPlaceEnabled() && data.blockPlaceCooldown == 0 && isStuck) {
+
+                // ピラーアップ: ターゲットが上にいる場合 (NESM MobBuildUp方式)
+                if (!data.bridgeMode && yDiff > 1.5 && horizontalDist < 8.0) {
+                    BlockPos mobPos = monster.blockPosition();
+
+                    if (canPlaceAt(monster, mobPos) &&
+                        monster.level().getBlockState(mobPos.below()).isSolid()) {
+                        placeTempBlock(monster, mobPos);
+                        // テレポートで上に乗る (NESM方式: tp + snap to center)
+                        double cx = Math.floor(monster.getX()) + 0.5;
+                        double cz = Math.floor(monster.getZ()) + 0.5;
+                        monster.teleportTo(cx, monster.getY() + 1.0, cz);
+                        data.blockPlaceCooldown = 5;
+                    }
+                    // 同じ高さに来たら橋モードに移行
+                    if (Math.abs(yDiff) <= 1.5) {
+                        data.bridgeMode = true;
+                        data.bridgeEndTimer = 0;
+                        data.standstillTicks = 0;
+                    }
+                }
+
+                // 橋建設: 前方の足場がない場合 (NESM MobBuildBridge方式)
+                if (data.blockPlaceCooldown == 0 && (data.bridgeMode || horizontalDist > 2.0)) {
+                    BlockPos frontFeet = monster.blockPosition().offset(dirX, 0, dirZ);
+                    BlockPos belowFront = frontFeet.below();
+                    BlockState belowState = monster.level().getBlockState(belowFront);
+
+                    if ((belowState.isAir() || belowState.liquid()) && canPlaceAt(monster, belowFront)) {
+                        placeTempBlock(monster, belowFront);
+                        data.blockPlaceCooldown = 5;
+                        data.bridgeMode = true;
+
+                        // 2ブロック先も設置
+                        BlockPos belowFront2 = frontFeet.offset(dirX, -1, dirZ);
+                        if (canPlaceAt(monster, belowFront2)) {
+                            placeTempBlock(monster, belowFront2);
+                        }
+                    }
+                }
+
+                // 橋モード管理
+                if (data.bridgeMode) {
+                    BlockPos below = monster.blockPosition().below();
+                    if (!monster.level().getBlockState(below).isSolid()) {
+                        data.bridgeEndTimer++;
+                    } else {
+                        data.bridgeEndTimer = 0;
+                    }
+                    if (data.bridgeEndTimer >= 30) {
+                        data.bridgeMode = false;
+                        data.bridgeEndTimer = 0;
+                    }
+                    // ターゲットが下にいる場合: 足元を壊して降りる (NESM MobDigDown方式)
+                    if (yDiff < -2.0) {
+                        BlockPos feetBelow = monster.blockPosition().below();
+                        if (!monster.level().getBlockState(feetBelow).isAir()) {
+                            monster.level().destroyBlock(feetBelow, false);
+                        }
+                        data.bridgeMode = false;
+                    }
+                }
+            }
+
+            // --- ブロック破壊処理 (EnhancedAI方式: ターゲット方向レイキャスト) ---
+            if (data.blockBreakCooldown == 0 && diff.isBlockBreakEnabled() && isStuck) {
+                BlockPos mobPos = monster.blockPosition();
+
+                // ターゲット方向の前方ブロックをチェック (EnhancedAI clip方式の簡易版)
+                BlockPos frontFeet = mobPos.offset(dirX, 0, dirZ);
+                BlockPos frontBody = mobPos.offset(dirX, 1, dirZ);
+
+                // dig up: ターゲットが上にいる場合は頭上も (NESM MobDigUp方式)
+                BlockPos above1 = mobPos.above(1);
+                BlockPos above2 = mobPos.above(2);
+
+                // dig down: ターゲットが下にいる場合は足元 (NESM MobDigDown方式)
+                BlockPos belowFeet = mobPos.below();
+
+                // 優先度: 前方→上→下
+                BlockPos[] targets;
+                if (yDiff > 1.5) {
+                    targets = new BlockPos[]{frontFeet, frontBody, above2, above1};
+                } else if (yDiff < -1.5) {
+                    targets = new BlockPos[]{frontFeet, frontBody, belowFeet};
+                } else {
+                    targets = new BlockPos[]{frontFeet, frontBody};
+                }
+
+                for (BlockPos checkPos : targets) {
+                    BlockState state = monster.level().getBlockState(checkPos);
+
+                    if (!state.isAir() && !state.liquid() &&
+                        state.getDestroySpeed(monster.level(), checkPos) >= 0 &&
+                        state.getDestroySpeed(monster.level(), checkPos) < 50.0f) {
+
+                        if (checkPos.equals(data.breakingBlockPos)) {
+                            data.blockBreakProgress++;
+
+                            // 破壊アニメーション表示 (EnhancedAI destroyBlockProgress方式)
+                            int stage = Math.min(data.blockBreakProgress / 3, 9);
+                            if (monster.level() instanceof ServerLevel serverLevel) {
+                                serverLevel.destroyBlockProgress(monster.getId(), checkPos, stage);
+                            }
+                            // 6tickごとに手を振る (EnhancedAI方式)
+                            if (data.blockBreakProgress % 6 == 0) {
+                                monster.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                            }
+
+                            // 硬さに応じた破壊速度 (EnhancedAI: ツール速度計算の簡易版)
+                            float hardness = state.getDestroySpeed(monster.level(), checkPos);
+                            int breakTime = (int)(hardness * 5) + 10;
+
+                            if (data.blockBreakProgress >= breakTime) {
+                                monster.level().destroyBlock(checkPos, true);
+                                if (monster.level() instanceof ServerLevel serverLevel) {
+                                    serverLevel.destroyBlockProgress(monster.getId(), checkPos, -1);
+                                }
+                                data.blockBreakProgress = 0;
+                                data.breakingBlockPos = null;
+                                data.blockBreakCooldown = 10;
+                                data.standstillTicks = 0; // 破壊後リセット
+                            }
+                        } else {
+                            data.breakingBlockPos = checkPos.immutable();
+                            data.blockBreakProgress = 0;
+                        }
+                        break;
+                    }
+                }
+            } else if (data.blockBreakCooldown > 0) {
+                data.blockBreakCooldown--;
+            }
+        } else {
+            // ターゲットがいない場合リセット
+            if (data.breakingBlockPos != null) {
+                if (monster.level() instanceof ServerLevel serverLevel) {
+                    serverLevel.destroyBlockProgress(monster.getId(), data.breakingBlockPos, -1);
+                }
+                data.breakingBlockPos = null;
+                data.blockBreakProgress = 0;
+            }
+            data.bridgeMode = false;
+            data.standstillTicks = 0;
+        }
+
+        // ゾンビ固有の処理: 飛びかかり・盾
         if (monster instanceof Zombie zombie) {
             LivingEntity target = zombie.getTarget();
             if (target != null) {
                 double distance = zombie.distanceToSqr(target);
 
-                // ブロック設置処理（True Crafterモードで有効）
-                if (data.blockPlaceCooldown == 0 && CustomDifficultyCommand.isTrueCrafterEnabled()) {
-                    // ターゲットが高い位置にいる場合 - ピラーアップ（自分の足元にブロックを積む）
-                    if (target.getY() > zombie.getY() + 1.5) {
-                        BlockPos zombiePos = zombie.blockPosition();
-                        BlockPos belowPos = zombiePos.below();
-
-                        // 足元にブロックを置いてピラーアップ
-                        if (zombie.level().getBlockState(zombiePos).isAir() &&
-                            zombie.level().getBlockState(belowPos).isSolid()) {
-                            zombie.level().setBlock(zombiePos, Blocks.COBBLESTONE.defaultBlockState(), 3);
-                            temporaryBlocks.put(zombiePos, System.currentTimeMillis());
-                            // ジャンプして上に乗る
-                            zombie.setDeltaMovement(zombie.getDeltaMovement().x, 0.42, zombie.getDeltaMovement().z);
-                            zombie.hasImpulse = true;
-                            data.blockPlaceCooldown = 15; // 0.75秒のクールダウン（連続で積める）
-                        }
-                        // 前方にブロックを設置して階段状に登る
-                        else {
-                            BlockPos frontPos = zombiePos.relative(zombie.getDirection());
-                            if (zombie.level().getBlockState(frontPos).isAir() &&
-                                zombie.level().getBlockState(frontPos.below()).isSolid()) {
-                                zombie.level().setBlock(frontPos, Blocks.COBBLESTONE.defaultBlockState(), 3);
-                                data.blockPlaceCooldown = 20;
-                                temporaryBlocks.put(frontPos, System.currentTimeMillis());
-                            }
-                        }
-                    }
-
-                    // 谷や水を渡るための橋を作る
-                    if (data.blockPlaceCooldown == 0) {
-                        BlockPos frontPos = zombie.blockPosition().relative(zombie.getDirection());
-                        BlockPos belowFront = frontPos.below();
-                        BlockState belowState = zombie.level().getBlockState(belowFront);
-
-                        if (belowState.isAir() || belowState.liquid()) {
-                            zombie.level().setBlock(belowFront, Blocks.COBBLESTONE.defaultBlockState(), 3);
-                            data.blockPlaceCooldown = 20;
-                            temporaryBlocks.put(belowFront, System.currentTimeMillis());
-                        }
-                    }
-                }
-
-                // ブロック破壊処理（経路上の壁を壊して進軍）
-                if (data.blockBreakCooldown == 0 && CustomDifficultyCommand.isTrueCrafterEnabled()) {
-                    BlockPos zombiePos = zombie.blockPosition();
-                    BlockPos frontPos = zombiePos.relative(zombie.getDirection());
-                    BlockPos frontAbove = frontPos.above();
-
-                    // 前方のブロックをチェック（頭の高さと体の高さ）
-                    for (BlockPos checkPos : new BlockPos[]{frontPos, frontAbove}) {
-                        BlockState frontState = zombie.level().getBlockState(checkPos);
-
-                        // 破壊可能なブロックかチェック（岩盤・黒曜石など硬すぎるブロックは除外）
-                        if (!frontState.isAir() && !frontState.liquid() &&
-                            frontState.getDestroySpeed(zombie.level(), checkPos) >= 0 &&
-                            frontState.getDestroySpeed(zombie.level(), checkPos) < 50.0f) {
-
-                            // 同じブロックを破壊中なら進行度を進める
-                            if (checkPos.equals(data.breakingBlockPos)) {
-                                data.blockBreakProgress++;
-
-                                // 破壊アニメーション表示
-                                int stage = Math.min(data.blockBreakProgress / 3, 9);
-                                if (zombie.level() instanceof ServerLevel serverLevel) {
-                                    serverLevel.destroyBlockProgress(zombie.getId(), checkPos, stage);
-                                }
-
-                                // 硬さに応じた破壊速度（柔らかいブロックは速く壊れる）
-                                float hardness = frontState.getDestroySpeed(zombie.level(), checkPos);
-                                int breakTime = (int)(hardness * 5) + 10; // 最低10tick
-
-                                if (data.blockBreakProgress >= breakTime) {
-                                    // ブロック破壊
-                                    zombie.level().destroyBlock(checkPos, true);
-                                    if (zombie.level() instanceof ServerLevel serverLevel) {
-                                        serverLevel.destroyBlockProgress(zombie.getId(), checkPos, -1);
-                                    }
-                                    data.blockBreakProgress = 0;
-                                    data.breakingBlockPos = null;
-                                    data.blockBreakCooldown = 10;
-                                }
-                            } else {
-                                // 新しいブロックの破壊を開始
-                                data.breakingBlockPos = checkPos.immutable();
-                                data.blockBreakProgress = 0;
-                            }
-                            break; // 1つのブロックずつ処理
-                        }
-                    }
-                } else if (data.blockBreakCooldown > 0) {
-                    data.blockBreakCooldown--;
-                }
-
                 // 飛びかかり攻撃
                 if (data.dodgeCooldown == 0 && zombie.onGround()) {
-                    if (distance > 9.0 && distance < 36.0) { // 3-6ブロック
+                    if (distance > 9.0 && distance < 36.0) {
                         Vec3 direction = target.position().subtract(zombie.position()).normalize();
                         zombie.setDeltaMovement(direction.x * 0.8, 0.4, direction.z * 0.8);
                         zombie.hasImpulse = true;
-                        data.dodgeCooldown = 60; // 3秒のクールダウン
+                        data.dodgeCooldown = 60;
                     }
                 }
 
                 // 盾防御処理
                 if (!zombie.getOffhandItem().isEmpty() && zombie.getOffhandItem().is(Items.SHIELD)) {
                     if (distance < 16.0) {
-                        // 近距離で30%の確率で盾を構える
                         if (zombie.getRandom().nextFloat() < 0.3f && !zombie.isUsingItem()) {
                             zombie.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
                         }
                     }
-                }
-            } else {
-                // ターゲットがいない場合、破壊進行をリセット
-                if (data.breakingBlockPos != null) {
-                    if (zombie.level() instanceof ServerLevel serverLevel) {
-                        serverLevel.destroyBlockProgress(zombie.getId(), data.breakingBlockPos, -1);
-                    }
-                    data.breakingBlockPos = null;
-                    data.blockBreakProgress = 0;
                 }
             }
         }
@@ -956,6 +1098,24 @@ public class SafeTrueCrafterAI {
         }
     }
     
+    // ============================
+    // ブロック設置ヘルパー
+    // ============================
+
+    /** 指定位置にブロックを設置できるか（空気・草・水など） */
+    private static boolean canPlaceAt(Monster monster, BlockPos pos) {
+        BlockState state = monster.level().getBlockState(pos);
+        return state.isAir() || state.liquid() ||
+               state.is(Blocks.GRASS) || state.is(Blocks.TALL_GRASS) ||
+               state.is(Blocks.SNOW) || state.is(Blocks.VINE);
+    }
+
+    /** 一時ブロック（mossy_cobblestone）を設置してマップに登録 */
+    private static void placeTempBlock(Monster monster, BlockPos pos) {
+        monster.level().setBlock(pos, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 3);
+        temporaryBlocks.put(pos, System.currentTimeMillis());
+    }
+
     // カスタムAIゴール - スケルトンの盾防御（攻撃を妨げないように改良）
     private static class SkeletonShieldGoal extends Goal {
         private final Skeleton skeleton;

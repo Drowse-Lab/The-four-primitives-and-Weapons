@@ -92,27 +92,14 @@ public class MobWeaponAttackHandler {
 
         // 武器の種類を判定
         String weaponName = weapon.getItem().getClass().getSimpleName();
-        String itemRegistryName = weapon.getItem().toString().toLowerCase();
-
-        System.out.println("[MobWeaponAttack] " + attacker.getName().getString() + " の武器判定:");
-        System.out.println("  - クラス名: " + weaponName);
-        System.out.println("  - レジストリ名: " + itemRegistryName);
-        System.out.println("  - Katanaチェック: " + (weaponName.contains("Katana") || weaponName.contains("katana")));
-        System.out.println("  - 直刀チェック: " + isStraightSword(weapon));
 
         // 刀の場合（Katanaを含むもの） - 先にチェック
         if (weaponName.contains("Katana") || weaponName.contains("katana")) {
-            System.out.println("  → 刀攻撃を実行");
             performMobSlashAttack(attacker, target, world, lookVec, attackerPos);
         }
         // 直刀の場合（TyokutouやUtigatanaなど）
         else if (isStraightSword(weapon)) {
-            System.out.println("  → 直刀突き攻撃を実行");
             performMobThrustAttack(attacker, target, world, lookVec, attackerPos);
-        }
-        // その他の剣は何もしない（デフォルト攻撃を無効化）
-        else {
-            System.out.println("  → 特殊攻撃なし（通常のダメージのみ）");
         }
     }
 
@@ -329,15 +316,7 @@ public class MobWeaponAttackHandler {
      * 直刀かどうかをチェック
      */
     private static boolean isStraightSword(ItemStack stack) {
-        if (stack.isEmpty()) {
-            System.out.println("    [isStraightSword] スタックが空です");
-            return false;
-        }
-
-        // TyokutouThrustAttackProcedureの判定を使用
-        boolean result = minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(stack);
-        String itemName = stack.getItem().getClass().getSimpleName();
-        System.out.println("    [isStraightSword] アイテム: " + itemName + " → 直刀判定: " + result);
-        return result;
+        if (stack.isEmpty()) return false;
+        return minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(stack);
     }
 }

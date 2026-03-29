@@ -1,9 +1,13 @@
 package minecraftarmorweapon.damage;
 
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DarkElementDamageHandler {
 
@@ -67,6 +71,9 @@ public class DarkElementDamageHandler {
             ));
         }
 
+        // 相手の既存デバフを強化する
+        amplifyDebuffs(target, level);
+
         return baseDmg * multiplier;
     }
 
@@ -89,6 +96,42 @@ public class DarkElementDamageHandler {
             target.addEffect(new MobEffectInstance(MobEffects.WITHER, 60, level - WITHER_MIN_LEVEL, false, true));
         }
 
+        // 相手の既存デバフを強化する
+        amplifyDebuffs(target, level);
+
         return baseDmg * multiplier;
+    }
+
+    /**
+     * ターゲットの既存デバフ（有害なエフェクト）を強化する。
+     * 持続時間を延長し、レベル3以上ではアンプリファイアも+1する。
+     *
+     * @param target 攻撃対象
+     * @param level  闇属性レベル
+     */
+    private static void amplifyDebuffs(LivingEntity target, int level) {
+        // 現在の有害エフェクトを収集（イテレーション中の変更を避けるためコピー）
+        List<MobEffectInstance> debuffs = new ArrayList<>();
+        for (MobEffectInstance effect : target.getActiveEffects()) {
+            if (effect.getEffect().getCategory() == MobEffectCategory.HARMFUL) {
+                debuffs.add(effect);
+            }
+        }
+
+        // 各デバフを強化して再付与
+        for (MobEffectInstance debuff : debuffs) {
+            // 持続時間延長: +40tick(2秒) × レベル
+            int extendedDuration = debuff.getDuration() + 40 * level;
+            // レベル3以上ではアンプリファイアも+1
+            int newAmplifier = debuff.getAmplifier() + (level >= 3 ? 1 : 0);
+
+            target.addEffect(new MobEffectInstance(
+                    debuff.getEffect(),
+                    extendedDuration,
+                    newAmplifier,
+                    debuff.isAmbient(),
+                    debuff.isVisible()
+            ));
+        }
     }
 }

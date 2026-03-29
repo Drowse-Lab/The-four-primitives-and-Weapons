@@ -4,8 +4,12 @@ import minecraftarmorweapon.util.VersionHelper;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,6 +80,9 @@ public class ErrorElementDamageHandler {
             int bonusLevels = elementLevel - 9;
             totalDamage += originalDamage * (bonusLevels * BONUS_DAMAGE_PER_LEVEL);
         }
+
+        // 相手のバフ（有益なエフェクト）を解除する
+        removeBuffs(target, elementLevel);
 
         // LivingDamageEvent用にデータを保存
         pendingDamage.put(target.getUUID(),
@@ -181,5 +188,42 @@ public class ErrorElementDamageHandler {
      */
     public static boolean hasPendingEffect(UUID uuid) {
         return postArmorData.containsKey(uuid);
+    }
+
+    /**
+     * ターゲットのバフ（有益なエフェクト）を解除する。
+     * レベルに応じて解除数が増加する:
+     *   Lv1-4: 最大2個、Lv5-9: 最大4個、Lv10+: 全て解除
+     *
+     * @param target       攻撃対象
+     * @param elementLevel 属性レベル
+     */
+    private static void removeBuffs(LivingEntity target, int elementLevel) {
+        // 有益なエフェクトを収集
+        List<MobEffectInstance> buffs = new ArrayList<>();
+        for (MobEffectInstance effect : target.getActiveEffects()) {
+            if (effect.getEffect().getCategory() == MobEffectCategory.BENEFICIAL) {
+                buffs.add(effect);
+            }
+        }
+
+        if (buffs.isEmpty()) return;
+
+        // レベルに応じた最大解除数
+        int maxRemove;
+        if (elementLevel >= 10) {
+            maxRemove = buffs.size(); // 全解除
+        } else if (elementLevel >= 5) {
+            maxRemove = 4;
+        } else {
+            maxRemove = 2;
+        }
+
+        int removed = 0;
+        for (MobEffectInstance buff : buffs) {
+            if (removed >= maxRemove) break;
+            target.removeEffect(buff.getEffect());
+            removed++;
+        }
     }
 }

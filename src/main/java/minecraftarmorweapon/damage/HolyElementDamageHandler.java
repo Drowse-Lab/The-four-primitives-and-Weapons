@@ -11,11 +11,18 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.*;
 
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * 聖属性ダメージハンドラー
  * - アンデットに多くダメージが入る
  */
 public class HolyElementDamageHandler {
+
+    // 聖属性ダメージを受けたエンティティを追跡（トーテム貫通用）
+    private static final Map<UUID, Long> holyDamageTargets = new ConcurrentHashMap<>();
 
     // 基礎ダメージ倍率
     private static final float BASE_DAMAGE_MULTIPLIER = 1.1f;
@@ -97,11 +104,25 @@ public class HolyElementDamageHandler {
             }
         }
 
+        // トーテム貫通用: このエンティティが聖属性ダメージを受けたことを記録
+        holyDamageTargets.put(target.getUUID(), target.level().getGameTime());
+
         return originalDamage * damageMultiplier;
     }
 
     /**
-     * エンティティに聖属性ダメージを与える
+     * 聖属性ダメージを受けたエンティティかチェック（トーテム貫通用）
+     * Mixinから呼ばれる
+     */
+    public static boolean shouldBypassTotem(UUID targetUUID, long currentGameTime) {
+        Long hitTime = holyDamageTargets.remove(targetUUID);
+        if (hitTime == null) return false;
+        // 2tick以内のデータのみ有効
+        return currentGameTime - hitTime <= 1;
+    }
+
+    /**
+     * エンティティに���属性ダメージを与え��
      * @param target ターゲットエンティティ
      * @param damage ダメージ量
      * @param source ダメージソース元

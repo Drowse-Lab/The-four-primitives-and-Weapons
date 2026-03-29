@@ -296,5 +296,11 @@
   "item.minecraft_armor_weapon.ofuda": "§bSeal Talisman",
   "tooltip.minecraft_armor_weapon.ofuda": "A talisman with the power of sealing",
   "entity.minecraft_armor_weapon.debug_mob": "Debug Mob",
-  "item.minecraft_armor_weapon.debug_mob_spawn_egg": "Debug Mob Spawn Egg"
+  "item.minecraft_armor_weapon.debug_mob_spawn_egg": "Debug Mob Spawn Egg",
+  "tooltip.minecraft_armor_weapon.element.ice": "Ice Element",
+  "tooltip.minecraft_armor_weapon.element.electric": "Electric Element",
+  "tooltip.minecraft_armor_weapon.element.corrosion": "Corrosion Element",
+  "tooltip.minecraft_armor_weapon.element.holy": "Holy Element",
+  "tooltip.minecraft_armor_weapon.element.error": "Error Element",
+  "tooltip.minecraft_armor_weapon.element.x": "X"
 }
