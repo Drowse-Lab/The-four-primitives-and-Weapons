@@ -8,7 +8,9 @@
     "GuardDamageReductionMixin",
     "MiasmaHealMixin"
   ],
-  "client": [],
+  "client": [
+    "BlessingVisionMixin"
+  ],
   "server": [],
   "injectors": {
     "defaultRequire": 1
