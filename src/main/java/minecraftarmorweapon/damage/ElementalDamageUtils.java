@@ -117,6 +117,8 @@ public class ElementalDamageUtils {
                 return ThunderElementDamageHandler.handleThunderDamage(attacker, target, weapon, baseDmg);
             case DARK:
                 return DarkElementDamageHandler.handleDarkDamage(attacker, target, weapon, baseDmg);
+            case MIASMA:
+                return MiasmaElementDamageHandler.handleMiasmaDamage(attacker, target, weapon, baseDmg);
             default:
                 return baseDmg;
         }
