@@ -14,6 +14,7 @@ public enum ElementType {
     WIND("wind"),          // 風属性
     THUNDER("thunder"),    // 雷属性
     WATER("water"),        // 水属性
+    MIASMA("miasma"),      // 瘴気属性
     ERROR("error");        // エラー属性
 
     private final String name;
@@ -50,6 +51,7 @@ public enum ElementType {
             case DARK:      return HOLY;   
             case WATER:     return THUNDER; 
             case WIND:      return ICE;     
+            case MIASMA:    return HOLY: 
             case ERROR:     return NONE;   
             default:        return NONE;
         }
