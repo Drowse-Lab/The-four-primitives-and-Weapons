@@ -85,6 +85,12 @@ public class SafeTrueCrafterAI {
         boolean bridgeMode = false;   // 橋建設モード中か
         int bridgeEndTimer = 0;       // 橋終了カウンタ
         int digProgress = 0;          // 掘削進行度（0-40）
+
+        // スプリント/リープ (AtomicStryker MM_Sprint方式)
+        int sprintCooldown = 0;      // スプリントクールダウン
+        int leapCooldownAll = 0;     // 全モンスター共通リープCD
+        boolean isSprinting = false;  // スプリント中か
+        int sprintDuration = 0;       // スプリント残り時間
     }
     
     // 革防具に色を付けるヘルパーメソッド
@@ -823,150 +829,108 @@ public class SafeTrueCrafterAI {
         }
         
         // ============================
-        // 全モンスター共通: ブロック設置・破壊処理
-        // EnhancedAI + NESM + True Crafter Mode 準拠
+        // 全モンスター共通: スプリント・リープ・ブロック設置/破壊
+        // NESM + AtomicStryker MM_Sprint + EnhancedAI 統合
         // ============================
         CustomDifficulty diff = CustomDifficultyCommand.getCurrentDifficulty();
         LivingEntity commonTarget = monster.getTarget();
 
+        // スプリント/リープのクールダウン減少
+        if (data.sprintCooldown > 0) data.sprintCooldown--;
+        if (data.leapCooldownAll > 0) data.leapCooldownAll--;
+        if (data.sprintDuration > 0) data.sprintDuration--;
+
         if (commonTarget != null) {
-            // --- スタック判定 (EnhancedAI方式: 位置追跡 + NESM方式: canReach) ---
-            double dx = monster.getX() - data.lastX;
-            double dz = monster.getZ() - data.lastZ;
-            double moveSq = dx * dx + dz * dz;
-            data.lastX = monster.getX();
-            data.lastZ = monster.getZ();
-
-            if (moveSq < 0.01) {
-                data.standstillTicks++;
-            } else {
-                if (!data.bridgeMode) {
-                    data.standstillTicks = Math.max(0, data.standstillTicks - 2);
-                }
-            }
-
-            // NESM方式: パスが到達不能ならスタック扱い
-            boolean pathUnreachable = false;
-            try {
-                var path = monster.getNavigation().getPath();
-                if (path != null && !path.canReach()) {
-                    pathUnreachable = true;
-                }
-                // パスがnull = ナビゲーションできていない = スタック
-                if (path == null && monster.getNavigation().isDone() && commonTarget.distanceToSqr(monster) > 9.0) {
-                    pathUnreachable = true;
-                }
-            } catch (Exception ignored) {}
-
-            // canReach失敗時はスタックカウンタを即座にブースト
-            if (pathUnreachable) {
-                data.standstillTicks = Math.max(data.standstillTicks, 10);
-            }
-
-            // ターゲット方向ベクトル
             double toTargetX = commonTarget.getX() - monster.getX();
             double toTargetZ = commonTarget.getZ() - monster.getZ();
             double horizontalDist = Math.sqrt(toTargetX * toTargetX + toTargetZ * toTargetZ);
             double yDiff = commonTarget.getY() - monster.getY();
+            double distSq = monster.distanceToSqr(commonTarget);
 
-            // 正規化した方向からBlockPosオフセットを計算
+            // === スプリント (AtomicStryker MM_Sprint方式: 1.5x速度バースト) ===
+            if (data.sprintCooldown == 0 && horizontalDist > 5.0 && horizontalDist < 32.0
+                && !(monster instanceof Creeper)) {
+                // スプリント開始: 移動方向に1.5倍の速度を適用
+                Vec3 motion = monster.getDeltaMovement();
+                double motionX = motion.x * 1.5;
+                double motionZ = motion.z * 1.5;
+                monster.setDeltaMovement(motionX, motion.y, motionZ);
+                monster.setSprinting(true);
+                data.isSprinting = true;
+                data.sprintDuration = 40; // 2秒間スプリント
+                data.sprintCooldown = 100; // 5秒クールダウン
+            }
+
+            // スプリント中: 毎tick速度ブースト維持
+            if (data.isSprinting && data.sprintDuration > 0) {
+                Vec3 motion = monster.getDeltaMovement();
+                if (Math.abs(motion.x) > 0.01 || Math.abs(motion.z) > 0.01) {
+                    monster.setDeltaMovement(motion.x * 1.2, motion.y, motion.z * 1.2);
+                }
+            } else if (data.isSprinting) {
+                data.isSprinting = false;
+                monster.setSprinting(false);
+            }
+
+            // === リープ/飛びつき (全近接モンスター共通) ===
+            if (data.leapCooldownAll == 0 && monster.onGround()
+                && distSq > 9.0 && distSq < 49.0 // 3-7ブロック
+                && !(monster instanceof Creeper)
+                && !(monster instanceof Skeleton)) {
+                Vec3 leapDir = commonTarget.position().subtract(monster.position()).normalize();
+                monster.setDeltaMovement(leapDir.x * 0.9, 0.42, leapDir.z * 0.9);
+                monster.hasImpulse = true;
+                data.leapCooldownAll = 60; // 3秒クールダウン
+            }
+
+            // === ブロック処理の方向計算 ===
             int dirX = 0, dirZ = 0;
             if (horizontalDist > 0.5) {
                 dirX = (int) Math.round(toTargetX / horizontalDist);
                 dirZ = (int) Math.round(toTargetZ / horizontalDist);
-                if (dirX == 0 && dirZ == 0) {
-                    dirX = toTargetX >= 0 ? 1 : -1;
-                }
+                if (dirX == 0 && dirZ == 0) dirX = toTargetX >= 0 ? 1 : -1;
             } else {
                 dirX = monster.getDirection().getStepX();
                 dirZ = monster.getDirection().getStepZ();
             }
 
-            // スタック判定: 10tickで発動（以前は20tick）、またはパス到達不能
-            boolean isStuck = data.standstillTicks >= 10 || pathUnreachable;
+            // === NESM式ブロック検出: 前方にソリッドブロックがあるかを直接チェック ===
+            BlockPos mobPos = monster.blockPosition();
+            BlockPos frontFeet = mobPos.offset(dirX, 0, dirZ);
+            BlockPos frontBody = mobPos.offset(dirX, 1, dirZ);
+            boolean frontBlocked = monster.level().getBlockState(frontFeet).isSolid()
+                                && monster.level().getBlockState(frontBody).isSolid();
+            boolean footBlocked = monster.level().getBlockState(frontFeet).isSolid();
 
-            // --- ブロック設置処理 ---
-            if (diff.isBlockPlaceEnabled() && data.blockPlaceCooldown == 0 && isStuck) {
-
-                // ピラーアップ: ターゲットが上にいる場合 (NESM MobBuildUp方式)
-                if (!data.bridgeMode && yDiff > 1.5 && horizontalDist < 8.0) {
-                    BlockPos mobPos = monster.blockPosition();
-
-                    if (canPlaceAt(monster, mobPos) &&
-                        monster.level().getBlockState(mobPos.below()).isSolid()) {
-                        placeTempBlock(monster, mobPos);
-                        // テレポートで上に乗る (NESM方式: tp + snap to center)
-                        double cx = Math.floor(monster.getX()) + 0.5;
-                        double cz = Math.floor(monster.getZ()) + 0.5;
-                        monster.teleportTo(cx, monster.getY() + 1.0, cz);
-                        data.blockPlaceCooldown = 5;
-                    }
-                    // 同じ高さに来たら橋モードに移行
-                    if (Math.abs(yDiff) <= 1.5) {
-                        data.bridgeMode = true;
-                        data.bridgeEndTimer = 0;
-                        data.standstillTicks = 0;
-                    }
-                }
-
-                // 橋建設: 前方の足場がない場合 (NESM MobBuildBridge方式)
-                if (data.blockPlaceCooldown == 0 && (data.bridgeMode || horizontalDist > 2.0)) {
-                    BlockPos frontFeet = monster.blockPosition().offset(dirX, 0, dirZ);
-                    BlockPos belowFront = frontFeet.below();
-                    BlockState belowState = monster.level().getBlockState(belowFront);
-
-                    if ((belowState.isAir() || belowState.liquid()) && canPlaceAt(monster, belowFront)) {
-                        placeTempBlock(monster, belowFront);
-                        data.blockPlaceCooldown = 5;
-                        data.bridgeMode = true;
-
-                        // 2ブロック先も設置
-                        BlockPos belowFront2 = frontFeet.offset(dirX, -1, dirZ);
-                        if (canPlaceAt(monster, belowFront2)) {
-                            placeTempBlock(monster, belowFront2);
-                        }
-                    }
-                }
-
-                // 橋モード管理
-                if (data.bridgeMode) {
-                    BlockPos below = monster.blockPosition().below();
-                    if (!monster.level().getBlockState(below).isSolid()) {
-                        data.bridgeEndTimer++;
-                    } else {
-                        data.bridgeEndTimer = 0;
-                    }
-                    if (data.bridgeEndTimer >= 30) {
-                        data.bridgeMode = false;
-                        data.bridgeEndTimer = 0;
-                    }
-                    // ターゲットが下にいる場合: 足元を壊して降りる (NESM MobDigDown方式)
-                    if (yDiff < -2.0) {
-                        BlockPos feetBelow = monster.blockPosition().below();
-                        if (!monster.level().getBlockState(feetBelow).isAir()) {
-                            monster.level().destroyBlock(feetBelow, false);
-                        }
-                        data.bridgeMode = false;
-                    }
-                }
+            // 位置追跡（スタック検出補助）
+            double dx = monster.getX() - data.lastX;
+            double dz = monster.getZ() - data.lastZ;
+            double moveSq = dx * dx + dz * dz;
+            data.lastX = monster.getX();
+            data.lastZ = monster.getZ();
+            if (moveSq < 0.01) {
+                data.standstillTicks++;
+            } else if (!data.bridgeMode) {
+                data.standstillTicks = Math.max(0, data.standstillTicks - 2);
             }
 
-            // --- ブロック破壊処理 (EnhancedAI方式: ターゲット方向レイキャスト) ---
-            if (data.blockBreakCooldown == 0 && diff.isBlockBreakEnabled() && isStuck) {
-                BlockPos mobPos = monster.blockPosition();
+            // NESM方式: canReach()チェック
+            boolean pathUnreachable = false;
+            try {
+                var path = monster.getNavigation().getPath();
+                if (path != null && !path.canReach()) pathUnreachable = true;
+                if (path == null && monster.getNavigation().isDone() && distSq > 9.0) pathUnreachable = true;
+            } catch (Exception ignored) {}
 
-                // ターゲット方向の前方ブロックをチェック (EnhancedAI clip方式の簡易版)
-                BlockPos frontFeet = mobPos.offset(dirX, 0, dirZ);
-                BlockPos frontBody = mobPos.offset(dirX, 1, dirZ);
+            // ブロック破壊条件: 前方ブロックあり OR スタック OR パス到達不能
+            boolean shouldBreak = frontBlocked || footBlocked || data.standstillTicks >= 5 || pathUnreachable;
 
-                // dig up: ターゲットが上にいる場合は頭上も (NESM MobDigUp方式)
+            // --- ブロック破壊処理 (NESM MobDamageBlock方式: 前方検出で即開始) ---
+            if (data.blockBreakCooldown == 0 && diff.isBlockBreakEnabled() && shouldBreak) {
                 BlockPos above1 = mobPos.above(1);
                 BlockPos above2 = mobPos.above(2);
-
-                // dig down: ターゲットが下にいる場合は足元 (NESM MobDigDown方式)
                 BlockPos belowFeet = mobPos.below();
 
-                // 優先度: 前方→上→下
                 BlockPos[] targets;
                 if (yDiff > 1.5) {
                     targets = new BlockPos[]{frontFeet, frontBody, above2, above1};
@@ -978,28 +942,21 @@ public class SafeTrueCrafterAI {
 
                 for (BlockPos checkPos : targets) {
                     BlockState state = monster.level().getBlockState(checkPos);
-
                     if (!state.isAir() && !state.liquid() &&
                         state.getDestroySpeed(monster.level(), checkPos) >= 0 &&
                         state.getDestroySpeed(monster.level(), checkPos) < 50.0f) {
 
                         if (checkPos.equals(data.breakingBlockPos)) {
                             data.blockBreakProgress++;
-
-                            // 破壊アニメーション表示 (EnhancedAI destroyBlockProgress方式)
                             int stage = Math.min(data.blockBreakProgress / 3, 9);
                             if (monster.level() instanceof ServerLevel serverLevel) {
                                 serverLevel.destroyBlockProgress(monster.getId(), checkPos, stage);
                             }
-                            // 6tickごとに手を振る (EnhancedAI方式)
                             if (data.blockBreakProgress % 6 == 0) {
                                 monster.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
                             }
-
-                            // 硬さに応じた破壊速度 (EnhancedAI: ツール速度計算の簡易版)
                             float hardness = state.getDestroySpeed(monster.level(), checkPos);
                             int breakTime = (int)(hardness * 5) + 10;
-
                             if (data.blockBreakProgress >= breakTime) {
                                 monster.level().destroyBlock(checkPos, true);
                                 if (monster.level() instanceof ServerLevel serverLevel) {
@@ -1007,8 +964,8 @@ public class SafeTrueCrafterAI {
                                 }
                                 data.blockBreakProgress = 0;
                                 data.breakingBlockPos = null;
-                                data.blockBreakCooldown = 10;
-                                data.standstillTicks = 0; // 破壊後リセット
+                                data.blockBreakCooldown = 5; // NESM: EntityDigDelay=5
+                                data.standstillTicks = 0;
                             }
                         } else {
                             data.breakingBlockPos = checkPos.immutable();
@@ -1019,6 +976,53 @@ public class SafeTrueCrafterAI {
                 }
             } else if (data.blockBreakCooldown > 0) {
                 data.blockBreakCooldown--;
+            }
+
+            // --- ブロック設置処理 ---
+            boolean isStuck = data.standstillTicks >= 5 || pathUnreachable;
+            if (diff.isBlockPlaceEnabled() && data.blockPlaceCooldown == 0 && isStuck) {
+                // ピラーアップ (NESM MobBuildUp方式)
+                if (!data.bridgeMode && yDiff > 1.5 && horizontalDist < 8.0) {
+                    if (canPlaceAt(monster, mobPos) &&
+                        monster.level().getBlockState(mobPos.below()).isSolid()) {
+                        placeTempBlock(monster, mobPos);
+                        double cx = Math.floor(monster.getX()) + 0.5;
+                        double cz = Math.floor(monster.getZ()) + 0.5;
+                        monster.teleportTo(cx, monster.getY() + 1.0, cz);
+                        data.blockPlaceCooldown = 5;
+                    }
+                    if (Math.abs(yDiff) <= 1.5) {
+                        data.bridgeMode = true;
+                        data.bridgeEndTimer = 0;
+                        data.standstillTicks = 0;
+                    }
+                }
+                // 橋建設 (NESM MobBuildBridge方式)
+                if (data.blockPlaceCooldown == 0 && (data.bridgeMode || horizontalDist > 2.0)) {
+                    BlockPos belowFront = frontFeet.below();
+                    BlockState belowState = monster.level().getBlockState(belowFront);
+                    if ((belowState.isAir() || belowState.liquid()) && canPlaceAt(monster, belowFront)) {
+                        placeTempBlock(monster, belowFront);
+                        data.blockPlaceCooldown = 5;
+                        data.bridgeMode = true;
+                        BlockPos belowFront2 = frontFeet.offset(dirX, -1, dirZ);
+                        if (canPlaceAt(monster, belowFront2)) placeTempBlock(monster, belowFront2);
+                    }
+                }
+                // 橋モード管理
+                if (data.bridgeMode) {
+                    BlockPos below = mobPos.below();
+                    if (!monster.level().getBlockState(below).isSolid()) data.bridgeEndTimer++;
+                    else data.bridgeEndTimer = 0;
+                    if (data.bridgeEndTimer >= 30) { data.bridgeMode = false; data.bridgeEndTimer = 0; }
+                    if (yDiff < -2.0) {
+                        BlockPos feetBelow = mobPos.below();
+                        if (!monster.level().getBlockState(feetBelow).isAir()) {
+                            monster.level().destroyBlock(feetBelow, false);
+                        }
+                        data.bridgeMode = false;
+                    }
+                }
             }
         } else {
             // ターゲットがいない場合リセット
@@ -1031,30 +1035,16 @@ public class SafeTrueCrafterAI {
             }
             data.bridgeMode = false;
             data.standstillTicks = 0;
+            if (data.isSprinting) { data.isSprinting = false; monster.setSprinting(false); }
         }
 
-        // ゾンビ固有の処理: 飛びかかり・盾
+        // ゾンビ固有: 盾防御
         if (monster instanceof Zombie zombie) {
-            LivingEntity target = zombie.getTarget();
-            if (target != null) {
-                double distance = zombie.distanceToSqr(target);
-
-                // 飛びかかり攻撃
-                if (data.dodgeCooldown == 0 && zombie.onGround()) {
-                    if (distance > 9.0 && distance < 36.0) {
-                        Vec3 direction = target.position().subtract(zombie.position()).normalize();
-                        zombie.setDeltaMovement(direction.x * 0.8, 0.4, direction.z * 0.8);
-                        zombie.hasImpulse = true;
-                        data.dodgeCooldown = 60;
-                    }
-                }
-
-                // 盾防御処理
-                if (!zombie.getOffhandItem().isEmpty() && zombie.getOffhandItem().is(Items.SHIELD)) {
-                    if (distance < 16.0) {
-                        if (zombie.getRandom().nextFloat() < 0.3f && !zombie.isUsingItem()) {
-                            zombie.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
-                        }
+            if (!zombie.getOffhandItem().isEmpty() && zombie.getOffhandItem().is(Items.SHIELD)) {
+                LivingEntity target = zombie.getTarget();
+                if (target != null && zombie.distanceToSqr(target) < 16.0) {
+                    if (zombie.getRandom().nextFloat() < 0.3f && !zombie.isUsingItem()) {
+                        zombie.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
                     }
                 }
             }

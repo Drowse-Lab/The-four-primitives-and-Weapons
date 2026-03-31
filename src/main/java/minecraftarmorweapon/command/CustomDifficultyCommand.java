@@ -47,7 +47,7 @@ public class CustomDifficultyCommand {
         NORMAL(         "normal",         Difficulty.NORMAL,   1.0f, 1.0f, 0, 0.00f, 0.00f, 0.00f, 0, 0.00f, false, false, false, true,  false, 0.00f, "§f"),
         HARD(           "hard",           Difficulty.HARD,     1.5f, 1.0f, 0, 0.00f, 0.00f, 0.00f, 0, 0.00f, false, false, false, true,  false, 0.00f, "§e"),
         // nightmare以上: MOD機能が段階的に有効化
-        NIGHTMARE(      "nightmare",      Difficulty.HARD,     2.0f, 1.15f,1, 0.08f, 0.00f, 0.10f, 1, 0.10f, false, false, false, true,  false, 0.05f, "§c"),
+        NIGHTMARE(      "nightmare",      Difficulty.HARD,     2.0f, 1.15f,1, 0.08f, 0.00f, 0.10f, 1, 0.10f, true,  true,  false, true,  false, 0.05f, "§c"),
         REALISTIC(      "realistic",      Difficulty.HARD,     3.0f, 1.25f,2, 0.15f, 0.08f, 0.20f, 2, 0.25f, true,  true,  true,  true,  true,  0.12f, "§c"),
         CREATIVE_PLUS(  "creative+",      Difficulty.PEACEFUL, 0.5f, 1.0f, 0, 0.00f, 0.00f, 0.00f, 0, 0.00f, false, false, false, true,  false, 0.00f, "§b"),
         LUNATIC(        "lunatic",        Difficulty.HARD,     2.5f, 1.35f,3, 0.25f, 0.15f, 0.35f, 3, 0.40f, true,  true,  true,  false, true,  0.25f, "§5"),
