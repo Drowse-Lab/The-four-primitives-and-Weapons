@@ -74,6 +74,22 @@ public class SkillRegistry {
         register("shadow_step", "影歩き", "5tick無敵の黒い影で高速移動（攻撃/武器変更で解除）",
                 MotionCategory.UNIVERSAL, dashOnly, null);
 
+        // === 右クリック専用モーション（RIGHT_CLICKスロットのみ） ===
+        Set<AttackSlot> rightClickOnly = EnumSet.of(AttackSlot.RIGHT_CLICK);
+
+        register("dodge", "回避", "右クリックで回避行動を行う（デフォルト）",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
+        register("sword_of_night_special", "夜の剣・特殊技", "右クリック:レーザー / 長押し:テレポート",
+                MotionCategory.SPECIAL, rightClickOnly, "SwordOfNightItem");
+
+        // === Shift+右クリック専用モーション ===
+        Set<AttackSlot> shiftRightClickOnly = EnumSet.of(AttackSlot.SHIFT_RIGHT_CLICK);
+
+        register("guard", "ガード", "Shift+右クリックでガードを行う",
+                MotionCategory.UNIVERSAL, shiftRightClickOnly, null);
+        register("none_shift", "なし", "Shift+右クリックで何もしない",
+                MotionCategory.UNIVERSAL, shiftRightClickOnly, null);
+
         // === 特殊技（武器をスロットに登録すると使用可能） ===
         register("electric_beam", "電撃ビーム", "前方に電撃のビームを放つ",
                 MotionCategory.SPECIAL, allSlots, "KurikarakenItem");

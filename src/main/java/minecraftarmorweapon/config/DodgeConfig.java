@@ -40,6 +40,12 @@ public class DodgeConfig {
      */
     public static boolean dodgeWithActiveItems = false;
 
+    /**
+     * ON: 回避を完全に無効化する（右クリックはアイテム本来の動作になる）。
+     * OFF: 従来通り、右クリックで回避が発動する。
+     */
+    public static boolean dodgeDisabled = false;
+
     // === 保存/読み込み ===
 
     public static void load() {
@@ -53,6 +59,7 @@ public class DodgeConfig {
                         functionalBlockRequiresShift = data.functionalBlockRequiresShift;
                         dodgeWithInertItems = data.dodgeWithInertItems;
                         dodgeWithActiveItems = data.dodgeWithActiveItems;
+                        dodgeDisabled = data.dodgeDisabled;
                     }
                 }
             } else {
@@ -71,6 +78,7 @@ public class DodgeConfig {
             data.functionalBlockRequiresShift = functionalBlockRequiresShift;
             data.dodgeWithInertItems = dodgeWithInertItems;
             data.dodgeWithActiveItems = dodgeWithActiveItems;
+            data.dodgeDisabled = dodgeDisabled;
             try (Writer writer = new FileWriter(file)) {
                 GSON.toJson(data, writer);
             }
@@ -83,5 +91,6 @@ public class DodgeConfig {
         boolean functionalBlockRequiresShift = true;
         boolean dodgeWithInertItems = false;
         boolean dodgeWithActiveItems = false;
+        boolean dodgeDisabled = false;
     }
 }

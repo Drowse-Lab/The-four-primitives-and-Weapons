@@ -27,6 +27,10 @@ public class SkillSelectionPacket {
         return new SkillSelectionPacket(String.valueOf(loadoutIndex), motionId, attackSlot.getId());
     }
 
+    public static SkillSelectionPacket setProficiency(String proficiencyId) {
+        return new SkillSelectionPacket("proficiency", proficiencyId, null);
+    }
+
     private SkillSelectionPacket(String slotId, String motionId, String itemId) {
         this.slotId = slotId;
         this.motionId = motionId;
@@ -55,9 +59,20 @@ public class SkillSelectionPacket {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
 
-            player.getCapability(PlayerSkillData.SKILL_CAPABILITY).ifPresent(sd -> handleSelectLoadoutMotion(sd, player));
+            player.getCapability(PlayerSkillData.SKILL_CAPABILITY).ifPresent(sd -> {
+                if ("proficiency".equals(slotId)) {
+                    handleProficiency(sd);
+                } else {
+                    handleSelectLoadoutMotion(sd, player);
+                }
+            });
         });
         ctx.get().setPacketHandled(true);
+    }
+
+    private void handleProficiency(PlayerSkillData.SkillStorage skillData) {
+        if (motionId == null) return;
+        skillData.setWeaponProficiency(PlayerSkillData.WeaponProficiency.fromId(motionId));
     }
 
     private void handleSelectLoadoutMotion(PlayerSkillData.SkillStorage skillData, ServerPlayer player) {

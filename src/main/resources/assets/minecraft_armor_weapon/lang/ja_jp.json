@@ -298,5 +298,7 @@
   "tooltip.minecraft_armor_weapon.element.corrosion": "侵食属性",
   "tooltip.minecraft_armor_weapon.element.holy": "聖属性",
   "tooltip.minecraft_armor_weapon.element.error": "error属性",
-  "tooltip.minecraft_armor_weapon.element.x": "X"
+  "tooltip.minecraft_armor_weapon.element.miasma": "瘴気属性",
+  "tooltip.minecraft_armor_weapon.element.x": "X",
+  "item.minecraft_armor_weapon.miasma_book": "瘴気の魔導書"
 }

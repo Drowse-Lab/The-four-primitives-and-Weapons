@@ -302,5 +302,7 @@
   "tooltip.minecraft_armor_weapon.element.corrosion": "Corrosion Element",
   "tooltip.minecraft_armor_weapon.element.holy": "Holy Element",
   "tooltip.minecraft_armor_weapon.element.error": "Error Element",
-  "tooltip.minecraft_armor_weapon.element.x": "X"
+  "tooltip.minecraft_armor_weapon.element.miasma": "Miasma Element",
+  "tooltip.minecraft_armor_weapon.element.x": "X",
+  "item.minecraft_armor_weapon.miasma_book": "Miasma Book"
 }

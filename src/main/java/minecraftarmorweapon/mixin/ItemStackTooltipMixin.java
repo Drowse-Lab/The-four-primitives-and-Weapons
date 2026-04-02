@@ -133,6 +133,7 @@ public class ItemStackTooltipMixin {
             case ELECTRIC: return Component.translatable("tooltip.minecraft_armor_weapon.element.electric").getString();
             case CORROSION: return Component.translatable("tooltip.minecraft_armor_weapon.element.corrosion").getString();
             case HOLY: return Component.translatable("tooltip.minecraft_armor_weapon.element.holy").getString();
+            case MIASMA: return Component.translatable("tooltip.minecraft_armor_weapon.element.miasma").getString();
             default: return "";
         }
     }
@@ -146,6 +147,7 @@ public class ItemStackTooltipMixin {
             case ELECTRIC: return ChatFormatting.YELLOW;
             case CORROSION: return ChatFormatting.DARK_PURPLE;
             case HOLY: return ChatFormatting.GOLD;
+            case MIASMA: return ChatFormatting.DARK_PURPLE;
             default: return ChatFormatting.GRAY;
         }
     }

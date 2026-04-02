@@ -10,7 +10,9 @@ import net.minecraft.world.item.ItemStack;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.network.SkillSelectionPacket;
+import minecraftarmorweapon.skill.PlayerSkillData;
 import minecraftarmorweapon.skill.PlayerSkillData.AttackSlot;
+import minecraftarmorweapon.skill.PlayerSkillData.WeaponProficiency;
 import minecraftarmorweapon.skill.SkillRegistry;
 import minecraftarmorweapon.skill.SkillRegistry.MotionInfo;
 import minecraftarmorweapon.skill.SkillRegistry.MotionCategory;
@@ -127,6 +129,7 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         this.clearWidgets();
         buildRadioButtons();
         buildMotionRows();
+        buildProficiencyButton();
 
         // lastWeaponClasses を現在の状態で初期化
         for (int i = 0; i < SkillSelectionMenu.WEAPON_SLOTS; i++) {
@@ -229,6 +232,36 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
     /**
      * モーション選択ボタンを構築
      */
+    /**
+     * 得意武器タイプ選択ボタン
+     */
+    private void buildProficiencyButton() {
+        if (minecraft == null || minecraft.player == null) return;
+
+        PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(minecraft.player);
+        if (skillData == null) return;
+
+        WeaponProficiency current = skillData.getWeaponProficiency();
+        int btnX = leftPos + imageWidth - 110;
+        int btnY = topPos + imageHeight - 18;
+
+        addRenderableWidget(new AbstractButton(btnX, btnY, 105, 14,
+                Component.literal("\u5F97\u610F: " + current.getDisplayName())) {
+            @Override
+            public void onPress() {
+                WeaponProficiency next = current.next();
+                skillData.setWeaponProficiency(next);
+                // サーバーに同期
+                MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                        SkillSelectionPacket.setProficiency(next.getId()));
+                buildWidgets();
+            }
+
+            @Override
+            public void updateWidgetNarration(NarrationElementOutput output) {}
+        });
+    }
+
     private void buildMotionRows() {
         String weaponClass = getSelectedWeaponClass();
 
@@ -304,12 +337,17 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
     }
 
     private String getSelectedWeaponClass() {
-        if (selectedLoadoutIndex < 0 || selectedLoadoutIndex >= SkillSelectionMenu.WEAPON_SLOTS) {
-            return null;
+        // 武器スロット選択中はそのスロットの武器クラスを返す
+        if (selectedLoadoutIndex >= 0 && selectedLoadoutIndex < SkillSelectionMenu.WEAPON_SLOTS) {
+            ItemStack weapon = menu.getSlot(selectedLoadoutIndex).getItem();
+            if (!weapon.isEmpty()) return weapon.getItem().getClass().getSimpleName();
         }
-        ItemStack weapon = menu.getSlot(selectedLoadoutIndex).getItem();
-        if (weapon.isEmpty()) return null;
-        return weapon.getItem().getClass().getSimpleName();
+        // デフォルト選択時はメインハンドの武器クラスを返す（特殊技を表示するため）
+        if (minecraft != null && minecraft.player != null) {
+            ItemStack mainHand = minecraft.player.getMainHandItem();
+            if (!mainHand.isEmpty()) return mainHand.getItem().getClass().getSimpleName();
+        }
+        return null;
     }
 
     private String getCurrentMotion(AttackSlot slot) {

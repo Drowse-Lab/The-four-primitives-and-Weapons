@@ -76,11 +76,22 @@ public class DodgeConfigScreen extends Screen {
                 .bounds(centerX - btnW / 2, startY + 130, btnW, 20)
                 .build());
 
+        // 設定4: 回避無効化
+        addRenderableWidget(Button.builder(
+                getDodgeDisabledText(),
+                btn -> {
+                    DodgeConfig.dodgeDisabled = !DodgeConfig.dodgeDisabled;
+                    DodgeConfig.save();
+                    btn.setMessage(getDodgeDisabledText());
+                })
+                .bounds(centerX - btnW / 2, startY + 180, btnW, 20)
+                .build());
+
         // 戻るボタン
         addRenderableWidget(Button.builder(
                 Component.literal("戻る"),
                 btn -> this.onClose())
-                .bounds(centerX - 50, startY + 180, 100, 20)
+                .bounds(centerX - 50, startY + 230, 100, 20)
                 .build());
     }
 
@@ -91,7 +102,7 @@ public class DodgeConfigScreen extends Screen {
         int centerX = this.width / 2;
         int startY = this.height / 2 - 85;
         int panelW = 300;
-        int panelH = 220;
+        int panelH = 270;
         int panelX = centerX - panelW / 2;
 
         // パネル背景
@@ -111,6 +122,10 @@ public class DodgeConfigScreen extends Screen {
         // 設定3ラベル
         graphics.drawCenteredString(this.font, "§eアクティブアイテムで回避", centerX, startY + 126, TEXT_COLOR);
         graphics.drawCenteredString(this.font, "§7ON: 弓・ポーション等を持っていても回避可能", centerX, startY + 152, DESC_COLOR);
+
+        // 設定4ラベル
+        graphics.drawCenteredString(this.font, "§e回避無効化", centerX, startY + 176, TEXT_COLOR);
+        graphics.drawCenteredString(this.font, "§7ON: 右クリックでアイテム本来の動作を使用", centerX, startY + 202, DESC_COLOR);
 
         super.render(graphics, mouseX, mouseY, partialTick);
     }
@@ -136,6 +151,14 @@ public class DodgeConfigScreen extends Screen {
             return Component.literal("§aON §f- 弓等でも回避可能");
         } else {
             return Component.literal("§cOFF §f- アイテム動作優先");
+        }
+    }
+
+    private Component getDodgeDisabledText() {
+        if (DodgeConfig.dodgeDisabled) {
+            return Component.literal("§cON §f- 回避無効（特殊技優先）");
+        } else {
+            return Component.literal("§aOFF §f- 回避有効");
         }
     }
 }

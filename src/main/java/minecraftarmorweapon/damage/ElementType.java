@@ -51,7 +51,7 @@ public enum ElementType {
             case DARK:      return HOLY;   
             case WATER:     return THUNDER; 
             case WIND:      return ICE;     
-            case MIASMA:    return HOLY: 
+            case MIASMA:    return HOLY;
             case ERROR:     return NONE;   
             default:        return NONE;
         }

@@ -13,7 +13,7 @@ import net.minecraft.world.entity.LivingEntity;
  */
 public final class MiasmaDamageSource {
 
-    private MiasmasDamageSource() {}
+    private MiasmaDamageSource() {}
 
    //**
     // * Create a miasma damage source using the entity's damage sources.

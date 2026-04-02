@@ -183,6 +183,7 @@ public class ElementalDamageUtils {
                                 case "CorrosionBookItem":result.set(ElementType.CORROSION);return;
                                 case "HolyBookItem":    result.set(ElementType.HOLY);      return;
                                 case "ErrorBookItem":   result.set(ElementType.ERROR);     return;
+                                case "MiasmaBookItem":  result.set(ElementType.MIASMA);    return;
                             }
                         }
                     }

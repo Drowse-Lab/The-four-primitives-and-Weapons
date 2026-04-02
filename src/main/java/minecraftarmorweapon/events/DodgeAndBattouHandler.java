@@ -458,6 +458,21 @@ public class DodgeAndBattouHandler {
     // publicにしてDodgeRequestPacketから呼べるようにする
     // @return true=回避成功、false=クールダウン等でブロック
     public static boolean performDodge(Player player) {
+        // 回避無効化設定チェック（グローバル設定）
+        if (minecraftarmorweapon.config.DodgeConfig.dodgeDisabled) return false;
+
+        // 右クリックスロットが「回避」以外に設定されている場合は回避しない
+        ItemStack heldItem = player.getMainHandItem();
+        if (!heldItem.isEmpty()) {
+            minecraftarmorweapon.skill.PlayerSkillData.SkillStorage skillData =
+                    minecraftarmorweapon.skill.PlayerSkillData.getSkillData(player);
+            if (skillData != null) {
+                String rightClickMotion = skillData.getMotionForWeapon(
+                        minecraftarmorweapon.skill.PlayerSkillData.AttackSlot.RIGHT_CLICK, heldItem);
+                if (!"dodge".equals(rightClickMotion)) return false;
+            }
+        }
+
         Level world = VersionHelper.getLevel(player);
 
         // 回避データを取得

@@ -82,6 +82,7 @@ public class ElementalTooltipEvent {
             case ELECTRIC: return "tooltip.minecraft_armor_weapon.element.electric";
             case CORROSION: return "tooltip.minecraft_armor_weapon.element.corrosion";
             case HOLY: return "tooltip.minecraft_armor_weapon.element.holy";
+            case MIASMA: return "tooltip.minecraft_armor_weapon.element.miasma";
             default: return "";
         }
     }
@@ -95,6 +96,7 @@ public class ElementalTooltipEvent {
             case ELECTRIC: return "#FFFF55";   // 黄色
             case CORROSION: return "#8B00FF";  // ピンク
             case HOLY: return "#FFAA00";       // 金色
+            case MIASMA: return "#550088";     // 暗紫
             default: return "#AAAAAA";         // グレー
         }
     }

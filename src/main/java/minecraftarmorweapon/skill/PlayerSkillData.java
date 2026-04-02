@@ -27,7 +27,9 @@ public class PlayerSkillData {
         SECOND_HIT("二撃目", "second_hit"),
         THIRD_HIT("三撃目", "third_hit"),
         CHARGED("チャージ", "charged"),
-        DASH("ダッシュ", "dash");
+        DASH("ダッシュ", "dash"),
+        RIGHT_CLICK("右クリック", "right_click"),
+        SHIFT_RIGHT_CLICK("Shift+右クリック", "shift_right_click");
 
         private final String displayName;
         private final String id;
@@ -45,6 +47,38 @@ public class PlayerSkillData {
                 if (slot.id.equals(id)) return slot;
             }
             return null;
+        }
+    }
+
+    // 得意武器タイプ
+    public enum WeaponProficiency {
+        NONE("なし", "none"),
+        KATANA("刀", "katana"),
+        STRAIGHT_SWORD("直刀", "straight_sword"),
+        SWORD("剣", "sword"),
+        SHIELD("盾", "shield");
+
+        private final String displayName;
+        private final String id;
+
+        WeaponProficiency(String displayName, String id) {
+            this.displayName = displayName;
+            this.id = id;
+        }
+
+        public String getDisplayName() { return displayName; }
+        public String getId() { return id; }
+
+        public static WeaponProficiency fromId(String id) {
+            for (WeaponProficiency p : values()) {
+                if (p.id.equals(id)) return p;
+            }
+            return NONE;
+        }
+
+        public WeaponProficiency next() {
+            WeaponProficiency[] vals = values();
+            return vals[(ordinal() + 1) % vals.length];
         }
     }
 
@@ -132,6 +166,8 @@ public class PlayerSkillData {
         private final WeaponLoadout[] weaponSlots = new WeaponLoadout[MAX_WEAPON_SLOTS];
         // 固有スキルのON/OFF（内部利用）
         private final Map<String, Boolean> uniqueSkillToggle = new HashMap<>();
+        // 得意武器タイプ
+        private WeaponProficiency weaponProficiency = WeaponProficiency.NONE;
 
         public SkillStorage() {
             // デフォルトモーション
@@ -140,6 +176,8 @@ public class PlayerSkillData {
             selectedMotions.put(AttackSlot.THIRD_HIT, "horizontal_slash");
             selectedMotions.put(AttackSlot.CHARGED, "spin_slash");
             selectedMotions.put(AttackSlot.DASH, "dash_rush");
+            selectedMotions.put(AttackSlot.RIGHT_CLICK, "dodge");
+            selectedMotions.put(AttackSlot.SHIFT_RIGHT_CLICK, "guard");
         }
 
         // === デフォルトモーション設定 ===
@@ -220,6 +258,16 @@ public class PlayerSkillData {
             uniqueSkillToggle.put(itemId, enabled);
         }
 
+        // === 得意武器タイプ ===
+
+        public WeaponProficiency getWeaponProficiency() {
+            return weaponProficiency;
+        }
+
+        public void setWeaponProficiency(WeaponProficiency proficiency) {
+            this.weaponProficiency = proficiency != null ? proficiency : WeaponProficiency.NONE;
+        }
+
         /**
          * 指定クラスの武器が既にスロットに登録済みかどうか
          */
@@ -270,6 +318,9 @@ public class PlayerSkillData {
             }
             tag.put("uniqueSkills", uniqueSkills);
 
+            // 得意武器タイプ
+            tag.putString("weaponProficiency", weaponProficiency.getId());
+
             return tag;
         }
 
@@ -317,6 +368,11 @@ public class PlayerSkillData {
                 for (String key : uniqueSkills.getAllKeys()) {
                     uniqueSkillToggle.put(key, uniqueSkills.getBoolean(key));
                 }
+            }
+
+            // 得意武器タイプ
+            if (tag.contains("weaponProficiency")) {
+                weaponProficiency = WeaponProficiency.fromId(tag.getString("weaponProficiency"));
             }
         }
     }
