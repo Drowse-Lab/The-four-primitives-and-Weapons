@@ -1,5 +1,6 @@
 {
   "dependencies": {
     "pngjs": "^7.0.0"
+    "twitter-api-v2": "^1.17.0"
   }
 }
