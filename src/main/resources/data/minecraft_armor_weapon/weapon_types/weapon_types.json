@@ -16,10 +16,23 @@
         "minecraft_armor_weapon:my_test_iron_katana",
         "minecraft_armor_weapon:rivers_of_blood",
         "minecraft_armor_weapon:old_katana",
+        "minecraft_armor_weapon:loki_the_trickster",
         "minecraft_armor_weapon:replica_sword_of_light"
       ],
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
+        "dash": ["dash_rush", "leap_slash", "shadow_step"],
+        "right_click": ["dodge"],
+        "shift_right_click": ["guard", "none_shift"]
+      }
+    },
+    "rapier": {
+      "display_name": "細剣",
+      "items": [
+        "minecraft_armor_weapon:rapier"
+      ],
+      "motions": {
+        "combat": ["thrust", "upper_left_slash", "upper_right_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
         "right_click": ["dodge"],
         "shift_right_click": ["guard", "none_shift"]
@@ -47,7 +60,6 @@
       "items": [
         
         "minecraft_armor_weapon:sword_of_night",
-        "minecraft_armor_weapon:loki_the_trickster",
         "minecraft:wooden_sword",
         "minecraft:stone_sword",
         "minecraft:iron_sword",
@@ -80,6 +92,21 @@
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
         "right_click": ["dodge"],
         "shift_right_click": ["guard", "none_shift"]
+      }
+    },
+    "shield": {
+      "display_name": "盾",
+      "items": [
+        "minecraft_armor_weapon:parry_shield",
+        "minecraft_armor_weapon:nigu_shield",
+        "minecraft_armor_weapon:achromatic_shield",
+        "minecraft:shield"
+      ],
+      "motions": {
+        "combat": ["shield_bash"],
+        "dash": ["dash_rush"],
+        "right_click": ["guard"],
+        "shift_right_click": ["parry", "guard"]
       }
     }
   },
@@ -116,6 +143,13 @@
       "special_motions": {
         "combat": ["magic_katana_special"],
         "dash": ["magic_katana_special"]
+      }
+    },
+    "minecraft_armor_weapon:parry_shield": {
+      "enabled": true,
+      "special_motions": {
+        "combat": ["shield_bash"],
+        "shift_right_click": ["parry"]
       }
     }
   }

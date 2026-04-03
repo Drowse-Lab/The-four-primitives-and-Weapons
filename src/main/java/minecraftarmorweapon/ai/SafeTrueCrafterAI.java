@@ -872,8 +872,8 @@ public class SafeTrueCrafterAI {
                 monster.setSprinting(false);
             }
 
-            // === リープ/飛びつき (全近接モンスター共通) ===
-            if (data.leapCooldownAll == 0 && monster.onGround()
+            // === リープ/飛びつき (aiLevel 3以上の近接モンスター) ===
+            if (diff.getAiLevel() >= 3 && data.leapCooldownAll == 0 && monster.onGround()
                 && distSq > 9.0 && distSq < 49.0 // 3-7ブロック
                 && !(monster instanceof Creeper)
                 && !(monster instanceof Skeleton)) {

@@ -16,6 +16,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.BlockItem;
 
+import minecraftarmorweapon.item.RapierItem;
+import minecraftarmorweapon.item.ParryShieldItem;
 import minecraftarmorweapon.item.OfudaItem;
 import minecraftarmorweapon.item.WitherKatanaItem;
 import minecraftarmorweapon.item.WitherBoneItem;
@@ -276,6 +278,8 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> MIASMA_BOOK = REGISTRY.register("miasma_book", () -> new MiasmaBookItem());
 	public static final RegistryObject<Item> REITOU = REGISTRY.register("reitou", () -> new ReitouItem());
 	public static final RegistryObject<Item> OFUDA = REGISTRY.register("ofuda", () -> new OfudaItem());
+	public static final RegistryObject<Item> RAPIER = REGISTRY.register("rapier", () -> new RapierItem());
+	public static final RegistryObject<Item> PARRY_SHIELD = REGISTRY.register("parry_shield", () -> new ParryShieldItem());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, Object tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()));
