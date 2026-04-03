@@ -1,0 +1,122 @@
+{
+  "_comment": "武器タイプ定義。アドオンや他MODからも追加可能。",
+  "types": {
+    "katana": {
+      "display_name": "刀",
+      "items": [
+        "minecraft_armor_weapon:iron_katana",
+        "minecraft_armor_weapon:gold_katana",
+        "minecraft_armor_weapon:stone_katana",
+        "minecraft_armor_weapon:netherite_katana",
+        "minecraft_armor_weapon:wither_katana",
+        "minecraft_armor_weapon:darkness_katana",
+        "minecraft_armor_weapon:magical_katana",
+        "minecraft_armor_weapon:magischesfeen_katana",
+        "minecraft_armor_weapon:prototype_katana",
+        "minecraft_armor_weapon:my_test_iron_katana",
+        "minecraft_armor_weapon:rivers_of_blood",
+        "minecraft_armor_weapon:old_katana",
+        "minecraft_armor_weapon:replica_sword_of_light"
+      ],
+      "motions": {
+        "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
+        "dash": ["dash_rush", "leap_slash", "shadow_step"],
+        "right_click": ["dodge"],
+        "shift_right_click": ["guard", "none_shift"]
+      }
+    },
+    "straight_sword": {
+      "display_name": "直刀",
+      "items": [
+        "minecraft_armor_weapon:luna",
+        "minecraft_armor_weapon:bluepurge_tyokutou",
+        "minecraft_armor_weapon:kaminari_kurikaraken_tyokutou",
+        "minecraft_armor_weapon:kurikarakenutigatana",
+        "minecraft_armor_weapon:kurikarakensword",
+        "minecraft_armor_weapon:kurikaraken"
+      ],
+      "motions": {
+        "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
+        "dash": ["dash_rush", "leap_slash", "shadow_step"],
+        "right_click": ["dodge"],
+        "shift_right_click": ["guard", "none_shift"]
+      }
+    },
+    "sword": {
+      "display_name": "剣",
+      "items": [
+        
+        "minecraft_armor_weapon:sword_of_night",
+        "minecraft_armor_weapon:loki_the_trickster",
+        "minecraft:wooden_sword",
+        "minecraft:stone_sword",
+        "minecraft:iron_sword",
+        "minecraft:golden_sword",
+        "minecraft:diamond_sword",
+        "minecraft:netherite_sword"
+      ],
+      "motions": {
+        "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
+        "dash": ["dash_rush", "leap_slash", "shadow_step"],
+        "right_click": ["dodge"],
+        "shift_right_click": ["guard", "none_shift"]
+      }
+    },
+    "greatsword": {
+      "display_name": "大剣",
+      "items": [],
+      "motions": {
+        "combat": ["thrust", "horizontal_slash", "spin_slash"],
+        "dash": ["dash_rush"],
+        "right_click": ["dodge"],
+        "shift_right_click": ["guard", "none_shift"]
+      }
+    },
+    "dagger": {
+      "display_name": "短剣",
+      "items": [],
+      "motions": {
+        "combat": ["thrust", "upper_left_slash", "upper_right_slash"],
+        "dash": ["dash_rush", "leap_slash", "shadow_step"],
+        "right_click": ["dodge"],
+        "shift_right_click": ["guard", "none_shift"]
+      }
+    }
+  },
+  "special_weapons": {
+    "minecraft_armor_weapon:sword_of_night": {
+      "enabled": true,
+      "special_motions": {
+        "right_click": ["sword_of_night_special"]
+      }
+    },
+    "minecraft_armor_weapon:kurikaraken": {
+      "enabled": true,
+      "special_motions": {
+        "combat": ["electric_beam"],
+        "dash": ["electric_beam"]
+      }
+    },
+    "minecraft_armor_weapon:kurikarakenutigatana": {
+      "enabled": true,
+      "special_motions": {
+        "combat": ["electric_slash"],
+        "dash": ["electric_slash"]
+      }
+    },
+    "minecraft_armor_weapon:kurikarakensword": {
+      "enabled": true,
+      "special_motions": {
+        "combat": ["electric_discharge"],
+        "dash": ["electric_discharge"]
+      }
+    },
+    "minecraft_armor_weapon:magischesfeen_katana": {
+      "enabled": true,
+      "special_motions": {
+        "combat": ["magic_katana_special"],
+        "dash": ["magic_katana_special"]
+      }
+    }
+  }
+}

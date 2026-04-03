@@ -31,6 +31,14 @@ public class SkillSelectionPacket {
         return new SkillSelectionPacket("proficiency", proficiencyId, null);
     }
 
+    /**
+     * 武器タイプ別モーション設定
+     * slotId="type:<typeId>", motionId=motionId, itemId=attackSlot.getId()
+     */
+    public static SkillSelectionPacket setTypeMotion(String typeId, AttackSlot attackSlot, String motionId) {
+        return new SkillSelectionPacket("type:" + typeId, motionId, attackSlot.getId());
+    }
+
     private SkillSelectionPacket(String slotId, String motionId, String itemId) {
         this.slotId = slotId;
         this.motionId = motionId;
@@ -62,12 +70,22 @@ public class SkillSelectionPacket {
             player.getCapability(PlayerSkillData.SKILL_CAPABILITY).ifPresent(sd -> {
                 if ("proficiency".equals(slotId)) {
                     handleProficiency(sd);
+                } else if (slotId != null && slotId.startsWith("type:")) {
+                    handleTypeMotion(sd);
                 } else {
                     handleSelectLoadoutMotion(sd, player);
                 }
             });
         });
         ctx.get().setPacketHandled(true);
+    }
+
+    private void handleTypeMotion(PlayerSkillData.SkillStorage skillData) {
+        if (slotId == null || motionId == null || itemId == null) return;
+        String typeId = slotId.substring(5); // "type:" を除去
+        AttackSlot attackSlot = AttackSlot.fromId(itemId);
+        if (attackSlot == null) return;
+        skillData.setTypeMotion(typeId, attackSlot, motionId);
     }
 
     private void handleProficiency(PlayerSkillData.SkillStorage skillData) {

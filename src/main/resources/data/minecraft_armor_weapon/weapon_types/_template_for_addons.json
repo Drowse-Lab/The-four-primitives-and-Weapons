@@ -1,0 +1,59 @@
+{
+  "_comment": [
+    "=== 武器タイプ追加テンプレート ===",
+    "このファイルをコピーして data/<your_mod_id>/weapon_types/ に配置してください。",
+    "ファイル名は自由です（例: my_weapons.json）。",
+    "先頭が _ のファイルは読み込まれません（このテンプレート自体は無視されます）。",
+    "",
+    "=== 使い方 ===",
+    "1. 既存タイプ(katana,sword等)にアイテムを追加: typesのitemsにアイテムIDを追加",
+    "2. 新しいタイプを作成: typesに新しいキーを追加",
+    "3. 特殊技を持つ武器: special_weaponsにアイテムIDと技を定義",
+    "",
+    "=== モーションID一覧 ===",
+    "combat用: thrust, upper_left_slash, upper_right_slash, horizontal_slash, spin_slash",
+    "dash用: dash_rush, leap_slash, shadow_step",
+    "right_click用: dodge, guard, sword_of_night_special",
+    "shift_right_click用: guard, none_shift",
+    "special: electric_beam, electric_slash, electric_discharge, magic_katana_special"
+  ],
+
+  "types": {
+    "katana": {
+      "display_name": "刀",
+      "items": [
+        "your_mod_id:your_katana_item"
+      ],
+      "motions": {
+        "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
+        "dash": ["dash_rush", "leap_slash", "shadow_step"],
+        "right_click": ["dodge"],
+        "shift_right_click": ["guard", "none_shift"]
+      }
+    },
+
+    "your_new_type": {
+      "display_name": "新しいタイプ名",
+      "items": [
+        "your_mod_id:your_weapon_1",
+        "your_mod_id:your_weapon_2"
+      ],
+      "motions": {
+        "combat": ["thrust", "upper_left_slash", "horizontal_slash"],
+        "dash": ["dash_rush"],
+        "right_click": ["dodge"],
+        "shift_right_click": ["guard", "none_shift"]
+      }
+    }
+  },
+
+  "special_weapons": {
+    "your_mod_id:your_special_weapon": {
+      "enabled": true,
+      "special_motions": {
+        "right_click": ["your_custom_skill_id"],
+        "combat": ["your_combat_skill_id"]
+      }
+    }
+  }
+}

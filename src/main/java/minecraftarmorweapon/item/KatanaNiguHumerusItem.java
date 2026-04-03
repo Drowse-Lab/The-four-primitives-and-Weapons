@@ -47,7 +47,7 @@ public class KatanaNiguHumerusItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -1.4f, new Item.Properties());
+		}, 3, -2.4f, new Item.Properties());
 	}
 
 	@Override

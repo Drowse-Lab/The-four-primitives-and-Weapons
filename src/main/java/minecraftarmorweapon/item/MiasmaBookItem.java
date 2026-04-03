@@ -6,6 +6,8 @@ import top.theillusivec4.curios.api.type.capability.ICurioItem;
 import top.theillusivec4.curios.api.SlotContext;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
@@ -28,6 +30,12 @@ public class MiasmaBookItem extends Item implements ICurioItem {
 		} else if (lv != 0) {
 			tooltip.add(ErrorBookItem.buildErrorComponent());
 		}
+	}
+
+	@Override
+	public Component getName(ItemStack stack) {
+		return Component.translatable(this.getDescriptionId(stack))
+				.withStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x7B20A8)));
 	}
 
 	@Override

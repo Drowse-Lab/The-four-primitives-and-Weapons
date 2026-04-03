@@ -16,8 +16,10 @@ import minecraftarmorweapon.skill.PlayerSkillData.WeaponProficiency;
 import minecraftarmorweapon.skill.SkillRegistry;
 import minecraftarmorweapon.skill.SkillRegistry.MotionInfo;
 import minecraftarmorweapon.skill.SkillRegistry.MotionCategory;
+import minecraftarmorweapon.skill.WeaponTypeRegistry;
 import minecraftarmorweapon.world.inventory.SkillSelectionMenu;
 
+import java.util.Collection;
 import java.util.List;
 
 public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelectionMenu> {
@@ -44,18 +46,20 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
 
     // -1 = デフォルト設定, 0以上 = 武器スロットインデックス
     private int selectedLoadoutIndex = -1;
+    // null = デフォルト/武器スロット選択中, non-null = タイプ選択中
+    private String selectedTypeId = null;
 
     // レイアウト定数
-    private static final int HEADER_HEIGHT = 24;
-    private static final int WEAPON_SLOT_SECTION_Y = 28;
-    private static final int RADIO_ROW_Y = 50;
-    private static final int DIVIDER_Y = 64;
-    private static final int MOTION_ROW_Y = 72;
+    private static final int HEADER_HEIGHT = 18;
+    private static final int WEAPON_SLOT_SECTION_Y = 20;
+    private static final int RADIO_ROW_Y = 40;
+    private static final int DIVIDER_Y = 52;
+    private static final int MOTION_ROW_Y = 58;
 
     public SkillSelectionScreen(SkillSelectionMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
-        this.imageWidth = 340;
-        this.imageHeight = 312;
+        this.imageWidth = 300;
+        this.imageHeight = 268;
         // デフォルトのラベル描画を無効化
         this.inventoryLabelY = 10000;
         this.titleLabelY = 10000;
@@ -128,6 +132,7 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
     private void buildWidgets() {
         this.clearWidgets();
         buildRadioButtons();
+        buildTypeButtons();
         buildMotionRows();
         buildProficiencyButton();
 
@@ -148,7 +153,7 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
 
         // デフォルトボタン（左端）
         int defaultBtnX = leftPos + 4;
-        addRenderableWidget(new AbstractButton(defaultBtnX, y, 50, 12,
+        addRenderableWidget(new AbstractButton(defaultBtnX, y, 42, 10,
                 Component.literal("\u30C7\u30D5\u30A9\u30EB\u30C8")) {
             @Override
             public void onPress() {
@@ -181,7 +186,7 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
             final int slotIdx = i;
             int btnX = startX + i * gap + 1;
 
-            addRenderableWidget(new AbstractButton(btnX, y, 16, 12,
+            addRenderableWidget(new AbstractButton(btnX, y, 14, 10,
                     Component.literal("")) {
                 @Override
                 public void onPress() {
@@ -230,6 +235,50 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
     }
 
     /**
+     * 武器タイプ選択ボタン（刀、剣、直刀…）
+     */
+    private void buildTypeButtons() {
+        Collection<WeaponTypeRegistry.WeaponTypeData> types = WeaponTypeRegistry.getAllTypes();
+        if (types.isEmpty()) return;
+
+        int btnX = leftPos + imageWidth - 4;
+        int btnY = topPos + RADIO_ROW_Y;
+
+        // 右側に縦並びでタイプボタンを配置
+        for (WeaponTypeRegistry.WeaponTypeData type : types) {
+            final String typeId = type.getId();
+            String label = type.getDisplayName();
+            int btnW = Math.max(20, font.width(label) + 6);
+            int bx = btnX - btnW;
+
+            addRenderableWidget(new AbstractButton(bx, btnY, btnW, 10,
+                    Component.literal(label)) {
+                @Override
+                public void onPress() {
+                    selectedLoadoutIndex = -1;
+                    selectedTypeId = typeId.equals(selectedTypeId) ? null : typeId;
+                    buildWidgets();
+                }
+
+                @Override
+                public void renderWidget(GuiGraphics g, int mx, int my, float pt) {
+                    boolean sel = typeId.equals(selectedTypeId);
+                    int bg = sel ? COLOR_BTN_SELECTED : (isHoveredOrFocused() ? COLOR_BTN_HOVER : COLOR_BTN_NORMAL);
+                    g.fill(getX(), getY(), getX() + width, getY() + height, bg);
+                    if (sel) drawBorder(g, getX(), getY(), width, height, COLOR_BORDER);
+                    g.drawCenteredString(font, getMessage(), getX() + width / 2, getY() + 1, 0xFFFFFF);
+                }
+
+                @Override
+                protected void updateWidgetNarration(NarrationElementOutput n) {
+                    this.defaultButtonNarrationText(n);
+                }
+            });
+            btnY += 12;
+        }
+    }
+
+    /**
      * モーション選択ボタンを構築
      */
     /**
@@ -242,10 +291,10 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         if (skillData == null) return;
 
         WeaponProficiency current = skillData.getWeaponProficiency();
-        int btnX = leftPos + imageWidth - 110;
-        int btnY = topPos + imageHeight - 18;
+        int btnX = leftPos + imageWidth - 95;
+        int btnY = topPos + imageHeight - 14;
 
-        addRenderableWidget(new AbstractButton(btnX, btnY, 105, 14,
+        addRenderableWidget(new AbstractButton(btnX, btnY, 90, 12,
                 Component.literal("\u5F97\u610F: " + current.getDisplayName())) {
             @Override
             public void onPress() {
@@ -263,21 +312,28 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
     }
 
     private void buildMotionRows() {
-        String weaponClass = getSelectedWeaponClass();
+        // タイプ選択中はそのタイプのモーション、それ以外は武器スロット/デフォルト
+        ItemStack selectedWeapon = getSelectedWeapon();
 
         int rowY = topPos + MOTION_ROW_Y;
-        int labelWidth = 52;
-        int btnHeight = 18;
-        int btnGap = 2;
-        int rowGap = 5;
-        int btnAreaLeft = leftPos + 4 + labelWidth;
+        int labelWidth = 46;
+        int btnHeight = 14;
+        int btnGap = 1;
+        int rowGap = 2;
+        int btnAreaLeft = leftPos + 3 + labelWidth;
 
         for (AttackSlot slot : AttackSlot.values()) {
-            List<MotionInfo> motions = SkillRegistry.getAvailableMotions(slot, weaponClass);
+            List<MotionInfo> motions;
+            if (selectedTypeId != null) {
+                // タイプ選択中: JSONのタイプ定義から取得
+                motions = getMotionsForType(selectedTypeId, slot);
+            } else {
+                motions = SkillRegistry.getAvailableMotionsForWeapon(slot, selectedWeapon);
+            }
 
             int btnX = btnAreaLeft;
             for (MotionInfo motion : motions) {
-                int btnWidth = Math.max(36, font.width(motion.getDisplayName()) + 10);
+                int btnWidth = Math.max(28, font.width(motion.getDisplayName()) + 6);
                 final AttackSlot finalSlot = slot;
                 final MotionInfo finalMotion = motion;
 
@@ -285,14 +341,27 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                         Component.literal(motion.getDisplayName())) {
                     @Override
                     public void onPress() {
-                        if (selectedLoadoutIndex == -1) {
+                        if (selectedTypeId != null) {
+                            // タイプ別設定
+                            MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                                SkillSelectionPacket.setTypeMotion(selectedTypeId, finalSlot, finalMotion.getId())
+                            );
+                            // クライアント側も即時反映
+                            if (minecraft != null && minecraft.player != null) {
+                                PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(minecraft.player);
+                                if (sd != null) sd.setTypeMotion(selectedTypeId, finalSlot, finalMotion.getId());
+                            }
+                        } else if (selectedLoadoutIndex == -1) {
                             menu.setDefaultMotion(finalSlot, finalMotion.getId());
+                            MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                                SkillSelectionPacket.selectLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId())
+                            );
                         } else {
                             menu.setLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId());
+                            MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
+                                SkillSelectionPacket.selectLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId())
+                            );
                         }
-                        MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
-                            SkillSelectionPacket.selectLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId())
-                        );
                         buildWidgets();
                     }
 
@@ -336,26 +405,40 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         }
     }
 
-    private String getSelectedWeaponClass() {
-        // 武器スロット選択中はそのスロットの武器クラスを返す
+    private ItemStack getSelectedWeapon() {
+        // 武器スロット選択中のみそのスロットの武器を返す
         if (selectedLoadoutIndex >= 0 && selectedLoadoutIndex < SkillSelectionMenu.WEAPON_SLOTS) {
             ItemStack weapon = menu.getSlot(selectedLoadoutIndex).getItem();
-            if (!weapon.isEmpty()) return weapon.getItem().getClass().getSimpleName();
+            if (!weapon.isEmpty()) return weapon;
         }
-        // デフォルト選択時はメインハンドの武器クラスを返す（特殊技を表示するため）
-        if (minecraft != null && minecraft.player != null) {
-            ItemStack mainHand = minecraft.player.getMainHandItem();
-            if (!mainHand.isEmpty()) return mainHand.getItem().getClass().getSimpleName();
-        }
-        return null;
+        return ItemStack.EMPTY;
     }
 
     private String getCurrentMotion(AttackSlot slot) {
-        if (selectedLoadoutIndex == -1) {
+        if (selectedTypeId != null) {
+            // タイプ選択中
+            if (minecraft != null && minecraft.player != null) {
+                PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(minecraft.player);
+                if (sd != null) return sd.getTypeMotion(selectedTypeId, slot);
+            }
+            return "";
+        } else if (selectedLoadoutIndex == -1) {
             return menu.getDefaultMotion(slot);
         } else {
             return menu.getLoadoutMotion(selectedLoadoutIndex, slot);
         }
+    }
+
+    private List<MotionInfo> getMotionsForType(String typeId, AttackSlot slot) {
+        java.util.List<MotionInfo> result = new java.util.ArrayList<>();
+        WeaponTypeRegistry.WeaponTypeData typeData = WeaponTypeRegistry.getType(typeId);
+        if (typeData != null) {
+            for (String motionId : typeData.getMotionsForSlot(slot)) {
+                MotionInfo info = SkillRegistry.getById(motionId);
+                if (info != null) result.add(info);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -364,10 +447,9 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         g.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, COLOR_BG);
         drawBorder(g, leftPos, topPos, imageWidth, imageHeight, 0xFF555577);
 
-        // ヘッダー
-        g.fill(leftPos, topPos, leftPos + imageWidth, topPos + HEADER_HEIGHT, COLOR_HEADER);
+        // ヘッダー（バーなし、テキストのみ）
         g.drawCenteredString(font, Component.literal("\u2694 \u6280\u306E\u9078\u629E \u2694"),
-            leftPos + imageWidth / 2, topPos + 8, COLOR_HEADER_TEXT);
+            leftPos + imageWidth / 2, topPos + 3, COLOR_HEADER_TEXT);
 
         // 武器スロットセクションラベル
         g.drawString(font, Component.literal("\u25BC \u6B66\u5668\u30B9\u30ED\u30C3\u30C8"),
@@ -382,7 +464,11 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
 
         // 選択中ロードアウトの表示
         String editingLabel;
-        if (selectedLoadoutIndex == -1) {
+        if (selectedTypeId != null) {
+            WeaponTypeRegistry.WeaponTypeData typeData = WeaponTypeRegistry.getType(selectedTypeId);
+            String typeName = typeData != null ? typeData.getDisplayName() : selectedTypeId;
+            editingLabel = "[ " + typeName + " ]";
+        } else if (selectedLoadoutIndex == -1) {
             editingLabel = "[ \u30C7\u30D5\u30A9\u30EB\u30C8\u8A2D\u5B9A ]";
         } else {
             ItemStack weapon = menu.getSlot(selectedLoadoutIndex).getItem();
@@ -395,20 +481,55 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         g.drawCenteredString(font, Component.literal(editingLabel),
             leftPos + imageWidth / 2, divY + 2, 0xFFAACCFF);
 
-        // スロットラベル（5行：一撃目、二撃目、...）
+        // スロットラベル（各行：一撃目、二撃目、...）
         int rowY = topPos + MOTION_ROW_Y;
-        int btnHeight = 18;
-        int rowGap = 5;
+        int btnHeight = 14;
+        int rowGap = 2;
         for (AttackSlot slot : AttackSlot.values()) {
             g.drawString(font, Component.literal(slot.getDisplayName()),
-                leftPos + 4, rowY + (btnHeight - 8) / 2, COLOR_SLOT_LABEL, false);
+                leftPos + 3, rowY + (btnHeight - 8) / 2, COLOR_SLOT_LABEL, false);
             rowY += btnHeight + rowGap;
         }
 
-        // プレイヤーインベントリ背景
-        int invY = topPos + SkillSelectionMenu.INV_START_Y - 12;
-        g.drawString(font, Component.literal("\u30A4\u30F3\u30D9\u30F3\u30C8\u30EA"),
-            leftPos + SkillSelectionMenu.INV_START_X, invY, 0xFF999999, false);
+        // プレイヤーインベントリ背景（バニラ風の不透明パネル）
+        int invSlotX = leftPos + SkillSelectionMenu.INV_START_X;
+        int invSlotY = topPos + SkillSelectionMenu.INV_START_Y;
+        int hotbarY = topPos + SkillSelectionMenu.HOTBAR_Y;
+        int invPanelX = invSlotX - 8;
+        int invPanelY = invSlotY - 14;
+        int invPanelW = 9 * 18 + 14;
+        int invPanelH = hotbarY + 18 + 6 - invPanelY;
+
+        // 不透明パネル背景
+        g.fill(invPanelX, invPanelY, invPanelX + invPanelW, invPanelY + invPanelH, 0xFFC6C6C6);
+        // 外枠（バニラ風: 上と左が白、下と右が暗い）
+        g.fill(invPanelX, invPanelY, invPanelX + invPanelW, invPanelY + 2, 0xFFFFFFFF);
+        g.fill(invPanelX, invPanelY, invPanelX + 2, invPanelY + invPanelH, 0xFFFFFFFF);
+        g.fill(invPanelX, invPanelY + invPanelH - 2, invPanelX + invPanelW, invPanelY + invPanelH, 0xFF555555);
+        g.fill(invPanelX + invPanelW - 2, invPanelY, invPanelX + invPanelW, invPanelY + invPanelH, 0xFF555555);
+
+        // 各スロットの背景（暗い凹み）
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                int sx = invSlotX + col * 18 - 1;
+                int sy = invSlotY + row * 18 - 1;
+                g.fill(sx, sy, sx + 18, sy + 18, 0xFF8B8B8B);
+                g.fill(sx + 1, sy + 1, sx + 18, sy + 18, 0xFFFFFFFF);
+                g.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFFC6C6C6);
+            }
+        }
+        // ホットバーのスロット背景
+        for (int col = 0; col < 9; col++) {
+            int sx = invSlotX + col * 18 - 1;
+            int sy = hotbarY - 1;
+            g.fill(sx, sy, sx + 18, sy + 18, 0xFF8B8B8B);
+            g.fill(sx + 1, sy + 1, sx + 18, sy + 18, 0xFFFFFFFF);
+            g.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFFC6C6C6);
+        }
+
+        // "インベントリ" ラベル
+        g.drawString(font, Component.literal("Inventory"),
+            invSlotX, invPanelY + 4, 0xFF404040, false);
     }
 
     private void renderWeaponSlotBackgrounds(GuiGraphics g) {
@@ -433,19 +554,11 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         super.render(g, mouseX, mouseY, partialTick);
         this.renderTooltip(g, mouseX, mouseY);
 
-        // フッター
-        int footerY = topPos + imageHeight - 26;
-        g.fill(leftPos, footerY, leftPos + imageWidth, topPos + imageHeight, COLOR_FOOTER);
-
+        // ホバー説明文（フッターバーなし、テキストのみ）
         if (hoveredDescription != null) {
+            int descY = topPos + SkillSelectionMenu.HOTBAR_Y + 24;
             g.drawCenteredString(font, Component.literal(hoveredDescription),
-                leftPos + imageWidth / 2, footerY + 4, 0xFFFFFF);
-            g.drawCenteredString(font, Component.literal("\u30AF\u30EA\u30C3\u30AF\u3067\u9078\u629E"),
-                leftPos + imageWidth / 2, footerY + 14, COLOR_FOOTER_TEXT);
-        } else {
-            g.drawCenteredString(font, Component.literal(
-                "\u6B66\u5668\u3092D&D\u3067\u30B9\u30ED\u30C3\u30C8\u306B | K\u30AD\u30FC\u3067\u9589\u3058\u308B"),
-                leftPos + imageWidth / 2, footerY + 9, COLOR_FOOTER_TEXT);
+                leftPos + imageWidth / 2, descY, 0xFFCCCCCC);
         }
     }
 

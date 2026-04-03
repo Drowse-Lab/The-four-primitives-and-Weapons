@@ -45,7 +45,7 @@ public class LunaItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -1.4f, new Item.Properties());
+		}, 3, -2.4f, new Item.Properties());
 	}
 
 	// 右クリック機能を削除（回避システムで処理される）

@@ -29,14 +29,14 @@ public class SkillSelectionMenu extends AbstractContainerMenu {
     private final ItemStackHandler weaponSlotHandler;
 
     // GUI内の武器スロットの配置座標（Screenと共有する定数）
-    public static final int WEAPON_SLOT_START_X = 62;
-    public static final int WEAPON_SLOT_Y = 28;
+    public static final int WEAPON_SLOT_START_X = 42;
+    public static final int WEAPON_SLOT_Y = 22;
     public static final int WEAPON_SLOT_GAP = 22;
 
     // プレイヤーインベントリの配置座標
-    public static final int INV_START_X = 89;
-    public static final int INV_START_Y = 206;
-    public static final int HOTBAR_Y = 264;
+    public static final int INV_START_X = 69;
+    public static final int INV_START_Y = 176;
+    public static final int HOTBAR_Y = 234;
 
     // ローカルモーション状態（クライアント表示用、extraDataで同期）
     private final Map<AttackSlot, String> defaultMotions = new EnumMap<>(AttackSlot.class);

@@ -70,7 +70,7 @@ public class ReitouItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -1.4f, new Item.Properties().rarity(Rarity.EPIC));
+		}, 3, -2.4f, new Item.Properties().rarity(Rarity.EPIC));
 	}
 
 	@Override

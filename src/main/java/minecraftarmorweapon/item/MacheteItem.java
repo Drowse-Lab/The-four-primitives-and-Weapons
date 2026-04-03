@@ -34,6 +34,6 @@ public class MacheteItem extends AxeItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 1, -3.4f, new Item.Properties());
+		}, 1, -2.4f, new Item.Properties());
 	}
 }

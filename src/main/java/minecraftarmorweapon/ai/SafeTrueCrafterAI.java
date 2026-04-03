@@ -914,19 +914,19 @@ public class SafeTrueCrafterAI {
                 data.standstillTicks = Math.max(0, data.standstillTicks - 2);
             }
 
-            // NESM方式: canReach()チェック
+            // NESM方式: canReach()チェック — ブロック操作の主要トリガー
             boolean pathUnreachable = false;
             try {
                 var path = monster.getNavigation().getPath();
                 if (path != null && !path.canReach()) pathUnreachable = true;
-                if (path == null && monster.getNavigation().isDone() && distSq > 9.0) pathUnreachable = true;
+                if (path == null && monster.getNavigation().isDone() && distSq > 4.0) pathUnreachable = true;
             } catch (Exception ignored) {}
 
-            // ブロック破壊条件: 前方ブロックあり OR スタック OR パス到達不能
-            boolean shouldBreak = frontBlocked || footBlocked || data.standstillTicks >= 5 || pathUnreachable;
+            // ブロック操作条件 (NESM方式: canReachが主、補助で前方ブロック・スタック)
+            boolean shouldDig = pathUnreachable || footBlocked || frontBlocked || data.standstillTicks >= 3;
 
             // --- ブロック破壊処理 (NESM MobDamageBlock方式: 前方検出で即開始) ---
-            if (data.blockBreakCooldown == 0 && diff.isBlockBreakEnabled() && shouldBreak) {
+            if (data.blockBreakCooldown == 0 && diff.isBlockBreakEnabled() && shouldDig) {
                 BlockPos above1 = mobPos.above(1);
                 BlockPos above2 = mobPos.above(2);
                 BlockPos belowFeet = mobPos.below();
@@ -978,9 +978,8 @@ public class SafeTrueCrafterAI {
                 data.blockBreakCooldown--;
             }
 
-            // --- ブロック設置処理 ---
-            boolean isStuck = data.standstillTicks >= 5 || pathUnreachable;
-            if (diff.isBlockPlaceEnabled() && data.blockPlaceCooldown == 0 && isStuck) {
+            // --- ブロック設置処理 (NESM方式: canReach主体、スタック時間不要) ---
+            if (diff.isBlockPlaceEnabled() && data.blockPlaceCooldown == 0 && shouldDig) {
                 // ピラーアップ (NESM MobBuildUp方式)
                 if (!data.bridgeMode && yDiff > 1.5 && horizontalDist < 8.0) {
                     if (canPlaceAt(monster, mobPos) &&

@@ -166,6 +166,8 @@ public class PlayerSkillData {
         private final WeaponLoadout[] weaponSlots = new WeaponLoadout[MAX_WEAPON_SLOTS];
         // 固有スキルのON/OFF（内部利用）
         private final Map<String, Boolean> uniqueSkillToggle = new HashMap<>();
+        // 武器タイプ別モーション設定 (typeId → (AttackSlot → motionId))
+        private final Map<String, Map<AttackSlot, String>> typeMotions = new HashMap<>();
         // 得意武器タイプ
         private WeaponProficiency weaponProficiency = WeaponProficiency.NONE;
 
@@ -233,19 +235,44 @@ public class PlayerSkillData {
         }
 
         /**
-         * 持ち物の武器クラスに対応するロードアウトを探し、その技IDを返す。
-         * 見つからない場合はデフォルト設定を返す。
+         * 持ち物の武器に対応する技IDを返す。
+         * 優先順位: 武器スロット > 武器タイプ別設定 > デフォルト
          */
         public String getMotionForWeapon(AttackSlot slot, ItemStack heldItem) {
             if (!heldItem.isEmpty()) {
+                // 1. 武器スロットの個別設定を確認
                 String weaponClass = heldItem.getItem().getClass().getSimpleName();
                 for (WeaponLoadout loadout : weaponSlots) {
                     if (loadout != null && loadout.getWeaponClass().equals(weaponClass)) {
                         return loadout.getMotion(slot);
                     }
                 }
+
+                // 2. 武器タイプ別設定を確認
+                WeaponTypeRegistry.WeaponTypeData typeData = WeaponTypeRegistry.getTypeForItem(heldItem);
+                if (typeData != null) {
+                    Map<AttackSlot, String> typeSetting = typeMotions.get(typeData.getId());
+                    if (typeSetting != null && typeSetting.containsKey(slot)) {
+                        return typeSetting.get(slot);
+                    }
+                }
             }
             return selectedMotions.getOrDefault(slot, "thrust");
+        }
+
+        // === 武器タイプ別モーション設定 ===
+
+        public String getTypeMotion(String typeId, AttackSlot slot) {
+            Map<AttackSlot, String> typeSetting = typeMotions.get(typeId);
+            if (typeSetting != null && typeSetting.containsKey(slot)) {
+                return typeSetting.get(slot);
+            }
+            return selectedMotions.getOrDefault(slot, "thrust");
+        }
+
+        public void setTypeMotion(String typeId, AttackSlot slot, String motionId) {
+            typeMotions.computeIfAbsent(typeId, k -> new EnumMap<>(AttackSlot.class))
+                    .put(slot, motionId);
         }
 
         // === 固有スキルトグル ===
@@ -318,6 +345,17 @@ public class PlayerSkillData {
             }
             tag.put("uniqueSkills", uniqueSkills);
 
+            // 武器タイプ別モーション
+            CompoundTag typeMotionsTag = new CompoundTag();
+            for (Map.Entry<String, Map<AttackSlot, String>> entry : typeMotions.entrySet()) {
+                CompoundTag typeTag = new CompoundTag();
+                for (Map.Entry<AttackSlot, String> me : entry.getValue().entrySet()) {
+                    typeTag.putString(me.getKey().getId(), me.getValue());
+                }
+                typeMotionsTag.put(entry.getKey(), typeTag);
+            }
+            tag.put("typeMotions", typeMotionsTag);
+
             // 得意武器タイプ
             tag.putString("weaponProficiency", weaponProficiency.getId());
 
@@ -367,6 +405,25 @@ public class PlayerSkillData {
                 CompoundTag uniqueSkills = tag.getCompound("uniqueSkills");
                 for (String key : uniqueSkills.getAllKeys()) {
                     uniqueSkillToggle.put(key, uniqueSkills.getBoolean(key));
+                }
+            }
+
+            // 武器タイプ別モーション
+            typeMotions.clear();
+            if (tag.contains("typeMotions")) {
+                CompoundTag typeMotionsTag = tag.getCompound("typeMotions");
+                for (String typeId : typeMotionsTag.getAllKeys()) {
+                    CompoundTag typeTag = typeMotionsTag.getCompound(typeId);
+                    Map<AttackSlot, String> slotMap = new EnumMap<>(AttackSlot.class);
+                    for (AttackSlot slot : AttackSlot.values()) {
+                        String motionId = typeTag.getString(slot.getId());
+                        if (!motionId.isEmpty()) {
+                            slotMap.put(slot, motionId);
+                        }
+                    }
+                    if (!slotMap.isEmpty()) {
+                        typeMotions.put(typeId, slotMap);
+                    }
                 }
             }
 

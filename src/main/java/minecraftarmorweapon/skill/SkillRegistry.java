@@ -97,8 +97,7 @@ public class SkillRegistry {
                 MotionCategory.SPECIAL, allSlots, "KurikarakenutigatanaItem");
         register("electric_discharge", "放電バースト", "周囲に電撃を放出",
                 MotionCategory.SPECIAL, allSlots, "KurikarakenswordItem");
-        register("sword_of_night_tp", "夜の剣・転移斬", "テレポートして斬りつける",
-                MotionCategory.SPECIAL, allSlots, "SwordOfNightItem");
+        // sword_of_night_tpは右クリック専用（sword_of_night_specialに統合済み）
         register("magic_katana_special", "魔法刀・特殊攻撃", "魔法を纏った特殊攻撃",
                 MotionCategory.SPECIAL, allSlots, "MagischesFeenKatanaItem");
     }
@@ -155,6 +154,28 @@ public class SkillRegistry {
             }
         }
         return result;
+    }
+
+    /**
+     * JSON武器タイプ定義を使用してモーション一覧を取得（ItemStack版）
+     * WeaponTypeRegistryが読み込み済みならJSONの定義を優先する
+     */
+    public static List<MotionInfo> getAvailableMotionsForWeapon(AttackSlot slot, net.minecraft.world.item.ItemStack weapon) {
+        if (weapon != null && !weapon.isEmpty() && WeaponTypeRegistry.isLoaded()) {
+            List<String> motionIds = WeaponTypeRegistry.getAvailableMotionIds(weapon, slot);
+            if (!motionIds.isEmpty()) {
+                List<MotionInfo> result = new ArrayList<>();
+                for (String id : motionIds) {
+                    MotionInfo info = getById(id);
+                    if (info != null) result.add(info);
+                }
+                return result;
+            }
+        }
+        // フォールバック: 従来のクラス名ベース
+        String weaponClass = (weapon != null && !weapon.isEmpty())
+                ? weapon.getItem().getClass().getSimpleName() : null;
+        return getAvailableMotions(slot, weaponClass);
     }
 
     /**

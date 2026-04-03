@@ -43,7 +43,7 @@ public class NinjatouItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -2.2f, new Item.Properties());
+		}, 3, -2.4f, new Item.Properties());
 	}
 
 	@Override

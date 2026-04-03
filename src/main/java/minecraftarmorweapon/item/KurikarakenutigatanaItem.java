@@ -50,7 +50,7 @@ public class KurikarakenutigatanaItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -1.4f, new Item.Properties().fireResistant());
+		}, 3, -2.4f, new Item.Properties().fireResistant());
 	}
 //
 //	@Override
