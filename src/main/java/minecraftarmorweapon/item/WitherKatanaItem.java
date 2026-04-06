@@ -31,7 +31,7 @@ public class WitherKatanaItem extends SwordItem {
 	public WitherKatanaItem() {
 		super(new Tier() {
 			public int getUses() {
-				return 0;
+				return 250;
 			}
 
 			public float getSpeed() {
@@ -47,7 +47,7 @@ public class WitherKatanaItem extends SwordItem {
 			}
 
 			public int getEnchantmentValue() {
-				return 2;
+				return 14;
 			}
 
 			public Ingredient getRepairIngredient() {

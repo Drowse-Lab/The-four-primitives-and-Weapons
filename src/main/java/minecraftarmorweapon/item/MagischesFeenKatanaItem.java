@@ -26,7 +26,7 @@ public class MagischesFeenKatanaItem extends SwordItem {
 	public MagischesFeenKatanaItem() {
 		super(new Tier() {
 			public int getUses() {
-				return 0;
+				return 250;
 			}
 
 			public float getSpeed() {
@@ -42,7 +42,7 @@ public class MagischesFeenKatanaItem extends SwordItem {
 			}
 
 			public int getEnchantmentValue() {
-				return 9;
+				return 14;
 			}
 
 			public Ingredient getRepairIngredient() {

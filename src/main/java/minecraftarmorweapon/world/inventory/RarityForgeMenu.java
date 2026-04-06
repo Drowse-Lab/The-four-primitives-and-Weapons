@@ -153,12 +153,31 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
         double catalystBonus = RarityCraftingLogic.getCatalystBonus(catalyst0, catalyst1);
 
         // 結果アイテム作成
-        ItemStack result = new ItemStack(recipe.getResult());
-        if (recipe.isBookRecipe()) {
+        ItemStack result;
+        if (recipe.isUnbreakable()) {
+            // Unbreakableレシピ: 入力武器のNBTを保持したまま Unbreakable:1 を付与
+            int inputIdx = recipe.getInputSlotIndex();
+            if (inputIdx < 0) return;
+            int[] offset = recipe.findMatchOffset(grid);
+            if (offset == null) return;
+            int gridSlot = inputIdx; // pattern座標をそのまま使用
+            // pattern内の行列からグリッドスロットを計算
+            int patW = recipe.getPatternWidth();
+            int py = inputIdx / patW;
+            int px = inputIdx % patW;
+            int actualSlot = (py + offset[1]) * 3 + (px + offset[0]);
+            ItemStack inputItem = grid.getStackInSlot(actualSlot);
+            if (inputItem.isEmpty()) return;
+            result = inputItem.copy();
+            result.getOrCreateTag().putBoolean("Unbreakable", true);
+            result.setCount(1);
+        } else if (recipe.isBookRecipe()) {
+            result = new ItemStack(recipe.getResult());
             // magic bookレシピ: ElementType + ElementLevel NBTを設定
             ElementType elementType = getElementTypeForBook(recipe.getResult());
             ElementalDamageUtils.setElement(result, elementType, recipe.getElementLevel());
         } else {
+            result = new ItemStack(recipe.getResult());
             WeaponRarity.setToStack(result, rarity);
             WeaponRarity.setCatalystBonus(result, catalystBonus);
         }

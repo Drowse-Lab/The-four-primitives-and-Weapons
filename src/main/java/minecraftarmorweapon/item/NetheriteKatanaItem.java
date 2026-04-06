@@ -19,7 +19,7 @@ public class NetheriteKatanaItem extends SwordItem {
 	public NetheriteKatanaItem() {
 		super(new Tier() {
 			public int getUses() {
-				return 0;
+				return 2031;
 			}
 
 			public float getSpeed() {
@@ -35,7 +35,7 @@ public class NetheriteKatanaItem extends SwordItem {
 			}
 
 			public int getEnchantmentValue() {
-				return 9;
+				return 15;
 			}
 
 			public Ingredient getRepairIngredient() {

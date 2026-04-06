@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " E ",
+    "GNG",
+    " E "
+  ],
+  "key": {
+    "E": {"item": "minecraft:emerald"},
+    "G": {"item": "minecraft:gold_ingot"},
+    "N": {"item": "minecraft:nether_star"}
+  },
+  "result": {
+    "item": "minecraft_armor_weapon:rarity_charm",
+    "count": 1
+  }
+}

@@ -2,6 +2,9 @@ package minecraftarmorweapon.trait;
 
 import minecraftarmorweapon.command.CustomDifficultyCommand;
 import minecraftarmorweapon.command.CustomDifficultyCommand.CustomDifficulty;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
+import minecraftarmorweapon.damage.ElementType;
+import minecraftarmorweapon.damage.ElementalDamageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -83,7 +86,13 @@ public class MobTraitHandler {
             return;
         }
 
-        MobTrait trait = MobTrait.rollTrait(monster.getRandom().nextFloat(), diff.getAiLevel());
+        // チャーム所持で高レアリティ特性の出現率UP（aiLevel+2相当）
+        int effectiveAiLevel = diff.getAiLevel();
+        net.minecraft.world.entity.player.Player nearPlayer = monster.level().getNearestPlayer(monster, 64);
+        if (nearPlayer != null && hasRarityCharm(nearPlayer)) {
+            effectiveAiLevel += 2;
+        }
+        MobTrait trait = MobTrait.rollTrait(monster.getRandom().nextFloat(), effectiveAiLevel);
         traitMap.put(id, trait);
         traitApplied.add(id);
 
@@ -671,6 +680,42 @@ public class MobTraitHandler {
 
         // --- 不死の特性: トーテム発動処理 ---
         if (trait == MobTrait.UNDYING) {
+            // /kill コマンド (genericKill / outOfWorld) は無条件で貫通
+            String dmgType = event.getSource().getMsgId();
+            if ("genericKill".equals(dmgType) || "outOfWorld".equals(dmgType)
+                || "even_more_magic".equals(dmgType)) {
+                cleanup(id);
+                return;
+            }
+
+            // 聖(HOLY)属性ダメージを受けた直後 → トーテム貫通
+            // HolyElementDamageHandler が記録した holyDamageTargets をチェック
+            if (minecraftarmorweapon.damage.HolyElementDamageHandler
+                    .shouldBypassTotem(id, monster.level().getGameTime())) {
+                cleanup(id);
+                return;
+            }
+
+            // 攻撃者の武器にHOLY属性がある場合も貫通
+            if (event.getSource().getEntity() instanceof LivingEntity attacker) {
+                ItemStack weapon = attacker.getMainHandItem();
+                if (ElementalDamageUtils.getElementType(weapon) == ElementType.HOLY) {
+                    cleanup(id);
+                    return;
+                }
+            }
+
+            // Killエンチャント即死 → トーテム貫通
+            if (event.getSource().getEntity() instanceof LivingEntity attacker) {
+                ItemStack weapon = attacker.getMainHandItem();
+                int killLevel = net.minecraft.world.item.enchantment.EnchantmentHelper.getItemEnchantmentLevel(
+                    minecraftarmorweapon.init.MinecraftArmorWeaponModEnchantments.KILL.get(), weapon);
+                if (killLevel > 0) {
+                    cleanup(id);
+                    return;
+                }
+            }
+
             int count = undyingCount.getOrDefault(id, 0);
 
             event.setCanceled(true);
@@ -717,9 +762,15 @@ public class MobTraitHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onMobDeathCleanup(LivingDeathEvent event) {
-        if (event.getEntity() instanceof Monster) {
+        if (event.getEntity() instanceof Monster monster) {
             if (!event.isCanceled()) {
-                cleanup(event.getEntity().getUUID());
+                // 不死特性持ちが最終的に死亡 → 不死の核をドロップ
+                UUID id = monster.getUUID();
+                MobTrait trait = traitMap.get(id);
+                if (trait == MobTrait.UNDYING && event.getSource().getEntity() instanceof net.minecraft.world.entity.player.Player) {
+                    monster.spawnAtLocation(new ItemStack(MinecraftArmorWeaponModItems.IMMORTAL_CORE.get()));
+                }
+                cleanup(id);
             }
         }
     }
@@ -765,5 +816,18 @@ public class MobTraitHandler {
             trait.getFormattedName() + " §f" + baseName
         ));
         monster.setCustomNameVisible(true);
+    }
+
+    /**
+     * プレイヤーがRarityCharmをインベントリに持っているか
+     */
+    private static boolean hasRarityCharm(net.minecraft.world.entity.player.Player player) {
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (!stack.isEmpty() && stack.getItem() == MinecraftArmorWeaponModItems.RARITY_CHARM.get()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

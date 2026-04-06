@@ -1,0 +1,60 @@
+{
+  "_comment": "武器ステータス一括管理。ここで定義した値がJavaのTier設定を上書きします。durability:0 = 耐久無限",
+
+  "_comment_tiers": {
+    "gold":      "耐久32,  エンチャ22, バニラ金の剣相当",
+    "stone":     "耐久131, エンチャ5,  バニラ石の剣相当",
+    "iron":      "耐久250, エンチャ14, バニラ鉄の剣相当",
+    "diamond":   "耐久1561,エンチャ10, バニラダイヤの剣相当",
+    "netherite": "耐久2031,エンチャ15, バニラネザライトの剣相当",
+    "special":   "耐久0(無限), 特殊武器"
+  },
+
+  "weapons": {
+
+    "_comment_gold": "===== 金の剣相当 (耐久32, エンチャ22) =====",
+    "minecraft_armor_weapon:gold_katana":    { "durability": 32,  "enchantability": 22, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:gold_tyokuto":   { "durability": 32,  "enchantability": 22, "damage_bonus": 3, "attack_speed": -2.4 },
+
+    "_comment_stone": "===== 石の剣相当 (耐久131, エンチャ5) =====",
+    "minecraft_armor_weapon:stone_katana":   { "durability": 131, "enchantability": 5,  "damage_bonus": 3, "attack_speed": -2.4 },
+
+    "_comment_iron": "===== 鉄の剣相当 (耐久250, エンチャ14) =====",
+    "minecraft_armor_weapon:iron_katana":          { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:iron_tyokuto":         { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:wither_katana":        { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:darkness_katana":      { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:magical_katana":       { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:magischesfeen_katana": { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:ninjatou":             { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:machete":              { "durability": 250, "enchantability": 14, "damage_bonus": 1, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:scythe":               { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:warabitetou":          { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:rapier":               { "durability": 250, "enchantability": 14, "damage_bonus": 2, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:halloween_2023_10_31_sickle": { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:replica_sword_of_light":      { "durability": 250, "enchantability": 14, "damage_bonus": 0, "attack_speed": -2.4 },
+
+    "_comment_diamond": "===== ダイヤの剣相当 (耐久250, エンチャ10) =====",
+    "minecraft_armor_weapon:prototype_katana":   { "durability": 250, "enchantability": 10, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:my_test_iron_katana": { "durability": 250, "enchantability": 10, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:small_sword":        { "durability": 250, "enchantability": 10, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:katana_nigu_humerus": { "durability": 250, "enchantability": 10, "damage_bonus": 3, "attack_speed": -2.4 },
+
+    "_comment_netherite": "===== ネザライトの剣相当 (耐久2031, エンチャ15) =====",
+    "minecraft_armor_weapon:netherite_katana": { "durability": 2031, "enchantability": 15, "damage_bonus": 3, "attack_speed": -2.4 },
+
+    "_comment_special": "===== 特殊武器 (耐久無限, 固有エンチャ適性) =====",
+    "minecraft_armor_weapon:sword_of_night":     { "durability": 0, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:loki_the_trickster": { "durability": 0, "enchantability": 14, "damage_bonus": 2, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:rivers_of_blood":    { "durability": 0, "enchantability": 4,  "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:old_katana":         { "durability": 0, "enchantability": 2,  "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:reitou":             { "durability": 0, "enchantability": 3,  "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:luna":               { "durability": 0, "enchantability": 2,  "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:kurikaraken":        { "durability": 0, "enchantability": 9,  "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:kurikarakensword":   { "durability": 0, "enchantability": 9,  "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:kurikarakenutigatana": { "durability": 0, "enchantability": 9, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:bluepurge":          { "durability": 0, "enchantability": 2,  "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:bluepurge_utigatana": { "durability": 0, "enchantability": 2, "damage_bonus": 3, "attack_speed": -2.4 },
+    "minecraft_armor_weapon:bluepurge_tyokutou": { "durability": 0, "enchantability": 2,  "damage_bonus": 3, "attack_speed": -2.4 }
+  }
+}

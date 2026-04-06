@@ -21,7 +21,7 @@ public class PrototypeKatanaItem extends SwordItem {
 	public PrototypeKatanaItem() {
 		super(new Tier() {
 			public int getUses() {
-				return 0;
+				return 250;
 			}
 
 			public float getSpeed() {
@@ -37,7 +37,7 @@ public class PrototypeKatanaItem extends SwordItem {
 			}
 
 			public int getEnchantmentValue() {
-				return 9;
+				return 10;
 			}
 
 			public Ingredient getRepairIngredient() {

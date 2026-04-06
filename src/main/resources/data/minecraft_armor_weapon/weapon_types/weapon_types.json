@@ -46,7 +46,9 @@
         "minecraft_armor_weapon:kaminari_kurikaraken_tyokutou",
         "minecraft_armor_weapon:kurikarakenutigatana",
         "minecraft_armor_weapon:kurikarakensword",
-        "minecraft_armor_weapon:kurikaraken"
+        "minecraft_armor_weapon:kurikaraken",
+        "minecraft_armor_weapon:iron_tyokuto",
+        "minecraft_armor_weapon:gold_tyokuto"
       ],
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],

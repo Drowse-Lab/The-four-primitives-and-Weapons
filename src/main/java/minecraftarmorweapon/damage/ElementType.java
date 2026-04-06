@@ -28,8 +28,9 @@ public enum ElementType {
     }
 
     public static ElementType fromString(String name) {
+        if (name == null) return NONE;
         for (ElementType type : values()) {
-            if (type.name.equals(name)) {
+            if (type.name.equalsIgnoreCase(name)) {
                 return type;
             }
         }

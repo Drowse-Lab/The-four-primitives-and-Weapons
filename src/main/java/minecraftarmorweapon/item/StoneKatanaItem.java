@@ -12,7 +12,7 @@ public class StoneKatanaItem extends SwordItem {
 	public StoneKatanaItem() {
 		super(new Tier() {
 			public int getUses() {
-				return 0;
+				return 131;
 			}
 
 			public float getSpeed() {
@@ -28,7 +28,7 @@ public class StoneKatanaItem extends SwordItem {
 			}
 
 			public int getEnchantmentValue() {
-				return 4;
+				return 5;
 			}
 
 			public Ingredient getRepairIngredient() {

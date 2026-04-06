@@ -129,9 +129,47 @@ public class ElementalDamageUtils {
     // ─────────────────────────────────────────────────────────────
 
     /**
-     * Curiosのbookスロットにある魔導書のレベルを取得
+     * アイテムのクラス名から魔導書の属性を判定
+     */
+    private static ElementType getBookElementFromItem(ItemStack stack) {
+        if (stack.isEmpty()) return ElementType.NONE;
+        String itemName = stack.getItem().getClass().getSimpleName();
+        switch (itemName) {
+            case "FireballItem":    return ElementType.FIRE;
+            case "ThunderboltItem": return ElementType.THUNDER;
+            case "BubbleshotItem":  return ElementType.WATER;
+            case "StormItem":
+            case "WindStepItem":    return ElementType.WIND;
+            case "DarknessItem":    return ElementType.DARK;
+            case "IceBookItem":     return ElementType.ICE;
+            case "ElectricBookItem":return ElementType.ELECTRIC;
+            case "CorrosionBookItem":return ElementType.CORROSION;
+            case "HolyBookItem":    return ElementType.HOLY;
+            case "ErrorBookItem":   return ElementType.ERROR;
+            case "MiasmaBookItem":  return ElementType.MIASMA;
+            default:                return ElementType.NONE;
+        }
+    }
+
+    /**
+     * Curiosのbookスロット・メインハンド・オフハンドにある魔導書のレベルを取得
      */
     public static int getBookSlotLevel(Player player) {
+        // メインハンドをチェック
+        ItemStack mainHand = player.getMainHandItem();
+        if (getBookElementFromItem(mainHand) != ElementType.NONE) {
+            int lv = getElementLevel(mainHand);
+            if (lv > 0) return lv;
+        }
+
+        // オフハンドをチェック
+        ItemStack offHand = player.getOffhandItem();
+        if (getBookElementFromItem(offHand) != ElementType.NONE) {
+            int lv = getElementLevel(offHand);
+            if (lv > 0) return lv;
+        }
+
+        // Curiosのbookスロットをチェック
         try {
             java.util.concurrent.atomic.AtomicInteger result =
                     new java.util.concurrent.atomic.AtomicInteger(0);
@@ -158,9 +196,18 @@ public class ElementalDamageUtils {
     }
 
     /**
-     * Curiosのbookスロットにある魔導書の属性を取得
+     * Curiosのbookスロット・メインハンド・オフハンドにある魔導書の属性を取得
      */
     public static ElementType getBookSlotElement(Player player) {
+        // メインハンドをチェック
+        ElementType mainElement = getBookElementFromItem(player.getMainHandItem());
+        if (mainElement != ElementType.NONE) return mainElement;
+
+        // オフハンドをチェック
+        ElementType offElement = getBookElementFromItem(player.getOffhandItem());
+        if (offElement != ElementType.NONE) return offElement;
+
+        // Curiosのbookスロットをチェック
         try {
             java.util.concurrent.atomic.AtomicReference<ElementType> result =
                     new java.util.concurrent.atomic.AtomicReference<>(ElementType.NONE);
@@ -170,20 +217,10 @@ public class ElementalDamageUtils {
                     for (int i = 0; i < stacksHandler.getStacks().getSlots(); i++) {
                         ItemStack stack = stacksHandler.getStacks().getStackInSlot(i);
                         if (!stack.isEmpty()) {
-                            String itemName = stack.getItem().getClass().getSimpleName();
-                            switch (itemName) {
-                                case "FireballItem":    result.set(ElementType.FIRE);      return;
-                                case "ThunderboltItem": result.set(ElementType.THUNDER);   return;
-                                case "BubbleshotItem":  result.set(ElementType.WATER);     return;
-                                case "StormItem":
-                                case "WindStepItem":    result.set(ElementType.WIND);      return;
-                                case "DarknessItem":    result.set(ElementType.DARK);      return;
-                                case "IceBookItem":     result.set(ElementType.ICE);       return;
-                                case "ElectricBookItem":result.set(ElementType.ELECTRIC);  return;
-                                case "CorrosionBookItem":result.set(ElementType.CORROSION);return;
-                                case "HolyBookItem":    result.set(ElementType.HOLY);      return;
-                                case "ErrorBookItem":   result.set(ElementType.ERROR);     return;
-                                case "MiasmaBookItem":  result.set(ElementType.MIASMA);    return;
+                            ElementType type = getBookElementFromItem(stack);
+                            if (type != ElementType.NONE) {
+                                result.set(type);
+                                return;
                             }
                         }
                     }
@@ -231,9 +268,14 @@ public class ElementalDamageUtils {
     }
 
     /**
-     * bookスロットにStormItem（キメラ魔導書）が装備されているかチェック
+     * bookスロット・メインハンド・オフハンドにStormItem（キメラ魔導書）が装備されているかチェック
      */
     private static boolean isStormBookEquipped(Player player) {
+        // メインハンド・オフハンドをチェック
+        if (player.getMainHandItem().getItem().getClass().getSimpleName().equals("StormItem")) return true;
+        if (player.getOffhandItem().getItem().getClass().getSimpleName().equals("StormItem")) return true;
+
+        // Curiosのbookスロットをチェック
         try {
             java.util.concurrent.atomic.AtomicBoolean result =
                     new java.util.concurrent.atomic.AtomicBoolean(false);

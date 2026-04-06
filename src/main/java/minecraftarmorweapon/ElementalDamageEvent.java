@@ -51,19 +51,37 @@ public class ElementalDamageEvent {
         // 攻撃者の武器を取得
         ItemStack weapon = attacker.getMainHandItem();
 
-        // 属性情報を取得（武器 → 魔導書の順でチェック）
-        ElementType elementType;
-        int elementLevel;
+        // 属性情報を取得（武器と魔導書を比較し、レベルの高い方を採用）
+        ElementType elementType = ElementType.NONE;
+        int elementLevel = 0;
         boolean fromBook = false;
 
-        if (ElementalDamageUtils.hasElement(weapon)) {
-            // 武器自体に属性がある場合
-            elementType = ElementalDamageUtils.getElementType(weapon);
-            elementLevel = ElementalDamageUtils.getElementLevel(weapon);
-        } else if (attacker instanceof Player attackerPlayer) {
-            // 武器に属性がない場合、魔導書の属性を使用
-            elementType = ElementalDamageUtils.getBookSlotElement(attackerPlayer);
-            elementLevel = ElementalDamageUtils.getBookSlotLevel(attackerPlayer);
+        // 武器の属性を取得
+        ElementType weaponType = ElementalDamageUtils.getElementType(weapon);
+        int weaponLevel = ElementalDamageUtils.getElementLevel(weapon);
+
+        // 魔導書の属性を取得
+        ElementType bookType = ElementType.NONE;
+        int bookLevel = 0;
+        if (attacker instanceof Player attackerPlayer) {
+            bookType = ElementalDamageUtils.getBookSlotElement(attackerPlayer);
+            bookLevel = ElementalDamageUtils.getBookSlotLevel(attackerPlayer);
+        }
+
+        // 同じ属性ならレベルの高い方+ボーナス、違う属性なら武器優先
+        if (weaponType != ElementType.NONE && bookType != ElementType.NONE
+                && weaponType == bookType) {
+            // 同属性の相性ボーナス: 高い方のレベル + 低い方の半分(切り捨て、最低+1)
+            elementType = weaponType;
+            int highLevel = Math.max(weaponLevel, bookLevel);
+            int lowLevel = Math.min(weaponLevel, bookLevel);
+            elementLevel = highLevel + Math.max(lowLevel / 2, 1);
+        } else if (weaponType != ElementType.NONE) {
+            elementType = weaponType;
+            elementLevel = weaponLevel;
+        } else if (bookType != ElementType.NONE) {
+            elementType = bookType;
+            elementLevel = bookLevel;
             fromBook = true;
         } else {
             return;
@@ -71,6 +89,16 @@ public class ElementalDamageEvent {
 
         if (elementType == ElementType.NONE || elementLevel <= 0) {
             return;
+        }
+
+        // デバッグ: 属性情報をチャットに表示
+        if (attacker instanceof Player debugPlayer) {
+            debugPlayer.displayClientMessage(
+                Component.literal("§e[DEBUG] 属性=" + elementType.getName()
+                    + " Lv=" + elementLevel
+                    + " 武器=" + weaponType.getName() + "(" + weaponLevel + ")"
+                    + " 魔導書=" + bookType.getName() + "(" + bookLevel + ")"),
+                true);
         }
 
         // ターゲットとオリジナルダメージを取得

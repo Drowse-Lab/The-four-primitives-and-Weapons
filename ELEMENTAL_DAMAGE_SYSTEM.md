@@ -180,4 +180,4 @@ float damage = DamageCalculator.dealDamage(player, target, 10.0f, weapon);
 Academic Free License v3.0
 
 ## 作者
-reisame (hrmcngs)
+hiromichi nagase(hrmcngs)

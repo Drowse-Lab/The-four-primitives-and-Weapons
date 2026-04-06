@@ -44,6 +44,10 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE_UTIGATANA);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE_TYOKUTOU);
+			event.accept(MinecraftArmorWeaponModItems.IRON_TYOKUTO);
+			event.accept(MinecraftArmorWeaponModItems.IMMORTAL_CORE);
+			event.accept(MinecraftArmorWeaponModItems.RARITY_CHARM);
+			event.accept(MinecraftArmorWeaponModItems.GOLD_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.OFUDA);
 		}
 

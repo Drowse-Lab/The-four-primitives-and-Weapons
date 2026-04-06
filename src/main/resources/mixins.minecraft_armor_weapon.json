@@ -6,7 +6,9 @@
   "refmap": "minecraft_armor_weapon.refmap.json",
   "mixins": [
     "GuardDamageReductionMixin",
-    "MiasmaHealMixin"
+    "MiasmaHealMixin",
+    "WeaponStatsMixin",
+    "ItemEnchantMixin"
   ],
   "client": [
     "BlessingVisionMixin"

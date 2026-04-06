@@ -18,17 +18,24 @@ public class RarityForgeRecipe {
     private final int patternHeight;
     private final Item result;
     private final int elementLevel; // 0 = 通常レシピ, 1-10 = magic bookレベル
+    private final boolean unbreakable; // true = 入力武器をUnbreakable化するレシピ
+    private int inputSlotIndex = -1; // #input のスロット位置
 
     public RarityForgeRecipe(Item result, Item[][] pattern, int width, int height) {
-        this(result, pattern, width, height, 0);
+        this(result, pattern, width, height, 0, false);
     }
 
     public RarityForgeRecipe(Item result, Item[][] pattern, int width, int height, int elementLevel) {
+        this(result, pattern, width, height, elementLevel, false);
+    }
+
+    public RarityForgeRecipe(Item result, Item[][] pattern, int width, int height, int elementLevel, boolean unbreakable) {
         this.result = result;
         this.pattern = pattern;
         this.patternWidth = width;
         this.patternHeight = height;
         this.elementLevel = elementLevel;
+        this.unbreakable = unbreakable;
     }
 
     public Item getResult() {
@@ -41,6 +48,18 @@ public class RarityForgeRecipe {
 
     public boolean isBookRecipe() {
         return elementLevel > 0;
+    }
+
+    public boolean isUnbreakable() {
+        return unbreakable;
+    }
+
+    public void setInputSlotIndex(int index) {
+        this.inputSlotIndex = index;
+    }
+
+    public int getInputSlotIndex() {
+        return inputSlotIndex;
     }
 
     public Item[][] getPattern() {
@@ -80,11 +99,19 @@ public class RarityForgeRecipe {
                 int py = y - oy;
                 int px = x - ox;
                 Item expected = null;
+                boolean isInputSlot = false;
                 if (py >= 0 && py < patternHeight && px >= 0 && px < patternWidth) {
                     expected = pattern[py][px];
+                    // unbreakableレシピの#inputスロット: patternがnullで入力位置に一致
+                    if (expected == null && unbreakable && inputSlotIndex == py * patternWidth + px) {
+                        isInputSlot = true;
+                    }
                 }
                 ItemStack slot = handler.getStackInSlot(y * 3 + x);
-                if (expected == null) {
+                if (isInputSlot) {
+                    // 任意のSwordItemを受け入れる
+                    if (slot.isEmpty() || !(slot.getItem() instanceof net.minecraft.world.item.SwordItem)) return false;
+                } else if (expected == null) {
                     if (!slot.isEmpty()) return false;
                 } else {
                     if (slot.isEmpty() || slot.getItem() != expected) return false;

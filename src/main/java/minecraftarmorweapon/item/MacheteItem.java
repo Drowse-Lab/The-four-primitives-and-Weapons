@@ -12,7 +12,7 @@ public class MacheteItem extends AxeItem {
 	public MacheteItem() {
 		super(new Tier() {
 			public int getUses() {
-				return 0;
+				return 250;
 			}
 
 			public float getSpeed() {
@@ -28,7 +28,7 @@ public class MacheteItem extends AxeItem {
 			}
 
 			public int getEnchantmentValue() {
-				return 2;
+				return 14;
 			}
 
 			public Ingredient getRepairIngredient() {

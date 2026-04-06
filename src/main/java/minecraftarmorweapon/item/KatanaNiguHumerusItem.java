@@ -41,7 +41,7 @@ public class KatanaNiguHumerusItem extends SwordItem {
 			}
 
 			public int getEnchantmentValue() {
-				return 9;
+				return 10;
 			}
 
 			public Ingredient getRepairIngredient() {

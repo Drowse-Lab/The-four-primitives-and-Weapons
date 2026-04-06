@@ -52,7 +52,7 @@ public class SwordOfNightItem extends SwordItem {
 			}
 
 			public int getEnchantmentValue() {
-				return 2;
+				return 14;
 			}
 
 			public Ingredient getRepairIngredient() {

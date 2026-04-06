@@ -64,20 +64,37 @@ public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeRec
         int offsetX = ((3 - pw) / 2) * 18;
         int offsetY = ((3 - ph) / 2) * 18;
 
+        int inputSlotIdx = recipe.getInputSlotIndex();
+
         for (int y = 0; y < ph; y++) {
             for (int x = 0; x < pw; x++) {
+                int patIdx = y * pw + x;
                 if (pattern[y][x] != null) {
                     builder.addSlot(RecipeIngredientRole.INPUT,
                                     1 + offsetX + x * 18,
                                     1 + offsetY + y * 18)
                             .addItemStack(new ItemStack(pattern[y][x]));
+                } else if (recipe.isUnbreakable() && patIdx == inputSlotIdx) {
+                    // #inputスロット: 鉄の剣をサンプルとして表示
+                    builder.addSlot(RecipeIngredientRole.INPUT,
+                                    1 + offsetX + x * 18,
+                                    1 + offsetY + y * 18)
+                            .addItemStack(new ItemStack(net.minecraft.world.item.Items.IRON_SWORD));
                 }
             }
         }
 
-        // 結果スロット（右側）
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 95, 19)
-                .addItemStack(new ItemStack(recipe.getResult()));
+        // 結果スロット
+        if (recipe.isUnbreakable()) {
+            // Unbreakableレシピ: 結果に Unbreakable:1 を表示
+            ItemStack resultDisplay = new ItemStack(net.minecraft.world.item.Items.IRON_SWORD);
+            resultDisplay.getOrCreateTag().putBoolean("Unbreakable", true);
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 95, 19)
+                    .addItemStack(resultDisplay);
+        } else {
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 95, 19)
+                    .addItemStack(new ItemStack(recipe.getResult()));
+        }
     }
 
     @Override
