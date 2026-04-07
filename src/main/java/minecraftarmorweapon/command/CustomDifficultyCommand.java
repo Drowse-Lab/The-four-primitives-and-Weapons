@@ -134,7 +134,6 @@ public class CustomDifficultyCommand {
     
     // 現在のカスタム難易度を保存
     private static CustomDifficulty currentDifficulty = CustomDifficulty.NORMAL;
-    private static final String NBT_KEY = "minecraft_armor_weapon:custom_difficulty";
     
     @SubscribeEvent
     public static void registerCommands(RegisterCommandsEvent event) {
@@ -162,7 +161,25 @@ public class CustomDifficultyCommand {
             );
         
         dispatcher.register(command);
-        
+
+        // /gamerule difficulty_lock <true|false> コマンド
+        dispatcher.register(Commands.literal("gamerule")
+            .requires(source -> source.hasPermission(2))
+            .then(Commands.literal("difficulty_lock")
+                .then(Commands.argument("value", net.minecraft.commands.arguments.StringArgumentType.word())
+                    .executes(context -> {
+                        String val = StringArgumentType.getString(context, "value");
+                        boolean locked = "true".equalsIgnoreCase(val);
+                        ServerLevel overworld = context.getSource().getLevel().getServer().overworld();
+                        saveLocked(overworld, locked);
+                        context.getSource().sendSuccess(() ->
+                            Component.literal("§6難易度ロック: " + (locked ? "§cON" : "§aOFF")), true);
+                        return 1;
+                    })
+                )
+            )
+        );
+
         // /difficulty コマンドも追加（標準コマンドの拡張）
         LiteralArgumentBuilder<CommandSourceStack> difficultyCommand = Commands.literal("difficulty")
             .requires(source -> source.hasPermission(2));
@@ -203,11 +220,8 @@ public class CustomDifficultyCommand {
         ServerLevel level = source.getLevel();
         level.getServer().setDifficulty(newDifficulty.getBaseDifficulty(), true);
 
-        // NBTに保存
-        net.minecraft.nbt.CompoundTag customData = level.getServer().getWorldData().getCustomBossEvents();
-        if (customData != null) {
-            customData.putString(NBT_KEY, newDifficulty.getName());
-        }
+        // SavedDataに保存（ワールド再読み込みで復元される）
+        saveDifficulty(level.getServer().overworld());
 
         // 難易度変更の詳細表示
         String color = newDifficulty.getColorCode();
@@ -279,18 +293,61 @@ public class CustomDifficultyCommand {
         return currentDifficulty.getAiLevel() >= 3;
     }
     
+    // === SavedData でワールドに難易度を永続化 ===
+    public static class DifficultyData extends net.minecraft.world.level.saveddata.SavedData {
+        private String difficultyName = "normal";
+        private boolean locked = false;
+
+        public DifficultyData() {}
+
+        public static DifficultyData load(net.minecraft.nbt.CompoundTag tag) {
+            DifficultyData data = new DifficultyData();
+            data.difficultyName = tag.getString("difficulty");
+            data.locked = tag.getBoolean("locked");
+            return data;
+        }
+
+        @Override
+        public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag) {
+            tag.putString("difficulty", difficultyName);
+            tag.putBoolean("locked", locked);
+            return tag;
+        }
+    }
+
+    /** ワールドからSavedDataを取得 */
+    private static DifficultyData getSavedData(ServerLevel level) {
+        return level.getDataStorage().computeIfAbsent(
+            DifficultyData::load, DifficultyData::new, "minecraft_armor_weapon_difficulty");
+    }
+
+    /** 難易度をワールドに保存 */
+    public static void saveDifficulty(ServerLevel level) {
+        DifficultyData data = getSavedData(level);
+        data.difficultyName = currentDifficulty.getName();
+        data.setDirty();
+    }
+
+    /** ロック状態を保存 */
+    public static void saveLocked(ServerLevel level, boolean locked) {
+        DifficultyData data = getSavedData(level);
+        data.locked = locked;
+        data.setDirty();
+    }
+
+    /** ロック状態を取得 */
+    public static boolean isLocked(ServerLevel level) {
+        return getSavedData(level).locked;
+    }
+
     // サーバー起動時に難易度を復元
     @SubscribeEvent
     public static void onServerStarted(net.minecraftforge.event.server.ServerStartedEvent event) {
-        net.minecraft.nbt.CompoundTag customData = event.getServer().getWorldData().getCustomBossEvents();
-        if (customData != null && customData.contains(NBT_KEY)) {
-            String savedDifficulty = customData.getString(NBT_KEY);
-            currentDifficulty = CustomDifficulty.byName(savedDifficulty);
-
-            // ベース難易度も設定
+        ServerLevel overworld = event.getServer().overworld();
+        DifficultyData data = getSavedData(overworld);
+        if (data.difficultyName != null && !data.difficultyName.isEmpty()) {
+            currentDifficulty = CustomDifficulty.byName(data.difficultyName);
             event.getServer().setDifficulty(currentDifficulty.getBaseDifficulty(), true);
-
-            System.out.println("カスタム難易度を復元: " + currentDifficulty.getName());
         }
     }
 }

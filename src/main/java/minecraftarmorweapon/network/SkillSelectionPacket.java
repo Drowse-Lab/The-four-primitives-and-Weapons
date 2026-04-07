@@ -114,6 +114,13 @@ public class SkillSelectionPacket {
             // デフォルト設定（UNIVERSAL のみ）
             if (motion.getCategory() != SkillRegistry.MotionCategory.UNIVERSAL) return;
             skillData.setMotion(attackSlot, motionId);
+            // 手持ち武器のタイプにもtypeMotionを設定（JSONデフォルトを上書き）
+            net.minecraft.world.item.ItemStack held = player.getMainHandItem();
+            minecraftarmorweapon.skill.WeaponTypeRegistry.WeaponTypeData wt =
+                    minecraftarmorweapon.skill.WeaponTypeRegistry.getTypeForItem(held);
+            if (wt != null) {
+                skillData.setTypeMotion(wt.getId(), attackSlot, motionId);
+            }
         } else {
             // 特定スロットの設定
             WeaponLoadout loadout = skillData.getLoadoutAt(loadoutIndex);

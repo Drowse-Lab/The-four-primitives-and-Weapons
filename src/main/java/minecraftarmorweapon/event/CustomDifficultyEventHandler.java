@@ -77,6 +77,14 @@ public class CustomDifficultyEventHandler {
             }
         }
 
+        // --- 敵対範囲の拡大 (aiLevelに応じて) ---
+        if (diff.getAiLevel() >= 1 && monster.getAttribute(Attributes.FOLLOW_RANGE) != null) {
+            // aiLevel 0=16(バニラ), 1=24, 2=32, 3=48, 4=64, 5=80
+            double baseRange = monster.getAttribute(Attributes.FOLLOW_RANGE).getBaseValue();
+            double newRange = baseRange + diff.getAiLevel() * 8.0;
+            monster.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(newRange);
+        }
+
         // --- バフ効果の付与 ---
         if (diff.getBuffEffectChance() > 0 && !buffApplied.contains(id)) {
             if (monster.getRandom().nextFloat() < diff.getBuffEffectChance()) {

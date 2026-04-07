@@ -51,7 +51,7 @@ public class MotionExecutor {
         Vec3 playerPos = player.position();
 
         switch (motionId) {
-            case "thrust" -> performThrust(player, world, lookVec, playerPos, chargePercent);
+            case "thrust" -> minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
             case "upper_left_slash" -> performUpperLeftSlash(player, world, lookVec, playerPos, chargePercent);
             case "upper_right_slash" -> performUpperRightSlash(player, world, lookVec, playerPos, chargePercent);
             case "horizontal_slash" -> performHorizontalSlash(player, world, lookVec, playerPos, chargePercent);

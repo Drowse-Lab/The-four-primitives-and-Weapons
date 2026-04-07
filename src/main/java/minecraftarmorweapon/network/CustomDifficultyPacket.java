@@ -46,6 +46,13 @@ public class CustomDifficultyPacket {
             if (player != null && player.hasPermissions(2)) {
                 CustomDifficulty newDifficulty = CustomDifficulty.byName(msg.difficultyName);
 
+                // ロック中は変更不可
+                ServerLevel overworld = player.serverLevel().getServer().overworld();
+                if (CustomDifficultyCommand.isLocked(overworld)) {
+                    player.sendSystemMessage(Component.literal("§c難易度はロックされています"));
+                    return;
+                }
+
                 // 難易度を設定
                 CustomDifficultyCommand.setCurrentDifficulty(newDifficulty);
 
@@ -53,11 +60,8 @@ public class CustomDifficultyPacket {
                 ServerLevel level = player.serverLevel();
                 level.getServer().setDifficulty(newDifficulty.getBaseDifficulty(), true);
 
-                // NBTに保存
-                net.minecraft.nbt.CompoundTag customData = level.getServer().getWorldData().getCustomBossEvents();
-                if (customData != null) {
-                    customData.putString("minecraft_armor_weapon:custom_difficulty", newDifficulty.getName());
-                }
+                // SavedDataに保存（ワールド再読み込みで復元される）
+                CustomDifficultyCommand.saveDifficulty(level.getServer().overworld());
 
                 // メッセージを送信
                 String message = String.format(

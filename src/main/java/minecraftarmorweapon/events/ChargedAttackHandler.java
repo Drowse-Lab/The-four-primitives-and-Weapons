@@ -511,17 +511,16 @@ public class ChargedAttackHandler {
             return;
         }
 
-        // 直刀の固有突き攻撃
-        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
-            minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.executeNormalThrust(
-                world, player.getX(), player.getY(), player.getZ(), player
-            );
-            return;
-        }
-
         // コンボカウンターを取得
         UUID playerId = player.getUUID();
         ChargeData data = playerChargeData.computeIfAbsent(playerId, k -> new ChargeData());
+
+        // コンボタイムアウト（20tick = 1秒 攻撃しないとリセット）
+        long now = world.getGameTime();
+        if (now - data.lastAttackTime > 20) {
+            data.resetCombo();
+        }
+        data.lastAttackTime = now;
 
         // コンボ段階に応じたスロットを決定
         int combo = data.comboCounter % 3;

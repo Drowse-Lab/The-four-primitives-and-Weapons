@@ -151,36 +151,6 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         int y = topPos + RADIO_ROW_Y;
         int gap = SkillSelectionMenu.WEAPON_SLOT_GAP;
 
-        // デフォルトボタン（左端）
-        int defaultBtnX = leftPos + 4;
-        addRenderableWidget(new AbstractButton(defaultBtnX, y, 42, 10,
-                Component.literal("\u30C7\u30D5\u30A9\u30EB\u30C8")) {
-            @Override
-            public void onPress() {
-                selectedLoadoutIndex = -1;
-                buildWidgets();
-            }
-
-            @Override
-            public void renderWidget(GuiGraphics g, int mx, int my, float pt) {
-                boolean selected = selectedLoadoutIndex == -1;
-                boolean hover = this.isHoveredOrFocused();
-                int bg = selected ? COLOR_BTN_SELECTED : (hover ? COLOR_BTN_HOVER : COLOR_BTN_NORMAL);
-                g.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, bg);
-                if (selected) {
-                    drawBorder(g, this.getX(), this.getY(), this.width, this.height, COLOR_BORDER);
-                }
-                g.drawCenteredString(font, this.getMessage(),
-                    this.getX() + this.width / 2, this.getY() + 2,
-                    selected ? 0x7FFF7F : 0xCCCCCC);
-            }
-
-            @Override
-            protected void updateWidgetNarration(NarrationElementOutput n) {
-                this.defaultButtonNarrationText(n);
-            }
-        });
-
         // 各武器スロット用の選択ボタン
         for (int i = 0; i < SkillSelectionMenu.WEAPON_SLOTS; i++) {
             final int slotIdx = i;
@@ -192,7 +162,8 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                 public void onPress() {
                     ItemStack weapon = menu.getSlot(slotIdx).getItem();
                     if (!weapon.isEmpty()) {
-                        selectedLoadoutIndex = (selectedLoadoutIndex == slotIdx) ? -1 : slotIdx;
+                        selectedLoadoutIndex = slotIdx;
+                    selectedTypeId = null;
                         buildWidgets();
                     }
                 }
@@ -356,6 +327,15 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                             MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
                                 SkillSelectionPacket.selectLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId())
                             );
+                            // クライアント側もtypeMotionを即時反映（緑ハイライト用）
+                            if (minecraft != null && minecraft.player != null) {
+                                ItemStack held = minecraft.player.getMainHandItem();
+                                WeaponTypeRegistry.WeaponTypeData wt = WeaponTypeRegistry.getTypeForItem(held);
+                                if (wt != null) {
+                                    PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(minecraft.player);
+                                    if (sd != null) sd.setTypeMotion(wt.getId(), finalSlot, finalMotion.getId());
+                                }
+                            }
                         } else {
                             menu.setLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId());
                             MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
@@ -416,13 +396,29 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
 
     private String getCurrentMotion(AttackSlot slot) {
         if (selectedTypeId != null) {
-            // タイプ選択中
+            // タイプ選択中: タイプ設定 → JSONデフォルト → グローバルデフォルト
             if (minecraft != null && minecraft.player != null) {
                 PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(minecraft.player);
-                if (sd != null) return sd.getTypeMotion(selectedTypeId, slot);
+                if (sd != null) {
+                    // プレイヤーが明示的に設定したタイプモーションがあればそれを使用
+                    String typeMotion = sd.getTypeMotion(selectedTypeId, slot);
+                    // getTypeMotionはグローバルデフォルトにフォールバックするが、
+                    // JSONデフォルトも考慮する
+                    return typeMotion;
+                }
             }
             return "";
         } else if (selectedLoadoutIndex == -1) {
+            // デフォルトモード: 手持ち武器のタイプがあればその設定を反映
+            if (minecraft != null && minecraft.player != null) {
+                ItemStack held = minecraft.player.getMainHandItem();
+                if (!held.isEmpty()) {
+                    PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(minecraft.player);
+                    if (sd != null) {
+                        return sd.getMotionForWeapon(slot, held);
+                    }
+                }
+            }
             return menu.getDefaultMotion(slot);
         } else {
             return menu.getLoadoutMotion(selectedLoadoutIndex, slot);
@@ -468,15 +464,11 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
             WeaponTypeRegistry.WeaponTypeData typeData = WeaponTypeRegistry.getType(selectedTypeId);
             String typeName = typeData != null ? typeData.getDisplayName() : selectedTypeId;
             editingLabel = "[ " + typeName + " ]";
-        } else if (selectedLoadoutIndex == -1) {
-            editingLabel = "[ \u30C7\u30D5\u30A9\u30EB\u30C8\u8A2D\u5B9A ]";
-        } else {
+        } else if (selectedLoadoutIndex >= 0) {
             ItemStack weapon = menu.getSlot(selectedLoadoutIndex).getItem();
-            if (!weapon.isEmpty()) {
-                editingLabel = "[ " + weapon.getHoverName().getString() + " ]";
-            } else {
-                editingLabel = "[ \u30C7\u30D5\u30A9\u30EB\u30C8\u8A2D\u5B9A ]";
-            }
+            editingLabel = !weapon.isEmpty() ? "[ " + weapon.getHoverName().getString() + " ]" : "";
+        } else {
+            editingLabel = "";
         }
         g.drawCenteredString(font, Component.literal(editingLabel),
             leftPos + imageWidth / 2, divY + 2, 0xFFAACCFF);

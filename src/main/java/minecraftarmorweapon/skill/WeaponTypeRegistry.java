@@ -48,13 +48,16 @@ public class WeaponTypeRegistry extends SimplePreparableReloadListener<Map<Strin
         private final String id;
         private final String displayName;
         private final List<String> items;
-        private final Map<String, List<String>> motions; // "combat"/"dash"/"right_click"/"shift_right_click"
+        private final Map<String, List<String>> motions;
+        private final Map<String, String> defaultMotions; // slot_id → motion_id
 
-        public WeaponTypeData(String id, String displayName, List<String> items, Map<String, List<String>> motions) {
+        public WeaponTypeData(String id, String displayName, List<String> items,
+                              Map<String, List<String>> motions, Map<String, String> defaultMotions) {
             this.id = id;
             this.displayName = displayName;
             this.items = items;
             this.motions = motions;
+            this.defaultMotions = defaultMotions;
         }
 
         public String getId() { return id; }
@@ -80,6 +83,13 @@ public class WeaponTypeRegistry extends SimplePreparableReloadListener<Map<Strin
                 default:
                     return Collections.emptyList();
             }
+        }
+
+        /**
+         * 指定AttackSlotのデフォルトモーションIDを返す（未定義ならnull）
+         */
+        public String getDefaultMotion(AttackSlot slot) {
+            return defaultMotions.get(slot.getId());
         }
     }
 
@@ -211,7 +221,15 @@ public class WeaponTypeRegistry extends SimplePreparableReloadListener<Map<Strin
             }
         }
 
-        return new WeaponTypeData(id, displayName, items, motions);
+        Map<String, String> defaultMotions = new HashMap<>();
+        if (obj.has("default_motions")) {
+            JsonObject defObj = obj.getAsJsonObject("default_motions");
+            for (Map.Entry<String, JsonElement> entry : defObj.entrySet()) {
+                defaultMotions.put(entry.getKey(), entry.getValue().getAsString());
+            }
+        }
+
+        return new WeaponTypeData(id, displayName, items, motions, defaultMotions);
     }
 
     private static SpecialWeaponData parseSpecialWeapon(JsonObject obj) {

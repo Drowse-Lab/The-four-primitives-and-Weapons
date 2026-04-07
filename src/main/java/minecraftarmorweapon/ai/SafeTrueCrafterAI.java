@@ -693,8 +693,11 @@ public class SafeTrueCrafterAI {
         
         // ドア破壊能力（ティアが高いほど確率上昇）
         zombie.setCanBreakDoors(tier > 0 || random.nextFloat() < 0.3f);
-        
-        // AIゴールの追加は避ける（ConcurrentModificationExceptionを防ぐため）
+
+        // 強化データを作成（ブロック設置/破壊で必要）
+        MobEnhancementData data = enhancementData.computeIfAbsent(zombie.getUUID(), k -> new MobEnhancementData());
+        data.isEnhanced = true;
+        data.mobTier = tier;
     }
     
     private static void enhanceSpider(Spider spider) {
@@ -710,9 +713,10 @@ public class SafeTrueCrafterAI {
             spider.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(5.0);
         }
         
-        // AIゴールの追加は避ける（ConcurrentModificationExceptionを防ぐため）
+        // 強化データを作成
+        enhancementData.computeIfAbsent(spider.getUUID(), k -> new MobEnhancementData()).isEnhanced = true;
     }
-    
+
     private static void enhanceCreeper(Creeper creeper) {
         // ステータス強化
         if (creeper.getAttribute(Attributes.MAX_HEALTH) != null) {
@@ -725,8 +729,10 @@ public class SafeTrueCrafterAI {
         if (creeper.getAttribute(Attributes.FOLLOW_RANGE) != null) {
             creeper.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(20.0);
         }
+        // 強化データを作成
+        enhancementData.computeIfAbsent(creeper.getUUID(), k -> new MobEnhancementData()).isEnhanced = true;
     }
-    
+
     private static void enhanceWitch(Witch witch) {
         // ステータス強化
         if (witch.getAttribute(Attributes.MAX_HEALTH) != null) {
@@ -736,8 +742,10 @@ public class SafeTrueCrafterAI {
         if (witch.getAttribute(Attributes.MOVEMENT_SPEED) != null) {
             witch.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.3);
         }
+        // 強化データを作成
+        enhancementData.computeIfAbsent(witch.getUUID(), k -> new MobEnhancementData()).isEnhanced = true;
     }
-    
+
     // 毎ティック更新処理
     @SubscribeEvent
     public static void onLivingUpdate(LivingEvent.LivingTickEvent event) {
@@ -846,6 +854,11 @@ public class SafeTrueCrafterAI {
             double horizontalDist = Math.sqrt(toTargetX * toTargetX + toTargetZ * toTargetZ);
             double yDiff = commonTarget.getY() - monster.getY();
             double distSq = monster.distanceToSqr(commonTarget);
+
+            // === 最短距離追跡: 10tickごとにパスを強制更新 ===
+            if (monster.tickCount % 10 == 0 && horizontalDist > 1.5) {
+                monster.getNavigation().moveTo(commonTarget, 1.0);
+            }
 
             // === スプリント (AtomicStryker MM_Sprint方式: 1.5x速度バースト) ===
             if (data.sprintCooldown == 0 && horizontalDist > 5.0 && horizontalDist < 32.0
@@ -958,7 +971,7 @@ public class SafeTrueCrafterAI {
                             float hardness = state.getDestroySpeed(monster.level(), checkPos);
                             int breakTime = (int)(hardness * 5) + 10;
                             if (data.blockBreakProgress >= breakTime) {
-                                monster.level().destroyBlock(checkPos, true);
+                                monster.level().destroyBlock(checkPos, false);
                                 if (monster.level() instanceof ServerLevel serverLevel) {
                                     serverLevel.destroyBlockProgress(monster.getId(), checkPos, -1);
                                 }
@@ -1384,9 +1397,8 @@ public class SafeTrueCrafterAI {
                     // すべてのワールドで削除を試みる
                     event.getServer().getAllLevels().forEach(level -> {
                         BlockState state = level.getBlockState(pos);
-                        if (state.is(Blocks.COBBLESTONE) || state.is(Blocks.COBWEB)) {
-                            // パーティクルを出しながら削除
-                            level.destroyBlock(pos, false); // falseでアイテムドロップなし
+                        if (state.is(Blocks.COBBLESTONE) || state.is(Blocks.MOSSY_COBBLESTONE) || state.is(Blocks.COBWEB)) {
+                            level.destroyBlock(pos, false);
                         }
                     });
                     iterator.remove();

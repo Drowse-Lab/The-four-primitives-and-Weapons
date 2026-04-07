@@ -18,6 +18,8 @@ import minecraftarmorweapon.command.CustomDifficultyCommand;
 import minecraftarmorweapon.command.CustomDifficultyCommand.CustomDifficulty;
 import minecraftarmorweapon.network.CustomDifficultyPacket;
 
+import net.minecraft.client.gui.components.LockIconButton;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +29,7 @@ public class ClientEventHandler {
 
     private static final CustomDifficulty[] DIFFICULTIES = CustomDifficulty.values();
     private static int currentDifficultyIndex = 2; // デフォルト: NORMAL
+    private static boolean difficultyLocked = false;
 
     @SubscribeEvent
     public static void onScreenInit(ScreenEvent.Init.Post event) {
@@ -60,27 +63,34 @@ public class ClientEventHandler {
                 int y = difficultyWidget.getY();
                 int h = difficultyWidget.getHeight();
 
-                // 難易度ボタン自体を非表示
-                difficultyWidget.visible = false;
-                difficultyWidget.active = false;
-
-                // 難易度ボタンのX以降（右側）にある同じY座標のウィジェットも非表示（ロックボタン）
+                // バニラのロックボタンを探す（難易度ボタンの右隣）
+                AbstractWidget vanillaLockWidget = null;
                 for (var listener : event.getListenersList()) {
                     if (listener instanceof AbstractWidget widget && widget != difficultyWidget) {
                         if (widget.getY() == y && widget.getX() >= x) {
-                            widget.visible = false;
-                            widget.active = false;
+                            vanillaLockWidget = widget;
+                            break;
                         }
                     }
                 }
 
-                // 難易度ボタンと同じ位置、右端までの幅でカスタムボタンを配置
+                // バニラの難易度ボタンとロックボタンを非表示
+                difficultyWidget.visible = false;
+                difficultyWidget.active = false;
+                if (vanillaLockWidget != null) {
+                    vanillaLockWidget.visible = false;
+                    vanillaLockWidget.active = false;
+                }
+
+                // カスタム難易度ボタン（ロックボタンの幅20を引く）
                 int rightEdge = optionsScreen.width / 2 + 155;
-                int w = rightEdge - x;
+                int lockSize = 20;
+                int w = rightEdge - x - lockSize;
 
                 Button customDiffButton = Button.builder(
                         Component.literal(getDifficultyDisplayName()),
                         btn -> {
+                            if (difficultyLocked) return; // ロック中は変更不可
                             currentDifficultyIndex = (currentDifficultyIndex + 1) % DIFFICULTIES.length;
                             CustomDifficulty newDiff = DIFFICULTIES[currentDifficultyIndex];
                             btn.setMessage(Component.literal(getDifficultyDisplayName()));
@@ -94,6 +104,24 @@ public class ClientEventHandler {
                         .bounds(x, y, w, h)
                         .build();
                 event.addListener(customDiffButton);
+
+                // ロックボタン（難易度ボタンの右隣）
+                LockIconButton lockButton = new LockIconButton(
+                        x + w, y,
+                        btn -> {
+                            difficultyLocked = !difficultyLocked;
+                            ((LockIconButton) btn).setLocked(difficultyLocked);
+                            customDiffButton.active = !difficultyLocked;
+                            // サーバーにロック状態を送信
+                            if (Minecraft.getInstance().player != null) {
+                                String cmd = "gamerule difficulty_lock " + (difficultyLocked ? "true" : "false");
+                                Minecraft.getInstance().player.connection.sendUnsignedCommand(cmd);
+                            }
+                        }
+                );
+                lockButton.setLocked(difficultyLocked);
+                customDiffButton.active = !difficultyLocked;
+                event.addListener(lockButton);
             }
         }
     }

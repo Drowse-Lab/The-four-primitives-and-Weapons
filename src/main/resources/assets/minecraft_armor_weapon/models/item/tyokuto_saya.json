@@ -12,7 +12,18 @@
 				"custom_model_data": 1
 			},
 			"model": "minecraft_armor_weapon:custom/saya_luna"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 4
+			},
+			"model": "minecraft_armor_weapon:custom/saya_iron_tyokuto"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 5
+			},
+			"model": "minecraft_armor_weapon:custom/saya_gold_tyokuto"
 		}
-		
 	]
 }

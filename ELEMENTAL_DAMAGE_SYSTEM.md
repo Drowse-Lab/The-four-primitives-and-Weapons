@@ -132,9 +132,76 @@ if (ElementalDamageUtils.hasElement(weapon)) {
 ```
 
 ### テスト方法
-1. ゲーム内でテストアイテムを入手: `/give @p minecraft_armor_weapon:ice_test_katana`
-2. アイテムのツールチップに「氷属性 II」と表示されることを確認
-3. モブを攻撃して属性ダメージが適用されることを確認
+
+#### テストコマンド一覧 (`/test`)
+
+| コマンド | 説明 |
+|---|---|
+| `/test element <属性> [レベル]` | 手持ち武器に属性を付与 |
+| `/test elementall [レベル]` | 全属性のダイヤ剣をインベントリに追加 |
+| `/test damage <ダメージ量> <属性> [レベル]` | 最寄りMobに属性ダメージ |
+| `/test damageall <ダメージ量> [レベル]` | 最寄りMobに全属性ダメージを順番に |
+| `/test dps <属性> <レベル> <秒数>` | DPSテスト |
+| `/test debugmob` | デバッグMob（サンドバッグ）をスポーン |
+| `/test trait <特性名>` | 特性付きゾンビをスポーン |
+| `/test traitall` | 全13特性のゾンビを円形にスポーン |
+| `/test heal` | 自分を全回復（HP/空腹/デバフ解除） |
+| `/test god` | 無敵モード切替 |
+| `/test difficulty <難易度>` | 難易度変更 |
+| `/test info` | 現在のMOD設定を表示 |
+| `/test clear [半径]` | 周囲のMobを全削除 |
+
+#### 属性ダメージコマンド (`/damage`)
+
+```
+/damage <対象> <ダメージ量> <属性名> [レベル]
+```
+
+例:
+```
+/damage @e[type=zombie,limit=1] 20 holy 5
+/damage @p 10 ice 3
+/damage @e[type=skeleton] 50 electric 10
+```
+
+#### 属性武器の入手
+
+手持ち武器に属性を付与:
+```
+/test element holy 10
+/test element ice 5
+/test element electric 3
+```
+
+全属性の剣を一括入手:
+```
+/test elementall 5
+```
+
+giveコマンドでNBT指定:
+```
+/give @p minecraft:diamond_sword{ElementType:"HOLY",ElementLevel:10}
+/give @p minecraft_armor_weapon:old_katana{ElementType:"ICE",ElementLevel:5}
+```
+
+#### 属性ダメージの確認方法
+
+1. `/test debugmob` でサンドバッグMobをスポーン
+2. 属性武器で殴る → チャットに以下が表示される:
+   - `[Debug] ダメージ: 10.0 (種類: player) HP: 1014.0/1024`
+   - `[Debug] 属性: HOLY Lv.10 (武器NBT)`
+   - `[Debug] 属性DmgSrc: HOLY Lv.10 5.0ダメージ`
+3. または `/test damage 20 holy 5` で直接属性ダメージを与えて確認
+
+#### 不死特性の貫通テスト
+
+1. `/test trait undying` で不死ゾンビをスポーン
+2. `/test element holy 10` で手持ち武器にHOLYを付与
+3. 殴ってトーテムが発動せず死亡すれば成功
+
+#### 使用可能な属性名
+`ice`, `electric`, `thunder`, `corrosion`, `holy`, `dark`, `fire`, `wind`, `water`, `miasma`
+(大文字小文字どちらでもOK)
 
 ## 既存システムとの統合
 

@@ -248,7 +248,7 @@ public class PlayerSkillData {
                     }
                 }
 
-                // 2. 武器タイプ別設定を確認
+                // 2. 武器タイプ別のプレイヤー設定を確認
                 WeaponTypeRegistry.WeaponTypeData typeData = WeaponTypeRegistry.getTypeForItem(heldItem);
                 if (typeData != null) {
                     Map<AttackSlot, String> typeSetting = typeMotions.get(typeData.getId());

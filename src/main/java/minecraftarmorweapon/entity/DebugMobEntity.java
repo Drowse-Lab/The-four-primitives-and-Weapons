@@ -17,6 +17,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import minecraftarmorweapon.damage.ElementType;
+import minecraftarmorweapon.damage.ElementalDamageUtils;
+import minecraftarmorweapon.damage.IElementalDamageSource;
 
 /**
  * デバッグ用Mob（サンドバッグ）
@@ -61,10 +64,36 @@ public class DebugMobEntity extends PathfinderMob {
             float currentHP = this.getHealth();
             float maxHP = this.getMaxHealth();
 
+            // 基本ダメージ表示
             player.displayClientMessage(Component.literal(
                 String.format("§a[Debug] §fダメージ: §c%.1f §7(種類: %s) §fHP: §e%.1f§7/§e%.0f",
                     amount, damageType, currentHP, maxHP)
             ), false);
+
+            // 属性ダメージ表示: 攻撃者の武器の属性をチェック
+            ItemStack weapon = player.getMainHandItem();
+            if (ElementalDamageUtils.hasElement(weapon)) {
+                ElementType elemType = ElementalDamageUtils.getElementType(weapon);
+                int elemLevel = ElementalDamageUtils.getElementLevel(weapon);
+                String elemColor = getElementColor(elemType);
+                player.displayClientMessage(Component.literal(
+                    String.format("§a[Debug] §f属性: %s%s Lv.%d §7(武器NBT)",
+                        elemColor, elemType.getName().toUpperCase(), elemLevel)
+                ), false);
+            }
+
+            // DamageSource自体に属性が付いている場合（属性追加ダメージ等）
+            if (source instanceof IElementalDamageSource elemSource) {
+                ElementType srcType = elemSource.getElementType();
+                if (srcType != null && srcType != ElementType.NONE) {
+                    int srcLevel = elemSource.getElementLevel();
+                    String srcColor = getElementColor(srcType);
+                    player.displayClientMessage(Component.literal(
+                        String.format("§a[Debug] §f属性DmgSrc: %s%s Lv.%d §c%.1fダメージ",
+                            srcColor, srcType.getName().toUpperCase(), srcLevel, amount)
+                    ), false);
+                }
+            }
 
             // HPをリセット（サンドバッグなので常に満タン）
             this.setHealth(this.getMaxHealth());
@@ -186,6 +215,22 @@ public class DebugMobEntity extends PathfinderMob {
     @Override
     public boolean removeWhenFarAway(double distance) {
         return false;
+    }
+
+    private static String getElementColor(ElementType type) {
+        switch (type) {
+            case ICE:       return "§b";  // 水色
+            case ELECTRIC:  return "§e";  // 黄色
+            case THUNDER:   return "§e";  // 黄色
+            case CORROSION: return "§5";  // 紫
+            case HOLY:      return "§6";  // 金
+            case DARK:      return "§8";  // 灰
+            case FIRE:      return "§c";  // 赤
+            case WIND:      return "§a";  // 緑
+            case WATER:     return "§9";  // 青
+            case MIASMA:    return "§5";  // 暗紫
+            default:        return "§7";  // グレー
+        }
     }
 
     public static void init() {

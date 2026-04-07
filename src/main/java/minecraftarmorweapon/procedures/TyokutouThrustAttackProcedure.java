@@ -32,7 +32,9 @@ public class TyokutouThrustAttackProcedure {
         "KaminariKurikarakenTyokutouItem",
         "KurikarakenutigatanaItem",
         "KurikarakenswordItem",
-        "KurikarakenItem"
+        "KurikarakenItem",
+        "IronTyokutoItem",
+        "GoldTyokutoItem"
         // ここに他の直刀アイテムを追加
         // TyokutouSayaItemは鞘なので除外
     );

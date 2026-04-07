@@ -154,6 +154,8 @@ public class TyokutoSayaItem extends Item implements ICurioItem {
         if (itemName.equals("LunaItem")) return 1;
         if (itemName.equals("BluepurgeTyokutouItem")) return 2;
         if (itemName.equals("KaminariKurikarakenTyokutouItem")) return 3;
+        if (itemName.equals("IronTyokutoItem")) return 4;
+        if (itemName.equals("GoldTyokutoItem")) return 5;
 
         // BluepurgeItemの場合、custom_model_dataをチェック
         if (itemName.equals("BluepurgeItem")) {
