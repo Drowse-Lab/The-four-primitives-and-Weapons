@@ -78,11 +78,17 @@ public class ElementalTooltipEvent {
      */
     private static String getElementTranslationKey(ElementType type) {
         switch (type) {
-            case ICE: return "tooltip.minecraft_armor_weapon.element.ice";
-            case ELECTRIC: return "tooltip.minecraft_armor_weapon.element.electric";
+            case ICE:       return "tooltip.minecraft_armor_weapon.element.ice";
+            case FIRE:      return "tooltip.minecraft_armor_weapon.element.fire";
+            case WATER:     return "tooltip.minecraft_armor_weapon.element.water";
+            case WIND:      return "tooltip.minecraft_armor_weapon.element.wind";
+            case THUNDER:   return "tooltip.minecraft_armor_weapon.element.thunder";
+            case DARK:      return "tooltip.minecraft_armor_weapon.element.dark";
+            case ELECTRIC:  return "tooltip.minecraft_armor_weapon.element.electric";
             case CORROSION: return "tooltip.minecraft_armor_weapon.element.corrosion";
-            case HOLY: return "tooltip.minecraft_armor_weapon.element.holy";
-            case MIASMA: return "tooltip.minecraft_armor_weapon.element.miasma";
+            case HOLY:      return "tooltip.minecraft_armor_weapon.element.holy";
+            case ERROR:     return "tooltip.minecraft_armor_weapon.element.error";
+            case MIASMA:    return "tooltip.minecraft_armor_weapon.element.miasma";
             default: return "";
         }
     }
@@ -92,11 +98,17 @@ public class ElementalTooltipEvent {
      */
     private static String getElementColorHex(ElementType type) {
         switch (type) {
-            case ICE: return "#55FFFF";        // 水色
-            case ELECTRIC: return "#FFFF55";   // 黄色
-            case CORROSION: return "#8B00FF";  // ピンク
-            case HOLY: return "#FFAA00";       // 金色
-            case MIASMA: return "#550088";     // 暗紫
+            case ICE:       return "#55FFFF";  // 水色
+            case FIRE:      return "#FF5555";  // 赤
+            case WATER:     return "#5555FF";  // 青
+            case WIND:      return "#55FF55";  // 緑
+            case THUNDER:   return "#FFFF55";  // 黄色
+            case DARK:      return "#AA00AA";  // 紫
+            case ELECTRIC:  return "#FFFF55";  // 黄色
+            case CORROSION: return "#8B00FF";  // 紫
+            case HOLY:      return "#FFAA00";  // 金色
+            case ERROR:     return "#FF0000";  // 赤
+            case MIASMA:    return "#550088";  // 暗紫
             default: return "#AAAAAA";         // グレー
         }
     }

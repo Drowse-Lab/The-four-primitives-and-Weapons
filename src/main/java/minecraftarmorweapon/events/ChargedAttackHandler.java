@@ -239,8 +239,8 @@ public class ChargedAttackHandler {
         if (isWeapon(mainHand)) {
             boolean isLeftClickHeld = mc.options.keyAttack.isDown();
             
-            // 左クリックが押された瞬間を検出（通常攻撃）
-            if (isLeftClickHeld && !data.wasLeftClickPressed) {
+            // 左クリックが押された瞬間を検出（通常攻撃）— チャージ中は送らない
+            if (isLeftClickHeld && !data.wasLeftClickPressed && !data.isCharging) {
                 data.clickReleaseTimer = 0;
                 // サーバーに攻撃パケットを送信
                 MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new AttackPacket(0, 0));
@@ -386,12 +386,6 @@ public class ChargedAttackHandler {
         // SwordOfNightの固有スキル（テレポート攻撃）
         if (itemName.equals("SwordOfNightItem") && skillData.isUniqueSkillEnabled("SwordOfNight")) {
             SwordOfNightTpProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
-            return;
-        }
-
-        // 直刀のチャージ突進攻撃
-        if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
-            performChargedThrust(player, world, lookVec, playerPos, chargePercent, isCooldown);
             return;
         }
 

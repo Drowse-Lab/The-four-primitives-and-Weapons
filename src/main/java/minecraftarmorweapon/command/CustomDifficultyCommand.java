@@ -146,7 +146,7 @@ public class CustomDifficultyCommand {
                 .executes(context -> {
                     // 現在の難易度を表示
                     context.getSource().sendSuccess(() ->
-                        Component.literal("現在の難易度: " + currentDifficulty.getName()),
+                        Component.translatable("difficulty.minecraft_armor_weapon.current", currentDifficulty.getName()),
                         false
                     );
                     return 1;
@@ -166,14 +166,15 @@ public class CustomDifficultyCommand {
         dispatcher.register(Commands.literal("gamerule")
             .requires(source -> source.hasPermission(2))
             .then(Commands.literal("difficulty_lock")
-                .then(Commands.argument("value", net.minecraft.commands.arguments.StringArgumentType.word())
+                .then(Commands.argument("value", com.mojang.brigadier.arguments.StringArgumentType.word())
                     .executes(context -> {
                         String val = StringArgumentType.getString(context, "value");
                         boolean locked = "true".equalsIgnoreCase(val);
                         ServerLevel overworld = context.getSource().getLevel().getServer().overworld();
                         saveLocked(overworld, locked);
                         context.getSource().sendSuccess(() ->
-                            Component.literal("§6難易度ロック: " + (locked ? "§cON" : "§aOFF")), true);
+                            Component.literal("§6").append(Component.translatable("difficulty.minecraft_armor_weapon.lock"))
+                                .append(Component.literal(locked ? "§cON" : "§aOFF")), true);
                         return 1;
                     })
                 )
@@ -190,7 +191,7 @@ public class CustomDifficultyCommand {
                 .executes(context -> {
                     context.getSource().getLevel().getServer().setDifficulty(diff, true);
                     context.getSource().sendSuccess(() ->
-                        Component.literal("難易度を " + diff.getKey() + " に設定しました"),
+                        Component.translatable("difficulty.minecraft_armor_weapon.vanilla_set", diff.getKey()),
                         true
                     );
                     return 1;
@@ -210,7 +211,7 @@ public class CustomDifficultyCommand {
         CustomDifficulty newDifficulty = CustomDifficulty.byName(difficultyName);
 
         if (newDifficulty == null) {
-            source.sendFailure(Component.literal("不明な難易度: " + difficultyName));
+            source.sendFailure(Component.translatable("difficulty.minecraft_armor_weapon.unknown", difficultyName));
             return 0;
         }
 
@@ -225,47 +226,47 @@ public class CustomDifficultyCommand {
 
         // 難易度変更の詳細表示
         String color = newDifficulty.getColorCode();
-        source.sendSuccess(() -> Component.literal(
-            color + "§l=== 難易度を " + newDifficulty.getName().toUpperCase() + " に設定 ==="
-        ), true);
+        source.sendSuccess(() -> Component.literal(color + "§l")
+            .append(Component.translatable("difficulty.minecraft_armor_weapon.set", newDifficulty.getName().toUpperCase())),
+            true);
 
-        source.sendSuccess(() -> Component.literal(String.format(
-            "§7Mobダメージ倍率: §e%.1fx §7| MobHP倍率: §e%.2fx §7| AI Lv: §e%d",
-            newDifficulty.getDamageMultiplier(),
-            newDifficulty.getHealthMultiplier(),
-            newDifficulty.getAiLevel()
-        )), false);
+        source.sendSuccess(() -> Component.literal("§7")
+            .append(Component.translatable("difficulty.minecraft_armor_weapon.stats",
+                newDifficulty.getDamageMultiplier(),
+                newDifficulty.getHealthMultiplier(),
+                newDifficulty.getAiLevel())),
+            false);
 
         if (newDifficulty.getAiLevel() > 0) {
-            StringBuilder features = new StringBuilder("§7有効な機能: ");
+            var features = Component.literal("§7").append(Component.translatable("difficulty.minecraft_armor_weapon.features"));
             if (newDifficulty.getEliteSpawnChance() > 0)
-                features.append("§aエリート出現 ");
+                features.append(Component.literal("§a")).append(Component.translatable("difficulty.minecraft_armor_weapon.feature.elite"));
             if (newDifficulty.getReinforceChance() > 0)
-                features.append("§a援軍 ");
+                features.append(Component.literal("§a")).append(Component.translatable("difficulty.minecraft_armor_weapon.feature.reinforce"));
             if (newDifficulty.getBuffEffectChance() > 0)
-                features.append("§aバフ効果 ");
+                features.append(Component.literal("§a")).append(Component.translatable("difficulty.minecraft_armor_weapon.feature.buff"));
             if (newDifficulty.isBlockPlaceEnabled())
-                features.append("§eブロック設置 ");
+                features.append(Component.literal("§e")).append(Component.translatable("difficulty.minecraft_armor_weapon.feature.block_place"));
             if (newDifficulty.isBlockBreakEnabled())
-                features.append("§eブロック破壊 ");
+                features.append(Component.literal("§e")).append(Component.translatable("difficulty.minecraft_armor_weapon.feature.block_break"));
             if (newDifficulty.isWallSenseEnabled())
-                features.append("§c壁越し感知 ");
+                features.append(Component.literal("§c")).append(Component.translatable("difficulty.minecraft_armor_weapon.feature.wall_sense"));
             if (newDifficulty.isFallDmgImmune())
-                features.append("§c落下耐性 ");
+                features.append(Component.literal("§c")).append(Component.translatable("difficulty.minecraft_armor_weapon.feature.fall_immune"));
             if (!newDifficulty.isBedSleepEnabled())
-                features.append("§4ベッド睡眠無効 ");
-            source.sendSuccess(() -> Component.literal(features.toString()), false);
+                features.append(Component.literal("§4")).append(Component.translatable("difficulty.minecraft_armor_weapon.feature.no_bed"));
+            source.sendSuccess(() -> features, false);
         }
 
         // 高難易度の警告
         if (newDifficulty.getAiLevel() >= 4) {
-            source.sendSuccess(() -> Component.literal(
-                "§4§l⚠ 警告: 極めて高い難易度です！Mobが非常に強化されます！"
-            ), false);
+            source.sendSuccess(() -> Component.literal("§4§l")
+                .append(Component.translatable("difficulty.minecraft_armor_weapon.warning.extreme")),
+                false);
         } else if (newDifficulty.getAiLevel() >= 2) {
-            source.sendSuccess(() -> Component.literal(
-                "§c警告: Mobが強化されます"
-            ), false);
+            source.sendSuccess(() -> Component.literal("§c")
+                .append(Component.translatable("difficulty.minecraft_armor_weapon.warning.hard")),
+                false);
         }
 
         return 1;

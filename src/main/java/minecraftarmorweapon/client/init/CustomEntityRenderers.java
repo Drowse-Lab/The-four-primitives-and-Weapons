@@ -35,5 +35,9 @@ public class CustomEntityRenderers {
         event.registerEntityRenderer(CustomEntityInit.SINGULARITY.get(), SingularityRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.HEROIC_TIER.get(), HeroicTierRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.DEBUG_MOB.get(), DebugMobRenderer::new);
+
+        // Gate飛び道具（切先が進行方向を向く金の直刀）
+        event.registerEntityRenderer(minecraftarmorweapon.init.MinecraftArmorWeaponModEntities.GATE_PROJECTILE.get(),
+                minecraftarmorweapon.client.renderer.GateProjectileRenderer::new);
     }
 }

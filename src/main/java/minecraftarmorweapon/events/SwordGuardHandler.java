@@ -58,6 +58,15 @@ public class SwordGuardHandler {
         ItemStack mainHand = player.getMainHandItem();
         if (!(mainHand.getItem() instanceof SwordItem)) return;
 
+        // スキル選択でShift+右クリックが「なし」なら ガードしない
+        minecraftarmorweapon.skill.PlayerSkillData.SkillStorage skillData =
+                minecraftarmorweapon.skill.PlayerSkillData.getSkillData(player);
+        if (skillData != null) {
+            String shiftMotion = skillData.getMotionForWeapon(
+                    minecraftarmorweapon.skill.PlayerSkillData.AttackSlot.SHIFT_RIGHT_CLICK, mainHand);
+            if ("none_shift".equals(shiftMotion)) return;
+        }
+
         CompoundTag data = player.getPersistentData();
 
         // 既にガード中なら無視

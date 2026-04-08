@@ -91,6 +91,9 @@ public class SafeTrueCrafterAI {
         int leapCooldownAll = 0;     // 全モンスター共通リープCD
         boolean isSprinting = false;  // スプリント中か
         int sprintDuration = 0;       // スプリント残り時間
+
+        // ターゲット記憶（最大難易度で一度敵対したらずっと追跡）
+        UUID lastTargetUUID = null;
     }
     
     // 革防具に色を付けるヘルパーメソッド
@@ -842,6 +845,30 @@ public class SafeTrueCrafterAI {
         // ============================
         CustomDifficulty diff = CustomDifficultyCommand.getCurrentDifficulty();
         LivingEntity commonTarget = monster.getTarget();
+
+        // 最大難易度(aiLevel 5): 一度敵対したら絶対に忘れない
+        if (diff.getAiLevel() >= 5 && commonTarget == null && data.lastTargetUUID != null) {
+            // 前回のターゲットを再取得
+            if (monster.level() instanceof ServerLevel serverLevel) {
+                var entity = serverLevel.getEntity(data.lastTargetUUID);
+                if (entity instanceof LivingEntity lastTarget && lastTarget.isAlive()) {
+                    monster.setTarget(lastTarget);
+                    commonTarget = lastTarget;
+                }
+            }
+        }
+        // ターゲットを記憶
+        if (commonTarget != null) {
+            data.lastTargetUUID = commonTarget.getUUID();
+        }
+
+        // aiLevel 4以上: ターゲットを見失いにくい（追跡範囲外でも維持）
+        if (diff.getAiLevel() >= 4 && commonTarget != null && commonTarget.isAlive()) {
+            // FOLLOW_RANGEを超えてもターゲットを維持（128ブロックまで）
+            if (monster.distanceToSqr(commonTarget) < 128.0 * 128.0) {
+                monster.setTarget(commonTarget);
+            }
+        }
 
         // スプリント/リープのクールダウン減少
         if (data.sprintCooldown > 0) data.sprintCooldown--;

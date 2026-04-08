@@ -268,6 +268,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> MAGIC_POT = block(MinecraftArmorWeaponModBlocks.MAGIC_POT, MinecraftArmorWeaponModTabs.TAB_MAGIC_BOOKS);
 	public static final RegistryObject<Item> FLYING_ATTACKER_SPAWN_EGG = REGISTRY.register("flying_attacker_spawn_egg",
 			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.FLYING_ATTACKER, -1, -1, new Item.Properties()));
+	public static final RegistryObject<Item> GATE = REGISTRY.register("gate", () -> new minecraftarmorweapon.item.GateItem());
 	public static final RegistryObject<Item> IMMORTAL_CORE = REGISTRY.register("immortal_core", () -> new minecraftarmorweapon.item.ImmortalCoreItem());
 	public static final RegistryObject<Item> RARITY_CHARM = REGISTRY.register("rarity_charm", () -> new minecraftarmorweapon.item.RarityCharmItem());
 	public static final RegistryObject<Item> IRON_TYOKUTO = REGISTRY.register("iron_tyokuto", () -> new minecraftarmorweapon.item.IronTyokutoItem());

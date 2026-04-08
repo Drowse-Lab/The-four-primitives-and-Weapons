@@ -95,6 +95,8 @@ public class PlayerSkillData {
             motions.put(AttackSlot.THIRD_HIT, "horizontal_slash");
             motions.put(AttackSlot.CHARGED, "spin_slash");
             motions.put(AttackSlot.DASH, "dash_rush");
+            motions.put(AttackSlot.RIGHT_CLICK, "dodge");
+            motions.put(AttackSlot.SHIFT_RIGHT_CLICK, "guard");
         }
 
         // NBT復元用
@@ -240,6 +242,10 @@ public class PlayerSkillData {
          */
         public String getMotionForWeapon(AttackSlot slot, ItemStack heldItem) {
             if (!heldItem.isEmpty()) {
+                // 0. 武器NBTの技設定を最優先（アイテムに直接保存された設定）
+                String nbtMotion = WeaponSkillNBT.getMotion(heldItem, slot);
+                if (nbtMotion != null) return nbtMotion;
+
                 // 1. 武器スロットの個別設定を確認
                 String weaponClass = heldItem.getItem().getClass().getSimpleName();
                 for (WeaponLoadout loadout : weaponSlots) {

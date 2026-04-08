@@ -145,6 +145,15 @@ public class SkillSelectionPacket {
             }
 
             skillData.setLoadoutMotion(loadoutIndex, attackSlot, motionId);
+
+            // 武器のNBTにも技設定を保存（アイテムと一緒に永続化）
+            if (player.containerMenu instanceof SkillSelectionMenu) {
+                SkillSelectionMenu skillMenu = (SkillSelectionMenu) player.containerMenu;
+                net.minecraft.world.item.ItemStack weaponInSlot = skillMenu.getSlot(loadoutIndex).getItem();
+                if (!weaponInSlot.isEmpty()) {
+                    minecraftarmorweapon.skill.WeaponSkillNBT.setMotion(weaponInSlot, attackSlot, motionId);
+                }
+            }
         }
     }
 

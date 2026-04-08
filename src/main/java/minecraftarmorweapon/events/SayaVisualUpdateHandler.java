@@ -141,10 +141,18 @@ public class SayaVisualUpdateHandler {
                         if (tag.getInt("CustomModelData") != expectedModelData) {
                             tag.putInt("CustomModelData", expectedModelData);
                         }
+                    } else if (tag.contains("StoredSword")) {
+                        // 直刀鞘
+                        CompoundTag swordTag = tag.getCompound("StoredSword");
+                        ItemStack swordStack = ItemStack.of(swordTag);
+                        int expectedModelData = minecraftarmorweapon.item.TyokutoSayaItem.getSwordModelData(swordStack);
+                        if (tag.getInt("CustomModelData") != expectedModelData) {
+                            tag.putInt("CustomModelData", expectedModelData);
+                        }
                     } else {
-                        int emptyModelData = getEmptyModelData(tag);
-                        if (tag.getInt("CustomModelData") != emptyModelData) {
-                            tag.putInt("CustomModelData", emptyModelData);
+                        // 空の鞘
+                        if (tag.getInt("CustomModelData") != 0) {
+                            tag.putInt("CustomModelData", 0);
                         }
                     }
                     stack.setTag(tag);

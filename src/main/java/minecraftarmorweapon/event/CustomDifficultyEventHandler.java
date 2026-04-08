@@ -145,11 +145,8 @@ public class CustomDifficultyEventHandler {
                 monster.addEffect(new MobEffectInstance(MobEffects.HEALTH_BOOST, duration, amplifier + 1));
                 monster.setHealth(monster.getMaxHealth()); // 増加分を即座に回復
             } else {
-                // 発光（高レベルで光ってて強い=威圧感）+ 追加で耐性かダメージ増
-                monster.addEffect(new MobEffectInstance(MobEffects.GLOWING, duration, 0));
-                if (aiLevel >= 4) {
-                    monster.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, duration, amplifier));
-                }
+                // ダメージ増加
+                monster.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, duration, amplifier));
             }
         }
     }
@@ -209,7 +206,7 @@ public class CustomDifficultyEventHandler {
             event.setResult(Player.BedSleepingProblem.OTHER_PROBLEM);
             if (event.getEntity() != null && !event.getEntity().level().isClientSide) {
                 event.getEntity().displayClientMessage(
-                    Component.literal("§4この難易度ではベッドで眠ることができません！"),
+                    Component.literal("§4").append(Component.translatable("difficulty.minecraft_armor_weapon.bed_disabled")),
                     true
                 );
             }

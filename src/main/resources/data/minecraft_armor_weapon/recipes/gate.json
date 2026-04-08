@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "EWE",
+    "WDW",
+    "EWE"
+  ],
+  "key": {
+    "E": {"item": "minecraft:ender_eye"},
+    "W": {"item": "minecraft:wither_skeleton_skull"},
+    "D": {"item": "minecraft_armor_weapon:gold_tyokuto"}
+  },
+  "result": {
+    "item": "minecraft_armor_weapon:gate",
+    "count": 1
+  }
+}

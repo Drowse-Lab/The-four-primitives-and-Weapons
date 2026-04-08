@@ -66,6 +66,11 @@ public class MinecraftArmorWeaponModEntities {
 
 					.sized(0.6f, 1.8f));
 
+	public static final RegistryObject<EntityType<minecraftarmorweapon.entity.GateProjectileEntity>> GATE_PROJECTILE = register("gate_projectile",
+			EntityType.Builder.<minecraftarmorweapon.entity.GateProjectileEntity>of(minecraftarmorweapon.entity.GateProjectileEntity::new, MobCategory.MISC)
+					.setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(1)
+					.sized(0.25f, 0.25f));
+
 	private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryname, EntityType.Builder<T> entityTypeBuilder) {
 		return REGISTRY.register(registryname, () -> (EntityType<T>) entityTypeBuilder.build(registryname));
 	}

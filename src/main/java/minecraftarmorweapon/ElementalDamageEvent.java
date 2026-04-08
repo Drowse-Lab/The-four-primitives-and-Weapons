@@ -111,7 +111,7 @@ public class ElementalDamageEvent {
         // bookスロットの魔導書でカウンター属性を持っていれば無効化（防御側）
         if (ElementalDamageUtils.isElementNullifiedByBook(target, elementType)) {
             if (target instanceof Player p) {
-                p.displayClientMessage(Component.literal("§b魔導書が" + elementType.getName() + "属性を無効化した！"), true);
+                p.displayClientMessage(Component.literal("§b").append(Component.translatable("difficulty.minecraft_armor_weapon.nullify", elementType.getName())), true);
                 target.level().playSound(null, target.getX(), target.getY(), target.getZ(),
                     SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1.0f, 1.5f);
             }

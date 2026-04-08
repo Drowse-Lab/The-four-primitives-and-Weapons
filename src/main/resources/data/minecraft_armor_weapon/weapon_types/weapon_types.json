@@ -71,6 +71,7 @@
       "items": [
         
         "minecraft_armor_weapon:sword_of_night",
+        "minecraft_armor_weapon:gate",
         "minecraft:wooden_sword",
         "minecraft:stone_sword",
         "minecraft:iron_sword",
@@ -126,6 +127,12 @@
       "enabled": true,
       "special_motions": {
         "right_click": ["sword_of_night_special"]
+      }
+    },
+    "minecraft_armor_weapon:gate": {
+      "enabled": true,
+      "special_motions": {
+        "right_click": ["gate_special"]
       }
     },
     "minecraft_armor_weapon:kurikaraken": {

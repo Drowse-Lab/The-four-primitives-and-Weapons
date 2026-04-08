@@ -188,9 +188,6 @@ public class MotionExecutor {
 
         world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
             SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 0.9f);
-        if (!world.isClientSide) {
-            player.displayClientMessage(Component.literal("§7左上斬り"), true);
-        }
     }
 
     // === 右上斬り ===
@@ -221,9 +218,6 @@ public class MotionExecutor {
 
         world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
             SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 1.0f);
-        if (!world.isClientSide) {
-            player.displayClientMessage(Component.literal("§7右上斬り"), true);
-        }
     }
 
     // === 横一文字 ===
@@ -259,9 +253,6 @@ public class MotionExecutor {
 
         world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
             SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 1.1f);
-        if (!world.isClientSide) {
-            player.displayClientMessage(Component.literal("§7横一文字"), true);
-        }
     }
 
     // === 回転斬り ===

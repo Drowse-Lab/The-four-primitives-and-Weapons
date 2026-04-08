@@ -328,7 +328,6 @@ public class MobTraitHandler {
                 if (monster.getAttribute(Attributes.MOVEMENT_SPEED) != null)
                     monster.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(
                         monster.getAttribute(Attributes.MOVEMENT_SPEED).getBaseValue() * spdMul);
-                monster.addEffect(new MobEffectInstance(MobEffects.GLOWING, 999999, 0, false, true));
             }
 
             case WEAKENER -> {
@@ -374,7 +373,6 @@ public class MobTraitHandler {
                 monster.setDropChance(EquipmentSlot.OFFHAND, 0.0f);
                 undyingCount.put(monster.getUUID(), 0);
                 monster.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 999999, absorbLv, false, true));
-                monster.addEffect(new MobEffectInstance(MobEffects.GLOWING, 999999, 0, false, true));
             }
         }
     }

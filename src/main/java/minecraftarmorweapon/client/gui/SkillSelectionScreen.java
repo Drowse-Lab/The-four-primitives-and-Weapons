@@ -48,6 +48,8 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
     private int selectedLoadoutIndex = -1;
     // null = デフォルト/武器スロット選択中, non-null = タイプ選択中
     private String selectedTypeId = null;
+    // タイプモード用のクライアントローカル選択状態（サーバー同期とは別にUI表示用）
+    private final java.util.Map<String, String> localTypeSelections = new java.util.HashMap<>();
 
     // レイアウト定数
     private static final int HEADER_HEIGHT = 18;
@@ -313,34 +315,39 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                     @Override
                     public void onPress() {
                         if (selectedTypeId != null) {
-                            // タイプ別設定
+                            // タイプ別設定: サーバーに送信 + ローカル状態 + クライアントcapability更新
                             MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
                                 SkillSelectionPacket.setTypeMotion(selectedTypeId, finalSlot, finalMotion.getId())
                             );
-                            // クライアント側も即時反映
+                            localTypeSelections.put(selectedTypeId + ":" + finalSlot.getId(), finalMotion.getId());
+                            // クライアント側capabilityも更新（performDodgeのチェック用）
                             if (minecraft != null && minecraft.player != null) {
                                 PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(minecraft.player);
                                 if (sd != null) sd.setTypeMotion(selectedTypeId, finalSlot, finalMotion.getId());
                             }
                         } else if (selectedLoadoutIndex == -1) {
+                            // グローバルデフォルト設定
                             menu.setDefaultMotion(finalSlot, finalMotion.getId());
                             MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
                                 SkillSelectionPacket.selectLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId())
                             );
-                            // クライアント側もtypeMotionを即時反映（緑ハイライト用）
+                            // クライアント側capabilityも更新
                             if (minecraft != null && minecraft.player != null) {
-                                ItemStack held = minecraft.player.getMainHandItem();
-                                WeaponTypeRegistry.WeaponTypeData wt = WeaponTypeRegistry.getTypeForItem(held);
-                                if (wt != null) {
-                                    PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(minecraft.player);
-                                    if (sd != null) sd.setTypeMotion(wt.getId(), finalSlot, finalMotion.getId());
-                                }
+                                PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(minecraft.player);
+                                if (sd != null) sd.setMotion(finalSlot, finalMotion.getId());
                             }
                         } else {
                             menu.setLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId());
                             MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
                                 SkillSelectionPacket.selectLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId())
                             );
+                            // クライアント側capabilityのloadoutも更新（performDodge/Guardチェック用）
+                            if (minecraft != null && minecraft.player != null) {
+                                PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(minecraft.player);
+                                if (sd != null) {
+                                    sd.setLoadoutMotion(selectedLoadoutIndex, finalSlot, finalMotion.getId());
+                                }
+                            }
                         }
                         buildWidgets();
                     }
@@ -396,31 +403,28 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
 
     private String getCurrentMotion(AttackSlot slot) {
         if (selectedTypeId != null) {
-            // タイプ選択中: タイプ設定 → JSONデフォルト → グローバルデフォルト
+            // タイプ選択中: ローカル → サーバーデータ → グローバルデフォルト
+            String key = selectedTypeId + ":" + slot.getId();
+            String local = localTypeSelections.get(key);
+            if (local != null) return local;
+            // サーバーで保存済みのtypeMotionを参照
             if (minecraft != null && minecraft.player != null) {
                 PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(minecraft.player);
                 if (sd != null) {
-                    // プレイヤーが明示的に設定したタイプモーションがあればそれを使用
-                    String typeMotion = sd.getTypeMotion(selectedTypeId, slot);
-                    // getTypeMotionはグローバルデフォルトにフォールバックするが、
-                    // JSONデフォルトも考慮する
-                    return typeMotion;
-                }
-            }
-            return "";
-        } else if (selectedLoadoutIndex == -1) {
-            // デフォルトモード: 手持ち武器のタイプがあればその設定を反映
-            if (minecraft != null && minecraft.player != null) {
-                ItemStack held = minecraft.player.getMainHandItem();
-                if (!held.isEmpty()) {
-                    PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(minecraft.player);
-                    if (sd != null) {
-                        return sd.getMotionForWeapon(slot, held);
-                    }
+                    String saved = sd.getTypeMotion(selectedTypeId, slot);
+                    if (saved != null) return saved;
                 }
             }
             return menu.getDefaultMotion(slot);
+        } else if (selectedLoadoutIndex == -1) {
+            return menu.getDefaultMotion(slot);
         } else {
+            // 武器スロットモード: 武器NBTを最優先で参照
+            ItemStack weapon = menu.getSlot(selectedLoadoutIndex).getItem();
+            if (!weapon.isEmpty()) {
+                String nbt = minecraftarmorweapon.skill.WeaponSkillNBT.getMotion(weapon, slot);
+                if (nbt != null) return nbt;
+            }
             return menu.getLoadoutMotion(selectedLoadoutIndex, slot);
         }
     }
