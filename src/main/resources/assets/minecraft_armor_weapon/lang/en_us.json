@@ -95,6 +95,7 @@
   "item.minecraft_armor_weapon.iron_tyokuto": "§7Iron Straight Sword",
   "item.minecraft_armor_weapon.gold_tyokuto": "§6Gold Straight Sword",
   "item.minecraft_armor_weapon.gate": "§6Gate",
+  "item.minecraft_armor_weapon.convergent_gate": "§6Convergent Gate",
   "item.minecraft_armor_weapon.immortal_core": "§5Immortal Core",
   "item.minecraft_armor_weapon.rarity_charm": "§dRarity Charm",
   "effect.minecraft_armor_weapon.effect_magic": "magic",
@@ -336,5 +337,15 @@
   "difficulty.minecraft_armor_weapon.vanilla_set": "Difficulty set to %s",
   "difficulty.minecraft_armor_weapon.lock": "Difficulty lock: ",
   "difficulty.minecraft_armor_weapon.bed_disabled": "Cannot sleep in this difficulty!",
-  "difficulty.minecraft_armor_weapon.nullify": "Magic book nullified %s element!"
+  "difficulty.minecraft_armor_weapon.nullify": "Magic book nullified %s element!",
+  "item.minecraft_armor_weapon.copper_armor_helmet": "Copper Helmet",
+  "item.minecraft_armor_weapon.copper_armor_chestplate": "Copper Chestplate",
+  "item.minecraft_armor_weapon.copper_armor_leggings": "Copper Leggings",
+  "item.minecraft_armor_weapon.copper_armor_boots": "Copper Boots",
+  "entity.minecraft_armor_weapon.angel_serious": "???",
+  "entity.minecraft_armor_weapon.angel_mocker1": "???",
+  "entity.minecraft_armor_weapon.angel_mocker2": "???",
+  "item.minecraft_armor_weapon.angel_serious_spawn_egg": "Angel Serious Spawn Egg",
+  "item.minecraft_armor_weapon.angel_mocker1_spawn_egg": "Angel Mocker1 Spawn Egg",
+  "item.minecraft_armor_weapon.angel_mocker2_spawn_egg": "Angel Mocker2 Spawn Egg"
 }

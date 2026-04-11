@@ -28,6 +28,31 @@ import net.minecraft.world.item.Items;
 import minecraftarmorweapon.entity.FlyingAttackerEntity;
 
 public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEntity, HumanoidModel<FlyingAttackerEntity>> {
+
+	// @RotationParams(FlyingAttacker_Sword)
+	public static float SWORD_YAW = 0f; // 剣Y軸回転
+	public static float SWORD_PITCH = 90f; // 剣X軸回転
+	public static float SWORD_ROLL = -180f; // 剣Z軸回転
+	public static float SWORD_SCALE_X = 1.5f; // 剣Xサイズ
+	public static float SWORD_SCALE_Y = 1.5f; // 剣Yサイズ
+	public static float SWORD_SCALE_Z = 1.5f; // 剣Zサイズ
+	public static float SWORD_X = 0f; // 剣X位置
+	public static float SWORD_Y = 0.5f; // 剣Y位置
+	public static float SWORD_Z = 0.5f; // 剣Z位置
+	// @EndRotationParams
+
+	// @RotationParams(FlyingAttacker_Projectile)
+	public static float PROJ_YAW = 0f; // 発射体Y軸回転
+	public static float PROJ_PITCH = 0f; // 発射体X軸回転
+	public static float PROJ_ROLL = 0f; // 発射体Z軸回転
+	public static float PROJ_SCALE_X = 2f; // 発射体Xサイズ
+	public static float PROJ_SCALE_Y = 2f; // 発射体Yサイズ
+	public static float PROJ_SCALE_Z = 2f; // 発射体Zサイズ
+	public static float PROJ_X = 0f; // 発射体X位置
+	public static float PROJ_Y = 0.7f; // 発射体Y位置
+	public static float PROJ_Z = 0f; // 発射体Z位置
+	// @EndRotationParams
+
 	private final HumanoidModel<FlyingAttackerEntity> model;
 	
 	public FlyingAttackerRenderer(EntityRendererProvider.Context context) {
@@ -71,32 +96,28 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 			
 			poseStack.pushPose();
 			
-			// アイテムの種類によって位置と回転を調整
+			// アイテムの種類によって位置と回転を調整（静的フィールドで調整可能）
 			if (isProjectileItem(heldItem)) {
-				// 矢やトライデントなどの発射体の場合
-				poseStack.translate(0.0D, 0.7D, 0.0D);
-				
-				// 水平に浮いている状態で表示
-				poseStack.mulPose(Axis.YP.rotationDegrees(ageInTicks * 3)); // ゆっくり回転
-				poseStack.mulPose(Axis.XP.rotationDegrees(0.0F));
-				
-				// サイズ調整
-				poseStack.scale(2.0F, 2.0F, 2.0F);
+				// 発射体
+				poseStack.translate(PROJ_X, PROJ_Y, PROJ_Z);
+				poseStack.mulPose(Axis.YP.rotationDegrees(ageInTicks * 3 + PROJ_YAW));
+				poseStack.mulPose(Axis.XP.rotationDegrees(PROJ_PITCH));
+				poseStack.mulPose(Axis.ZP.rotationDegrees(PROJ_ROLL));
+				poseStack.scale(PROJ_SCALE_X, PROJ_SCALE_Y, PROJ_SCALE_Z);
 			} else if (heldItem.getItem() instanceof SwordItem) {
-				// 剣の場合
-				poseStack.translate(0.0D, 0.5D, 0.5D);  // 前方向を反転
-				
-				// 剣を前方に向ける（180度回転）
-				poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
-				poseStack.mulPose(Axis.ZP.rotationDegrees(-180.0F));  // 45度から-135度に変更（180度回転）
-				
-				// サイズ調整
-				poseStack.scale(1.5F, 1.5F, 1.5F);
+				// 剣
+				poseStack.translate(SWORD_X, SWORD_Y, SWORD_Z);
+				poseStack.mulPose(Axis.YP.rotationDegrees(SWORD_YAW));
+				poseStack.mulPose(Axis.XP.rotationDegrees(SWORD_PITCH));
+				poseStack.mulPose(Axis.ZP.rotationDegrees(SWORD_ROLL));
+				poseStack.scale(SWORD_SCALE_X, SWORD_SCALE_Y, SWORD_SCALE_Z);
 			} else {
-				// その他のアイテムの場合
-				poseStack.translate(0.0D, 0.5D, 0.0D);
-				poseStack.mulPose(Axis.YP.rotationDegrees(ageInTicks * 3));
-				poseStack.scale(1.5F, 1.5F, 1.5F);
+				// その他（剣パラメータを流用）
+				poseStack.translate(SWORD_X, SWORD_Y, SWORD_Z);
+				poseStack.mulPose(Axis.YP.rotationDegrees(ageInTicks * 3 + SWORD_YAW));
+				poseStack.mulPose(Axis.XP.rotationDegrees(SWORD_PITCH));
+				poseStack.mulPose(Axis.ZP.rotationDegrees(SWORD_ROLL));
+				poseStack.scale(SWORD_SCALE_X, SWORD_SCALE_Y, SWORD_SCALE_Z);
 			}
 				
 			// アイテムをレンダリング

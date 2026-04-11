@@ -15,14 +15,18 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 /**
- * Gate - 金の直刀ベースの特殊武器。
- * 右クリックでプレイヤーの周囲から3本の剣が出現し、
- * 視線方向のターゲットに向かって飛んでいく。
- * ヒット時にブロック破壊なしの爆発。
- * データパック「gate1-16」のForge MOD移植版。
+ * 収束型Gate - 剣が広がった位置から発射され、前方の一点に収束する。
  */
-public class GateItem extends SwordItem {
-    public GateItem() {
+public class ConvergentGateItem extends SwordItem {
+
+    /** 収束地点までの距離（ブロック） */
+    private static final double CONVERGE_DISTANCE = 20.0;
+    /** 発射時の横方向の広がり */
+    private static final double SPREAD = 5.0;
+    /** 発射数 */
+    private static final int PROJECTILE_COUNT = 5;
+
+    public ConvergentGateItem() {
         super(new Tier() {
             public int getUses() { return 0; }
             public float getSpeed() { return 4f; }
@@ -42,7 +46,6 @@ public class GateItem extends SwordItem {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // Shift押下中は発射しない（ガード等を優先）
         if (player.isShiftKeyDown()) {
             return InteractionResultHolder.pass(stack);
         }
@@ -51,53 +54,52 @@ public class GateItem extends SwordItem {
             Vec3 lookVec = player.getLookAngle();
             Vec3 eyePos = player.getEyePosition();
 
-            // プレイヤーの前方・右方向ベクトル（水平面）
+            // プレイヤーの向きベクトル（水平面）
             double yawRad = Math.toRadians(player.getYRot());
-            double forwardX = -Math.sin(yawRad);
-            double forwardZ = Math.cos(yawRad);
             double rightX = -Math.cos(yawRad);
             double rightZ = -Math.sin(yawRad);
 
-            // 3本の剣: 右側、正面上、左側（データパック準拠）
-            // {横オフセット(右+), 縦オフセット, 前後オフセット(後ろ+)}
-            double[][] localOffsets = {
-                {  3.5, 0.3, -2 },  // 右
-                {  0,   0.6, -2 },  // 正面上
-                { -3.5, 0.7, -2 },  // 左
-            };
+            // 収束地点 = プレイヤーの視線方向 CONVERGE_DISTANCE ブロック先
+            Vec3 convergePoint = eyePos.add(lookVec.scale(CONVERGE_DISTANCE));
 
-            for (double[] local : localOffsets) {
+            // PROJECTILE_COUNT本の剣を横に広げて配置し、全て収束地点を狙う
+            for (int i = 0; i < PROJECTILE_COUNT; i++) {
+                // -SPREAD ~ +SPREAD の等間隔
+                double lateralOffset = -SPREAD + (2.0 * SPREAD * i / (PROJECTILE_COUNT - 1));
+
                 minecraftarmorweapon.entity.GateProjectileEntity projectile =
                         new minecraftarmorweapon.entity.GateProjectileEntity(level, player);
 
-                // プレイヤーの向きに合わせてスポーン位置を計算
-                double spawnX = eyePos.x + rightX * local[0] + forwardX * local[2];
-                double spawnY = eyePos.y + local[1];
-                double spawnZ = eyePos.z + rightZ * local[0] + forwardZ * local[2];
+                // スポーン位置: プレイヤーの横方向にオフセット + 少し後ろ
+                double spawnX = eyePos.x + rightX * lateralOffset + lookVec.x * (-2);
+                double spawnY = eyePos.y + 0.5;
+                double spawnZ = eyePos.z + rightZ * lateralOffset + lookVec.z * (-2);
                 projectile.setPos(spawnX, spawnY, spawnZ);
 
-                // 視線方向に平行にまっすぐ飛ぶ（収束しない）
+                // 収束地点に向かって飛ぶ
+                double dx = convergePoint.x - spawnX;
+                double dy = convergePoint.y - spawnY;
+                double dz = convergePoint.z - spawnZ;
+                double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
                 double speed = 2.0;
-                projectile.setDeltaMovement(
-                        lookVec.x * speed,
-                        lookVec.y * speed,
-                        lookVec.z * speed);
+
+                projectile.setDeltaMovement(dx / len * speed, dy / len * speed, dz / len * speed);
                 projectile.hasImpulse = true;
 
                 level.addFreshEntity(projectile);
             }
 
-            // 発射音（データパック準拠: wither.shoot × 4回 = 大音量）
+            // 発射音
             for (int i = 0; i < 4; i++) {
                 level.playSound(null, player.getX(), player.getY(), player.getZ(),
                         SoundEvents.WITHER_SHOOT, SoundSource.PLAYERS, 2.0f, 1.0f);
             }
 
-            // 耐性付与（短時間、反動防止）
+            // 耐性付与
             player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
                     net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 20, 4, true, false));
 
-            player.getCooldowns().addCooldown(this, 20); // 1秒クールダウン
+            player.getCooldowns().addCooldown(this, 20);
         }
 
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
@@ -105,11 +107,7 @@ public class GateItem extends SwordItem {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("§6右クリック: 剣を3本射出する"));
+        tooltip.add(Component.literal("§6右クリック: 剣を" + PROJECTILE_COUNT + "本収束射出する"));
         tooltip.add(Component.literal("§7Knockback X / Unbreakable"));
-    }
-
-    public static boolean isGateSword(ItemStack stack) {
-        return !stack.isEmpty() && stack.getItem() instanceof GateItem;
     }
 }

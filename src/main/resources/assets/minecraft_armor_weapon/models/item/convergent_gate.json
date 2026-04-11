@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft_armor_weapon:custom/gold_tyokuto3d",
+  "textures": {
+    "0": "minecraft_armor_weapon:block/gold_tyokuto3d",
+    "particle": "minecraft_armor_weapon:item/aa"
+  }
+}

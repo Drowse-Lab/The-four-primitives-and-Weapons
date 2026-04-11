@@ -178,10 +178,11 @@ public class GateEventHandler {
                 fr.setPos(pos.add(look.scale(50)).add(0, 1.5, 0));
             });
 
-            // 右クリック発動
+            // 右クリック発動（GateItem.use()でGateProjectileEntityを発射するため、
+            // ArmorStand式のfireProjectileは無効化。二重発射を防止）
             if (useMap.containsKey(player.getUUID())) {
                 useMap.remove(player.getUUID());
-                fireProjectile(level, player);
+                // fireProjectile(level, player); // GateItem側で発射済み
             }
         }
     }

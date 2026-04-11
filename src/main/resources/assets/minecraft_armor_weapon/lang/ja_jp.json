@@ -94,6 +94,7 @@
   "item.minecraft_armor_weapon.iron_tyokuto": "§7鉄の直刀",
   "item.minecraft_armor_weapon.gold_tyokuto": "§6金の直刀",
   "item.minecraft_armor_weapon.gate": "§6Gate",
+  "item.minecraft_armor_weapon.convergent_gate": "§6Convergent Gate",
   "item.minecraft_armor_weapon.immortal_core": "§5不死の核",
   "item.minecraft_armor_weapon.rarity_charm": "§dレアリティチャーム",
   "item.minecraft_armor_weapon.dragon_armor_boots": "§5Dragon boots",
@@ -332,5 +333,15 @@
   "difficulty.minecraft_armor_weapon.vanilla_set": "難易度を %s に設定しました",
   "difficulty.minecraft_armor_weapon.lock": "難易度ロック: ",
   "difficulty.minecraft_armor_weapon.bed_disabled": "この難易度ではベッドで眠ることができません！",
-  "difficulty.minecraft_armor_weapon.nullify": "魔導書が%s属性を無効化した！"
+  "difficulty.minecraft_armor_weapon.nullify": "魔導書が%s属性を無効化した！",
+  "item.minecraft_armor_weapon.copper_armor_helmet": "銅のヘルメット",
+  "item.minecraft_armor_weapon.copper_armor_chestplate": "銅のチェストプレート",
+  "item.minecraft_armor_weapon.copper_armor_leggings": "銅のレギンス",
+  "item.minecraft_armor_weapon.copper_armor_boots": "銅のブーツ",
+  "entity.minecraft_armor_weapon.angel_serious": "???",
+  "entity.minecraft_armor_weapon.angel_mocker1": "???",
+  "entity.minecraft_armor_weapon.angel_mocker2": "???",
+  "item.minecraft_armor_weapon.angel_serious_spawn_egg": "??? スポーンエッグ",
+  "item.minecraft_armor_weapon.angel_mocker1_spawn_egg": "??? スポーンエッグ",
+  "item.minecraft_armor_weapon.angel_mocker2_spawn_egg": "??? スポーンエッグ"
 }

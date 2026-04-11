@@ -46,6 +46,7 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE_TYOKUTOU);
 			event.accept(MinecraftArmorWeaponModItems.IRON_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.GATE);
+			event.accept(MinecraftArmorWeaponModItems.CONVERGENT_GATE);
 			event.accept(MinecraftArmorWeaponModItems.IMMORTAL_CORE);
 			event.accept(MinecraftArmorWeaponModItems.RARITY_CHARM);
 			event.accept(MinecraftArmorWeaponModItems.GOLD_TYOKUTO);
@@ -98,6 +99,10 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.BOGGED_OUTER_LEGGINGS);
 			event.accept(MinecraftArmorWeaponModItems.BOGGED_OUTER_BOOTS);
 			event.accept(MinecraftArmorWeaponModItems.ONINOMEN_HELMET);
+			event.accept(MinecraftArmorWeaponModItems.COPPER_ARMOR_HELMET);
+			event.accept(MinecraftArmorWeaponModItems.COPPER_ARMOR_CHESTPLATE);
+			event.accept(MinecraftArmorWeaponModItems.COPPER_ARMOR_LEGGINGS);
+			event.accept(MinecraftArmorWeaponModItems.COPPER_ARMOR_BOOTS);
 		}
 
 		// === TAB_YOPKEINAMONO ===

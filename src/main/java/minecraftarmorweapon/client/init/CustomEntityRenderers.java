@@ -11,6 +11,7 @@ import minecraftarmorweapon.client.renderer.EliteSoldierRenderer;
 import minecraftarmorweapon.client.renderer.SingularityRenderer;
 import minecraftarmorweapon.client.renderer.HeroicTierRenderer;
 import minecraftarmorweapon.client.renderer.DebugMobRenderer;
+import minecraftarmorweapon.client.renderer.AngelTrioRenderer;
 import minecraftarmorweapon.client.renderer.DarkProjectileRenderer;
 import minecraftarmorweapon.client.renderer.TornadoRenderer;
 import minecraftarmorweapon.init.CustomEntityInit;
@@ -35,6 +36,9 @@ public class CustomEntityRenderers {
         event.registerEntityRenderer(CustomEntityInit.SINGULARITY.get(), SingularityRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.HEROIC_TIER.get(), HeroicTierRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.DEBUG_MOB.get(), DebugMobRenderer::new);
+        event.registerEntityRenderer(CustomEntityInit.ANGEL_SERIOUS.get(), AngelTrioRenderer::new);
+        event.registerEntityRenderer(CustomEntityInit.ANGEL_MOCKER1.get(), AngelTrioRenderer::new);
+        event.registerEntityRenderer(CustomEntityInit.ANGEL_MOCKER2.get(), AngelTrioRenderer::new);
 
         // Gate飛び道具（切先が進行方向を向く金の直刀）
         event.registerEntityRenderer(minecraftarmorweapon.init.MinecraftArmorWeaponModEntities.GATE_PROJECTILE.get(),

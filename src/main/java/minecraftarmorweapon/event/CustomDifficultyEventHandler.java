@@ -2,6 +2,7 @@ package minecraftarmorweapon.event;
 
 import minecraftarmorweapon.command.CustomDifficultyCommand;
 import minecraftarmorweapon.command.CustomDifficultyCommand.CustomDifficulty;
+import minecraftarmorweapon.config.EquipmentTierRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -91,6 +92,11 @@ public class CustomDifficultyEventHandler {
                 applyRandomBuffs(monster, diff.getAiLevel());
                 buffApplied.add(id);
             }
+        }
+
+        // --- 装備ティアの適用（JSONベース） ---
+        if (diff.getEquipmentTier() > 0) {
+            EquipmentTierRegistry.applyEquipment(monster, diff.getEquipmentTier());
         }
 
         // --- 援軍スポーン ---

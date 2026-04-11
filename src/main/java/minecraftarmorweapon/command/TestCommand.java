@@ -28,6 +28,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import minecraftarmorweapon.client.renderer.GateProjectileRenderer;
 import minecraftarmorweapon.damage.ElementType;
 import minecraftarmorweapon.damage.ElementalDamageUtils;
 import minecraftarmorweapon.damage.IElementalDamageSource;
@@ -178,6 +179,34 @@ public class TestCommand {
                             IntegerArgumentType.getInteger(ctx, "level")))
                     )
                 )
+            )
+
+            // /test gaterot <yaw> <pitch> <roll> <sx> <sy> <sz> — Gate剣の向きをリアルタイム調整
+            .then(Commands.literal("gaterot")
+                .then(Commands.argument("yaw", FloatArgumentType.floatArg())
+                    .then(Commands.argument("pitch", FloatArgumentType.floatArg())
+                        .then(Commands.argument("roll", FloatArgumentType.floatArg())
+                            .executes(ctx -> setGateRot(ctx.getSource(),
+                                FloatArgumentType.getFloat(ctx, "yaw"),
+                                FloatArgumentType.getFloat(ctx, "pitch"),
+                                FloatArgumentType.getFloat(ctx, "roll"), 0.8f, 0.8f, 0.8f))
+                            .then(Commands.argument("sx", FloatArgumentType.floatArg(0.1f, 3.0f))
+                                .then(Commands.argument("sy", FloatArgumentType.floatArg(0.1f, 3.0f))
+                                    .then(Commands.argument("sz", FloatArgumentType.floatArg(0.1f, 3.0f))
+                                        .executes(ctx -> setGateRot(ctx.getSource(),
+                                            FloatArgumentType.getFloat(ctx, "yaw"),
+                                            FloatArgumentType.getFloat(ctx, "pitch"),
+                                            FloatArgumentType.getFloat(ctx, "roll"),
+                                            FloatArgumentType.getFloat(ctx, "sx"),
+                                            FloatArgumentType.getFloat(ctx, "sy"),
+                                            FloatArgumentType.getFloat(ctx, "sz")))
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+                .executes(ctx -> showGateRot(ctx.getSource()))
             )
 
             // /test dps <element> <level> <seconds> — DPSテスト（秒数分連続ダメージ）
@@ -495,6 +524,36 @@ public class TestCommand {
             String.format("§f合計ダメージ: §c%.1f §f実ダメージ: §c%.1f", fTotal, fActual)), false);
         source.sendSuccess(() -> Component.literal(
             String.format("§fDPS: §c%.1f/秒", fDps)), false);
+        return 1;
+    }
+
+    // === /test gaterot ===
+    private static int showGateRot(CommandSourceStack source) {
+        source.sendSuccess(() -> Component.literal("§6=== Gate回転パラメータ ==="), false);
+        source.sendSuccess(() -> Component.literal(String.format(
+            "§f  YAW=§e%.1f §fPITCH=§e%.1f §fROLL=§e%.1f",
+            GateProjectileRenderer.YAW_OFFSET,
+            GateProjectileRenderer.PITCH_OFFSET,
+            GateProjectileRenderer.ROLL_OFFSET)), false);
+        source.sendSuccess(() -> Component.literal(String.format(
+            "§f  SCALE X=§e%.2f §fY=§e%.2f §fZ=§e%.2f",
+            GateProjectileRenderer.SCALE_X,
+            GateProjectileRenderer.SCALE_Y,
+            GateProjectileRenderer.SCALE_Z)), false);
+        source.sendSuccess(() -> Component.literal("§7変更: /test gaterot <yaw> <pitch> <roll> <sx> <sy> <sz>"), false);
+        return 1;
+    }
+
+    private static int setGateRot(CommandSourceStack source, float yaw, float pitch, float roll, float sx, float sy, float sz) {
+        GateProjectileRenderer.YAW_OFFSET = yaw;
+        GateProjectileRenderer.PITCH_OFFSET = pitch;
+        GateProjectileRenderer.ROLL_OFFSET = roll;
+        GateProjectileRenderer.SCALE_X = sx;
+        GateProjectileRenderer.SCALE_Y = sy;
+        GateProjectileRenderer.SCALE_Z = sz;
+        source.sendSuccess(() -> Component.literal(String.format(
+            "§aGate回転を更新: §fYAW=§e%.1f §fPITCH=§e%.1f §fROLL=§e%.1f §fS=§e%.2f/%.2f/%.2f",
+            yaw, pitch, roll, sx, sy, sz)), false);
         return 1;
     }
 

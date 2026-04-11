@@ -51,6 +51,9 @@ public class EliteSoldierRenderer extends HumanoidMobRenderer<EliteSoldierEntity
         // 武器レイヤーを追加
         this.addLayer(new ItemInHandLayer<>(this, context.getItemInHandRenderer()));
 
+        // AIレベル表示レイヤー（ブロック越しに見えない）
+        this.addLayer(new AILevelRenderLayer<>(this));
+
         // スキンを初期化
         if (!skinsInitialized) {
             initializeSkins();

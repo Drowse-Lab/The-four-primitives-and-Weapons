@@ -101,6 +101,7 @@ import minecraftarmorweapon.item.DragonGreenArmorItem;
 import minecraftarmorweapon.item.DragonBlueArmorItem;
 import minecraftarmorweapon.item.DragonBlackArmorItem;
 import minecraftarmorweapon.item.DragonArmorItem;
+import minecraftarmorweapon.item.CopperArmorItem;
 import minecraftarmorweapon.item.DespornKentiItem;
 import minecraftarmorweapon.item.DecorationPotWithArrowsItem;
 import minecraftarmorweapon.item.DasHerzEinerFeeArmorItem;
@@ -182,6 +183,10 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> DRAGON_BLUE_ARMOR_CHESTPLATE = REGISTRY.register("dragon_blue_armor_chestplate", () -> new DragonBlueArmorItem.Chestplate());
 	public static final RegistryObject<Item> DRAGON_BLUE_ARMOR_LEGGINGS = REGISTRY.register("dragon_blue_armor_leggings", () -> new DragonBlueArmorItem.Leggings());
 	public static final RegistryObject<Item> DRAGON_BLUE_ARMOR_BOOTS = REGISTRY.register("dragon_blue_armor_boots", () -> new DragonBlueArmorItem.Boots());
+	public static final RegistryObject<Item> COPPER_ARMOR_HELMET = REGISTRY.register("copper_armor_helmet", () -> new CopperArmorItem.Helmet());
+	public static final RegistryObject<Item> COPPER_ARMOR_CHESTPLATE = REGISTRY.register("copper_armor_chestplate", () -> new CopperArmorItem.Chestplate());
+	public static final RegistryObject<Item> COPPER_ARMOR_LEGGINGS = REGISTRY.register("copper_armor_leggings", () -> new CopperArmorItem.Leggings());
+	public static final RegistryObject<Item> COPPER_ARMOR_BOOTS = REGISTRY.register("copper_armor_boots", () -> new CopperArmorItem.Boots());
 	public static final RegistryObject<Item> MAGISCHES_FEEN_KATANA = REGISTRY.register("magisches_feen_katana", () -> new MagischesFeenKatanaItem());
 	public static final RegistryObject<Item> BLOOD_BOTTLE = REGISTRY.register("blood_bottle", () -> new BloodBottleItem());
 	public static final RegistryObject<Item> RIVERS_OF_BLOOD = REGISTRY.register("rivers_of_blood", () -> new RiversOfBloodItem());
@@ -269,6 +274,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> FLYING_ATTACKER_SPAWN_EGG = REGISTRY.register("flying_attacker_spawn_egg",
 			() -> new ForgeSpawnEggItem(MinecraftArmorWeaponModEntities.FLYING_ATTACKER, -1, -1, new Item.Properties()));
 	public static final RegistryObject<Item> GATE = REGISTRY.register("gate", () -> new minecraftarmorweapon.item.GateItem());
+	public static final RegistryObject<Item> CONVERGENT_GATE = REGISTRY.register("convergent_gate", () -> new minecraftarmorweapon.item.ConvergentGateItem());
 	public static final RegistryObject<Item> IMMORTAL_CORE = REGISTRY.register("immortal_core", () -> new minecraftarmorweapon.item.ImmortalCoreItem());
 	public static final RegistryObject<Item> RARITY_CHARM = REGISTRY.register("rarity_charm", () -> new minecraftarmorweapon.item.RarityCharmItem());
 	public static final RegistryObject<Item> IRON_TYOKUTO = REGISTRY.register("iron_tyokuto", () -> new minecraftarmorweapon.item.IronTyokutoItem());

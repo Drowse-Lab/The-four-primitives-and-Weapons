@@ -17,6 +17,7 @@ import minecraftarmorweapon.entity.EliteSoldierEntity;
 import minecraftarmorweapon.entity.SingularityEntity;
 import minecraftarmorweapon.entity.HeroicTierEntity;
 import minecraftarmorweapon.entity.DebugMobEntity;
+import minecraftarmorweapon.entity.AngelTrioEntity;
 
 /**
  * カスタムエンティティの登録用クラス（A-Life AI Mobs専用）
@@ -70,6 +71,31 @@ public class CustomEntityInit {
                 .sized(0.6f, 1.8f)
                 .build("heroic_tier"));
 
+    // 天使の三人組 — 3つの別EntityType
+    public static final RegistryObject<EntityType<AngelTrioEntity>> ANGEL_SERIOUS =
+        CUSTOM_ENTITIES.register("angel_serious",
+            () -> EntityType.Builder.<AngelTrioEntity>of(
+                (type, world) -> { var e = new AngelTrioEntity(type, world); e.setPersonality(0); return e; },
+                MobCategory.CREATURE)
+                .setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3)
+                .sized(0.6f, 1.8f).build("angel_serious"));
+
+    public static final RegistryObject<EntityType<AngelTrioEntity>> ANGEL_MOCKER1 =
+        CUSTOM_ENTITIES.register("angel_mocker1",
+            () -> EntityType.Builder.<AngelTrioEntity>of(
+                (type, world) -> { var e = new AngelTrioEntity(type, world); e.setPersonality(1); return e; },
+                MobCategory.CREATURE)
+                .setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3)
+                .sized(0.6f, 1.8f).build("angel_mocker1"));
+
+    public static final RegistryObject<EntityType<AngelTrioEntity>> ANGEL_MOCKER2 =
+        CUSTOM_ENTITIES.register("angel_mocker2",
+            () -> EntityType.Builder.<AngelTrioEntity>of(
+                (type, world) -> { var e = new AngelTrioEntity(type, world); e.setPersonality(2); return e; },
+                MobCategory.CREATURE)
+                .setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3)
+                .sized(0.6f, 1.8f).build("angel_mocker2"));
+
     // デバッグ用Mob（サンドバッグ）
     public static final RegistryObject<EntityType<DebugMobEntity>> DEBUG_MOB =
         CUSTOM_ENTITIES.register("debug_mob",
@@ -106,6 +132,21 @@ public class CustomEntityInit {
             () -> new ForgeSpawnEggItem(DEBUG_MOB, 0x00FF00, 0xFF0000,
                 new Item.Properties()));
 
+    public static final RegistryObject<Item> ANGEL_SERIOUS_SPAWN_EGG =
+        CUSTOM_ITEMS.register("angel_serious_spawn_egg",
+            () -> new ForgeSpawnEggItem(ANGEL_SERIOUS, 0xFFFFFF, 0x50B060,
+                new Item.Properties()));
+
+    public static final RegistryObject<Item> ANGEL_MOCKER1_SPAWN_EGG =
+        CUSTOM_ITEMS.register("angel_mocker1_spawn_egg",
+            () -> new ForgeSpawnEggItem(ANGEL_MOCKER1, 0xFFFFFF, 0xD0D0E0,
+                new Item.Properties()));
+
+    public static final RegistryObject<Item> ANGEL_MOCKER2_SPAWN_EGG =
+        CUSTOM_ITEMS.register("angel_mocker2_spawn_egg",
+            () -> new ForgeSpawnEggItem(ANGEL_MOCKER2, 0xFFFFFF, 0x601820,
+                new Item.Properties()));
+
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(COMMON_SOLDIER.get(), CommonSoldierEntity.createAttributes().build());
@@ -113,6 +154,9 @@ public class CustomEntityInit {
         event.put(SINGULARITY.get(), SingularityEntity.createAttributes().build());
         event.put(HEROIC_TIER.get(), HeroicTierEntity.createAttributes().build());
         event.put(DEBUG_MOB.get(), DebugMobEntity.createAttributes().build());
+        event.put(ANGEL_SERIOUS.get(), AngelTrioEntity.createAttributes().build());
+        event.put(ANGEL_MOCKER1.get(), AngelTrioEntity.createAttributes().build());
+        event.put(ANGEL_MOCKER2.get(), AngelTrioEntity.createAttributes().build());
     }
 
     // Modのコンストラクタやメインクラスで呼び出す必要があります

@@ -12,6 +12,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
+import net.minecraft.client.Minecraft;
+
 import minecraftarmorweapon.entity.GateProjectileEntity;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 
@@ -23,6 +25,15 @@ public class GateProjectileRenderer extends EntityRenderer<GateProjectileEntity>
     private final ItemRenderer itemRenderer;
     private static final ItemStack DISPLAY_ITEM = ItemStack.EMPTY;
 
+    // @RotationParams(Gate直刀, cmd=/test gaterot {YAW_OFFSET} {PITCH_OFFSET} {ROLL_OFFSET} {SCALE_X} {SCALE_Y} {SCALE_Z})
+    public static float YAW_OFFSET = 0f; // Y軸微調整
+    public static float PITCH_OFFSET = 0f; // X軸微調整
+    public static float ROLL_OFFSET = 0f; // Z軸微調整
+    public static float SCALE_X = 0.8f; // Xサイズ
+    public static float SCALE_Y = 0.8f; // Yサイズ
+    public static float SCALE_Z = 0.8f; // Zサイズ
+    // @EndRotationParams
+
     public GateProjectileRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
         this.itemRenderer = ctx.getItemRenderer();
@@ -33,23 +44,20 @@ public class GateProjectileRenderer extends EntityRenderer<GateProjectileEntity>
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         poseStack.pushPose();
 
-        // 速度ベクトルから進行方向を計算
-        double dx = Mth.lerp(partialTick, entity.xOld, entity.getX()) - entity.xOld;
-        double dy = Mth.lerp(partialTick, entity.yOld, entity.getY()) - entity.yOld;
-        double dz = Mth.lerp(partialTick, entity.zOld, entity.getZ()) - entity.zOld;
-        double horizontalDist = Math.sqrt(dx * dx + dz * dz);
+        // 速度ベクトルからYawを計算（水平方向の進行方向に追従）
+        net.minecraft.world.phys.Vec3 vel = entity.getDeltaMovement();
+        float yaw = (float)(Math.atan2(vel.x, vel.z) * (180.0 / Math.PI));
 
-        float yaw = (float)(Math.atan2(dx, dz) * (180.0 / Math.PI));
-        float pitch = (float)(Math.atan2(dy, horizontalDist) * (180.0 / Math.PI));
+        // FlyingAttackerRenderer の剣表示と同じ方式
+        poseStack.mulPose(Axis.YP.rotationDegrees(-yaw + YAW_OFFSET));
+        poseStack.mulPose(Axis.XP.rotationDegrees(90f + PITCH_OFFSET));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(-180f + ROLL_OFFSET));
 
-        // 切先が進行方向（下/前方）を向くように回転
-        poseStack.mulPose(Axis.YP.rotationDegrees(-yaw));
-        poseStack.mulPose(Axis.XP.rotationDegrees(pitch + 90)); // +90で縦向き（切先が前方/下方）
-
-        poseStack.scale(0.8f, 0.8f, 0.8f);
+        poseStack.scale(SCALE_X, SCALE_Y, SCALE_Z);
 
         ItemStack displayStack = new ItemStack(MinecraftArmorWeaponModItems.GOLD_TYOKUTO.get());
-        itemRenderer.renderStatic(displayStack, ItemDisplayContext.FIXED,
+        Minecraft.getInstance().getItemRenderer().renderStatic(
+                displayStack, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
                 packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, entity.level(), entity.getId());
 
         poseStack.popPose();

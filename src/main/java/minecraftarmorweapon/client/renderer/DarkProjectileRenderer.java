@@ -15,6 +15,14 @@ import com.mojang.math.Axis;
 import minecraftarmorweapon.entity.DarkProjectileEntity;
 
 public class DarkProjectileRenderer extends EntityRenderer<DarkProjectileEntity> {
+
+    // @RotationParams(DarkProjectile)
+    public static float YAW_OFFSET = 0f; // Y軸回転
+    public static float PITCH_OFFSET = 0f; // X軸回転
+    public static float ROLL_OFFSET = 0f; // Z軸回転
+    public static float SCALE = 0.3f; // 表示サイズ
+    // @EndRotationParams
+
     private static final ResourceLocation TEXTURE = new ResourceLocation("minecraft", "textures/block/soul_sand.png");
     private static final RenderType RENDER_TYPE = RenderType.entityTranslucent(TEXTURE);
 

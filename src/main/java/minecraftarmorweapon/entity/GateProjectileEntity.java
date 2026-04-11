@@ -100,6 +100,6 @@ public class GateProjectileEntity extends ThrowableProjectile implements ItemSup
 
     @Override
     protected float getGravity() {
-        return 0.01f; // ほぼ直進
+        return 0.0f; // 完全直進（向きが変わらない）
     }
 }
