@@ -18,6 +18,9 @@ import minecraftarmorweapon.entity.SingularityEntity;
 import minecraftarmorweapon.entity.HeroicTierEntity;
 import minecraftarmorweapon.entity.DebugMobEntity;
 import minecraftarmorweapon.entity.AngelTrioEntity;
+import minecraftarmorweapon.entity.ThrowingKnifeEntity;
+import minecraftarmorweapon.item.UndeadArmyBanishItem;
+import minecraftarmorweapon.item.ThrowingKnifeItem;
 
 /**
  * カスタムエンティティの登録用クラス（A-Life AI Mobs専用）
@@ -146,6 +149,26 @@ public class CustomEntityInit {
         CUSTOM_ITEMS.register("angel_mocker2_spawn_egg",
             () -> new ForgeSpawnEggItem(ANGEL_MOCKER2, 0xFFFFFF, 0x601820,
                 new Item.Properties()));
+
+    // アンデットアーミーを中断させるアイテム「聖なる鐘」
+    public static final RegistryObject<Item> UNDEAD_ARMY_BANISH =
+        CUSTOM_ITEMS.register("undead_army_banish",
+            () -> new UndeadArmyBanishItem());
+
+    // 投げナイフ飛翔体
+    public static final RegistryObject<EntityType<ThrowingKnifeEntity>> THROWING_KNIFE_ENTITY =
+        CUSTOM_ENTITIES.register("throwing_knife",
+            () -> EntityType.Builder.<ThrowingKnifeEntity>of(ThrowingKnifeEntity::new, MobCategory.MISC)
+                .setShouldReceiveVelocityUpdates(true)
+                .setTrackingRange(64)
+                .setUpdateInterval(2)
+                .sized(0.5f, 0.5f)
+                .build("throwing_knife"));
+
+    // 投げナイフアイテム
+    public static final RegistryObject<Item> THROWING_KNIFE =
+        CUSTOM_ITEMS.register("throwing_knife",
+            () -> new ThrowingKnifeItem());
 
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {

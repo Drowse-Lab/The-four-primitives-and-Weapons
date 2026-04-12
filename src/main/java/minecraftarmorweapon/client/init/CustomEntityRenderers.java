@@ -43,5 +43,9 @@ public class CustomEntityRenderers {
         // Gate飛び道具（切先が進行方向を向く金の直刀）
         event.registerEntityRenderer(minecraftarmorweapon.init.MinecraftArmorWeaponModEntities.GATE_PROJECTILE.get(),
                 minecraftarmorweapon.client.renderer.GateProjectileRenderer::new);
+
+        // 投げナイフ飛翔体 (バニラのThrownItemRendererでアイテムモデルを描画)
+        event.registerEntityRenderer(CustomEntityInit.THROWING_KNIFE_ENTITY.get(),
+                ctx -> new net.minecraft.client.renderer.entity.ThrownItemRenderer<>(ctx));
     }
 }

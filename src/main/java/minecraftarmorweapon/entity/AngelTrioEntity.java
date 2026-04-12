@@ -20,6 +20,9 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
@@ -52,6 +55,11 @@ public class AngelTrioEntity extends PathfinderMob {
 
     // 右クリッククールダウン（連打防止）
     private int interactCooldown = 0;
+
+    // 抜刀状態: false=納刀 (メイン=鞘), true=抜刀 (メイン=刀)
+    private boolean drawn = false;
+    // 戦闘状態のヒステリシスtick: ターゲット消失後もこの間だけ抜刀維持
+    private int sheathCooldown = 0;
 
     // チャットメッセージ
     private static final String[][] MOCKER_MESSAGES = {
@@ -95,6 +103,11 @@ public class AngelTrioEntity extends PathfinderMob {
         super(type, world);
         this.setPersistenceRequired();
         this.xpReward = 100;
+        // 初期状態は納刀: メイン=鞘, オフ=刀
+        this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(MinecraftArmorWeaponModItems.SAYA.get()));
+        this.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(MinecraftArmorWeaponModItems.NETHERITE_KATANA.get()));
+        this.setDropChance(EquipmentSlot.MAINHAND, 0.0f);
+        this.setDropChance(EquipmentSlot.OFFHAND, 0.0f);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -123,7 +136,40 @@ public class AngelTrioEntity extends PathfinderMob {
         super.tick();
         if (this.level().isClientSide) return;
         if (interactCooldown > 0) interactCooldown--;
+        updateDrawState();
         // 自動チャットは一切しない
+    }
+
+    /** ターゲットの有無に応じて抜刀/納刀を切り替える (プレイヤー同様) */
+    private void updateDrawState() {
+        LivingEntity target = this.getTarget();
+        boolean wantDrawn = target != null && target.isAlive();
+        if (wantDrawn) {
+            sheathCooldown = 60; // ターゲット消失後3秒は抜刀維持
+        } else if (sheathCooldown > 0) {
+            sheathCooldown--;
+            wantDrawn = true;
+        }
+
+        if (wantDrawn && !drawn) {
+            // 抜刀: メイン=刀, オフ=鞘
+            ItemStack main = this.getItemInHand(InteractionHand.MAIN_HAND);
+            ItemStack off = this.getItemInHand(InteractionHand.OFF_HAND);
+            this.setItemInHand(InteractionHand.MAIN_HAND, off);
+            this.setItemInHand(InteractionHand.OFF_HAND, main);
+            drawn = true;
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
+                SoundEvents.ARMOR_EQUIP_IRON, SoundSource.HOSTILE, 1.0f, 1.2f);
+        } else if (!wantDrawn && drawn) {
+            // 納刀: メイン=鞘, オフ=刀
+            ItemStack main = this.getItemInHand(InteractionHand.MAIN_HAND);
+            ItemStack off = this.getItemInHand(InteractionHand.OFF_HAND);
+            this.setItemInHand(InteractionHand.MAIN_HAND, off);
+            this.setItemInHand(InteractionHand.OFF_HAND, main);
+            drawn = false;
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
+                SoundEvents.ARMOR_EQUIP_IRON, SoundSource.HOSTILE, 0.8f, 0.9f);
+        }
     }
 
     // =============================================
@@ -234,19 +280,28 @@ public class AngelTrioEntity extends PathfinderMob {
             if (player.level() instanceof ServerLevel serverLevel) {
                 Entity entity = serverLevel.getEntity(entityUUID);
                 if (entity instanceof AngelTrioEntity angel && angel.distanceTo(player) < 16) {
-                    // セッション開始
-                    minecraftarmorweapon.ai.lisp.AngelChatAI.startSession(
-                        player, entityUUID, angel.personality, angel.getDisplayNameText());
+                    // 最初のノードを取得
+                    minecraftarmorweapon.ai.lisp.DialogueManager.Node startNode =
+                        minecraftarmorweapon.ai.lisp.DialogueManager.getStartNode(angel.personality);
+                    if (startNode == null) {
+                        player.sendSystemMessage(Component.literal("§c会話データがロードされていない"));
+                        return;
+                    }
 
-                    // 最初の一言を決める
-                    String firstMessage = angel.getFirstMessage(player);
+                    java.util.List<String> choiceTexts = new java.util.ArrayList<>();
+                    java.util.List<String> choiceNexts = new java.util.ArrayList<>();
+                    for (minecraftarmorweapon.ai.lisp.DialogueManager.Choice c : startNode.choices) {
+                        choiceTexts.add(c.text);
+                        choiceNexts.add(c.next != null ? c.next : "start");
+                    }
 
                     // GUI を開くパケットをクライアントに送信
                     minecraftarmorweapon.MinecraftArmorWeaponMod.PACKET_HANDLER.send(
                         net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player),
                         new minecraftarmorweapon.network.AngelChatS2CPacket(
                             angel.getDisplayNameText(), angel.personality,
-                            entityUUID.toString(), firstMessage));
+                            entityUUID.toString(), startNode.text,
+                            choiceTexts, choiceNexts, startNode.isEnd));
                 } else {
                     player.sendSystemMessage(Component.literal("§7遠すぎて会話できない…"));
                 }

@@ -3,7 +3,6 @@ package minecraftarmorweapon.client.screen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
@@ -14,102 +13,87 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 天使の三人組との会話GUI。
- * チャット風の画面にメッセージ履歴が表示され、下にテキスト入力欄がある。
+ * RPG風の選択肢ベース会話GUI。
+ * NPCの台詞と、プレイヤーが選ぶ選択肢ボタンを表示。
  */
 public class AngelChatScreen extends Screen {
 
-    private EditBox inputField;
     private String entityName;
     private int personality;
     private String entityUUID;
+    private String npcText = "";
+    private List<String> choiceTexts = new ArrayList<>();
+    private List<String> choiceNexts = new ArrayList<>();
+    private boolean isEnd = false;
 
-    // メッセージ履歴
-    private static final List<ChatLine> chatHistory = new ArrayList<>();
-    private int scrollOffset = 0;
-
-    // 待機中フラグ
-    private boolean waitingForResponse = false;
-
-    private static class ChatLine {
-        final String speaker; // 名前
-        final String message;
-        final boolean isPlayer;
-        final int color;
-
-        ChatLine(String speaker, String message, boolean isPlayer, int color) {
-            this.speaker = speaker;
-            this.message = message;
-            this.isPlayer = isPlayer;
-            this.color = color;
-        }
-    }
-
-    public AngelChatScreen(String entityName, int personality, String entityUUID, String firstMessage) {
+    public AngelChatScreen(String entityName, int personality, String entityUUID,
+                           String npcText, List<String> choiceTexts, List<String> choiceNexts, boolean isEnd) {
         super(Component.literal("会話"));
         this.entityName = entityName;
         this.personality = personality;
         this.entityUUID = entityUUID;
-        chatHistory.clear();
-        if (!firstMessage.isEmpty()) {
-            addEntityMessage(firstMessage);
-        }
+        this.npcText = npcText;
+        this.choiceTexts = choiceTexts;
+        this.choiceNexts = choiceNexts;
+        this.isEnd = isEnd;
     }
 
     @Override
     protected void init() {
-        // テキスト入力欄（画面下部）
-        int inputWidth = this.width - 80;
-        inputField = new EditBox(this.font, 10, this.height - 30, inputWidth, 20, Component.literal(""));
-        inputField.setMaxLength(200);
-        inputField.setFocused(true);
-        this.addRenderableWidget(inputField);
-        this.setFocused(inputField);
-
-        // 送信ボタン
-        this.addRenderableWidget(Button.builder(Component.literal("送信"), btn -> sendMessage())
-            .bounds(this.width - 65, this.height - 30, 55, 20).build());
+        rebuild();
     }
 
-    private void sendMessage() {
-        String text = inputField.getValue().trim();
-        if (text.isEmpty() || waitingForResponse) return;
+    private void rebuild() {
+        this.clearWidgets();
 
-        // プレイヤーのメッセージを表示
-        addPlayerMessage(text);
-        inputField.setValue("");
+        int centerX = this.width / 2;
+        int buttonWidth = 280;
+        int buttonHeight = 22;
+        int buttonSpacing = 4;
 
-        // byeで終了
-        if ("bye".equalsIgnoreCase(text)) {
-            addSystemMessage("会話を終了しました");
-            MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
-                new AngelChatC2SPacket("bye", entityUUID));
-            // 少し待ってから閉じる
-            Minecraft.getInstance().tell(() -> {
-                try { Thread.sleep(500); } catch (Exception e) {}
-                Minecraft.getInstance().setScreen(null);
-            });
-            return;
+        // 選択肢ボタンを画面下部に並べる
+        int totalButtons = isEnd ? 1 : choiceTexts.size();
+        int totalHeight = totalButtons * (buttonHeight + buttonSpacing);
+        int startY = this.height - totalHeight - 20;
+
+        if (isEnd) {
+            // 会話終了 → 閉じるボタンのみ
+            this.addRenderableWidget(Button.builder(
+                Component.literal("§f閉じる"),
+                btn -> this.onClose())
+                .bounds(centerX - buttonWidth / 2, startY, buttonWidth, buttonHeight).build());
+        } else {
+            for (int i = 0; i < choiceTexts.size(); i++) {
+                String choiceText = choiceTexts.get(i);
+                String nextId = choiceNexts.get(i);
+                int y = startY + i * (buttonHeight + buttonSpacing);
+                this.addRenderableWidget(Button.builder(
+                    Component.literal("§f▶ " + choiceText),
+                    btn -> selectChoice(nextId))
+                    .bounds(centerX - buttonWidth / 2, y, buttonWidth, buttonHeight).build());
+            }
         }
+    }
 
-        // サーバーに送信
-        waitingForResponse = true;
+    private void selectChoice(String nextNodeId) {
+        // サーバーに選択を送信
         MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
-            new AngelChatC2SPacket(text, entityUUID));
+            new AngelChatC2SPacket(nextNodeId, entityUUID));
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == 256) { // Escape
-            // 終了パケットを送って閉じる
-            MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
-                new AngelChatC2SPacket("bye", entityUUID));
             this.onClose();
             return true;
         }
-        if (keyCode == 257) { // Enter
-            sendMessage();
-            return true;
+        // 数字キーで選択
+        if (keyCode >= 49 && keyCode <= 57 && !isEnd) { // 1-9
+            int index = keyCode - 49;
+            if (index < choiceNexts.size()) {
+                selectChoice(choiceNexts.get(index));
+                return true;
+            }
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
@@ -118,47 +102,61 @@ public class AngelChatScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics);
 
-        // ヘッダー背景
-        graphics.fill(0, 0, this.width, 25, 0xCC000000);
-        // タイトル
-        String titleColor = personality == 0 ? "\u00A7a" : "\u00A7f";
+        // ヘッダー
+        graphics.fill(0, 0, this.width, 30, 0xCC000000);
+        String nameColor = personality == 0 ? "§a" : "§f";
         graphics.drawCenteredString(this.font,
-            titleColor + entityName + "\u00A77 との会話  \u00A78(byeで終了)", this.width / 2, 8, 0xFFFFFF);
+            nameColor + "§l" + entityName + "§r§7 との会話", this.width / 2, 11, 0xFFFFFF);
 
-        // チャット領域背景
-        int chatTop = 28;
-        int chatBottom = this.height - 38;
-        graphics.fill(5, chatTop, this.width - 5, chatBottom, 0x90000000);
+        // NPC台詞エリア（画面中央上部）
+        int textTop = 50;
+        int textBottom = this.height - (isEnd ? 60 : (choiceTexts.size() * 26 + 40));
+        int textLeft = this.width / 2 - 200;
+        int textRight = this.width / 2 + 200;
 
-        // メッセージ描画
-        int lineHeight = 12;
-        int maxLines = (chatBottom - chatTop - 8) / lineHeight;
-        int startIdx = Math.max(0, chatHistory.size() - maxLines - scrollOffset);
-        int endIdx = Math.min(chatHistory.size(), startIdx + maxLines);
+        graphics.fill(textLeft - 10, textTop - 10, textRight + 10, textBottom, 0xA0000000);
+        graphics.fill(textLeft - 10, textTop - 10, textRight + 10, textTop - 9, 0xFF888888); // 上ボーダー
+        graphics.fill(textLeft - 10, textBottom - 1, textRight + 10, textBottom, 0xFF888888); // 下ボーダー
 
-        int y = chatTop + 4;
-        for (int i = startIdx; i < endIdx; i++) {
-            ChatLine line = chatHistory.get(i);
-            String prefix = line.isPlayer ? "\u00A7e[あなた] \u00A7f" : "\u00A77[" + getNameColor() + line.speaker + "\u00A77] \u00A7f";
-            graphics.drawString(this.font, prefix + line.message, 12, y, line.color, false);
-            y += lineHeight;
+        // 話者名
+        graphics.drawString(this.font, nameColor + "§l" + entityName, textLeft, textTop, 0xFFFFFF, false);
+
+        // 台詞本文（自動改行）
+        List<String> wrappedLines = wrapText(npcText, 400);
+        int y = textTop + 15;
+        for (String line : wrappedLines) {
+            graphics.drawString(this.font, "§f" + line, textLeft, y, 0xFFFFFF, false);
+            y += 11;
         }
 
-        // 待機中表示
-        if (waitingForResponse) {
-            graphics.drawString(this.font, "\u00A78考え中...", 12, chatBottom - lineHeight, 0x888888, false);
+        // 選択肢エリアの背景
+        if (!isEnd && !choiceTexts.isEmpty()) {
+            int choicesTop = this.height - (choiceTexts.size() * 26) - 30;
+            graphics.fill(0, choicesTop - 10, this.width, this.height, 0x80000000);
+            graphics.drawCenteredString(this.font,
+                "§7クリック or 数字キー(1-9)で選択", this.width / 2, choicesTop - 8, 0x888888);
         }
-
-        // 入力欄の背景
-        graphics.fill(5, this.height - 35, this.width - 5, this.height - 5, 0x80000000);
 
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        scrollOffset = Math.max(0, Math.min(chatHistory.size() - 5, scrollOffset - (int) delta));
-        return true;
+    /**
+     * テキストを指定幅で改行する
+     */
+    private List<String> wrapText(String text, int maxWidth) {
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            current.append(c);
+            if (this.font.width(current.toString()) > maxWidth || c == '\n') {
+                if (c == '\n') current.setLength(current.length() - 1);
+                result.add(current.toString());
+                current.setLength(0);
+            }
+        }
+        if (current.length() > 0) result.add(current.toString());
+        return result;
     }
 
     @Override
@@ -166,59 +164,22 @@ public class AngelChatScreen extends Screen {
         return false;
     }
 
-    private String getNameColor() {
-        return switch (personality) {
-            case 0 -> "\u00A7a"; // 緑
-            case 1 -> "\u00A7f"; // 白
-            case 2 -> "\u00A7f"; // 白
-            default -> "\u00A7f";
-        };
-    }
-
-    // === メッセージ追加 ===
-
-    private void addPlayerMessage(String message) {
-        chatHistory.add(new ChatLine("あなた", message, true, 0xFFFFFF));
-        scrollOffset = 0;
-    }
-
-    private void addEntityMessage(String message) {
-        chatHistory.add(new ChatLine(entityName, message, false, 0xFFFFFF));
-        scrollOffset = 0;
-    }
-
-    private void addSystemMessage(String message) {
-        chatHistory.add(new ChatLine("", "\u00A77" + message, false, 0x888888));
-        scrollOffset = 0;
-    }
-
-    // === S2Cパケット受信ハンドラ（クライアント側） ===
+    // === S2Cパケット受信 ===
 
     public static void handlePacket(AngelChatS2CPacket packet) {
         Minecraft mc = Minecraft.getInstance();
-
-        if (packet.openGui) {
-            // GUI を開く
-            mc.tell(() -> mc.setScreen(new AngelChatScreen(
-                packet.entityName, packet.personality, packet.entityUUID, packet.message)));
-            return;
-        }
-
-        if (packet.closeGui) {
-            // GUI を閉じる
-            mc.tell(() -> {
-                if (mc.screen instanceof AngelChatScreen) {
-                    mc.setScreen(null);
-                }
-            });
-            return;
-        }
-
-        // 応答メッセージ
         mc.tell(() -> {
-            if (mc.screen instanceof AngelChatScreen chatScreen) {
-                chatScreen.addEntityMessage(packet.message);
-                chatScreen.waitingForResponse = false;
+            // 既に会話画面なら内容を更新、違うなら新規オープン
+            if (mc.screen instanceof AngelChatScreen existing) {
+                existing.npcText = packet.npcText;
+                existing.choiceTexts = packet.choiceTexts;
+                existing.choiceNexts = packet.choiceNexts;
+                existing.isEnd = packet.isEnd;
+                existing.rebuild();
+            } else {
+                mc.setScreen(new AngelChatScreen(
+                    packet.entityName, packet.personality, "unused",
+                    packet.npcText, packet.choiceTexts, packet.choiceNexts, packet.isEnd));
             }
         });
     }

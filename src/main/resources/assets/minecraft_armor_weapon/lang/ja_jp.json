@@ -1,4 +1,7 @@
 {
+  "item.minecraft_armor_weapon.undead_army_banish": "聖なる鐘",
+  "item.minecraft_armor_weapon.throwing_knife": "投げナイフ",
+  "entity.minecraft_armor_weapon.throwing_knife": "投げナイフ",
   "item.minecraft_armor_weapon.rapier": "レイピア",
   "item.minecraft_armor_weapon.parry_shield": "パリィシールド",
   "effect.minecraft_armor_weapon.guard": "guard",

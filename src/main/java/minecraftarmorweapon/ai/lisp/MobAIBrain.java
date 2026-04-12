@@ -127,6 +127,9 @@ public class MobAIBrain {
             if (target instanceof Player player) {
                 PlayerBehaviorTracker.injectIntoLisp(lisp, player);
             }
+
+            // 戦闘ログの集計統計を注入（過去の戦闘から学習）
+            CombatLogAnalyzer.injectIntoLisp(lisp, entity, target);
         } else {
             lisp.setVariable("has-target", false);
             lisp.setVariable("distance", 999.0);
@@ -139,6 +142,9 @@ public class MobAIBrain {
             lisp.setVariable("target-has-sword", false);
             lisp.setVariable("can-see-target", false);
             lisp.setVariable("height-diff", 0.0);
+
+            // ターゲットなしでも自分のタイプ統計は注入
+            CombatLogAnalyzer.injectIntoLisp(lisp, entity, null);
         }
 
         // 周囲の敵数

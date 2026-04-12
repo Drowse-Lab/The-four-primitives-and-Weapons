@@ -34,6 +34,10 @@ import minecraftarmorweapon.damage.ElementalDamageUtils;
 import minecraftarmorweapon.damage.IElementalDamageSource;
 import minecraftarmorweapon.trait.MobTrait;
 import minecraftarmorweapon.trait.MobTraitHandler;
+import minecraftarmorweapon.ai.lisp.CombatLogger;
+import minecraftarmorweapon.ai.lisp.CombatLogAnalyzer;
+import minecraftarmorweapon.ai.lisp.ProgressionTracker;
+import minecraftarmorweapon.event.MoonPhaseDifficulty;
 import minecraftarmorweapon.command.CustomDifficultyCommand.CustomDifficulty;
 
 import java.util.Arrays;
@@ -54,6 +58,7 @@ import java.util.stream.Collectors;
  *   /test difficulty <name>          — 難易度を即変更
  *   /test info                       — 現在のMOD設定を表示
  *   /test clear                      — 周囲のMobを全削除
+ *   /test log [on|off|status|tail|path|clear] — 戦闘ログの制御/閲覧
  */
 @Mod.EventBusSubscriber
 public class TestCommand {
@@ -150,6 +155,15 @@ public class TestCommand {
                 )
             )
 
+            // /test cleanblocks [radius] — Mob設置のcobblestone/cobwebを強制削除
+            .then(Commands.literal("cleanblocks")
+                .executes(ctx -> cleanBlocks(ctx.getSource(), 30))
+                .then(Commands.argument("radius", IntegerArgumentType.integer(1, 100))
+                    .executes(ctx -> cleanBlocks(ctx.getSource(),
+                        IntegerArgumentType.getInteger(ctx, "radius")))
+                )
+            )
+
             // /test damage <amount> <element> [level] — 最寄りのMobに属性ダメージ
             .then(Commands.literal("damage")
                 .then(Commands.argument("amount", FloatArgumentType.floatArg(0.1f))
@@ -207,6 +221,34 @@ public class TestCommand {
                     )
                 )
                 .executes(ctx -> showGateRot(ctx.getSource()))
+            )
+
+            // /test log [on|off|status|tail|clear|path]
+            //   戦闘ログ (logs/combat_ai/combat_events_YYYY-MM-DD.jsonl) を制御
+            .then(Commands.literal("log")
+                .executes(ctx -> logStatus(ctx.getSource()))
+                .then(Commands.literal("on")
+                    .executes(ctx -> setLogEnabled(ctx.getSource(), true)))
+                .then(Commands.literal("off")
+                    .executes(ctx -> setLogEnabled(ctx.getSource(), false)))
+                .then(Commands.literal("status")
+                    .executes(ctx -> logStatus(ctx.getSource())))
+                .then(Commands.literal("path")
+                    .executes(ctx -> logPath(ctx.getSource())))
+                .then(Commands.literal("clear")
+                    .executes(ctx -> logClear(ctx.getSource())))
+                .then(Commands.literal("tail")
+                    .executes(ctx -> logTail(ctx.getSource(), 10))
+                    .then(Commands.argument("n", IntegerArgumentType.integer(1, 200))
+                        .executes(ctx -> logTail(ctx.getSource(),
+                            IntegerArgumentType.getInteger(ctx, "n")))))
+                .then(Commands.literal("analyze")
+                    .executes(ctx -> logAnalyze(ctx.getSource(), 5))
+                    .then(Commands.argument("topN", IntegerArgumentType.integer(1, 20))
+                        .executes(ctx -> logAnalyze(ctx.getSource(),
+                            IntegerArgumentType.getInteger(ctx, "topN")))))
+                .then(Commands.literal("refresh")
+                    .executes(ctx -> logRefresh(ctx.getSource())))
             )
 
             // /test dps <element> <level> <seconds> — DPSテスト（秒数分連続ダメージ）
@@ -385,6 +427,16 @@ public class TestCommand {
             "§fブロック設置/破壊: §e" + diff.isBlockPlaceEnabled() + "/" + diff.isBlockBreakEnabled()), false);
         source.sendSuccess(() -> Component.literal(
             "§fTrueCrafter: §e" + CustomDifficultyCommand.isTrueCrafterEnabled()), false);
+        source.sendSuccess(() -> Component.literal(
+            "§f進行度: §e" + ProgressionTracker.describe()), false);
+        // 月相情報
+        if (source.getLevel() != null) {
+            int phase = MoonPhaseDifficulty.getMoonPhase(source.getLevel());
+            int bonus = MoonPhaseDifficulty.getDifficultyBonus(source.getLevel());
+            source.sendSuccess(() -> Component.literal(
+                "§f月相: " + MoonPhaseDifficulty.getPhaseName(phase)
+                + " §f(難易度補正 §c+" + bonus + "§f)"), false);
+        }
         return 1;
     }
 
@@ -555,6 +607,134 @@ public class TestCommand {
             "§aGate回転を更新: §fYAW=§e%.1f §fPITCH=§e%.1f §fROLL=§e%.1f §fS=§e%.2f/%.2f/%.2f",
             yaw, pitch, roll, sx, sy, sz)), false);
         return 1;
+    }
+
+    // === /test log ... ===
+
+    private static int setLogEnabled(CommandSourceStack source, boolean on) {
+        CombatLogger.setEnabled(on);
+        source.sendSuccess(() -> Component.literal(
+            on ? "§a戦闘ログ: §e有効 §7(logs/combat_ai/ に出力)"
+               : "§a戦闘ログ: §c無効"), false);
+        return 1;
+    }
+
+    private static int logStatus(CommandSourceStack source) {
+        java.nio.file.Path file = CombatLogger.getTodayEventFile();
+        boolean exists = java.nio.file.Files.exists(file);
+        long size = 0;
+        long lines = 0;
+        if (exists) {
+            try {
+                size = java.nio.file.Files.size(file);
+                try (java.util.stream.Stream<String> s = java.nio.file.Files.lines(file)) {
+                    lines = s.count();
+                }
+            } catch (Exception ignored) {}
+        }
+        final long fSize = size;
+        final long fLines = lines;
+        final boolean fExists = exists;
+        source.sendSuccess(() -> Component.literal("§6=== 戦闘ログ状態 ==="), false);
+        source.sendSuccess(() -> Component.literal(
+            "§f有効: " + (CombatLogger.isEnabled() ? "§aON" : "§cOFF")), false);
+        source.sendSuccess(() -> Component.literal(
+            "§f今日のファイル: §e" + file.getFileName()), false);
+        source.sendSuccess(() -> Component.literal(
+            "§f存在: " + (fExists ? "§a○" : "§c×")
+            + " §fサイズ: §e" + fSize + "B §fイベント数: §e" + fLines), false);
+        source.sendSuccess(() -> Component.literal(
+            "§7/test log tail [n] で最新ログを表示"), false);
+        return 1;
+    }
+
+    private static int logPath(CommandSourceStack source) {
+        java.nio.file.Path dir = CombatLogger.getLogDirectory();
+        source.sendSuccess(() -> Component.literal(
+            "§6ログディレクトリ: §e" + dir.toAbsolutePath()), false);
+        source.sendSuccess(() -> Component.literal(
+            "§6今日のファイル: §e" + CombatLogger.getTodayEventFile().toAbsolutePath()), false);
+        return 1;
+    }
+
+    private static int logClear(CommandSourceStack source) {
+        java.nio.file.Path file = CombatLogger.getTodayEventFile();
+        try {
+            boolean deleted = java.nio.file.Files.deleteIfExists(file);
+            source.sendSuccess(() -> Component.literal(
+                deleted ? "§a今日の戦闘ログを削除しました" : "§7削除対象がありません"), false);
+            return deleted ? 1 : 0;
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("§c削除失敗: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int logAnalyze(CommandSourceStack source, int topN) {
+        List<String> lines = CombatLogAnalyzer.summary(topN);
+        source.sendSuccess(() -> Component.literal("§6=== 戦闘ログ集計 (Lisp注入中) ==="), false);
+        for (String line : lines) {
+            source.sendSuccess(() -> Component.literal("§7" + line), false);
+        }
+        source.sendSuccess(() -> Component.literal(
+            "§7Lisp変数: log-mob-type-* / log-player-* として各Mobの脳に注入中"), false);
+        return 1;
+    }
+
+    private static int logRefresh(CommandSourceStack source) {
+        CombatLogAnalyzer.refresh();
+        source.sendSuccess(() -> Component.literal(
+            "§a戦闘ログを再解析しました (総イベント数: §e"
+            + CombatLogAnalyzer.getTotalEvents() + "§a)"), false);
+        return 1;
+    }
+
+    private static int logTail(CommandSourceStack source, int n) {
+        java.nio.file.Path file = CombatLogger.getTodayEventFile();
+        if (!java.nio.file.Files.exists(file)) {
+            source.sendFailure(Component.literal("§c今日のログはまだありません"));
+            return 0;
+        }
+        try {
+            List<String> all = java.nio.file.Files.readAllLines(file);
+            int from = Math.max(0, all.size() - n);
+            List<String> tail = all.subList(from, all.size());
+            source.sendSuccess(() -> Component.literal(
+                "§6=== 戦闘ログ 最新" + tail.size() + "件 (全" + all.size() + "件) ==="), false);
+            for (String line : tail) {
+                String display = line.length() > 180 ? line.substring(0, 177) + "..." : line;
+                source.sendSuccess(() -> Component.literal("§7" + display), false);
+            }
+            return tail.size();
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("§c読込失敗: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    // === /test cleanblocks [radius] ===
+    private static int cleanBlocks(CommandSourceStack source, int radius) {
+        ServerLevel level = source.getLevel();
+        BlockPos center = BlockPos.containing(source.getPosition());
+        int removed = 0;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    BlockPos pos = center.offset(dx, dy, dz);
+                    net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);
+                    if (state.is(net.minecraft.world.level.block.Blocks.COBBLESTONE)
+                        || state.is(net.minecraft.world.level.block.Blocks.MOSSY_COBBLESTONE)
+                        || state.is(net.minecraft.world.level.block.Blocks.COBWEB)) {
+                        level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                        removed++;
+                    }
+                }
+            }
+        }
+        final int total = removed;
+        source.sendSuccess(() -> Component.literal(
+            "§a半径" + radius + "内の§c" + total + "個§aのMob設置ブロックを削除しました"), false);
+        return removed;
     }
 
     // === /test clear [radius] ===

@@ -32,6 +32,7 @@ public enum MobTrait {
     NAUSEATOR(     "吐き気",     "§e",    Rarity.UNCOMMON,  14),
     WEAKENER(      "弱体",       "§7",    Rarity.RARE,      10),
     EXPLOSIVE(     "爆裂",       "§6",    Rarity.RARE,      10),
+    LEARNER(       "学習",       "§b",    Rarity.RARE,      12),
     UNDYING(       "不死",       "§4§l",  Rarity.LEGENDARY,  3);
 
     public enum Rarity {

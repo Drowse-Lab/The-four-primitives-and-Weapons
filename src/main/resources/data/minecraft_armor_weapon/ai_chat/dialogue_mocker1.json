@@ -1,0 +1,173 @@
+{
+  "_comment": "ノリのいい女の子（ストレート長髪・黒髪に白）の会話ツリー",
+
+  "start": {
+    "text": "え、なになにｗ何か用？ｗ",
+    "choices": [
+      {"text": "何してんの？", "next": "ask_what"},
+      {"text": "名前教えて", "next": "ask_name"},
+      {"text": "君、誰？", "next": "ask_who"},
+      {"text": "かわいいね", "next": "compliment"},
+      {"text": "またね", "next": "end_bye"}
+    ]
+  },
+
+  "ask_what": {
+    "text": "えー暇だよーｗ遊んでよーｗ",
+    "choices": [
+      {"text": "何して遊ぶ？", "next": "play_what"},
+      {"text": "忙しいんだわ", "next": "busy"},
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "play_what": {
+    "text": "えーそれはそっちが考えてよーｗ丸投げｗ",
+    "choices": [
+      {"text": "じゃあ鬼ごっこ", "next": "tag"},
+      {"text": "じゃあお前考えて", "next": "throw_back"},
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "tag": {
+    "text": "えー私足遅いんだけどｗまぁいいよｗじゃあ後でねｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "throw_back": {
+    "text": "はぁ？ｗ投げ返すなｗめんどくさｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "busy": {
+    "text": "えーまじ？ｗつまんないｗ早く終わらせて遊んでよｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+
+  "ask_name": {
+    "text": "えー秘密ｗ当てたら教えてあげるｗ",
+    "choices": [
+      {"text": "え、ヒントは？", "next": "name_hint"},
+      {"text": "適当に名前つけていい？", "next": "name_nick"},
+      {"text": "じゃあいいや", "next": "name_whatever"},
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "name_hint": {
+    "text": "えーヒントはーｗ…ないｗ",
+    "choices": [
+      {"text": "ひどい", "next": "name_harsh"},
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "name_nick": {
+    "text": "えーつけてみてよｗ変なのだったら怒るからｗ",
+    "choices": [
+      {"text": "「うるさ子」", "next": "nick_noisy"},
+      {"text": "「ギャル」", "next": "nick_gyaru"},
+      {"text": "「友達」", "next": "nick_friend"},
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "nick_noisy": {
+    "text": "は？ｗｗ怒るよまじでｗｗ…まぁ否定できないけどｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "nick_gyaru": {
+    "text": "ギャル？ｗ私ギャルじゃないしｗ…ギャルかもｗｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "nick_friend": {
+    "text": "えっｗ…ちょっと待って。嬉しいんだけどｗ照れるじゃんｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "name_whatever": {
+    "text": "えーなにーｗ興味ないのｗひどいｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "name_harsh": {
+    "text": "えーひどくないしｗ秘密って言ったじゃんｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+
+  "ask_who": {
+    "text": "えーなになに？身元調査？ｗ天使だよーｗ",
+    "choices": [
+      {"text": "まじで？", "next": "who_really"},
+      {"text": "嘘くさい", "next": "who_lying"},
+      {"text": "強そう", "next": "who_strong"},
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "who_really": {
+    "text": "まじまじｗ私がふざけてると思った？ｗふざけてるけどｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "who_lying": {
+    "text": "は？失礼じゃない？ｗまぁ嘘じゃないけどｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "who_strong": {
+    "text": "まぁねｗ見た目よりはｗ戦う？ｗ一瞬で終わるよｗ",
+    "choices": [
+      {"text": "遠慮しとく", "next": "decline_fight"},
+      {"text": "やってみる？", "next": "try_fight"},
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "decline_fight": {
+    "text": "だよねｗ賢い選択ｗｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "try_fight": {
+    "text": "え？ｗまじで？ｗ私そんなキャラじゃないけどｗ…やめとくわｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+
+  "compliment": {
+    "text": "えっｗｗまじ？ｗ嘘だｗｗ…でも嬉しいかもｗ",
+    "choices": [
+      {"text": "本当だって", "next": "really_cute"},
+      {"text": "嘘です", "next": "lied"},
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "really_cute": {
+    "text": "えー押しに弱いんだけどそういうのｗ…ありがとｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+  "lied": {
+    "text": "はぁ？ｗｗ最低じゃんｗｗ許さんｗ",
+    "choices": [
+      {"text": "最初に戻る", "next": "start"}
+    ]
+  },
+
+  "end_bye": {
+    "text": "えーもう行くの？ｗまたねーｗ",
+    "end": true
+  }
+}

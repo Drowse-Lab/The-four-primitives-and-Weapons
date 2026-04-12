@@ -1,5 +1,6 @@
 package minecraftarmorweapon.event;
 
+import minecraftarmorweapon.ai.lisp.ProgressionTracker;
 import minecraftarmorweapon.command.CustomDifficultyCommand;
 import minecraftarmorweapon.command.CustomDifficultyCommand.CustomDifficulty;
 import net.minecraft.core.BlockPos;
@@ -8,8 +9,12 @@ import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.BossEvent;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -51,6 +56,8 @@ public class UndeadArmyEvent {
         final ServerBossEvent bossBar;
         boolean spawningNextWave = false;
         int nextWaveDelay = 0; // ウェーブ間の猶予tick
+        int lastAliveCount = 0; // 直近tickの残数（進展検知用）
+        int stallTicks = 0;     // 進展がなかったtick数
 
         UndeadRaid(ServerPlayer player, BlockPos center, int totalWaves) {
             this.player = player;
@@ -109,6 +116,9 @@ public class UndeadArmyEvent {
 
         long tick = event.getServer().getTickCount();
 
+        // 10tickに1回、全レイドMobにターゲット再割当（水中・洞窟・壁越しでも追尾継続）
+        if (tick % 10 == 0) reinforceTargets();
+
         // --- 進行中の侵攻のウェーブ管理 ---
         for (Map.Entry<UUID, UndeadRaid> entry : activeRaids.entrySet()) {
             UndeadRaid raid = entry.getValue();
@@ -131,13 +141,28 @@ public class UndeadArmyEvent {
 
             // 現ウェーブの敵が全滅したか
             if (!raid.aliveEntities.isEmpty()) {
-                // 生存確認（すでに削除済みエンティティを除外）
-                if (player.level() instanceof ServerLevel level) {
-                    raid.aliveEntities.removeIf(uuid -> {
-                        var e = level.getEntity(uuid);
-                        return e == null || !e.isAlive();
-                    });
+                // 生存確認: 全サーバーレベルを横断して実在しない/死亡UUIDを除外
+                raid.aliveEntities.removeIf(uuid -> {
+                    for (ServerLevel lv : event.getServer().getAllLevels()) {
+                        Entity e = lv.getEntity(uuid);
+                        if (e != null && e.isAlive()) return false;
+                    }
+                    return true;
+                });
+
+                // 進展停滞検知: 残数が600tick(30秒)変化しなかったらテレポートで強制合流
+                int current = raid.aliveEntities.size();
+                if (current == raid.lastAliveCount && current > 0) {
+                    raid.stallTicks++;
+                    if (raid.stallTicks >= 600) {
+                        teleportStragglersToPlayer(raid);
+                        raid.stallTicks = 0;
+                    }
+                } else {
+                    raid.stallTicks = 0;
+                    raid.lastAliveCount = current;
                 }
+
                 // ボスバー更新
                 raid.updateBossBar(raid.aliveEntities.size(),
                     waveSize(raid.currentWave,
@@ -170,8 +195,16 @@ public class UndeadArmyEvent {
             long dayTime = level.getDayTime() % 24000;
             if (dayTime < 13000 || dayTime > 23000) continue;
 
-            float chance = triggerChance(diff.getAiLevel());
+            // 進行度ボーナス + 月相ボーナスでトリガー確率を増幅
+            int progBonus = ProgressionTracker.getBaseLevelBonus();
+            int moonBonus = MoonPhaseDifficulty.getDifficultyBonus(level);
+            float chance = triggerChance(diff.getAiLevel())
+                * (1.0f + progBonus / 50.0f)
+                * (1.0f + moonBonus / 8.0f);  // 満月=2.0倍、新月=1.0倍
             Random rand = new Random();
+
+            // クールダウンも進行度で短縮（最小2.5分=3000tick）
+            int cooldownTicks = Math.max(3000, COOLDOWN_TICKS - progBonus * 60);
 
             for (ServerPlayer player : level.players()) {
                 UUID pid = player.getUUID();
@@ -187,7 +220,7 @@ public class UndeadArmyEvent {
                 if (rand.nextFloat() >= chance) continue;
 
                 startRaid(level, player, diff);
-                cooldowns.put(pid, COOLDOWN_TICKS);
+                cooldowns.put(pid, cooldownTicks);
             }
         }
     }
@@ -198,13 +231,17 @@ public class UndeadArmyEvent {
     private static void startRaid(ServerLevel level, ServerPlayer player, CustomDifficulty diff) {
         int aiLevel = diff.getAiLevel();
         // ウェーブ数: nightmare=3, realistic=5, lunatic=7, lunatic+=10, lunatic_extreme=15
-        int totalWaves = switch (aiLevel) {
+        int baseWaves = switch (aiLevel) {
             case 1  -> 3;
             case 2  -> 5;
             case 3  -> 7;
             case 4  -> 10;
             default -> 15;
         };
+        // 進行度ボーナス: 20ごとに +1ウェーブ、月相ボーナス: 2ごとに +1ウェーブ
+        int progBonus = ProgressionTracker.getBaseLevelBonus();
+        int moonBonus = MoonPhaseDifficulty.getDifficultyBonus(level);
+        int totalWaves = baseWaves + Math.min(10, progBonus / 20) + (moonBonus / 2);
 
         BlockPos center = getRaidCenter(player);
 
@@ -257,7 +294,7 @@ public class UndeadArmyEvent {
             mob.setCustomName(Component.literal("§5[アンデットアーミー Wave" + raid.currentWave + "]"));
             mob.setCustomNameVisible(true);
             applyStats(mob, aiLevel, raid.currentWave, false);
-            mob.setTarget(player);
+            applyRaidBuffs(mob, player);
             level.addFreshEntity(mob);
             raid.aliveEntities.add(mob.getUUID());
         }
@@ -280,7 +317,7 @@ public class UndeadArmyEvent {
                 elite.setCustomName(Component.literal("§4§l[アンデット将軍]"));
                 elite.setCustomNameVisible(true);
                 applyStats(elite, aiLevel, raid.currentWave, true);
-                elite.setTarget(player);
+                applyRaidBuffs(elite, player);
                 level.addFreshEntity(elite);
                 raid.aliveEntities.add(elite.getUUID());
             }
@@ -293,6 +330,34 @@ public class UndeadArmyEvent {
             Component.literal("§cWave " + raid.currentWave + "/" + raid.totalWaves + " 開始！"),
             true
         );
+    }
+
+    // ============================
+    // 外部から呼び出し可能な中断API（アイテムやコマンド用）
+    // ============================
+    /** 指定プレイヤーの侵攻を中断。進行中のMobも全て削除。戻り値: 中断が成立したか */
+    public static boolean cancelRaid(ServerPlayer player) {
+        if (player == null) return false;
+        UUID pid = player.getUUID();
+        UndeadRaid raid = activeRaids.get(pid);
+        if (raid == null) return false;
+        // 生存中の軍団Mobを消去
+        if (player.level() instanceof ServerLevel level) {
+            for (UUID id : raid.aliveEntities) {
+                var e = level.getEntity(id);
+                if (e != null) e.discard();
+            }
+        }
+        raid.aliveEntities.clear();
+        endRaid(pid, false);
+        // クールダウンをフル付与（連続使用防止）
+        cooldowns.put(pid, COOLDOWN_TICKS);
+        return true;
+    }
+
+    /** 指定プレイヤーに侵攻中のレイドがあるか */
+    public static boolean hasActiveRaid(ServerPlayer player) {
+        return player != null && activeRaids.containsKey(player.getUUID());
     }
 
     // ============================
@@ -339,10 +404,12 @@ public class UndeadArmyEvent {
     // ヘルパー
     // ============================
 
-    /** ウェーブごとの通常アンデット数 */
+    /** ウェーブごとの通常アンデット数（進行度ボーナスで増加） */
     private static int waveSize(int wave, int aiLevel) {
-        // wave1=6+aiLevel, wave2=8+aiLevel×2, … と増加
-        return 4 + wave * 2 + aiLevel * 2;
+        int base = 4 + wave * 2 + aiLevel * 2;
+        // 進行度ボーナス: 10ごとに +1体（上限+20体）
+        int extra = Math.min(20, ProgressionTracker.getBaseLevelBonus() / 10);
+        return base + extra;
     }
 
     /** aiLevelごとの発動確率（1分あたり） */
@@ -360,6 +427,96 @@ public class UndeadArmyEvent {
     private static BlockPos getRaidCenter(ServerPlayer player) {
         BlockPos bed = player.getRespawnPosition();
         return bed != null ? bed : player.blockPosition();
+    }
+
+    // NBT tag: アンデットアーミー所属Mob識別 + 対象プレイヤーUUID
+    private static final String NBT_RAID_MEMBER = "UndeadArmyRaidMember";
+    private static final String NBT_RAID_TARGET = "UndeadArmyTargetPlayer";
+
+    /** アンデットアーミーMob専用のバフ（常時検知・水中OK・洞窟OK・永続化） */
+    private static void applyRaidBuffs(Monster mob, ServerPlayer player) {
+        // 永続化（チャンク外に出ても消えない、despawnしない）
+        mob.setPersistenceRequired();
+
+        // NBTタグ: このMobはアンデットアーミー所属
+        mob.getPersistentData().putBoolean(NBT_RAID_MEMBER, true);
+        mob.getPersistentData().putUUID(NBT_RAID_TARGET, player.getUUID());
+
+        // 無限効果: 水中呼吸・日光耐性・暗視（洞窟/水中でもプレイヤーを追える）
+        int inf = Integer.MAX_VALUE;
+        mob.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, inf, 0, false, false));
+        mob.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, inf, 0, false, false));
+        mob.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, inf, 0, false, false));
+        mob.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, inf, 1, false, false));
+
+        // 初期ターゲット設定（壁越しでもよい — 後続の再割当で保証）
+        mob.setTarget(player);
+        // 長期間ターゲットを保持
+        mob.setLastHurtByMob(player);
+    }
+
+    /** 残存Mobをプレイヤー周辺にテレポート（進展停滞時のフォールバック） */
+    private static void teleportStragglersToPlayer(UndeadRaid raid) {
+        ServerPlayer player = raid.player;
+        if (!(player.level() instanceof ServerLevel pLevel)) return;
+
+        Random rand = new Random();
+        int teleported = 0;
+        for (UUID id : raid.aliveEntities) {
+            Entity e = null;
+            for (ServerLevel lv : player.getServer().getAllLevels()) {
+                Entity found = lv.getEntity(id);
+                if (found != null && found.isAlive()) { e = found; break; }
+            }
+            if (!(e instanceof Mob mob)) continue;
+
+            // プレイヤーの周囲12ブロック以内に配置
+            double angle = rand.nextDouble() * Math.PI * 2.0;
+            double radius = 8.0 + rand.nextDouble() * 4.0;
+            double nx = player.getX() + Math.cos(angle) * radius;
+            double nz = player.getZ() + Math.sin(angle) * radius;
+            double ny = player.getY();
+
+            // 別ディメンションにいる場合は破棄して再生成する代わりに、同Levelならテレポート
+            if (mob.level() == pLevel) {
+                mob.teleportTo(nx, ny, nz);
+            } else {
+                // 別ディメンション: エンティティは諦めて除外（後続でクリーンアップ）
+                mob.discard();
+                continue;
+            }
+            mob.setTarget(player);
+            teleported++;
+        }
+
+        if (teleported > 0) {
+            player.displayClientMessage(
+                Component.literal("§6§l残存アンデットが集結してきた！"), true);
+        }
+    }
+
+    /** 進行中の全レイドMobに対し、ターゲットを再割当（壁越し・水中・洞窟でも追尾） */
+    private static void reinforceTargets() {
+        for (UndeadRaid raid : activeRaids.values()) {
+            ServerPlayer player = raid.player;
+            if (!player.isAlive()) continue;
+            if (!(player.level() instanceof ServerLevel level)) continue;
+
+            for (UUID id : raid.aliveEntities) {
+                Entity e = level.getEntity(id);
+                if (!(e instanceof Mob mob)) continue;
+                if (!mob.isAlive()) continue;
+
+                LivingEntity cur = mob.getTarget();
+                if (cur != player) {
+                    mob.setTarget(player);
+                }
+                // 遠距離でも諦めない: ナビゲーション強制
+                if (mob.distanceToSqr(player) > 64.0 && mob.getNavigation().isDone()) {
+                    mob.getNavigation().moveTo(player, 1.2);
+                }
+            }
+        }
     }
 
     /** アンデット軍団のステータス強化 */

@@ -8,12 +8,15 @@ import minecraftarmorweapon.damage.ElementalDamageUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -56,11 +59,18 @@ public class MobTraitHandler {
     private static final Map<UUID, Integer> undyingCount = new ConcurrentHashMap<>();
     private static final Set<UUID> berserkerRageActive = ConcurrentHashMap.newKeySet();
 
+    // 爆裂特性の再入ガード: explode()の副次ダメージが同じハンドラを呼んで無限再帰するのを防止
+    private static final ThreadLocal<Boolean> explosionInProgress = ThreadLocal.withInitial(() -> false);
+
     // 蜘蛛糸の巣設置クールダウン（UUID → 残りtick）
     private static final Map<UUID, Integer> webCooldown = new ConcurrentHashMap<>();
     // 蜘蛛糸で設置した一時ブロック（自動消滅用）
     private static final Map<BlockPos, Long> temporaryWebs = new ConcurrentHashMap<>();
     private static final long WEB_DECAY_TIME = 8000; // 8秒で消滅
+
+    // 最近プレイヤーに破壊された蜘蛛の巣の位置（再設置を一定時間ブロック）
+    private static final Map<BlockPos, Long> recentlyBrokenWebs = new ConcurrentHashMap<>();
+    private static final long BROKEN_WEB_BLOCK_MS = 60_000; // 破壊後60秒は再設置不可
 
     // ============================
     // 1. スポーン時に特性を付与
@@ -355,6 +365,17 @@ public class MobTraitHandler {
                 monster.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 999999, 0, false, true));
             }
 
+            case LEARNER -> {
+                // 学習: HP×(1.1+lv×0.05), 受けたダメージ種別ごとに被ダメージ逓減 (LearningHandler)
+                double hpMul = 1.1 + lv * 0.05;     // 1.15→1.35
+                if (monster.getAttribute(Attributes.MAX_HEALTH) != null) {
+                    double hp = monster.getAttribute(Attributes.MAX_HEALTH).getBaseValue() * hpMul;
+                    monster.getAttribute(Attributes.MAX_HEALTH).setBaseValue(hp);
+                    monster.setHealth((float) hp);
+                }
+                LearningHandler.register(monster.getUUID());
+            }
+
             case UNDYING -> {
                 // 不死: HP×(1.5+lv×0.2), 攻撃×(1.1+lv×0.05), 吸収Lv = lv/2
                 double hpMul = 1.5 + lv * 0.2;      // 1.7→2.5
@@ -470,6 +491,166 @@ public class MobTraitHandler {
     }
 
     // ============================
+    // 特性ごとのデバフ効果マッピング（POISONER→POISON 等）
+    // ============================
+    private static MobEffect debuffFor(MobTrait trait) {
+        if (trait == null) return null;
+        return switch (trait) {
+            case POISONER  -> MobEffects.POISON;
+            case BLINDER   -> MobEffects.BLINDNESS;
+            case NAUSEATOR -> MobEffects.CONFUSION;
+            case WEAKENER  -> MobEffects.WEAKNESS;
+            default        -> null;
+        };
+    }
+
+    /** そのMobが自分の特性に対応するデバフに対して免疫を持つか */
+    public static boolean isImmuneToOwnDebuff(LivingEntity entity, MobEffect effect) {
+        if (!(entity instanceof Monster m)) return false;
+        MobTrait trait = traitMap.get(m.getUUID());
+        return debuffFor(trait) == effect;
+    }
+
+    // ============================
+    // 特性Mobは自分の特性デバフに免疫（POISONER→毒無効など）
+    // ============================
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onOwnDebuffImmunity(LivingHurtEvent event) {
+        if (event.getSource().is(net.minecraft.world.damagesource.DamageTypes.MAGIC)
+            || event.getSource().is(net.minecraft.world.damagesource.DamageTypes.INDIRECT_MAGIC)) {
+            // 毒・衰弱などはMAGIC系ダメージで到来 — 特性と対応していたらキャンセル
+            if (!(event.getEntity() instanceof Monster m)) return;
+            MobTrait trait = traitMap.get(m.getUUID());
+            if (trait == null) return;
+            MobEffect debuff = debuffFor(trait);
+            if (debuff == null) return;
+            // 自分のデバフが付いている状態でその継続ダメージ → キャンセル
+            MobEffectInstance inst = m.getEffect(debuff);
+            if (inst != null) {
+                event.setCanceled(true);
+            }
+        }
+    }
+
+    // ============================
+    // クリーパー爆発前: 正のバフを剥奪（lingering cloud に転写されるのを防止）
+    // バニラのCreeper.spawnLingeringCloud()は getActiveEffects() を AreaEffectCloud にコピーする。
+    // これにより爆発の煙に巻き込まれたプレイヤーが再生/速度/攻撃力UP等のバフを得てしまう。
+    // ExplosionEvent.Start でクリーパー自身の正の効果を剥奪しておけば、その後の
+    // spawnLingeringCloud() は空 or デバフのみを含むクラウドを生成する。
+    // ============================
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onExplosionStart(net.minecraftforge.event.level.ExplosionEvent.Start event) {
+        if (!(event.getExplosion().getExploder() instanceof Creeper creeper)) return;
+        if (creeper.level().isClientSide) return;
+
+        // Hard 以降の難易度では残留ポーションクラウド自体を生成させないため
+        // クリーパーの全エフェクトを剥奪する（spawnLingeringCloud は空になり生成スキップ）
+        net.minecraft.world.Difficulty vanillaDiff = creeper.level().getDifficulty();
+        boolean isHardOrAbove = vanillaDiff == net.minecraft.world.Difficulty.HARD;
+        if (isHardOrAbove) {
+            // 全効果を剥奪
+            java.util.List<MobEffect> toRemove = new java.util.ArrayList<>();
+            for (MobEffectInstance inst : creeper.getActiveEffects()) {
+                toRemove.add(inst.getEffect());
+            }
+            for (MobEffect eff : toRemove) creeper.removeEffect(eff);
+            return;
+        }
+
+        // Normal 以下: 正のバフのみ剥奪（プレイヤーが強化されるのを防止）
+        MobEffect[] positiveEffects = {
+            MobEffects.DAMAGE_BOOST, MobEffects.MOVEMENT_SPEED, MobEffects.REGENERATION,
+            MobEffects.ABSORPTION, MobEffects.DAMAGE_RESISTANCE, MobEffects.FIRE_RESISTANCE,
+            MobEffects.DIG_SPEED, MobEffects.HEALTH_BOOST, MobEffects.JUMP, MobEffects.LUCK,
+            MobEffects.NIGHT_VISION, MobEffects.WATER_BREATHING, MobEffects.HERO_OF_THE_VILLAGE,
+            MobEffects.SATURATION, MobEffects.CONDUIT_POWER, MobEffects.INVISIBILITY,
+            MobEffects.GLOWING, MobEffects.SLOW_FALLING
+        };
+        for (MobEffect eff : positiveEffects) {
+            if (creeper.hasEffect(eff)) creeper.removeEffect(eff);
+        }
+    }
+
+    // ============================
+    // クリーパー爆発時: 周囲に火を配置して延焼させる
+    // ============================
+    @SubscribeEvent
+    public static void onCreeperExplosionDetonate(net.minecraftforge.event.level.ExplosionEvent.Detonate event) {
+        if (!(event.getExplosion().getExploder() instanceof Creeper creeper)) return;
+        if (!(event.getLevel() instanceof ServerLevel serverLevel)) return;
+
+        int aiLevel = CustomDifficultyCommand.getCurrentDifficulty().getAiLevel();
+        int progBonus = minecraftarmorweapon.ai.lisp.ProgressionTracker.getBaseLevelBonus();
+        // 難易度と進行度で発火確率が上昇 (0.15〜0.8)
+        float igniteChance = Math.min(0.8f, 0.15f + aiLevel * 0.08f + progBonus * 0.003f);
+
+        net.minecraft.util.RandomSource rand = serverLevel.getRandom();
+        java.util.List<BlockPos> affected = new java.util.ArrayList<>(event.getAffectedBlocks());
+        for (BlockPos pos : affected) {
+            if (rand.nextFloat() >= igniteChance) continue;
+            // 爆発で空いた位置か、その1ブロック上を候補とする
+            BlockPos firePos = serverLevel.isEmptyBlock(pos) ? pos : pos.above();
+            if (!serverLevel.isEmptyBlock(firePos)) continue;
+            BlockPos below = firePos.below();
+            // 下のブロックが燃えやすい or 固体なら火を置く
+            if (serverLevel.getBlockState(below).isFaceSturdy(serverLevel, below, net.minecraft.core.Direction.UP)
+                || serverLevel.getBlockState(below).ignitedByLava()) {
+                serverLevel.setBlock(firePos, net.minecraft.world.level.block.BaseFireBlock.getState(serverLevel, firePos), 11);
+            }
+        }
+    }
+
+    // ============================
+    // クリーパー爆発: 特性デバフを散布 & プレイヤーへの正の効果転送を防止
+    // ============================
+    @SubscribeEvent
+    public static void onCreeperExplosionHurt(LivingHurtEvent event) {
+        if (!(event.getSource().getEntity() instanceof Creeper creeper)) return;
+        if (!event.getSource().is(net.minecraft.world.damagesource.DamageTypes.EXPLOSION)
+            && !event.getSource().is(net.minecraft.world.damagesource.DamageTypes.PLAYER_EXPLOSION)) return;
+        if (creeper.level().isClientSide) return;
+
+        MobTrait trait = traitMap.get(creeper.getUUID());
+        MobEffect debuff = debuffFor(trait);
+        if (debuff == null) return;
+
+        LivingEntity victim = event.getEntity() instanceof LivingEntity ? (LivingEntity) event.getEntity() : null;
+        if (victim == null) return;
+        // 自分自身や同特性Mobには感染しない
+        if (victim == creeper) return;
+        if (victim instanceof Monster m && traitMap.get(m.getUUID()) == trait) return;
+
+        int aiLevel = CustomDifficultyCommand.getCurrentDifficulty().getAiLevel();
+        int duration = 120 + aiLevel * 40;      // 6秒 + aiLevel×2秒
+        int amplifier = Math.max(0, aiLevel / 2 - 1);
+        victim.addEffect(new MobEffectInstance(debuff, duration, amplifier));
+
+        // プレイヤーが巻き込まれた場合: クリーパーから受けた正の効果を剥奪
+        // （正のバフが爆発で転写されるのを防ぐ）
+        if (victim instanceof Player player) {
+            stripPositiveEffectsCopiedFrom(creeper, player);
+        }
+    }
+
+    /** クリーパーが持つ正の効果を、プレイヤーから即時剥奪する（バフ転写防止） */
+    private static void stripPositiveEffectsCopiedFrom(Creeper creeper, Player player) {
+        MobEffect[] positiveEffects = {
+            MobEffects.DAMAGE_BOOST, MobEffects.MOVEMENT_SPEED, MobEffects.REGENERATION,
+            MobEffects.ABSORPTION, MobEffects.DAMAGE_RESISTANCE, MobEffects.FIRE_RESISTANCE,
+            MobEffects.DIG_SPEED, MobEffects.HEALTH_BOOST, MobEffects.JUMP, MobEffects.LUCK,
+            MobEffects.NIGHT_VISION, MobEffects.WATER_BREATHING, MobEffects.HERO_OF_THE_VILLAGE,
+            MobEffects.SATURATION, MobEffects.CONDUIT_POWER, MobEffects.INVISIBILITY
+        };
+        for (MobEffect eff : positiveEffects) {
+            if (creeper.hasEffect(eff) && player.hasEffect(eff)) {
+                // クリーパー側にも付与されている同効果を剥奪（転写された可能性）
+                player.removeEffect(eff);
+            }
+        }
+    }
+
+    // ============================
     // 3. 攻撃ヒット時の処理（爆裂 + 呪縛者）
     // ============================
     @SubscribeEvent
@@ -489,16 +670,22 @@ public class MobTraitHandler {
         LivingEntity target = event.getEntity() instanceof LivingEntity ? (LivingEntity) event.getEntity() : null;
 
         // --- 爆裂: 攻撃ヒット時に小爆発 ---
-        if (trait == MobTrait.EXPLOSIVE) {
+        // 再入ガード: 爆発の副次ダメージが再びこのハンドラを呼ぶと無限再帰 → StackOverflow
+        if (trait == MobTrait.EXPLOSIVE && !explosionInProgress.get()) {
             if (attacker.level() instanceof ServerLevel serverLevel) {
-                serverLevel.explode(
-                    attacker,
-                    event.getEntity().getX(),
-                    event.getEntity().getY(),
-                    event.getEntity().getZ(),
-                    2.0f,
-                    Level.ExplosionInteraction.MOB
-                );
+                explosionInProgress.set(true);
+                try {
+                    serverLevel.explode(
+                        attacker,
+                        event.getEntity().getX(),
+                        event.getEntity().getY(),
+                        event.getEntity().getZ(),
+                        2.0f,
+                        Level.ExplosionInteraction.MOB
+                    );
+                } finally {
+                    explosionInProgress.set(false);
+                }
             }
         }
 
@@ -592,8 +779,8 @@ public class MobTraitHandler {
             int aiLevel = CustomDifficultyCommand.getCurrentDifficulty().getAiLevel();
             BlockPos targetFeet = target.blockPosition();
 
-            // 足元に蜘蛛の巣を設置
-            if (monster.level().getBlockState(targetFeet).isAir()) {
+            // 足元に蜘蛛の巣を設置（最近壊された位置には再設置しない）
+            if (canPlaceWebAt(monster, targetFeet)) {
                 monster.level().setBlock(targetFeet, Blocks.COBWEB.defaultBlockState(), 3);
                 temporaryWebs.put(targetFeet, System.currentTimeMillis());
 
@@ -604,7 +791,7 @@ public class MobTraitHandler {
                         targetFeet.east(), targetFeet.west()
                     }) {
                         if (monster.getRandom().nextFloat() < 0.3f
-                            && monster.level().getBlockState(offset).isAir()) {
+                            && canPlaceWebAt(monster, offset)) {
                             monster.level().setBlock(offset, Blocks.COBWEB.defaultBlockState(), 3);
                             temporaryWebs.put(offset, System.currentTimeMillis());
                         }
@@ -616,7 +803,7 @@ public class MobTraitHandler {
                         targetFeet.south().east(), targetFeet.south().west()
                     }) {
                         if (monster.getRandom().nextFloat() < 0.2f
-                            && monster.level().getBlockState(offset).isAir()) {
+                            && canPlaceWebAt(monster, offset)) {
                             monster.level().setBlock(offset, Blocks.COBWEB.defaultBlockState(), 3);
                             temporaryWebs.put(offset, System.currentTimeMillis());
                         }
@@ -624,10 +811,49 @@ public class MobTraitHandler {
                 }
             }
 
-            // クールダウン: aiLevelが高いほど短い（3秒〜1.5秒）
-            int cd = Math.max(30, 60 - aiLevel * 6);
+            // クールダウン: 大幅に延長（8秒〜15秒、aiLevelが高いほど短い）
+            int cd = Math.max(160, 300 - aiLevel * 14);
             webCooldown.put(id, cd);
         }
+    }
+
+    /** 外部AIから参照: 指定位置の蜘蛛の巣が最近プレイヤーに破壊されたか */
+    public static boolean isWebRecentlyBroken(BlockPos pos) {
+        Long brokenAt = recentlyBrokenWebs.get(pos);
+        return brokenAt != null
+            && System.currentTimeMillis() - brokenAt < BROKEN_WEB_BLOCK_MS;
+    }
+
+    // ============================
+    // 蜘蛛の巣設置の可否判定
+    // ============================
+    private static boolean canPlaceWebAt(Monster monster, BlockPos pos) {
+        // 空気でない位置には置かない
+        if (!monster.level().getBlockState(pos).isAir()) return false;
+        // 最近プレイヤーに破壊された位置は一定時間置かない
+        Long brokenAt = recentlyBrokenWebs.get(pos);
+        if (brokenAt != null && System.currentTimeMillis() - brokenAt < BROKEN_WEB_BLOCK_MS) {
+            return false;
+        }
+        // プレイヤーのいる位置には置かない（移動阻害防止の二重ガード）
+        net.minecraft.world.phys.AABB box = new net.minecraft.world.phys.AABB(
+            pos.getX(), pos.getY(), pos.getZ(),
+            pos.getX() + 1.0, pos.getY() + 1.0, pos.getZ() + 1.0);
+        return monster.level()
+            .getEntitiesOfClass(net.minecraft.world.entity.player.Player.class, box.inflate(0.05))
+            .isEmpty();
+    }
+
+    // ============================
+    // プレイヤーが蜘蛛の巣を破壊 → 一定時間再設置不可
+    // ============================
+    @SubscribeEvent
+    public static void onBlockBreak(net.minecraftforge.event.level.BlockEvent.BreakEvent event) {
+        if (!event.getState().is(Blocks.COBWEB)) return;
+        BlockPos pos = event.getPos();
+        recentlyBrokenWebs.put(pos, System.currentTimeMillis());
+        // tempWebs からは即外す（自動消滅logicとの競合防止）
+        temporaryWebs.remove(pos);
     }
 
     // ============================
@@ -650,7 +876,11 @@ public class MobTraitHandler {
                 BlockPos pos = entry.getKey();
                 event.getServer().getAllLevels().forEach(level -> {
                     if (level.getBlockState(pos).is(Blocks.COBWEB)) {
-                        level.destroyBlock(pos, false);
+                        boolean destroyed = level.destroyBlock(pos, false);
+                        // フォールバック: 強制AIR
+                        if (!destroyed && level.getBlockState(pos).is(Blocks.COBWEB)) {
+                            level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                        }
                     }
                 });
                 iterator.remove();

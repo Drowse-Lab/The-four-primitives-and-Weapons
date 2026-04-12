@@ -1096,9 +1096,11 @@ public class SafeTrueCrafterAI {
                 double distance = spider.distanceToSqr(target);
                 if (distance < 16.0 && spider.getRandom().nextFloat() < 0.1f) {
                     BlockPos targetPos = target.blockPosition();
-                    if (spider.level().getBlockState(targetPos).isAir()) {
+                    // 最近破壊された位置 or 空気でない位置には再設置しない
+                    if (spider.level().getBlockState(targetPos).isAir()
+                        && !minecraftarmorweapon.trait.MobTraitHandler.isWebRecentlyBroken(targetPos)) {
                         spider.level().setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
-                        data.blockPlaceCooldown = 100; // 5秒のクールダウン
+                        data.blockPlaceCooldown = 400; // 20秒のクールダウンに延長
                         temporaryBlocks.put(targetPos, System.currentTimeMillis());
                     }
                 }
@@ -1131,16 +1133,36 @@ public class SafeTrueCrafterAI {
     // ブロック設置ヘルパー
     // ============================
 
-    /** 指定位置にブロックを設置できるか（空気・草・水など） */
+    /** 指定位置にブロックを設置できるか（空気・草・水など、かつプレイヤー埋没を防止） */
     private static boolean canPlaceAt(Monster monster, BlockPos pos) {
         BlockState state = monster.level().getBlockState(pos);
-        return state.isAir() || state.liquid() ||
+        boolean replaceable = state.isAir() || state.liquid() ||
                state.is(Blocks.GRASS) || state.is(Blocks.TALL_GRASS) ||
                state.is(Blocks.SNOW) || state.is(Blocks.VINE);
+        if (!replaceable) return false;
+        // プレイヤー埋没防止: 対象位置・直上にプレイヤーのAABBが重なるなら不可
+        return !isEntityBlocking(monster, pos);
     }
 
-    /** 一時ブロック（mossy_cobblestone）を設置してマップに登録 */
+    /** 設置位置にプレイヤー/MobのAABBが重なっているかチェック（埋没・窒息防止） */
+    private static boolean isEntityBlocking(Monster monster, BlockPos pos) {
+        net.minecraft.world.phys.AABB blockBox = new net.minecraft.world.phys.AABB(
+            pos.getX(), pos.getY(), pos.getZ(),
+            pos.getX() + 1.0, pos.getY() + 1.0, pos.getZ() + 1.0
+        );
+        // プレイヤーが重なっていたら置かない
+        List<Player> players = monster.level().getEntitiesOfClass(Player.class, blockBox.inflate(0.05));
+        if (!players.isEmpty()) return true;
+        // 自分以外の生物でも埋没を避ける
+        List<LivingEntity> livings = monster.level().getEntitiesOfClass(LivingEntity.class, blockBox.inflate(0.05),
+            e -> e != monster);
+        return !livings.isEmpty();
+    }
+
+    /** 一時ブロック（mossy_cobblestone）を設置してマップに登録。プレイヤー埋没を防止 */
     private static void placeTempBlock(Monster monster, BlockPos pos) {
+        // 二重チェック: 設置直前にエンティティが重なっていないか確認
+        if (isEntityBlocking(monster, pos)) return;
         monster.level().setBlock(pos, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 3);
         temporaryBlocks.put(pos, System.currentTimeMillis());
     }
@@ -1421,11 +1443,15 @@ public class SafeTrueCrafterAI {
                 
                 // 時間経過でブロックを削除
                 if (currentTime - placeTime > BLOCK_DECAY_TIME) {
-                    // すべてのワールドで削除を試みる
+                    // すべてのワールドで削除を試みる（destroyBlockが効かない場合はAIRに上書き）
                     event.getServer().getAllLevels().forEach(level -> {
                         BlockState state = level.getBlockState(pos);
                         if (state.is(Blocks.COBBLESTONE) || state.is(Blocks.MOSSY_COBBLESTONE) || state.is(Blocks.COBWEB)) {
-                            level.destroyBlock(pos, false);
+                            boolean destroyed = level.destroyBlock(pos, false);
+                            // フォールバック: destroyBlockが失敗(protected areaなど)ならsetBlockで強制AIR
+                            if (!destroyed && !level.getBlockState(pos).isAir()) {
+                                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                            }
                         }
                     });
                     iterator.remove();

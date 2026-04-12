@@ -1,4 +1,7 @@
 {
+  "item.minecraft_armor_weapon.undead_army_banish": "Holy Bell of Banishment",
+  "item.minecraft_armor_weapon.throwing_knife": "Throwing Knife",
+  "entity.minecraft_armor_weapon.throwing_knife": "Throwing Knife",
   "item.minecraft_armor_weapon.rapier": "Rapier",
   "item.minecraft_armor_weapon.parry_shield": "Parry Shield",
   "effect.minecraft_armor_weapon.guard": "guard",

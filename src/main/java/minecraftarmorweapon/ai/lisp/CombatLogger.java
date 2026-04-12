@@ -31,6 +31,23 @@ public class CombatLogger {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
+    // 戦闘ログの有効/無効フラグ（/test log on|off で切替）
+    private static volatile boolean enabled = true;
+
+    public static boolean isEnabled() { return enabled; }
+    public static void setEnabled(boolean on) { enabled = on; }
+
+    /** 今日のJSONLイベントログファイルへのパス */
+    public static Path getTodayEventFile() {
+        String date = LocalDateTime.now().format(DATE_FMT);
+        return getLogDir().resolve("combat_events_" + date + ".jsonl");
+    }
+
+    /** ログディレクトリ（公開） */
+    public static Path getLogDirectory() {
+        return getLogDir();
+    }
+
     private static Path logDir;
 
     private static Path getLogDir() {
@@ -142,6 +159,77 @@ public class CombatLogger {
         } catch (Exception e) {
             // 無視
         }
+    }
+
+    /**
+     * Claude Code向け: 1行1イベントのJSONLログ。
+     * ログ出力先: .minecraft/logs/combat_ai/combat_events_YYYY-MM-DD.jsonl
+     * parse容易にJSON Lines形式で記録する。
+     *
+     * @param eventType "attack" / "hurt" / "kill" / "death" / "dodge" / "spawn" など
+     * @param extra    追加情報（JSON文字列として埋め込み、null可）
+     */
+    public static void logEvent(String eventType, LivingEntity source, LivingEntity target,
+                                 float amount, String extra) {
+        if (!enabled) return;
+        try {
+            String date = LocalDateTime.now().format(DATE_FMT);
+            String iso = LocalDateTime.now().toString();
+            Path logFile = getLogDir().resolve("combat_events_" + date + ".jsonl");
+
+            StringBuilder sb = new StringBuilder(256);
+            sb.append("{\"ts\":\"").append(iso).append("\"");
+            sb.append(",\"event\":\"").append(esc(eventType)).append("\"");
+            if (source != null) {
+                sb.append(",\"source\":{\"type\":\"").append(esc(source.getType().getDescriptionId())).append("\"")
+                  .append(",\"name\":\"").append(esc(source.getName().getString())).append("\"")
+                  .append(",\"uuid\":\"").append(source.getUUID()).append("\"")
+                  .append(",\"hp\":").append(source.getHealth()).append("/").append(source.getMaxHealth())
+                  .append(",\"pos\":[").append(String.format("%.1f,%.1f,%.1f", source.getX(), source.getY(), source.getZ())).append("]");
+                if (source instanceof Mob m) {
+                    int ai = MobAILevelHandler.getAILevel(m);
+                    sb.append(",\"ai_level\":").append(ai);
+                }
+                sb.append("}");
+            }
+            if (target != null) {
+                sb.append(",\"target\":{\"type\":\"").append(esc(target.getType().getDescriptionId())).append("\"")
+                  .append(",\"name\":\"").append(esc(target.getName().getString())).append("\"")
+                  .append(",\"uuid\":\"").append(target.getUUID()).append("\"")
+                  .append(",\"hp\":").append(target.getHealth()).append("/").append(target.getMaxHealth())
+                  .append(",\"pos\":[").append(String.format("%.1f,%.1f,%.1f", target.getX(), target.getY(), target.getZ())).append("]");
+                if (target instanceof Mob m) {
+                    int ai = MobAILevelHandler.getAILevel(m);
+                    sb.append(",\"ai_level\":").append(ai);
+                }
+                sb.append("}");
+            }
+            if (amount != 0f) {
+                sb.append(",\"amount\":").append(amount);
+            }
+            if (source != null && target != null) {
+                double dist = Math.sqrt(source.distanceToSqr(target));
+                sb.append(",\"distance\":").append(String.format("%.2f", dist));
+            }
+            if (source != null && source.level() != null) {
+                sb.append(",\"dimension\":\"").append(esc(source.level().dimension().location().toString())).append("\"");
+                sb.append(",\"in_water\":").append(source.isInWater());
+                sb.append(",\"on_ground\":").append(source.onGround());
+            }
+            if (extra != null && !extra.isEmpty()) {
+                sb.append(",\"extra\":").append(extra);
+            }
+            sb.append("}\n");
+
+            Files.writeString(logFile, sb.toString(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (Exception e) {
+            // 無視
+        }
+    }
+
+    private static String esc(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
     }
 
     /**

@@ -66,6 +66,16 @@ public class MobAILevelHandler {
 
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
+        // === JSONLイベントログ（Claude Code参照用） ===
+        try {
+            LivingEntity srcEnt = null;
+            if (event.getSource().getEntity() instanceof LivingEntity le) srcEnt = le;
+            String extra = "{\"damage_type\":\"" +
+                event.getSource().typeHolder().unwrapKey()
+                    .map(k -> k.location().toString()).orElse("unknown") + "\"}";
+            CombatLogger.logEvent("hurt", srcEnt, event.getEntity(), event.getAmount(), extra);
+        } catch (Exception ignored) {}
+
         // === プレイヤーの攻撃パターン記録 ===
         if (event.getSource().getEntity() instanceof Player player
             && event.getEntity() instanceof Mob targetMob) {
@@ -160,6 +170,7 @@ public class MobAILevelHandler {
         ServerLevel overworld = event.getServer().overworld();
         AIEvolutionManager.loadFromWorld(overworld);
         PlayerBehaviorTracker.loadFromWorld(overworld);
+        ProgressionTracker.bindWorld(overworld);
     }
 
     @SubscribeEvent
