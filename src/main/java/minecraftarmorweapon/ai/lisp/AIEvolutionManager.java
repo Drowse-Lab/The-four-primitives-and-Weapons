@@ -45,7 +45,7 @@ public class AIEvolutionManager {
         ENTITY_TO_LISP.put("minecraft:zombie", "zombie");
         ENTITY_TO_LISP.put("minecraft:husk", "zombie");
         ENTITY_TO_LISP.put("minecraft:drowned", "zombie");
-        ENTITY_TO_LISP.put("minecraft:wither_skeleton", "skeleton");
+        ENTITY_TO_LISP.put("minecraft:wither_skeleton", "zombie");
         ENTITY_TO_LISP.put("minecraft:skeleton", "skeleton");
         ENTITY_TO_LISP.put("minecraft:stray", "skeleton");
         ENTITY_TO_LISP.put("minecraft:creeper", "creeper");
