@@ -333,6 +333,8 @@ public class AngelTrioEntity extends PathfinderMob {
     // === 怒り ===
 
     private void becomeAngry(Player player) {
+        // クリエイティブ/スペクテイターには怒らない
+        if (player.isCreative() || player.isSpectator()) return;
         this.angry = true;
         broadcastChat(player, "§7[§c???§7] §c…ごめんね。でも、渡してくれないなら");
         broadcastChat(player, "§7[§c???§7] §c力づくで取るしかないの");

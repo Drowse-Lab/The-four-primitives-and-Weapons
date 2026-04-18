@@ -39,34 +39,42 @@ public class MotionExecutor {
     public static void executeMotion(String motionId, Player player, float chargePercent) {
         if (motionId == null || motionId.isEmpty()) return;
 
-        // 外部登録されたハンドラーを優先的にチェック
-        ISkillAction handler = SkillRegistry.getHandler(motionId);
-        if (handler != null) {
-            handler.execute(player, chargePercent);
-            return;
-        }
+        // チャージ技発動時は DamageCalculator に一律ボーナスを適用させる。
+        // これで個別にスケールしていない技も、チャージ発動なら攻撃力が上がる。
+        boolean chargedContext = chargePercent > 0.0f;
+        if (chargedContext) DamageCalculator.setChargeContext(chargePercent);
+        try {
+            // 外部登録されたハンドラーを優先的にチェック
+            ISkillAction handler = SkillRegistry.getHandler(motionId);
+            if (handler != null) {
+                handler.execute(player, chargePercent);
+                return;
+            }
 
-        Level world = player.level();
-        Vec3 lookVec = player.getLookAngle();
-        Vec3 playerPos = player.position();
+            Level world = player.level();
+            Vec3 lookVec = player.getLookAngle();
+            Vec3 playerPos = player.position();
 
-        switch (motionId) {
-            case "thrust" -> minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
-            case "upper_left_slash" -> performUpperLeftSlash(player, world, lookVec, playerPos, chargePercent);
-            case "upper_right_slash" -> performUpperRightSlash(player, world, lookVec, playerPos, chargePercent);
-            case "horizontal_slash" -> performHorizontalSlash(player, world, lookVec, playerPos, chargePercent);
-            case "spin_slash" -> performSpinSlash(player, world, playerPos, chargePercent);
-            // ダッシュ専用スキル
-            case "dash_rush" -> DashSkillHandler.activateDashRush(player);
-            case "leap_slash" -> DashSkillHandler.activateLeapSlash(player);
-            case "shadow_step" -> DashSkillHandler.activateShadowStep(player);
-            // 特殊スキル
-            case "electric_beam" -> ElectricBeamSkill.fire(player);
-            case "electric_slash" -> ElectricSlashSkill.fire(player);
-            case "electric_discharge" -> ElectricDischargeBurstSkill.fire(player);
-            case "sword_of_night_tp" -> SwordOfNightTpProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
-            case "magic_katana_special" -> MagicKatanaSpecialChargeProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player, chargePercent);
-            default -> performThrust(player, world, lookVec, playerPos, chargePercent);
+            switch (motionId) {
+                case "thrust" -> minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
+                case "upper_left_slash" -> performUpperLeftSlash(player, world, lookVec, playerPos, chargePercent);
+                case "upper_right_slash" -> performUpperRightSlash(player, world, lookVec, playerPos, chargePercent);
+                case "horizontal_slash" -> performHorizontalSlash(player, world, lookVec, playerPos, chargePercent);
+                case "spin_slash" -> performSpinSlash(player, world, playerPos, chargePercent);
+                // ダッシュ専用スキル
+                case "dash_rush" -> DashSkillHandler.activateDashRush(player);
+                case "leap_slash" -> DashSkillHandler.activateLeapSlash(player);
+                case "shadow_step" -> DashSkillHandler.activateShadowStep(player);
+                // 特殊スキル
+                case "electric_beam" -> ElectricBeamSkill.fire(player);
+                case "electric_slash" -> ElectricSlashSkill.fire(player);
+                case "electric_discharge" -> ElectricDischargeBurstSkill.fire(player);
+                case "sword_of_night_tp" -> SwordOfNightTpProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
+                case "magic_katana_special" -> MagicKatanaSpecialChargeProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player, chargePercent);
+                default -> performThrust(player, world, lookVec, playerPos, chargePercent);
+            }
+        } finally {
+            if (chargedContext) DamageCalculator.clearChargeContext();
         }
     }
 

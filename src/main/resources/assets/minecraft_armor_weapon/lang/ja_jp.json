@@ -346,5 +346,6 @@
   "entity.minecraft_armor_weapon.angel_mocker2": "???",
   "item.minecraft_armor_weapon.angel_serious_spawn_egg": "??? スポーンエッグ",
   "item.minecraft_armor_weapon.angel_mocker1_spawn_egg": "??? スポーンエッグ",
-  "item.minecraft_armor_weapon.angel_mocker2_spawn_egg": "??? スポーンエッグ"
+  "item.minecraft_armor_weapon.angel_mocker2_spawn_egg": "??? スポーンエッグ",
+  "enchantment.minecraft_armor_weapon.reel_in": "強引き寄せ"
 }

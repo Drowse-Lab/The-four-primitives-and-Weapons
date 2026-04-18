@@ -139,7 +139,7 @@ public class FlyingAttackerEntity extends Monster {
     public void setDisplayItem(ItemStack item) {
         this.entityData.set(DATA_DISPLAY_ITEM, item.copy());
     }
-    
+
     public ItemStack getDisplayItem() {
         return this.entityData.get(DATA_DISPLAY_ITEM);
     }

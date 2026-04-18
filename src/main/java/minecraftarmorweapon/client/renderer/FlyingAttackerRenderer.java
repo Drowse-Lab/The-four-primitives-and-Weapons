@@ -137,23 +137,23 @@ public class FlyingAttackerRenderer extends HumanoidMobRenderer<FlyingAttackerEn
 		
 		private boolean isProjectileItem(ItemStack stack) {
 			// 矢類
-			if (stack.getItem() == Items.ARROW || 
-				stack.getItem() == Items.SPECTRAL_ARROW || 
+			if (stack.getItem() == Items.ARROW ||
+				stack.getItem() == Items.SPECTRAL_ARROW ||
 				stack.getItem() == Items.TIPPED_ARROW) {
 				return true;
 			}
-			
+
 			// トライデント
 			if (stack.getItem() instanceof TridentItem) {
 				return true;
 			}
-			
+
 			// カスタム矢（アイテム名に"arrow"が含まれる）
 			String itemName = stack.getItem().toString().toLowerCase();
 			if (itemName.contains("arrow") || itemName.contains("bolt")) {
 				return true;
 			}
-			
+
 			return false;
 		}
 	}

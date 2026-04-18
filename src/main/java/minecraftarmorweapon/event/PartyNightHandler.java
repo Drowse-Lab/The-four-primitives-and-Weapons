@@ -108,6 +108,8 @@ public class PartyNightHandler {
             int baseCount = 1 + Math.min(5, progBonus / 40) + (moonBonus / 4);
 
             for (ServerPlayer player : level.players()) {
+                // クリエイティブ/スペクテイターは対象外
+                if (player.isCreative() || player.isSpectator()) continue;
                 int count = baseCount + rand.nextInt(2); // 揺らぎ ±1
                 spawnPartyMobs(level, player, count, rand);
             }

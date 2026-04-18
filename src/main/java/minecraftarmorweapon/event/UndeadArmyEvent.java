@@ -207,6 +207,8 @@ public class UndeadArmyEvent {
             int cooldownTicks = Math.max(3000, COOLDOWN_TICKS - progBonus * 60);
 
             for (ServerPlayer player : level.players()) {
+                // クリエイティブ/スペクテイターは襲撃対象外
+                if (player.isCreative() || player.isSpectator()) continue;
                 UUID pid = player.getUUID();
                 if (activeRaids.containsKey(pid)) continue;
 
@@ -500,6 +502,18 @@ public class UndeadArmyEvent {
         for (UndeadRaid raid : activeRaids.values()) {
             ServerPlayer player = raid.player;
             if (!player.isAlive()) continue;
+            // クリエイティブ/スペクテイターになったプレイヤーはターゲット解除
+            if (player.isCreative() || player.isSpectator()) {
+                if (player.level() instanceof ServerLevel lv0) {
+                    for (UUID id : raid.aliveEntities) {
+                        Entity e = lv0.getEntity(id);
+                        if (e instanceof Mob mob && mob.getTarget() == player) {
+                            mob.setTarget(null);
+                        }
+                    }
+                }
+                continue;
+            }
             if (!(player.level() instanceof ServerLevel level)) continue;
 
             for (UUID id : raid.aliveEntities) {

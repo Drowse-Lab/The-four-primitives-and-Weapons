@@ -51,6 +51,8 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.RARITY_CHARM);
 			event.accept(MinecraftArmorWeaponModItems.GOLD_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.OFUDA);
+			event.accept(CustomEntityInit.THROWING_KNIFE);
+			event.accept(CustomEntityInit.UNDEAD_ARMY_BANISH);
 		}
 
 		// === TAB_MAGIC_BOOKS ===
@@ -204,6 +206,15 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.BLACKHOLE_SPAWN_EGG);
 			event.accept(MinecraftArmorWeaponModItems.METEOR_ARROW_SPAWN_EGG);
 			event.accept(MinecraftArmorWeaponModItems.FLYING_ATTACKER_SPAWN_EGG);
+			// CustomEntityInitで登録した非MCreatorスポーンエッグ
+			event.accept(CustomEntityInit.COMMON_SOLDIER_SPAWN_EGG);
+			event.accept(CustomEntityInit.ELITE_SOLDIER_SPAWN_EGG);
+			event.accept(CustomEntityInit.SINGULARITY_SPAWN_EGG);
+			event.accept(CustomEntityInit.HEROIC_TIER_SPAWN_EGG);
+			event.accept(CustomEntityInit.DEBUG_MOB_SPAWN_EGG);
+			event.accept(CustomEntityInit.ANGEL_SERIOUS_SPAWN_EGG);
+			event.accept(CustomEntityInit.ANGEL_MOCKER1_SPAWN_EGG);
+			event.accept(CustomEntityInit.ANGEL_MOCKER2_SPAWN_EGG);
 		}
 	}
 }

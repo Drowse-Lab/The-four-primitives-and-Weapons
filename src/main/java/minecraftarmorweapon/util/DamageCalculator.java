@@ -30,6 +30,26 @@ import java.util.Collection;
  */
 public class DamageCalculator {
 
+    // チャージ技のダメージブースト用スレッドローカル
+    // MotionExecutor がチャージ技を発動する前にセットし、終了時にクリアする。
+    // セットされている間、calculateDamage は全ての技に一律のチャージ倍率を適用する。
+    private static final ThreadLocal<Float> CHARGE_CONTEXT = new ThreadLocal<>();
+
+    /**
+     * チャージ技コンテキストをセット。発動前に MotionExecutor から呼ばれる。
+     * @param chargePercent 0.0～1.0
+     */
+    public static void setChargeContext(float chargePercent) {
+        if (chargePercent > 0.0f) CHARGE_CONTEXT.set(chargePercent);
+    }
+
+    /**
+     * チャージ技コンテキストをクリア。発動後に MotionExecutor から呼ばれる。
+     */
+    public static void clearChargeContext() {
+        CHARGE_CONTEXT.remove();
+    }
+
     /**
      * 武器のダメージを計算する（エンチャント、ポーション効果、属性を含む）
      * @param attacker 攻撃者
@@ -90,6 +110,12 @@ public class DamageCalculator {
                 // スローネス効果も付与
                 target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 + 10 * baneLevel, 3));
             }
+        }
+
+        // チャージ技ボーナス（どんな技でもチャージ発動なら攻撃力UP）
+        Float chargePct = CHARGE_CONTEXT.get();
+        if (chargePct != null && chargePct > 0.0f) {
+            damage *= 1.0f + chargePct * 0.5f;
         }
 
         // クリティカル判定（攻撃者がプレイヤーで落下中の場合）

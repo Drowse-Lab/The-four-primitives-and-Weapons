@@ -350,5 +350,6 @@
   "entity.minecraft_armor_weapon.angel_mocker2": "???",
   "item.minecraft_armor_weapon.angel_serious_spawn_egg": "Angel Serious Spawn Egg",
   "item.minecraft_armor_weapon.angel_mocker1_spawn_egg": "Angel Mocker1 Spawn Egg",
-  "item.minecraft_armor_weapon.angel_mocker2_spawn_egg": "Angel Mocker2 Spawn Egg"
+  "item.minecraft_armor_weapon.angel_mocker2_spawn_egg": "Angel Mocker2 Spawn Egg",
+  "enchantment.minecraft_armor_weapon.reel_in": "Reel In"
 }

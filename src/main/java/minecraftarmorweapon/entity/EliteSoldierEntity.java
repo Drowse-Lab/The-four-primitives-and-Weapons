@@ -163,6 +163,10 @@ public class EliteSoldierEntity extends PathfinderMob {
 
         // プレイヤーから攻撃された場合の特別処理
         if (source.getEntity() instanceof Player player && !this.level().isClientSide) {
+            // クリエイティブ/スペクテイターはターゲットしない (ダメージは通す)
+            if (player.isCreative() || player.isSpectator()) {
+                return super.hurt(source, amount);
+            }
             UUID playerUUID = player.getUUID();
 
             boolean isUnarmedAttack = isPlayerUnarmed(player);

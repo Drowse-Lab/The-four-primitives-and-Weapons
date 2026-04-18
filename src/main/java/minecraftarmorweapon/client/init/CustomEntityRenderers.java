@@ -44,8 +44,8 @@ public class CustomEntityRenderers {
         event.registerEntityRenderer(minecraftarmorweapon.init.MinecraftArmorWeaponModEntities.GATE_PROJECTILE.get(),
                 minecraftarmorweapon.client.renderer.GateProjectileRenderer::new);
 
-        // 投げナイフ飛翔体 (バニラのThrownItemRendererでアイテムモデルを描画)
+        // 投げナイフ飛翔体 (FlyingAttackerEntity が投げナイフを持った時と同じ見た目)
         event.registerEntityRenderer(CustomEntityInit.THROWING_KNIFE_ENTITY.get(),
-                ctx -> new net.minecraft.client.renderer.entity.ThrownItemRenderer<>(ctx));
+                minecraftarmorweapon.client.renderer.ThrowingKnifeRenderer::new);
     }
 }
