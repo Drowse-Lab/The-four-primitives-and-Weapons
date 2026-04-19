@@ -63,6 +63,8 @@ public class SkillRegistry {
                 MotionCategory.UNIVERSAL, combatSlots, null);
         register("spin_slash", "回転斬り", "360度の範囲攻撃",
                 MotionCategory.UNIVERSAL, combatSlots, null);
+        register("slam_down", "叩きつける", "上から振り下ろす強力な一撃。地面を揺らし敵を打ち下ろす",
+                MotionCategory.UNIVERSAL, combatSlots, null);
 
         // === ダッシュ専用モーション（DASHスロットのみ） ===
         Set<AttackSlot> dashOnly = EnumSet.of(AttackSlot.DASH);
@@ -78,6 +80,10 @@ public class SkillRegistry {
         Set<AttackSlot> rightClickOnly = EnumSet.of(AttackSlot.RIGHT_CLICK);
 
         register("dodge", "回避", "右クリックで回避行動を行う（デフォルト）",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
+        register("none_right", "なし", "右クリックで何もしない（回避OFF）",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
+        register("trident_throw", "投擲", "右クリックでトライデントを投擲する（vanilla挙動）",
                 MotionCategory.UNIVERSAL, rightClickOnly, null);
         register("sword_of_night_special", "夜の剣・特殊技", "右クリック:レーザー / 長押し:テレポート",
                 MotionCategory.SPECIAL, rightClickOnly, "SwordOfNightItem");

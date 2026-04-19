@@ -19,8 +19,17 @@ import minecraftarmorweapon.init.CustomEntityInit;
 /**
  * 投げナイフ飛翔体レンダラー — 進行方向に切先を向けて飛び、
  * ブロックに刺さった時はその姿勢のまま残る。
+ *
+ * 向きが合わない場合は下のパラメータ (YAW_OFFSET / PITCH_OFFSET / ROLL_OFFSET / SCALE) を編集して再ビルドする。
  */
 public class ThrowingKnifeRenderer extends EntityRenderer<ThrowingKnifeEntity> {
+
+    // @RotationParams(ThrowingKnife)
+    public static float YAW_OFFSET = 0f;    // Y軸回転 (進行方向左右の追加回転)
+    public static float PITCH_OFFSET = 0f;  // X軸回転 (上下の追加回転)
+    public static float ROLL_OFFSET = 0f;   // Z軸回転 (進行方向まわりのロール)
+    public static float SCALE = 1.0f;       // 表示サイズ
+    // @EndRotationParams
 
     public ThrowingKnifeRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -36,9 +45,15 @@ public class ThrowingKnifeRenderer extends EntityRenderer<ThrowingKnifeEntity> {
         float yaw = Mth.lerp(partialTicks, entity.yRotO, entity.getYRot());
         float pitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
 
-        // 進行方向に整列 (矢方式 — 投げた方向そのままの姿勢で飛ぶ)
-        poseStack.mulPose(Axis.YP.rotationDegrees(yaw - 90f));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(pitch));
+        // 進行方向に整列 (矢方式)
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw - 90f + YAW_OFFSET));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(pitch + PITCH_OFFSET));
+        // ロール (進行方向まわりに刃の表裏を回す)
+        poseStack.mulPose(Axis.XP.rotationDegrees(ROLL_OFFSET));
+        // モデルの刃を motion 方向に揃える (GROUND display の-180°反転を考慮して+90°)
+        poseStack.mulPose(Axis.ZP.rotationDegrees(90f));
+
+        if (SCALE != 1.0f) poseStack.scale(SCALE, SCALE, SCALE);
 
         Minecraft.getInstance().getItemRenderer().renderStatic(
             stack,

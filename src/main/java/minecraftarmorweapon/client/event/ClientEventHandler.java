@@ -14,6 +14,7 @@ import net.minecraftforge.fml.common.Mod;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.client.screens.DodgeConfigScreen;
+import minecraftarmorweapon.client.screens.DebugConfigScreen;
 import minecraftarmorweapon.command.CustomDifficultyCommand;
 import minecraftarmorweapon.command.CustomDifficultyCommand.CustomDifficulty;
 import minecraftarmorweapon.network.CustomDifficultyPacket;
@@ -40,6 +41,13 @@ public class ClientEventHandler {
                     .bounds(controlsScreen.width / 2 + 5, controlsScreen.height / 6 + 72 + 24 * 2, 150, 20)
                     .build();
             event.addListener(dodgeConfigButton);
+
+            Button debugConfigButton = Button.builder(
+                    Component.literal("デバッグ設定..."),
+                    btn -> Minecraft.getInstance().setScreen(new DebugConfigScreen(controlsScreen)))
+                    .bounds(controlsScreen.width / 2 + 5, controlsScreen.height / 6 + 72 + 24 * 3, 150, 20)
+                    .build();
+            event.addListener(debugConfigButton);
         }
 
         if (event.getScreen() instanceof OptionsScreen optionsScreen) {

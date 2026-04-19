@@ -287,6 +287,8 @@ public class DodgeAndBattouHandler {
             }
         }
     }
+
+    // (遠距離武器の右クリックは vanilla 挙動に戻した — 弓/クロスボウの引き絞り/発射)
     
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
@@ -309,8 +311,8 @@ public class DodgeAndBattouHandler {
                 if (!player.isShiftKeyDown()) {
                     return; // ブロック設置を許可
                 }
-                // Shift押下時は回避を試行
-                if (canDodgeWithHands(player)) {
+                // Shift押下時は回避を試行（回避モード選択時のみイベントをキャンセル）
+                if (canDodgeWithHands(player) && isRightClickDodgeEnabled(player)) {
                     event.setCanceled(true);
                     if (player.level().isClientSide && performDodge(player)) {
                         MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
@@ -326,8 +328,8 @@ public class DodgeAndBattouHandler {
                 if (!player.isShiftKeyDown()) {
                     return; // ブロック操作を許可
                 }
-                // Shift押下時は回避を試行
-                if (canDodgeWithHands(player)) {
+                // Shift押下時は回避を試行（回避モード選択時のみイベントをキャンセル）
+                if (canDodgeWithHands(player) && isRightClickDodgeEnabled(player)) {
                     event.setCanceled(true);
                     if (player.level().isClientSide && performDodge(player)) {
                         MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
@@ -343,8 +345,9 @@ public class DodgeAndBattouHandler {
             return;
         }
 
-        // 刀を持っている場合、回避を実行（オフハンドのみ武器の場合はメインハンドが空の時のみ）
-        if (canDodgeWithHands(player)) {
+        // 刀を持っている場合、回避を実行（回避モード選択時のみキャンセル。
+        // トライデントで "trident_throw" が選ばれている場合などは vanilla 挙動に任せる）
+        if (canDodgeWithHands(player) && isRightClickDodgeEnabled(player)) {
             // ブロックを持っていて設置しようとしている場合は許可
             if (!player.getItemInHand(event.getHand()).isEmpty() &&
                 player.getItemInHand(event.getHand()).getItem() instanceof BlockItem) {
@@ -394,8 +397,8 @@ public class DodgeAndBattouHandler {
             return;
         }
 
-        // 武器を持っている場合は回避を優先（オフハンドのみ武器の場合はメインハンドが空の時のみ）
-        if (canDodgeWithHands(player)) {
+        // 武器を持っている場合は回避を優先（回避モード選択時のみキャンセル）
+        if (canDodgeWithHands(player) && isRightClickDodgeEnabled(player)) {
             event.setCanceled(true);
             if (player.level().isClientSide && performDodge(player)) {
                 MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
@@ -413,8 +416,8 @@ public class DodgeAndBattouHandler {
             return;
         }
 
-        // 武器を持っている場合は回避を優先（オフハンドのみ武器の場合はメインハンドが空の時のみ）
-        if (canDodgeWithHands(player)) {
+        // 武器を持っている場合は回避を優先（回避モード選択時のみキャンセル）
+        if (canDodgeWithHands(player) && isRightClickDodgeEnabled(player)) {
             event.setCanceled(true);
             if (player.level().isClientSide && performDodge(player)) {
                 MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
@@ -473,6 +476,19 @@ public class DodgeAndBattouHandler {
             }
         }
 
+        // メインハンドが近接武器で、オフハンドが右クリックで作用するアイテム（弓/クロスボウ/盾/投擲等）
+        // なら回避せずにオフハンドのアイテムを使わせる。
+        // 盾の場合も優先（防御/パリィ）。
+        // メインハンドが遠距離武器の場合はこのチェックをスキップ（回避させる）。
+        ItemStack offHand = player.getOffhandItem();
+        if (isWeapon(heldItem) && !isRangedWeapon(heldItem) && !offHand.isEmpty()) {
+            if (offHand.getItem() instanceof net.minecraft.world.item.ShieldItem) return false;
+            if (offHand.getItem() instanceof net.minecraft.world.item.BowItem) return false;
+            if (offHand.getItem() instanceof net.minecraft.world.item.CrossbowItem) return false;
+            if (offHand.getItem() instanceof minecraftarmorweapon.item.ThrowingKnifeItem) return false;
+            if (isActiveItem(offHand)) return false;
+        }
+
         Level world = VersionHelper.getLevel(player);
 
         // 回避データを取得
@@ -526,11 +542,42 @@ public class DodgeAndBattouHandler {
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
         if (isWeapon(mainHand)) return true;
+        if (isRangedWeapon(mainHand)) return true;
         if (isWeapon(offHand) && mainHand.isEmpty()) return true;
         if (isWeapon(offHand) && !mainHand.isEmpty()) {
             if (DodgeConfig.dodgeWithInertItems && isInertItem(mainHand)) return true;
             if (DodgeConfig.dodgeWithActiveItems && isActiveItem(mainHand)) return true;
         }
+        return false;
+    }
+
+    /**
+     * 現在の設定で右クリックが回避を発動するかどうか。
+     * （スキル選択で RIGHT_CLICK が "dodge" に設定されている場合のみ true）
+     * これを使って、event.setCanceled する前に実際に回避するかを確認する。
+     */
+    public static boolean isRightClickDodgeEnabled(Player player) {
+        ItemStack heldItem = player.getMainHandItem();
+        if (heldItem.isEmpty()) return true; // 素手のデフォルトは回避相当
+        minecraftarmorweapon.skill.PlayerSkillData.SkillStorage skillData =
+                minecraftarmorweapon.skill.PlayerSkillData.getSkillData(player);
+        if (skillData == null) return true;
+        String rightClickMotion = skillData.getMotionForWeapon(
+                minecraftarmorweapon.skill.PlayerSkillData.AttackSlot.RIGHT_CLICK, heldItem);
+        return "dodge".equals(rightClickMotion);
+    }
+
+    /**
+     * 遠距離武器（弓/クロスボウ/投げナイフ）判定。
+     * これらを持っている時、左クリック=回避/右クリック=vanilla発射 となる。
+     * トライデントは除外（右クリック=投擲、左クリック=通常攻撃/コンボ）。
+     */
+    public static boolean isRangedWeapon(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        net.minecraft.world.item.Item item = stack.getItem();
+        if (item instanceof BowItem) return true;
+        if (item instanceof CrossbowItem) return true;
+        if (item instanceof minecraftarmorweapon.item.ThrowingKnifeItem) return true;
         return false;
     }
 
@@ -583,6 +630,9 @@ public class DodgeAndBattouHandler {
 
         // SwordItemまたはカタナ系アイテムかチェック
         if (stack.getItem() instanceof SwordItem) return true;
+        // トライデントも武器扱い（スキル選択の右クリックスロットで
+        // "trident_throw"(投擲) / "dodge"(回避) をユーザーが選択できる）
+        if (stack.getItem() instanceof net.minecraft.world.item.TridentItem) return true;
 
         String itemName = stack.getItem().getClass().getSimpleName();
 

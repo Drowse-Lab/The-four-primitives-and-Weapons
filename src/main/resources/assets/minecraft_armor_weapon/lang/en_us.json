@@ -1,7 +1,12 @@
 {
   "item.minecraft_armor_weapon.undead_army_banish": "Holy Bell of Banishment",
   "item.minecraft_armor_weapon.throwing_knife": "Throwing Knife",
+  "item.minecraft_armor_weapon.grip_knife": "Grip Knife",
+  "item.minecraft_armor_weapon.stun_knife": "Stun Knife",
+  "item.minecraft_armor_weapon.screw_knife": "Screw Knife",
+  "item.minecraft_armor_weapon.homing_knife": "Homing Knife",
   "entity.minecraft_armor_weapon.throwing_knife": "Throwing Knife",
+  "attribute.minecraft_armor_weapon.mana": "Mana",
   "item.minecraft_armor_weapon.rapier": "Rapier",
   "item.minecraft_armor_weapon.parry_shield": "Parry Shield",
   "effect.minecraft_armor_weapon.guard": "guard",

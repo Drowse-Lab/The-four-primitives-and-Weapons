@@ -7,7 +7,7 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.LivingEntity;
 import org.joml.Matrix4f;
 
 import minecraftarmorweapon.ai.lisp.MobAILevelHandler;
@@ -21,7 +21,7 @@ import minecraftarmorweapon.ai.lisp.MobAILevelHandler;
  * @param <T> エンティティタイプ
  * @param <M> モデルタイプ
  */
-public class AILevelRenderLayer<T extends Mob, M extends EntityModel<T>> extends RenderLayer<T, M> {
+public class AILevelRenderLayer<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
 
     public AILevelRenderLayer(RenderLayerParent<T, M> parent) {
         super(parent);

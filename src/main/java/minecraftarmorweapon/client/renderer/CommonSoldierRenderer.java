@@ -54,8 +54,7 @@ public class CommonSoldierRenderer extends HumanoidMobRenderer<CommonSoldierEnti
         // 武器レイヤーを追加（手に持っている刀を表示）
         this.addLayer(new ItemInHandLayer<>(this, context.getItemInHandRenderer()));
 
-        // AIレベル表示レイヤー（ブロック越しに見えない）
-        this.addLayer(new AILevelRenderLayer<>(this));
+        // AIレベル表示レイヤーは SpecialLabelLayerRegister が全 LivingEntity に一括登録
 
         // スキンを初期化
         if (!skinsInitialized) {

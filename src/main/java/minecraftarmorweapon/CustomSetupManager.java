@@ -9,6 +9,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.api.distmarker.Dist;
 import minecraftarmorweapon.TestBowItemsProperties;
 import minecraftarmorweapon.config.DodgeConfig;
+import minecraftarmorweapon.config.DebugConfig;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CustomSetupManager {
@@ -19,6 +20,7 @@ public class CustomSetupManager {
 	@SubscribeEvent
 	public static void init(FMLCommonSetupEvent event) {
 		DodgeConfig.load();
+		DebugConfig.load();
 		new CustomSetupManager();
 	}
 

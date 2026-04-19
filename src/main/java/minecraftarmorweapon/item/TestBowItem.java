@@ -74,6 +74,8 @@ import minecraftarmorweapon.procedures.TestBowRangedItemUsedProcedure;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 
 import minecraftarmorweapon.entity.TestBowEntity;
+import minecraftarmorweapon.skill.BowSkill;
+import minecraftarmorweapon.skill.BowSkillData;
 
 public class TestBowItem extends Item {
 	public TestBowItem() {
@@ -103,15 +105,17 @@ public class TestBowItem extends Item {
 			double y = entity.getY();
 			double z = entity.getZ();
 
-			// 弓を引いていた時間を計算
+			// 弓を引いていた時間を計算 (PASSIVEスキルで補正)
+			BowSkill passive = BowSkillData.getSelected(itemstack);
 			int charge = this.getUseDuration(itemstack) - timeLeft;
-			float force = getArrowVelocity(charge);
+			float force = getArrowVelocity(Math.round(charge * passive.chargeMultiplier()));
 
 			// 引き絞りが十分かどうかチェック
 			if (force >= 0.1) {
 				TestBowEntity entityarrow = TestBowEntity.shoot(world, entity, world.getRandom(), force, 0, 0);
 				itemstack.hurtAndBreak(1, entity, e -> e.broadcastBreakEvent(entity.getUsedItemHand()));
 				entityarrow.pickup = AbstractArrow.Pickup.DISALLOWED;
+				if (passive.type == BowSkill.Type.PASSIVE) passive.modifyArrow(entityarrow);
 
 				// 追加のカスタムプロシージャーを実行
 				TestBowRangedItemUsedProcedure.execute(world, x, y, z, entity);

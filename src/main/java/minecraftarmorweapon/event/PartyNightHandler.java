@@ -132,7 +132,9 @@ public class PartyNightHandler {
             if (mob == null) continue;
 
             mob.moveTo(x, y, z, rand.nextFloat() * 360f, 0f);
-            mob.setCustomName(Component.literal("§d[狂乱の夜]"));
+            mob.getPersistentData().putString(
+                minecraftarmorweapon.client.renderer.SpecialLabelRenderLayer.NBT_SPECIAL_LABEL,
+                "§d[狂乱の夜]");
             applyPartyBuffs(mob, player);
             level.addFreshEntity(mob);
         }

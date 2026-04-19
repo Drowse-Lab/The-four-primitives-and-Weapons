@@ -60,7 +60,7 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
 
     public SkillSelectionScreen(SkillSelectionMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
-        this.imageWidth = 300;
+        this.imageWidth = 400;
         this.imageHeight = 268;
         // デフォルトのラベル描画を無効化
         this.inventoryLabelY = 10000;
@@ -264,10 +264,13 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         if (skillData == null) return;
 
         WeaponProficiency current = skillData.getWeaponProficiency();
-        int btnX = leftPos + imageWidth - 95;
-        int btnY = topPos + imageHeight - 14;
+        int btnW = 90;
+        int btnH = 13;
+        // タイトルと重ならないよう、パネル左下（インベントリ上部）に配置
+        int btnX = leftPos + 3;
+        int btnY = topPos + SkillSelectionMenu.INV_START_Y - 16;
 
-        addRenderableWidget(new AbstractButton(btnX, btnY, 90, 12,
+        addRenderableWidget(new AbstractButton(btnX, btnY, btnW, btnH,
                 Component.literal("\u5F97\u610F: " + current.getDisplayName())) {
             @Override
             public void onPress() {
@@ -277,6 +280,17 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                 MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
                         SkillSelectionPacket.setProficiency(next.getId()));
                 buildWidgets();
+            }
+
+            @Override
+            public void renderWidget(GuiGraphics g, int mx, int my, float pt) {
+                int bg = isHoveredOrFocused() ? COLOR_BTN_HOVER : COLOR_BTN_SPECIAL;
+                g.fill(getX(), getY(), getX() + width, getY() + height, bg);
+                drawBorder(g, getX(), getY(), width, height, COLOR_BORDER);
+                g.drawCenteredString(font, getMessage(), getX() + width / 2, getY() + (height - 8) / 2, COLOR_SLOT_LABEL);
+                if (isHoveredOrFocused()) {
+                    hoveredDescription = "\u30AF\u30EA\u30C3\u30AF\u3067\u5F97\u610F\u6B66\u5668\u30BF\u30A4\u30D7\u3092\u5207\u308A\u66FF\u3048";
+                }
             }
 
             @Override

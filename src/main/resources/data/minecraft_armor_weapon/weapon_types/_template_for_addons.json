@@ -13,9 +13,18 @@
     "=== モーションID一覧 ===",
     "combat用: thrust, upper_left_slash, upper_right_slash, horizontal_slash, spin_slash",
     "dash用: dash_rush, leap_slash, shadow_step",
-    "right_click用: dodge, guard, sword_of_night_special",
+    "right_click用: dodge, none_right, guard, sword_of_night_special",
     "shift_right_click用: guard, none_shift",
-    "special: electric_beam, electric_slash, electric_discharge, magic_katana_special"
+    "special: electric_beam, electric_slash, electric_discharge, magic_katana_special",
+    "",
+    "=== 得意技 (preferred_motions) の使い方 ===",
+    "各 type に \"preferred_motions\": [\"motion_id\", ...] を追加すると、",
+    "そのタイプの武器は指定した combat 技のみを「得意」として扱う。",
+    "適性外の combat 技を発動すると:",
+    "  - 攻撃力が 40% 減少",
+    "  - クロスヘアの攻撃ゲージの充填速度が半減 (約1.5秒間)",
+    "空配列 [] または省略 ⇒ すべての技が得意扱い (ペナルティなし)",
+    "例: 槍は突き専用 → \"preferred_motions\": [\"thrust\"]"
   ],
 
   "types": {
@@ -27,9 +36,10 @@
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge"],
+        "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
-      }
+      },
+      "preferred_motions": ["upper_left_slash", "upper_right_slash", "horizontal_slash"]
     },
 
     "your_new_type": {
@@ -41,9 +51,10 @@
       "motions": {
         "combat": ["thrust", "upper_left_slash", "horizontal_slash"],
         "dash": ["dash_rush"],
-        "right_click": ["dodge"],
+        "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
-      }
+      },
+      "preferred_motions": ["thrust"]
     }
   },
 

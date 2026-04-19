@@ -200,14 +200,8 @@ public class DistanceScalingHandler {
                 color = "§e"; // 黄 (5-9)
             }
 
-            // 既にカスタム名があればそこに追加、なければ新規
-            String baseName = monster.getCustomName() != null
-                ? monster.getCustomName().getString()
-                : monster.getType().getDescription().getString();
-            monster.setCustomName(Component.literal(
-                color + "Lv" + level + " §f" + baseName
-            ));
-            monster.setCustomNameVisible(true);
+            // Lv表示は AILevelRenderLayer が独自レンダーで行うため、ここでは setCustomName しない。
+            // ブロック越しに見えるバニラネームプレートを使わない設計。
         }
     }
 

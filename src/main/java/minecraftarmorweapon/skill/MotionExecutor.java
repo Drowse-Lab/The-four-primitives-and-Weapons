@@ -43,6 +43,26 @@ public class MotionExecutor {
         // これで個別にスケールしていない技も、チャージ発動なら攻撃力が上がる。
         boolean chargedContext = chargePercent > 0.0f;
         if (chargedContext) DamageCalculator.setChargeContext(chargePercent);
+
+        // 武器の得意/不得意技かチェック（combatスロット技のみ対象）
+        // 得意 → 攻撃力+20% & ゲージ充填+50%
+        // 不得意 → 攻撃力-40% & ゲージ充填-50%
+        boolean preferredContext = false;
+        boolean dislikedContext = false;
+        minecraftarmorweapon.skill.WeaponTypeRegistry.WeaponTypeData weaponType =
+                minecraftarmorweapon.skill.WeaponTypeRegistry.getTypeForItem(player.getMainHandItem());
+        if (weaponType != null) {
+            if (weaponType.isPreferredCombatMotion(motionId)) {
+                preferredContext = true;
+                DamageCalculator.setPreferredContext();
+                minecraftarmorweapon.events.WeaponSpecialtyHandler.applyBonus(player);
+            } else if (weaponType.isDislikedCombatMotion(motionId)) {
+                dislikedContext = true;
+                DamageCalculator.setDislikedContext();
+                minecraftarmorweapon.events.WeaponSpecialtyHandler.applyPenalty(player);
+            }
+        }
+
         try {
             // 外部登録されたハンドラーを優先的にチェック
             ISkillAction handler = SkillRegistry.getHandler(motionId);
@@ -61,6 +81,7 @@ public class MotionExecutor {
                 case "upper_right_slash" -> performUpperRightSlash(player, world, lookVec, playerPos, chargePercent);
                 case "horizontal_slash" -> performHorizontalSlash(player, world, lookVec, playerPos, chargePercent);
                 case "spin_slash" -> performSpinSlash(player, world, playerPos, chargePercent);
+                case "slam_down" -> performSlamDown(player, world, lookVec, playerPos, chargePercent);
                 // ダッシュ専用スキル
                 case "dash_rush" -> DashSkillHandler.activateDashRush(player);
                 case "leap_slash" -> DashSkillHandler.activateLeapSlash(player);
@@ -75,6 +96,8 @@ public class MotionExecutor {
             }
         } finally {
             if (chargedContext) DamageCalculator.clearChargeContext();
+            if (preferredContext) DamageCalculator.clearPreferredContext();
+            if (dislikedContext) DamageCalculator.clearDislikedContext();
         }
     }
 
@@ -320,6 +343,101 @@ public class MotionExecutor {
         player.setYRot(player.getYRot() + 720);
         world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
             SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.5f, 0.7f);
+    }
+
+    // === 叩きつける ===
+    private static void performSlamDown(Player player, Level world, Vec3 lookVec, Vec3 playerPos, float chargePercent) {
+        boolean isCharged = chargePercent > 0.0f;
+        float baseDamage = isCharged ? 16.0f * (1.0f + chargePercent * 1.2f) : 13.0f;
+        double forwardRange = isCharged ? 4.5 + chargePercent : 3.5;
+        double width = isCharged ? 2.5 : 1.8;
+
+        // 竹破壊
+        breakBambooInPath(world, playerPos, lookVec, forwardRange);
+
+        // エフェクト
+        if (!world.isClientSide) {
+            ServerLevel serverWorld = (ServerLevel) world;
+            Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
+
+            // 振り下ろし軌跡（上から下へ）
+            for (int i = 0; i <= 6; i++) {
+                double t = i / 6.0;
+                serverWorld.sendParticles(ParticleTypes.SWEEP_ATTACK,
+                    playerPos.x + lookVec.x * (1.5 + t * 0.5),
+                    playerPos.y + 2.2 - t * 2.0,
+                    playerPos.z + lookVec.z * (1.5 + t * 0.5),
+                    1, 0, 0, 0, 0);
+            }
+            // 着弾点の地面爆発エフェクト
+            double impactX = playerPos.x + lookVec.x * (forwardRange * 0.6);
+            double impactZ = playerPos.z + lookVec.z * (forwardRange * 0.6);
+            for (int i = 0; i < (isCharged ? 30 : 15); i++) {
+                double ang = Math.random() * Math.PI * 2;
+                double r = Math.random() * width;
+                serverWorld.sendParticles(ParticleTypes.EXPLOSION,
+                    impactX + Math.cos(ang) * r * 0.3,
+                    playerPos.y + 0.1,
+                    impactZ + Math.sin(ang) * r * 0.3,
+                    1, 0, 0, 0, 0);
+                serverWorld.sendParticles(net.minecraft.core.particles.BlockParticleOption.class.cast(
+                        new net.minecraft.core.particles.BlockParticleOption(
+                                ParticleTypes.BLOCK,
+                                world.getBlockState(new BlockPos((int) impactX, (int) playerPos.y - 1, (int) impactZ)))),
+                    impactX + Math.cos(ang) * r,
+                    playerPos.y + 0.2,
+                    impactZ + Math.sin(ang) * r,
+                    1, 0.1, 0.2, 0.1, 0.1);
+            }
+            if (isCharged) {
+                // フルチャージ時の衝撃波
+                for (int i = 0; i < 16; i++) {
+                    double ang = Math.PI * 2 * i / 16;
+                    serverWorld.sendParticles(ParticleTypes.CLOUD,
+                        impactX + Math.cos(ang) * width,
+                        playerPos.y + 0.3,
+                        impactZ + Math.sin(ang) * width,
+                        2, 0.1, 0.05, 0.1, 0.05);
+                }
+            }
+        }
+
+        // 前方の敵にダメージ（上下広めのAABB）
+        Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
+        Vec3 minPoint = playerPos.add(lookVec.scale(-0.3))
+            .add(rightVec.scale(-width)).add(0, -1.0, 0);
+        Vec3 maxPoint = playerPos.add(lookVec.scale(forwardRange))
+            .add(rightVec.scale(width)).add(0, 2.5, 0);
+        AABB searchArea = new AABB(minPoint, maxPoint);
+
+        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
+            entity -> {
+                if (entity == player) return false;
+                Vec3 toEntity = entity.position().subtract(playerPos).normalize();
+                double dot = lookVec.dot(toEntity);
+                return dot > 0.0 && entity.distanceTo(player) <= forwardRange + width;
+            });
+
+        for (LivingEntity target : targets) {
+            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
+            DamageCalculator.dealDamage(player, target, baseDamage, weapon);
+            // 叩き下ろし: 下方向ノックバック + 軽い前方 + 短時間鈍足
+            target.setDeltaMovement(
+                lookVec.x * 0.2,
+                -1.0,
+                lookVec.z * 0.2);
+            target.hurtMarked = true;
+            target.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN,
+                isCharged ? 40 : 20,
+                isCharged ? 2 : 1));
+        }
+
+        // サウンド
+        world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
+            SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.6f, 1.4f);
+        world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
+            SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0f, 0.7f);
     }
 
     // === 共通の斬撃ダメージ処理 ===

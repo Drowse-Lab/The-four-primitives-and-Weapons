@@ -47,7 +47,7 @@ public class AngelTrioRenderer extends HumanoidMobRenderer<AngelTrioEntity, Play
             context.getModelManager()
         ));
         this.addLayer(new ItemInHandLayer<>(this, context.getItemInHandRenderer()));
-        this.addLayer(new AILevelRenderLayer<>(this));
+        // AIレベル表示は SpecialLabelLayerRegister が全 LivingEntity に一括登録
     }
 
     @Override

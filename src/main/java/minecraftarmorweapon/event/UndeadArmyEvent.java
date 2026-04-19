@@ -48,7 +48,7 @@ public class UndeadArmyEvent {
     // 進行中の侵攻データ（プレイヤーUUID → 侵攻状態）
     // ============================
     private static class UndeadRaid {
-        final ServerPlayer player;
+        ServerPlayer player; // 死亡→リスポーン時に差し替え可能にするため非final
         final BlockPos center;
         final int totalWaves;
         int currentWave = 0;
@@ -122,10 +122,19 @@ public class UndeadArmyEvent {
         // --- 進行中の侵攻のウェーブ管理 ---
         for (Map.Entry<UUID, UndeadRaid> entry : activeRaids.entrySet()) {
             UndeadRaid raid = entry.getValue();
-            ServerPlayer player = raid.player;
 
-            if (!player.isAlive() || player.hasDisconnected()) {
+            // 死亡後にリスポーンすると ServerPlayer インスタンスが差し替わるので、
+            // サーバーのプレイヤーリストから毎tick最新のインスタンスを取得し直す。
+            ServerPlayer player = event.getServer().getPlayerList().getPlayer(entry.getKey());
+            if (player == null || player.hasDisconnected()) {
+                // プレイヤーがログアウトしている → 完全に終了
                 endRaid(entry.getKey(), false);
+                continue;
+            }
+            raid.player = player;
+
+            // 死亡中（リスポーン待ち）はウェーブ進行を一時停止するが、raid は終了させない
+            if (!player.isAlive()) {
                 continue;
             }
 
@@ -228,6 +237,19 @@ public class UndeadArmyEvent {
     }
 
     // ============================
+    /**
+     * 外部（コマンド等）から指定プレイヤーにアンデットアーミーを発動。
+     * 既に進行中の侵攻があれば false を返す。
+     */
+    public static boolean triggerRaid(ServerPlayer player) {
+        if (activeRaids.containsKey(player.getUUID())) return false;
+        if (!(player.level() instanceof ServerLevel level)) return false;
+        CustomDifficulty diff = CustomDifficultyCommand.getCurrentDifficulty();
+        startRaid(level, player, diff);
+        cooldowns.put(player.getUUID(), COOLDOWN_TICKS);
+        return true;
+    }
+
     // 侵攻開始
     // ============================
     private static void startRaid(ServerLevel level, ServerPlayer player, CustomDifficulty diff) {
@@ -293,8 +315,9 @@ public class UndeadArmyEvent {
             if (mob == null) continue;
 
             mob.moveTo(x, y, z, rand.nextFloat() * 360f, 0f);
-            mob.setCustomName(Component.literal("§5[アンデットアーミー Wave" + raid.currentWave + "]"));
-            mob.setCustomNameVisible(true);
+            mob.getPersistentData().putString(
+                minecraftarmorweapon.client.renderer.SpecialLabelRenderLayer.NBT_SPECIAL_LABEL,
+                "§5[アンデットアーミー Wave" + raid.currentWave + "]");
             applyStats(mob, aiLevel, raid.currentWave, false);
             applyRaidBuffs(mob, player);
             level.addFreshEntity(mob);
@@ -316,8 +339,9 @@ public class UndeadArmyEvent {
                 if (elite == null) continue;
 
                 elite.moveTo(x, y, z, rand.nextFloat() * 360f, 0f);
-                elite.setCustomName(Component.literal("§4§l[アンデット将軍]"));
-                elite.setCustomNameVisible(true);
+                elite.getPersistentData().putString(
+                    minecraftarmorweapon.client.renderer.SpecialLabelRenderLayer.NBT_SPECIAL_LABEL,
+                    "§4§l[アンデット将軍]");
                 applyStats(elite, aiLevel, raid.currentWave, true);
                 applyRaidBuffs(elite, player);
                 level.addFreshEntity(elite);

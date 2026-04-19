@@ -1,7 +1,12 @@
 {
   "item.minecraft_armor_weapon.undead_army_banish": "聖なる鐘",
   "item.minecraft_armor_weapon.throwing_knife": "投げナイフ",
+  "item.minecraft_armor_weapon.grip_knife": "グリップナイフ",
+  "item.minecraft_armor_weapon.stun_knife": "スタンナイフ",
+  "item.minecraft_armor_weapon.screw_knife": "スクリューナイフ",
+  "item.minecraft_armor_weapon.homing_knife": "オートエームナイフ",
   "entity.minecraft_armor_weapon.throwing_knife": "投げナイフ",
+  "attribute.minecraft_armor_weapon.mana": "マナ",
   "item.minecraft_armor_weapon.rapier": "レイピア",
   "item.minecraft_armor_weapon.parry_shield": "パリィシールド",
   "effect.minecraft_armor_weapon.guard": "guard",

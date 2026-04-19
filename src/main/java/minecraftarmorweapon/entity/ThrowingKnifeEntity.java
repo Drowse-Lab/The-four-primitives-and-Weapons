@@ -39,8 +39,27 @@ import net.minecraftforge.network.PlayMessages;
 @OnlyIn(value = Dist.CLIENT, _interface = ItemSupplier.class)
 public class ThrowingKnifeEntity extends ThrowableItemProjectile implements ItemSupplier {
 
+    /** ナイフ種類 — 飛翔/着弾挙動を分岐させる */
+    public enum KnifeType {
+        NORMAL, GRIP, STUN, SCREW, HOMING;
+        public static KnifeType byId(int i) {
+            KnifeType[] v = values();
+            return (i < 0 || i >= v.length) ? NORMAL : v[i];
+        }
+    }
+
     private static final float DAMAGE = 6.0f;
     private static final int STUCK_LIFETIME_TICKS = 600; // 30秒で消滅
+    private static final EntityDataAccessor<Integer> DATA_KNIFE_TYPE =
+        SynchedEntityData.defineId(ThrowingKnifeEntity.class, EntityDataSerializers.INT);
+
+    // @StickParams - 着弾時の調整値 (手動編集してビルド) — 単位: 1 = 1/100ブロック
+    public static double STICK_OFFSET_NORMAL  = -5;  // 衝突面の法線方向 (壁から外向き)。+ = 手前に出る/浮く, - = めり込む
+    public static double STICK_OFFSET_FORWARD = 20;  // 進行方向 (投げた方向)。0 = 刃先がブロック表面に接する, + = もっと突き刺さる, - = 手前に止まる
+    // @EndStickParams
+    private static final double STICK_UNIT = 0.01;   // 1単位 = 1/100ブロック
+    // 0 で刃先がブロック表面に来るよう、エンティティ中心から刃先までの距離を補正で引く
+    private static final double BLADE_TIP_LENGTH = 0.5;
 
     // 刺さり状態はクライアントにも同期が必要 (クライアント側のtickでrotation再計算を防止)
     private static final EntityDataAccessor<Boolean> DATA_STUCK =
@@ -55,6 +74,8 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
     public boolean isStuck() { return this.entityData.get(DATA_STUCK); }
     public float getStuckYaw() { return this.entityData.get(DATA_STUCK_YAW); }
     public float getStuckPitch() { return this.entityData.get(DATA_STUCK_PITCH); }
+    public KnifeType getKnifeType() { return KnifeType.byId(this.entityData.get(DATA_KNIFE_TYPE)); }
+    public void setKnifeType(KnifeType t) { this.entityData.set(DATA_KNIFE_TYPE, t.ordinal()); }
 
     @Override
     protected void defineSynchedData() {
@@ -62,6 +83,7 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         this.entityData.define(DATA_STUCK, false);
         this.entityData.define(DATA_STUCK_YAW, 0f);
         this.entityData.define(DATA_STUCK_PITCH, 0f);
+        this.entityData.define(DATA_KNIFE_TYPE, 0);
     }
 
     public ThrowingKnifeEntity(PlayMessages.SpawnEntity packet, Level world) {
@@ -91,7 +113,29 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         super.onHitEntity(result);
         Entity target = result.getEntity();
         if (target == this.getOwner()) return;
-        target.hurt(this.damageSources().thrown(this, this.getOwner()), DAMAGE);
+        KnifeType type = getKnifeType();
+        float dmg = switch (type) {
+            case GRIP   -> DAMAGE + 2.0f;
+            case STUN   -> DAMAGE + 4.0f;
+            case SCREW  -> DAMAGE + 1.0f;
+            case HOMING -> DAMAGE;
+            default     -> DAMAGE;
+        };
+        target.hurt(this.damageSources().thrown(this, this.getOwner()), dmg);
+
+        // STUN: 感電(雷視覚) + 移動速度低下/弱体化
+        if (type == KnifeType.STUN && target instanceof net.minecraft.world.entity.LivingEntity le) {
+            le.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 60, 3, false, true));
+            le.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+                net.minecraft.world.effect.MobEffects.WEAKNESS, 60, 1, false, true));
+            if (!this.level().isClientSide && this.level() instanceof net.minecraft.server.level.ServerLevel sl) {
+                sl.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK,
+                    le.getX(), le.getY() + le.getBbHeight() / 2.0, le.getZ(),
+                    20, 0.4, 0.6, 0.4, 0.2);
+            }
+        }
+
         if (!this.level().isClientSide) {
             this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.ARROW_HIT, SoundSource.PLAYERS, 1.0f, 1.2f);
@@ -103,6 +147,10 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
     protected void onHitBlock(BlockHitResult result) {
         super.onHitBlock(result);
         if (this.level().isClientSide) return;
+
+        // SCREW: 木材/木製コンテナを破壊して貫通継続
+        if (getKnifeType() == KnifeType.SCREW && tryScrewBreak(result)) return;
+
         // 衝突直前のdeltaMovementから投げた方向の姿勢を計算して同期
         // (tick処理がこの直後に deltaMovement=0 から atan2(0,0)=0 で rotation をリセットするため)
         Vec3 v = this.getDeltaMovement();
@@ -120,8 +168,17 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         this.entityData.set(DATA_STUCK_PITCH, savedPitch);
         this.entityData.set(DATA_STUCK, true);
 
+        // 衝突位置オフセット (1単位 = 1/100ブロック)
         Vec3 hitPos = result.getLocation();
-        this.setPos(hitPos.x, hitPos.y, hitPos.z);
+        net.minecraft.core.Direction face = result.getDirection();
+        double normalAmt = STICK_OFFSET_NORMAL * STICK_UNIT;   // 法線方向の実距離(ブロック)
+        // 進行方向: 0で刃先がブロック表面に来るよう、エンティティ中心を刃の長さ分手前に引く
+        double forwardAmt = (STICK_OFFSET_FORWARD * STICK_UNIT) - BLADE_TIP_LENGTH;
+        double nx = face.getStepX() * normalAmt;
+        double ny = face.getStepY() * normalAmt;
+        double nz = face.getStepZ() * normalAmt;
+        Vec3 fwd = v.lengthSqr() > 1e-6 ? v.normalize().scale(forwardAmt) : Vec3.ZERO;
+        this.setPos(hitPos.x + nx + fwd.x, hitPos.y + ny + fwd.y, hitPos.z + nz + fwd.z);
         this.setDeltaMovement(Vec3.ZERO);
         this.setNoGravity(true);
         this.stuckTicks = 0;
@@ -172,6 +229,10 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
             }
             return;
         }
+        // HOMING: 飛翔中に最近接Mobへ徐々に旋回
+        if (!this.level().isClientSide && getKnifeType() == KnifeType.HOMING) {
+            applyHoming();
+        }
         super.tick();
         // super.tick() 内で onHit→stuck=true になった直後: rotation がリセットされているので復元
         if (isStuck()) {
@@ -184,6 +245,58 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         }
     }
 
+    private void applyHoming() {
+        Vec3 mv = this.getDeltaMovement();
+        if (mv.lengthSqr() < 0.04) return;
+        Vec3 pos = this.position();
+        net.minecraft.world.entity.LivingEntity tgt = this.level().getEntitiesOfClass(
+                net.minecraft.world.entity.LivingEntity.class,
+                this.getBoundingBox().inflate(16.0)).stream()
+            .filter(e -> e != this.getOwner() && e.isAlive() && !e.isSpectator())
+            .filter(e -> {
+                Vec3 to = e.getEyePosition().subtract(pos).normalize();
+                return to.dot(mv.normalize()) > 0.4;
+            })
+            .min(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(this)))
+            .orElse(null);
+        if (tgt == null) return;
+        Vec3 to = tgt.getEyePosition().subtract(pos).normalize();
+        double power = 0.18;
+        Vec3 newMv = mv.normalize().scale(1.0 - power)
+            .add(to.scale(power)).normalize().scale(mv.length());
+        this.setDeltaMovement(newMv);
+        this.hasImpulse = true;
+    }
+
+    /**
+     * SCREWナイフ: ヒットした木材/木製コンテナを破壊し貫通継続。破壊できればtrue。
+     */
+    private boolean tryScrewBreak(BlockHitResult result) {
+        net.minecraft.core.BlockPos pos = result.getBlockPos();
+        net.minecraft.world.level.block.state.BlockState state = this.level().getBlockState(pos);
+        net.minecraft.world.level.block.Block block = state.getBlock();
+        boolean isWood = state.is(net.minecraft.tags.BlockTags.LOGS)
+                      || state.is(net.minecraft.tags.BlockTags.PLANKS)
+                      || state.is(net.minecraft.tags.BlockTags.WOODEN_DOORS)
+                      || state.is(net.minecraft.tags.BlockTags.WOODEN_TRAPDOORS)
+                      || state.is(net.minecraft.tags.BlockTags.WOODEN_FENCES)
+                      || state.is(net.minecraft.tags.BlockTags.WOODEN_BUTTONS)
+                      || state.is(net.minecraft.tags.BlockTags.WOODEN_PRESSURE_PLATES)
+                      || state.is(net.minecraft.tags.BlockTags.WOODEN_SLABS)
+                      || state.is(net.minecraft.tags.BlockTags.WOODEN_STAIRS)
+                      || block == net.minecraft.world.level.block.Blocks.CHEST
+                      || block == net.minecraft.world.level.block.Blocks.TRAPPED_CHEST
+                      || block == net.minecraft.world.level.block.Blocks.BARREL
+                      || block == net.minecraft.world.level.block.Blocks.CRAFTING_TABLE;
+        if (!isWood) return false;
+        net.minecraft.world.entity.Entity owner = this.getOwner();
+        this.level().destroyBlock(pos, true,
+            owner instanceof net.minecraft.world.entity.LivingEntity le ? le : null);
+        this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
+            SoundEvents.WOOD_BREAK, SoundSource.PLAYERS, 0.8f, 1.2f);
+        return true; // 貫通継続
+    }
+
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
@@ -191,6 +304,7 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         tag.putInt("StuckTicks", stuckTicks);
         tag.putFloat("StuckYaw", getStuckYaw());
         tag.putFloat("StuckPitch", getStuckPitch());
+        tag.putInt("KnifeType", getKnifeType().ordinal());
     }
 
     @Override
@@ -200,6 +314,9 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         this.stuckTicks = tag.getInt("StuckTicks");
         this.entityData.set(DATA_STUCK_YAW, tag.getFloat("StuckYaw"));
         this.entityData.set(DATA_STUCK_PITCH, tag.getFloat("StuckPitch"));
+        if (tag.contains("KnifeType")) {
+            this.entityData.set(DATA_KNIFE_TYPE, tag.getInt("KnifeType"));
+        }
     }
 
     @Override

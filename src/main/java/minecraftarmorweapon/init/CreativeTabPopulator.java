@@ -52,6 +52,10 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.GOLD_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.OFUDA);
 			event.accept(CustomEntityInit.THROWING_KNIFE);
+			event.accept(CustomEntityInit.GRIP_KNIFE);
+			event.accept(CustomEntityInit.STUN_KNIFE);
+			event.accept(CustomEntityInit.SCREW_KNIFE);
+			event.accept(CustomEntityInit.HOMING_KNIFE);
 			event.accept(CustomEntityInit.UNDEAD_ARMY_BANISH);
 		}
 

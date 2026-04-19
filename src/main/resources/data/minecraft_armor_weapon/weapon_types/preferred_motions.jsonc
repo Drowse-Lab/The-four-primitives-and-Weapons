@@ -1,0 +1,86 @@
+// =============================================================================
+// 武器タイプごとの 得意/通常/不得意 技
+// =============================================================================
+// 3 段階で分類:
+//   - 得意技 (preferred_motions): 攻撃ゲージ充填 1.5倍速。ダメージは通常と同じ
+//   - 通常技 (normal_motions): ボーナスもペナルティもなし (デフォルト)
+//   - 不得意技 (disliked_motions): 攻撃力 -40%, 攻撃ゲージ充填 0.5倍速 (約1.5秒)
+//
+// 対象は combat スロット (一撃目〜チャージ) の技のみ。
+// dash / right_click / shift_right_click は対象外。
+//
+// normal_motions に記載しなくても、preferred/disliked 以外は自動で通常扱い。
+// 記載は整理・明示のためのドキュメント目的。
+//
+// キー = weapon_types.json の type ID、値 = motion_id の配列。
+// 別MODやアドオンから追加する場合も同じ構造の JSON/JSONC を
+// data/<namespace>/weapon_types/ 以下に置けばマージされる。
+//
+// --- 技ID 一覧 ---
+//   "thrust"             = 突き（直線的な突き攻撃）
+//   "upper_left_slash"   = 左上斬り（左上からの斜め斬り）
+//   "upper_right_slash"  = 右上斬り（右上からの斜め斬り）
+//   "horizontal_slash"   = 横一文字（広範囲の横薙ぎ）
+//   "spin_slash"         = 回転斬り（360度の範囲攻撃）
+//   "slam_down"          = 叩きつける（上から振り下ろす強打）
+// =============================================================================
+{
+  "preferred_motions": {
+    "katana":         [],
+    "rapier":         ["thrust"],            // 細剣: 突き特化
+    "straight_sword": ["thrust"],            // 直刀: 突き特化
+    "sword":          ["slam_down"],         // 剣: 叩きつける
+    "greatsword":     [],
+    "dagger":         [],
+    "trident":        ["thrust"]             // 槍: 突き特化
+  },
+  "normal_motions": {
+    "katana":         [                     
+      "upper_left_slash",                    // 左上斬り
+      "upper_right_slash",                   // 右上斬り
+      "horizontal_slash",                    // 横一文字
+      "spin_slash"                           // 回転斬り                    
+    ],
+    "rapier":         [
+      "upper_left_slash",                    // 左上斬り
+      "upper_right_slash",                   // 右上斬り
+      "horizontal_slash"                     // 横一文字
+    ],
+    "straight_sword": [
+      "upper_left_slash",                    // 左上斬り
+      "upper_right_slash",                   // 右上斬り
+      "horizontal_slash",                    // 横一文字
+      "spin_slash"                        // 回転斬り 
+    ],
+    "sword":          [
+      "upper_left_slash",                    // 左上斬り
+      "upper_right_slash",                   // 右上斬り
+      "horizontal_slash",                    // 横一文字
+      "spin_slash"                           // 回転斬り
+    ],
+    "greatsword":     [
+      "horizontal_slash",                    // 横一文字
+      "spin_slash",                          // 回転斬り
+      "slam_down"                            // 叩きつける
+    ],
+    "dagger":         [
+      "thrust",                              // 突き
+      "upper_left_slash",                    // 左上斬り
+      "upper_right_slash",                   // 右上斬り
+      "horizontal_slash"                     // 横一文字
+    ],
+    "trident":        [                
+      "horizontal_slash",                    // 横一文字
+      "slam_down"                            // 叩きつける
+    ]
+  },
+  "disliked_motions": {
+    "katana":         ["thrust"],
+    "rapier":         ["spin_slash", "slam_down"],   // 細剣には重い技は不向き
+    "straight_sword": ["slam_down"],
+    "sword":          ["upper_left_slash","upper_right_slash"],
+    "greatsword":     ["thrust"],                    // 大剣は突きが苦手
+    "dagger":         ["slam_down", "spin_slash"],   // 短剣には重い技は不向き
+    "trident":        ["spin_slash","upper_left_slash","upper_right_slash"]                 // 槍は回転斬りが苦手
+  }
+}

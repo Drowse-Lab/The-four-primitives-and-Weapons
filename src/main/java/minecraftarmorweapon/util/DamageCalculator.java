@@ -35,6 +35,11 @@ public class DamageCalculator {
     // セットされている間、calculateDamage は全ての技に一律のチャージ倍率を適用する。
     private static final ThreadLocal<Float> CHARGE_CONTEXT = new ThreadLocal<>();
 
+    // 武器の得意技: 攻撃力+20%
+    private static final ThreadLocal<Boolean> PREFERRED_CONTEXT = new ThreadLocal<>();
+    // 武器の不得意技: 攻撃力-40%
+    private static final ThreadLocal<Boolean> DISLIKED_CONTEXT = new ThreadLocal<>();
+
     /**
      * チャージ技コンテキストをセット。発動前に MotionExecutor から呼ばれる。
      * @param chargePercent 0.0～1.0
@@ -48,6 +53,28 @@ public class DamageCalculator {
      */
     public static void clearChargeContext() {
         CHARGE_CONTEXT.remove();
+    }
+
+    /**
+     * 得意技コンテキストをセット（攻撃力+20%）。MotionExecutor から発動前に呼ばれる。
+     */
+    public static void setPreferredContext() {
+        PREFERRED_CONTEXT.set(Boolean.TRUE);
+    }
+
+    public static void clearPreferredContext() {
+        PREFERRED_CONTEXT.remove();
+    }
+
+    /**
+     * 不得意技コンテキストをセット（攻撃力-40%）。MotionExecutor から発動前に呼ばれる。
+     */
+    public static void setDislikedContext() {
+        DISLIKED_CONTEXT.set(Boolean.TRUE);
+    }
+
+    public static void clearDislikedContext() {
+        DISLIKED_CONTEXT.remove();
     }
 
     /**
@@ -116,6 +143,13 @@ public class DamageCalculator {
         Float chargePct = CHARGE_CONTEXT.get();
         if (chargePct != null && chargePct > 0.0f) {
             damage *= 1.0f + chargePct * 0.5f;
+        }
+
+        // 武器の得意技は攻撃ゲージのみ速くなり、ダメージは通常と変わらない（処理なし）
+
+        // 武器の不得意技ペナルティ（攻撃力 -40%）
+        if (Boolean.TRUE.equals(DISLIKED_CONTEXT.get())) {
+            damage *= 0.6f;
         }
 
         // クリティカル判定（攻撃者がプレイヤーで落下中の場合）

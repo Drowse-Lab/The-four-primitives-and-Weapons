@@ -261,6 +261,9 @@ public class PlayerSkillData {
                     if (typeSetting != null && typeSetting.containsKey(slot)) {
                         return typeSetting.get(slot);
                     }
+                    // 3. 武器タイプのJSON default_motionsを次点として採用
+                    String jsonDefault = typeData.getDefaultMotion(slot);
+                    if (jsonDefault != null) return jsonDefault;
                 }
             }
             return selectedMotions.getOrDefault(slot, "thrust");

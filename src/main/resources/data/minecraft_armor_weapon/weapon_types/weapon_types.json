@@ -22,7 +22,7 @@
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge"],
+        "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
       }
     },
@@ -34,7 +34,7 @@
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge"],
+        "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
       }
     },
@@ -53,7 +53,7 @@
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge"],
+        "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
       },
       "default_motions": {
@@ -69,7 +69,7 @@
     "sword": {
       "display_name": "剣",
       "items": [
-        
+
         "minecraft_armor_weapon:sword_of_night",
         "minecraft_armor_weapon:gate",
         "minecraft:wooden_sword",
@@ -82,7 +82,7 @@
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge"],
+        "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
       }
     },
@@ -92,7 +92,7 @@
       "motions": {
         "combat": ["thrust", "horizontal_slash", "spin_slash"],
         "dash": ["dash_rush"],
-        "right_click": ["dodge"],
+        "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
       }
     },
@@ -102,7 +102,7 @@
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge"],
+        "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
       }
     },
@@ -119,6 +119,68 @@
         "dash": ["dash_rush"],
         "right_click": ["guard"],
         "shift_right_click": ["parry", "guard"]
+      }
+    },
+    "bow": {
+      "display_name": "弓",
+      "items": [
+        "minecraft:bow"
+      ],
+      "motions": {
+        "combat": [],
+        "dash": ["dash_rush", "leap_slash", "shadow_step"],
+        "right_click": ["dodge", "none_right"],
+        "shift_right_click": ["none_shift"]
+      }
+    },
+    "crossbow": {
+      "display_name": "クロスボウ",
+      "items": [
+        "minecraft:crossbow"
+      ],
+      "motions": {
+        "combat": [],
+        "dash": ["dash_rush", "leap_slash", "shadow_step"],
+        "right_click": ["dodge", "none_right"],
+        "shift_right_click": ["none_shift"]
+      }
+    },
+    "throwing": {
+      "display_name": "投擲",
+      "items": [
+        "minecraft_armor_weapon:throwing_knife"
+      ],
+      "motions": {
+        "combat": [],
+        "dash": ["dash_rush", "leap_slash", "shadow_step"],
+        "right_click": ["none_right", "dodge"],
+        "shift_right_click": ["none_shift"]
+      },
+      "default_motions": {
+        "dash": "dash_rush",
+        "right_click": "none_right",
+        "shift_right_click": "none_shift"
+      }
+    },
+    "trident": {
+      "display_name": "槍",
+      "items": [
+        "minecraft:trident"
+      ],
+      "motions": {
+        "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
+        "dash": ["dash_rush", "leap_slash", "shadow_step"],
+        "right_click": ["trident_throw", "dodge", "none_right"],
+        "shift_right_click": ["guard", "none_shift"]
+      },
+      "default_motions": {
+        "first_hit": "thrust",
+        "second_hit": "thrust",
+        "third_hit": "thrust",
+        "charged": "thrust",
+        "dash": "dash_rush",
+        "right_click": "trident_throw",
+        "shift_right_click": "guard"
       }
     }
   },

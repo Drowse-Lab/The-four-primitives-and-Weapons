@@ -111,11 +111,10 @@ public class MobTraitHandler {
         // NBTに特性を保存（ワールド再読み込み時の復元用）
         monster.getPersistentData().putString("TraitName", trait.name());
 
-        String baseName = monster.getType().getDescription().getString();
-        monster.setCustomName(Component.literal(
-            trait.getFormattedName() + " §f" + baseName
-        ));
-        monster.setCustomNameVisible(true);
+        // 頭上表示ラベル（ブロック越しには見えない独自レンダーレイヤー経由）
+        monster.getPersistentData().putString(
+            minecraftarmorweapon.client.renderer.SpecialLabelRenderLayer.NBT_TRAIT_LABEL,
+            trait.getFormattedName());
     }
 
     // ============================
@@ -152,14 +151,10 @@ public class MobTraitHandler {
 
         applyTraitStats(monster, foundTrait, diff);
 
-        // 名前が未設定の場合のみ設定（既に名前付きなら上書きしない）
-        if (monster.getCustomName() == null) {
-            String baseName = monster.getType().getDescription().getString();
-            monster.setCustomName(Component.literal(
-                foundTrait.getFormattedName() + " §f" + baseName
-            ));
-            monster.setCustomNameVisible(true);
-        }
+        // 頭上ラベルの NBT を設定（独自レンダーレイヤーで表示）
+        monster.getPersistentData().putString(
+            minecraftarmorweapon.client.renderer.SpecialLabelRenderLayer.NBT_TRAIT_LABEL,
+            foundTrait.getFormattedName());
     }
 
     // ============================
@@ -483,10 +478,9 @@ public class MobTraitHandler {
             }
             monster.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 999999, 2, false, true));
 
-            String baseName = monster.getType().getDescription().getString();
-            monster.setCustomName(Component.literal(
-                "§4§l[狂戦士・怒] §f" + baseName
-            ));
+            monster.getPersistentData().putString(
+                minecraftarmorweapon.client.renderer.SpecialLabelRenderLayer.NBT_TRAIT_LABEL,
+                "§4§l[狂戦士・怒]");
         }
     }
 
@@ -961,10 +955,9 @@ public class MobTraitHandler {
             monster.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.TOTEM_OF_UNDYING));
             monster.setDropChance(EquipmentSlot.OFFHAND, 0.0f);
 
-            String baseName = monster.getType().getDescription().getString();
-            monster.setCustomName(Component.literal(
-                "§4§l[不死 ×" + count + "] §f" + baseName
-            ));
+            monster.getPersistentData().putString(
+                minecraftarmorweapon.client.renderer.SpecialLabelRenderLayer.NBT_TRAIT_LABEL,
+                "§4§l[不死 ×" + count + "]");
 
             if (monster.level() instanceof ServerLevel serverLevel) {
                 serverLevel.broadcastEntityEvent(monster, (byte) 35);
@@ -1039,11 +1032,10 @@ public class MobTraitHandler {
         // NBTに特性を保存
         monster.getPersistentData().putString("TraitName", trait.name());
 
-        String baseName = monster.getType().getDescription().getString();
-        monster.setCustomName(Component.literal(
-            trait.getFormattedName() + " §f" + baseName
-        ));
-        monster.setCustomNameVisible(true);
+        // 頭上ラベルの NBT を設定（独自レンダーレイヤーで表示）
+        monster.getPersistentData().putString(
+            minecraftarmorweapon.client.renderer.SpecialLabelRenderLayer.NBT_TRAIT_LABEL,
+            trait.getFormattedName());
     }
 
     /**

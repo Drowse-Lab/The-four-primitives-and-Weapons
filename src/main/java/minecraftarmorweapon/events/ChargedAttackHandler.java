@@ -566,6 +566,8 @@ public class ChargedAttackHandler {
 
         // SwordItemまたはカタナ系アイテムかチェック
         if (stack.getItem() instanceof SwordItem) return true;
+        // トライデントも左クリック通常攻撃・コンボ・チャージの対象
+        if (stack.getItem() instanceof net.minecraft.world.item.TridentItem) return true;
 
         String itemName = stack.getItem().getClass().getSimpleName();
         return itemName.contains("Katana") || itemName.contains("Sword") ||

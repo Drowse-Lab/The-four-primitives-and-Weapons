@@ -91,8 +91,8 @@ public class ElementalDamageEvent {
             return;
         }
 
-        // デバッグ: 属性情報をチャットに表示
-        if (attacker instanceof Player debugPlayer) {
+        // デバッグ: 属性情報をチャットに表示（設定でON/OFF可能、デフォルトOFF）
+        if (minecraftarmorweapon.config.DebugConfig.elementalDebugEnabled && attacker instanceof Player debugPlayer) {
             debugPlayer.displayClientMessage(
                 Component.literal("§e[DEBUG] 属性=" + elementType.getName()
                     + " Lv=" + elementLevel

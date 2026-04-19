@@ -21,6 +21,10 @@ import minecraftarmorweapon.entity.AngelTrioEntity;
 import minecraftarmorweapon.entity.ThrowingKnifeEntity;
 import minecraftarmorweapon.item.UndeadArmyBanishItem;
 import minecraftarmorweapon.item.ThrowingKnifeItem;
+import minecraftarmorweapon.item.GripKnifeItem;
+import minecraftarmorweapon.item.StunKnifeItem;
+import minecraftarmorweapon.item.ScrewKnifeItem;
+import minecraftarmorweapon.item.HomingKnifeItem;
 
 /**
  * カスタムエンティティの登録用クラス（A-Life AI Mobs専用）
@@ -169,6 +173,16 @@ public class CustomEntityInit {
     public static final RegistryObject<Item> THROWING_KNIFE =
         CUSTOM_ITEMS.register("throwing_knife",
             () -> new ThrowingKnifeItem());
+
+    // 投げナイフ — 咲夜系バリアント
+    public static final RegistryObject<Item> GRIP_KNIFE =
+        CUSTOM_ITEMS.register("grip_knife", () -> new GripKnifeItem());
+    public static final RegistryObject<Item> STUN_KNIFE =
+        CUSTOM_ITEMS.register("stun_knife", () -> new StunKnifeItem());
+    public static final RegistryObject<Item> SCREW_KNIFE =
+        CUSTOM_ITEMS.register("screw_knife", () -> new ScrewKnifeItem());
+    public static final RegistryObject<Item> HOMING_KNIFE =
+        CUSTOM_ITEMS.register("homing_knife", () -> new HomingKnifeItem());
 
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
