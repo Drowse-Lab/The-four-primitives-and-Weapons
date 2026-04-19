@@ -1,3 +1,16 @@
 #!/bin/bash
-# WSLからMinecraftクライアントを起動するスクリプト
-cmd.exe /c "cd /d C:\Users\hrmcn\MCreatorWorkspaces\minecraft_armor_weapon && gradlew.bat runClient"
+# Minecraftクライアントを起動するスクリプト（mac / WSL 両対応）
+
+cd "$(dirname "$0")"
+
+case "$(uname -s)" in
+    Darwin|Linux)
+        ./gradlew runClient
+        ;;
+    MINGW*|CYGWIN*|MSYS*)
+        ./gradlew.bat runClient
+        ;;
+    *)
+        ./gradlew runClient
+        ;;
+esac
