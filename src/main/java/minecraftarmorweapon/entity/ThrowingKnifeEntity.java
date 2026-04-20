@@ -208,6 +208,8 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
                     this.discard();
                     return;
                 }
+                // 刺さってる間の拾得判定は毎tickだとAABBスキャンが重い。3tickに1回で十分。
+                if ((stuckTicks % 3) != 0) return;
                 for (Player p : this.level().getEntitiesOfClass(Player.class,
                         this.getBoundingBox().inflate(1.5))) {
                     if (p.isSpectator()) continue;
@@ -232,6 +234,10 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         // HOMING: 飛翔中に最近接Mobへ徐々に旋回
         if (!this.level().isClientSide && getKnifeType() == KnifeType.HOMING) {
             applyHoming();
+        }
+        // SCREW: 激流トライデントのスピン時に発生するバブルパーティクルを周囲に散らす
+        if (!this.level().isClientSide && getKnifeType() == KnifeType.SCREW) {
+            emitScrewParticles();
         }
         super.tick();
         // super.tick() 内で onHit→stuck=true になった直後: rotation がリセットされているので復元
@@ -269,6 +275,18 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
     }
 
     /**
+     * SCREW飛翔中: 周囲にバブルパーティクルをばらまく (激流トライデントのスピン演出)。
+     * 毎tickは重いので 2tick に 1 回、1種類のみ。sendParticles は内部でネット配信するので
+     * 呼び出し回数とパーティクル数を抑えるのが軽量化の要点。
+     */
+    private void emitScrewParticles() {
+        if ((this.tickCount & 1) != 0) return; // 2tick に 1 回だけ
+        if (!(this.level() instanceof net.minecraft.server.level.ServerLevel sl)) return;
+        sl.sendParticles(net.minecraft.core.particles.ParticleTypes.BUBBLE,
+            this.getX(), this.getY(), this.getZ(), 2, 0.2, 0.2, 0.2, 0.01);
+    }
+
+    /**
      * SCREWナイフ: ヒットした木材/木製コンテナを破壊し貫通継続。破壊できればtrue。
      */
     private boolean tryScrewBreak(BlockHitResult result) {
@@ -289,11 +307,17 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
                       || block == net.minecraft.world.level.block.Blocks.BARREL
                       || block == net.minecraft.world.level.block.Blocks.CRAFTING_TABLE;
         if (!isWood) return false;
-        net.minecraft.world.entity.Entity owner = this.getOwner();
-        this.level().destroyBlock(pos, true,
-            owner instanceof net.minecraft.world.entity.LivingEntity le ? le : null);
-        this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
-            SoundEvents.WOOD_BREAK, SoundSource.PLAYERS, 0.8f, 1.2f);
+        // 軽量化: destroyBlock は levelEvent(2001) でパーティクル＋音パケットをブロードキャスト
+        // するのでループ破壊時に重い。setBlock(AIR) を最小フラグで直接差し替える:
+        //   UPDATE_CLIENTS(2): クライアント側のチャンク更新は必要
+        //   UPDATE_KNOWN_SHAPE(16): 周辺の再レンダリング通知をスキップ
+        //   UPDATE_SUPPRESS_DROPS(32): ドロップ抑止 (ItemEntity 生成させない)
+        // 全ての破壊音を流すと耳障りなので、5 ブロックに 1 回だけ鳴らす。
+        this.level().setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),
+            2 | 16 | 32);
+        if ((this.tickCount % 5) == 0) {
+            this.level().playSound(null, pos, SoundEvents.WOOD_BREAK, SoundSource.PLAYERS, 0.6f, 1.3f);
+        }
         return true; // 貫通継続
     }
 
