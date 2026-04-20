@@ -27,8 +27,10 @@ source ~/.bashrc
 ### スクリプトで実行
 
 ```bash
-bash build.sh          # 通常ビルド
-bash build.sh clean    # クリーンビルド
+bash build.sh                   # 通常ビルド
+bash build.sh clean             # クリーンビルド
+bash build.sh offline	        # オフラインビルド
+bash build.sh clean offline	    # クリーン＋オフライン
 ```
 
 ### 手動で実行
@@ -47,7 +49,8 @@ build/libs/The four primitives and Weapons-forge-1.20.1--1.0.jar
 ## テストプレイ
 
 ```bash
-bash run_client.sh
+bash run_client.sh	            # 通常起動
+bash run_client.sh offline	    # オフライン起動
 ```
 
 ## トラブルシューティング
