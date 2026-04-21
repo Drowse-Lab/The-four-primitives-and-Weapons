@@ -748,6 +748,10 @@ public class MobTraitHandler {
         if (monster.level().isClientSide) {
             return;
         }
+        // 10tick毎で十分 — 蜘蛛糸配置は秒単位解像度で問題なし
+        if (monster.tickCount % 10 != 0) {
+            return;
+        }
 
         UUID id = monster.getUUID();
         MobTrait trait = traitMap.get(id);

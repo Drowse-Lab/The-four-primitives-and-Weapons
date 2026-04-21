@@ -32,7 +32,8 @@ public class ArsonHandler {
 
     private static final int CHECK_INTERVAL = 60; // 3秒ごと
     private static final int ARSON_RADIUS = 3;
-    private static final int MOB_SEARCH_RADIUS = 8;
+    private static final int MOB_SEARCH_RADIUS = 6; // 8→6に縮小
+    private static final Random SHARED_RAND = new Random();
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
@@ -46,35 +47,29 @@ public class ArsonHandler {
         int effectiveLevel = aiLevel + progBonus / 20;
         if (effectiveLevel < 3) return;
 
-        // 発火確率: レベル3=0.1 → レベル10+=約0.8
         float arsonChance = Math.min(0.8f, 0.1f + (effectiveLevel - 3) * 0.1f);
-        Random rand = new Random();
 
         for (ServerLevel level : event.getServer().getAllLevels()) {
             if (!level.dimensionType().natural()) continue;
-            // ネザーは常に燃える環境なので発動不要
             if (level.dimensionType().ultraWarm()) continue;
+            // プレイヤーがいないlevelは完全スキップ
+            java.util.List<ServerPlayer> players = level.players();
+            if (players.isEmpty()) continue;
 
-            for (ServerPlayer player : level.players()) {
+            for (ServerPlayer player : players) {
                 if (player.isCreative() || player.isSpectator()) continue;
-                if (rand.nextFloat() >= arsonChance) continue;
-
-                // 近くにプレイヤーを狙うMobがいるか
+                if (SHARED_RAND.nextFloat() >= arsonChance) continue;
                 if (!hasNearbyHostileMob(level, player)) continue;
-
-                // プレイヤー周辺の可燃ブロックに火を放つ
-                tryIgniteAround(level, player, rand);
+                tryIgniteAround(level, player, SHARED_RAND);
             }
         }
     }
 
+    /** hasLineOfSight は重いraycastなので廃止。getTarget==player だけで十分 */
     private static boolean hasNearbyHostileMob(ServerLevel level, ServerPlayer player) {
         net.minecraft.world.phys.AABB box = player.getBoundingBox().inflate(MOB_SEARCH_RADIUS);
         for (Monster mob : level.getEntitiesOfClass(Monster.class, box)) {
             if (mob.getTarget() == player) return true;
-            if (mob.distanceToSqr(player) <= MOB_SEARCH_RADIUS * MOB_SEARCH_RADIUS && mob.hasLineOfSight(player)) {
-                return true;
-            }
         }
         return false;
     }

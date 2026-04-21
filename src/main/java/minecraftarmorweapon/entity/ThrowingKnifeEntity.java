@@ -231,8 +231,8 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
             }
             return;
         }
-        // HOMING: 飛翔中に最近接Mobへ徐々に旋回
-        if (!this.level().isClientSide && getKnifeType() == KnifeType.HOMING) {
+        // HOMING: 飛翔中に最近接Mobへ徐々に旋回 (4tick毎で十分、負荷軽減)
+        if (!this.level().isClientSide && getKnifeType() == KnifeType.HOMING && this.tickCount % 4 == 0) {
             applyHoming();
         }
         // SCREW: 激流トライデントのスピン時に発生するバブルパーティクルを周囲に散らす

@@ -42,6 +42,8 @@ public class GrazeHandler {
         if (p.isSpectator() || p.isCreative()) return;
 
         int now = p.tickCount;
+        // 4tick毎 — 全プレイヤーの弾幕スキャンは高コストなので間引き
+        if (now % 4 != 0) return;
 
         // プレイヤー周囲にあるProjectileをチェック
         for (Projectile proj : p.level().getEntitiesOfClass(Projectile.class,

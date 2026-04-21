@@ -59,18 +59,26 @@ public class PartyNightHandler {
         EntityType.PHANTOM
     };
 
+    /** Randomは毎tick生成するとGC圧なのでキャッシュ */
+    private static final Random SHARED_RAND = new Random();
+
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+
+        // 20tick毎で十分 (遷移検知もスポーンも1秒分解能で違和感なし)
+        long tick = event.getServer().getTickCount();
+        if (tick % 20 != 0) return;
 
         CustomDifficulty diff = CustomDifficultyCommand.getCurrentDifficulty();
         // 難易度MAX (aiLevel 5以上) でのみ発動
         if (diff.getAiLevel() < 5) return;
 
-        long tick = event.getServer().getTickCount();
-
         for (ServerLevel level : event.getServer().getAllLevels()) {
             if (!level.dimensionType().natural()) continue;
+            // プレイヤーがいないlevelは完全スキップ
+            java.util.List<ServerPlayer> players = level.players();
+            if (players.isEmpty()) continue;
 
             long dayTime = level.getDayTime() % 24000;
             boolean isNight = dayTime >= NIGHT_START && dayTime <= NIGHT_END;
@@ -79,7 +87,7 @@ public class PartyNightHandler {
 
             // 夜に切替わった瞬間: 通知
             if (isNight && !wasNightInLevel) {
-                for (ServerPlayer p : level.players()) {
+                for (ServerPlayer p : players) {
                     p.sendSystemMessage(Component.literal(
                         "§d§l♪ §5§l狂乱の夜 §d§l♪ §7— パーティタイム開始！"));
                     level.playSound(null, p.blockPosition(),
@@ -89,7 +97,7 @@ public class PartyNightHandler {
             }
             // 朝に切替わった瞬間: 通知
             if (!isNight && wasNightInLevel) {
-                for (ServerPlayer p : level.players()) {
+                for (ServerPlayer p : players) {
                     p.sendSystemMessage(Component.literal(
                         "§e§l☀ §7狂乱の夜が明けた"));
                 }
@@ -101,17 +109,14 @@ public class PartyNightHandler {
             if (tick % SPAWN_INTERVAL_TICKS != 0) continue;
 
             // プレイヤー毎に追加スポーン
-            Random rand = new Random();
             int progBonus = ProgressionTracker.getBaseLevelBonus();
             int moonBonus = MoonPhaseDifficulty.getDifficultyBonus(level);
-            // 進行度 + 月相でスポーン数加算
             int baseCount = 1 + Math.min(5, progBonus / 40) + (moonBonus / 4);
 
-            for (ServerPlayer player : level.players()) {
-                // クリエイティブ/スペクテイターは対象外
+            for (ServerPlayer player : players) {
                 if (player.isCreative() || player.isSpectator()) continue;
-                int count = baseCount + rand.nextInt(2); // 揺らぎ ±1
-                spawnPartyMobs(level, player, count, rand);
+                int count = baseCount + SHARED_RAND.nextInt(2);
+                spawnPartyMobs(level, player, count, SHARED_RAND);
             }
         }
     }
