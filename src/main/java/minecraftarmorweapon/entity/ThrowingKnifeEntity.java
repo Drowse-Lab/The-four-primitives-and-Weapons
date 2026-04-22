@@ -50,6 +50,13 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
 
     private static final float DAMAGE = 6.0f;
     private static final int STUCK_LIFETIME_TICKS = 600; // 30秒で消滅
+
+    /**
+     * SCREW ナイフのロール回転速度 (度/tick)。
+     * renderer (ThrowingKnifeRenderer) もこの値を参照してパーティクルの渦方向と同期させる。
+     * 120°/tick = 2400°/sec ≒ 6.7 回転/秒。
+     */
+    public static final float SCREW_SPIN_DEG_PER_TICK = 120f;
     private static final EntityDataAccessor<Integer> DATA_KNIFE_TYPE =
         SynchedEntityData.defineId(ThrowingKnifeEntity.class, EntityDataSerializers.INT);
 
@@ -275,15 +282,46 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
     }
 
     /**
-     * SCREW飛翔中: 周囲にバブルパーティクルをばらまく (激流トライデントのスピン演出)。
-     * 毎tickは重いので 2tick に 1 回、1種類のみ。sendParticles は内部でネット配信するので
-     * 呼び出し回数とパーティクル数を抑えるのが軽量化の要点。
+     * SCREW飛翔中: 進行軸まわりに2本のスパイラル軌道でバブルを撒く。
+     * 回転角は SCREW_SPIN_DEG_PER_TICK と同期するのでナイフの回転方向に風が
+     * 回っているように見える。軽量化のため 2tick に 1 回のみ。
      */
     private void emitScrewParticles() {
-        if ((this.tickCount & 1) != 0) return; // 2tick に 1 回だけ
+        if ((this.tickCount & 1) != 0) return; // 2tick に 1 回
         if (!(this.level() instanceof net.minecraft.server.level.ServerLevel sl)) return;
-        sl.sendParticles(net.minecraft.core.particles.ParticleTypes.BUBBLE,
-            this.getX(), this.getY(), this.getZ(), 2, 0.2, 0.2, 0.2, 0.01);
+
+        Vec3 motion = this.getDeltaMovement();
+        if (motion.lengthSqr() < 1e-6) return;
+
+        // 進行方向を軸に、それに直交する2つの単位ベクトルを作る
+        Vec3 fwd = motion.normalize();
+        Vec3 refUp = Math.abs(fwd.y) < 0.99 ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0);
+        Vec3 right = fwd.cross(refUp).normalize();
+        Vec3 up    = right.cross(fwd).normalize();
+
+        // 現在のスピン角 (renderer と同じ)
+        double ang = Math.toRadians(this.tickCount * SCREW_SPIN_DEG_PER_TICK);
+        double radius = 0.35;
+        double tangent = 0.12; // 接線方向の速度 (風が流れる感じ)
+
+        // 180° 離して 2 点発生 → 2 本のヘリックス (螺旋) トレイルが描かれる
+        for (int i = 0; i < 2; i++) {
+            double a = ang + i * Math.PI;
+            double cosA = Math.cos(a);
+            double sinA = Math.sin(a);
+            // 発生位置: 進行軸まわり radius 距離の円周上
+            double ox = right.x * cosA * radius + up.x * sinA * radius;
+            double oy = right.y * cosA * radius + up.y * sinA * radius;
+            double oz = right.z * cosA * radius + up.z * sinA * radius;
+            // 接線速度: 回転方向 (d/da の位置) = -right*sin(a) + up*cos(a)
+            double vx = (-right.x * sinA + up.x * cosA) * tangent;
+            double vy = (-right.y * sinA + up.y * cosA) * tangent;
+            double vz = (-right.z * sinA + up.z * cosA) * tangent;
+            // count=0 で xDist/yDist/zDist が個別速度として扱われる (指向性パーティクル)
+            sl.sendParticles(net.minecraft.core.particles.ParticleTypes.BUBBLE,
+                this.getX() + ox, this.getY() + oy, this.getZ() + oz,
+                0, vx, vy, vz, 0);
+        }
     }
 
     /**

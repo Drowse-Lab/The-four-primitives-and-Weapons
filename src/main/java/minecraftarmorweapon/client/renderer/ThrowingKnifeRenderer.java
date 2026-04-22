@@ -31,9 +31,8 @@ public class ThrowingKnifeRenderer extends EntityRenderer<ThrowingKnifeEntity> {
     public static float SCALE = 1.0f;       // 表示サイズ
     // @EndRotationParams
 
-    // SCREW: 進行方向を軸にリップタイド風の連続ロール (度/tick, 20tick=1秒)
-    // 90°/tick = 1800°/sec = 5回転/秒。リップタイドと同等以上の高速スピン
-    public static float SCREW_SPIN_DEG_PER_TICK = 90f;
+    // SCREW 回転速度は entity 側に定数があるので、renderer はそれを参照する。
+    // (パーティクル渦方向との同期のため一元管理)
 
     public ThrowingKnifeRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -56,7 +55,7 @@ public class ThrowingKnifeRenderer extends EntityRenderer<ThrowingKnifeEntity> {
         // SCREW かつ飛翔中のみ、連続回転アニメーションを付加 (リップタイド風スピン)
         float roll = ROLL_OFFSET;
         if (entity.getKnifeType() == ThrowingKnifeEntity.KnifeType.SCREW && !entity.isStuck()) {
-            roll += (entity.tickCount + partialTicks) * SCREW_SPIN_DEG_PER_TICK;
+            roll += (entity.tickCount + partialTicks) * ThrowingKnifeEntity.SCREW_SPIN_DEG_PER_TICK;
         }
         poseStack.mulPose(Axis.XP.rotationDegrees(roll));
         // モデルの刃を motion 方向に揃える (GROUND display の-180°反転を考慮して+90°)
