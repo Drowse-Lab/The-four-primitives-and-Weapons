@@ -228,11 +228,19 @@ public class GuideBookScreen extends Screen {
         g.pose().popPose();
     }
 
+    // エンティティは生成コストが高い (AI/ゴール/データウォッチャー初期化)。
+    // ページ毎に1個キャッシュして再利用。Supplier 参照をキーに保持するだけでOK。
+    private static final java.util.Map<Supplier<LivingEntity>, LivingEntity> entityCache
+        = new java.util.IdentityHashMap<>();
+
     private static void drawEntity(GuiGraphics g, Supplier<LivingEntity> factory, int x, int y, int size) {
         try {
-            LivingEntity e = factory.get();
-            if (e == null) return;
-            // 1.20.1 Forge: renderEntityInInventoryFollowsMouse(GuiGraphics, x, y, scale, mouseX, mouseY, LivingEntity)
+            LivingEntity e = entityCache.get(factory);
+            if (e == null) {
+                e = factory.get();
+                if (e == null) return;
+                entityCache.put(factory, e);
+            }
             InventoryScreen.renderEntityInInventoryFollowsMouse(g, x + 35, y + 60, size, 0f, 0f, e);
         } catch (Throwable ignored) {
             // mob 生成に失敗 (level=null 等) したら描画スキップ

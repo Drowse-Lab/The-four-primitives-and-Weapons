@@ -19,6 +19,11 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = MinecraftArmorWeaponMod.MODID, value = Dist.CLIENT)
 public class ManaHudOverlay {
 
+    // 表示値が変化した時だけテキスト再構築
+    private static int cachedCur = -1;
+    private static int cachedMax = -1;
+    private static String cachedTxt = "MP 0/0";
+
     @SubscribeEvent
     public static void onRender(RenderGuiOverlayEvent.Post event) {
         if (!event.getOverlay().id().getPath().equals("hotbar")) return;
@@ -33,6 +38,13 @@ public class ManaHudOverlay {
         double max = ManaHelper.maxMana(p);
         if (max <= 0) return;
         float pct = (float)(cur / max);
+        int curI = (int) cur;
+        int maxI = (int) max;
+        if (curI != cachedCur || maxI != cachedMax) {
+            cachedCur = curI;
+            cachedMax = maxI;
+            cachedTxt = "MP " + curI + "/" + maxI;
+        }
 
         GuiGraphics g = event.getGuiGraphics();
         int sw = mc.getWindow().getGuiScaledWidth();
@@ -48,8 +60,7 @@ public class ManaHudOverlay {
         // 残量
         int fill = (int)(barW * pct);
         g.fill(x, y, x + fill, y + barH, 0xFF3060FF);
-        // 数値
-        String txt = "MP " + (int)cur + "/" + (int)max;
-        g.drawString(mc.font, txt, x, y - 10, 0xAACCFF, true);
+        // 数値 (キャッシュ済み文字列)
+        g.drawString(mc.font, cachedTxt, x, y - 10, 0xAACCFF, true);
     }
 }

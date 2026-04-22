@@ -50,6 +50,12 @@ public class KnifeLauncherClientHandler {
         wasAttackPressed = attackDown;
     }
 
+    // HUD テキストはモード/本数が変わった時のみ再構築。毎フレーム文字列連結するとGC圧発生。
+    private static KnifeType cachedMode;
+    private static int cachedCount = -1;
+    private static String cachedText = "";
+    private static Component cachedComponent = Component.empty();
+
     @SubscribeEvent
     public static void onRenderOverlay(RenderGuiOverlayEvent.Post event) {
         if (!event.getOverlay().id().getPath().equals("hotbar")) return;
@@ -61,13 +67,18 @@ public class KnifeLauncherClientHandler {
 
         KnifeType mode = KnifeLauncherItem.getMode(stack);
         int count = KnifeLauncherItem.getCount(stack);
-        String text = "§6▶ " + KnifeLauncherItem.modeLabel(mode) + " §7x §f" + count
-            + "  §8[Shift+左クリックで設定]";
+        if (mode != cachedMode || count != cachedCount) {
+            cachedMode = mode;
+            cachedCount = count;
+            cachedText = "§6▶ " + KnifeLauncherItem.modeLabel(mode) + " §7x §f" + count
+                + "  §8[Shift+左クリックで設定]";
+            cachedComponent = Component.literal(cachedText);
+        }
 
         GuiGraphics g = event.getGuiGraphics();
         int sw = mc.getWindow().getGuiScaledWidth();
-        int x = sw / 2 - mc.font.width(text) / 2;
+        int x = sw / 2 - mc.font.width(cachedText) / 2;
         int y = mc.getWindow().getGuiScaledHeight() - 60;
-        g.drawString(mc.font, Component.literal(text), x, y, 0xFFFFFF, true);
+        g.drawString(mc.font, cachedComponent, x, y, 0xFFFFFF, true);
     }
 }

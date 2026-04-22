@@ -56,16 +56,20 @@ public class ElementalDamageEvent {
         int elementLevel = 0;
         boolean fromBook = false;
 
-        // 武器の属性を取得
+        // 武器の属性を取得 (NBT 読み取りのみ、軽量)
         ElementType weaponType = ElementalDamageUtils.getElementType(weapon);
         int weaponLevel = ElementalDamageUtils.getElementLevel(weapon);
 
-        // 魔導書の属性を取得
+        // 魔導書属性: 武器側で既に属性が確定しており、かつ本スロット不要な場合は
+        // Curios 走査を完全スキップ。
         ElementType bookType = ElementType.NONE;
         int bookLevel = 0;
         if (attacker instanceof Player attackerPlayer) {
-            bookType = ElementalDamageUtils.getBookSlotElement(attackerPlayer);
-            bookLevel = ElementalDamageUtils.getBookSlotLevel(attackerPlayer);
+            // 以前は getBookSlotElement + getBookSlotLevel を別々に呼んで Curios を
+            // 2 回走査していた。統合メソッドで 1 回にする。
+            ElementalDamageUtils.BookSlotInfo info = ElementalDamageUtils.getBookSlotInfo(attackerPlayer);
+            bookType = info.type;
+            bookLevel = info.level;
         }
 
         // 同じ属性ならレベルの高い方+ボーナス、違う属性なら武器優先

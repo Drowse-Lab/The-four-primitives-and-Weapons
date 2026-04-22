@@ -151,6 +151,57 @@ public class ElementalDamageUtils {
         }
     }
 
+    /** 書スロット情報を 1 回の Curios 走査でまとめて取得するための値オブジェクト */
+    public static final class BookSlotInfo {
+        public final ElementType type;
+        public final int level;
+        public static final BookSlotInfo NONE = new BookSlotInfo(ElementType.NONE, 0);
+        public BookSlotInfo(ElementType t, int l) { this.type = t; this.level = l; }
+    }
+
+    /**
+     * メインハンド→オフハンド→Curios "book" スロットを 1 回だけ走査して
+     * 最初に見つかった魔導書の (属性, レベル) を返す。
+     * 以前の getBookSlotElement + getBookSlotLevel は Curios 走査を 2 回していたので
+     * これ 1 本に統合して LivingHurtEvent ごとの負荷を半減する。
+     */
+    public static BookSlotInfo getBookSlotInfo(Player player) {
+        // メインハンド
+        ItemStack main = player.getMainHandItem();
+        ElementType mType = getBookElementFromItem(main);
+        if (mType != ElementType.NONE) {
+            return new BookSlotInfo(mType, getElementLevel(main));
+        }
+        // オフハンド
+        ItemStack off = player.getOffhandItem();
+        ElementType oType = getBookElementFromItem(off);
+        if (oType != ElementType.NONE) {
+            return new BookSlotInfo(oType, getElementLevel(off));
+        }
+        // Curios の book スロット (1 回だけ走査)
+        try {
+            java.util.concurrent.atomic.AtomicReference<BookSlotInfo> result =
+                new java.util.concurrent.atomic.AtomicReference<>(BookSlotInfo.NONE);
+            CuriosApi.getCuriosHelper().getCuriosHandler(player).ifPresent(handler -> {
+                handler.getStacksHandler("book").ifPresent(stacksHandler -> {
+                    var stacks = stacksHandler.getStacks();
+                    for (int i = 0; i < stacks.getSlots(); i++) {
+                        ItemStack s = stacks.getStackInSlot(i);
+                        if (s.isEmpty()) continue;
+                        ElementType t = getBookElementFromItem(s);
+                        if (t != ElementType.NONE) {
+                            result.set(new BookSlotInfo(t, getElementLevel(s)));
+                            return;
+                        }
+                    }
+                });
+            });
+            return result.get();
+        } catch (Exception e) {
+            return BookSlotInfo.NONE;
+        }
+    }
+
     /**
      * Curiosのbookスロット・メインハンド・オフハンドにある魔導書のレベルを取得
      */
