@@ -1,6 +1,7 @@
 package minecraftarmorweapon.client.event;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
+import minecraftarmorweapon.compat.SpellbooksCompat;
 import minecraftarmorweapon.mana.ManaHelper;
 
 import net.minecraft.client.Minecraft;
@@ -21,6 +22,9 @@ public class ManaHudOverlay {
     @SubscribeEvent
     public static void onRender(RenderGuiOverlayEvent.Post event) {
         if (!event.getOverlay().id().getPath().equals("hotbar")) return;
+        // Iron's Spellbooks が入っている時は向こうが自前の Mana HUD を描画するので
+        // 本 MOD 側のバーは表示しない (二重バー防止)。
+        if (SpellbooksCompat.isLoaded()) return;
         Minecraft mc = Minecraft.getInstance();
         Player p = mc.player;
         if (p == null || p.isSpectator()) return;

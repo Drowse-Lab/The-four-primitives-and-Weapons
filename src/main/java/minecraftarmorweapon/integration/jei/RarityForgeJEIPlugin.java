@@ -3,12 +3,15 @@ package minecraftarmorweapon.integration.jei;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import minecraftarmorweapon.init.CustomEntityInit;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 import minecraftarmorweapon.init.RarityForgeRegistration;
 import minecraftarmorweapon.item.rarity.RarityForgeRecipes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -40,6 +43,58 @@ public class RarityForgeJEIPlugin implements IModPlugin {
 
         // 鞘クラフトレシピをJEIに登録
         registerSayaCraftingRecipes(registration);
+
+        // JEI 情報パネル: アイテム選択時に操作/効果を説明表示
+        registerKnifeItemInfo(registration);
+    }
+
+    // ナイフ系・ガイドブックに "info" パネルを付与。
+    // vanilla の crafting レシピ (data配下のrecipesフォルダに置いた json) は
+    // JEI が自動で拾うのでレシピ登録は不要。ここでは使用方法の説明文のみ。
+    private void registerKnifeItemInfo(IRecipeRegistration registration) {
+        registration.addIngredientInfo(
+            new ItemStack(CustomEntityInit.KNIFE_LAUNCHER.get()),
+            VanillaTypes.ITEM_STACK,
+            Component.literal("§6ナイフホルダー"),
+            Component.literal("右クリックで扇形に投擲。"),
+            Component.literal("Shift+左クリックで技選択画面を開く。"),
+            Component.literal("モードと本数 (1〜10) を設定できる。"),
+            Component.literal("§c本数が多いほどブレが大きくなる。"),
+            Component.literal("弾は各種ナイフをインベントリから消費。")
+        );
+        registration.addIngredientInfo(
+            new ItemStack(CustomEntityInit.GUIDE_BOOK.get()),
+            VanillaTypes.ITEM_STACK,
+            Component.literal("§6始まりのガイドブック"),
+            Component.literal("右クリックでガイド画面を開く。"),
+            Component.literal("操作方法・ナイフの技・Mob の情報を"),
+            Component.literal("画像付きで確認できる。"),
+            Component.literal("ワールド初回参加時に自動支給。")
+        );
+        registration.addIngredientInfo(
+            new ItemStack(CustomEntityInit.THROWING_KNIFE.get()),
+            VanillaTypes.ITEM_STACK,
+            Component.literal("§f通常ナイフ"),
+            Component.literal("右クリックで投擲、左クリックで近接攻撃。"),
+            Component.literal("敵に当てれば消滅、ブロックに刺さる。"),
+            Component.literal("MP 消費なし / クールダウン 8t。")
+        );
+        registration.addIngredientInfo(
+            new ItemStack(CustomEntityInit.STUN_KNIFE.get()),
+            VanillaTypes.ITEM_STACK,
+            Component.literal("§eスタンナイフ"),
+            Component.literal("命中で感電: 移動低下 + 弱体化。"),
+            Component.literal("MP 25/本 / クールダウン 16t。")
+        );
+        registration.addIngredientInfo(
+            new ItemStack(CustomEntityInit.SCREW_KNIFE.get()),
+            VanillaTypes.ITEM_STACK,
+            Component.literal("§bスクリューナイフ"),
+            Component.literal("木材/葉を破壊できる。"),
+            Component.literal("葉は素手扱い → 苗木/棒が低確率。"),
+            Component.literal("木に当たると消滅、葉は貫通継続。"),
+            Component.literal("MP 10/本 / クールダウン 10t。")
+        );
     }
 
     private void registerSayaCraftingRecipes(IRecipeRegistration registration) {

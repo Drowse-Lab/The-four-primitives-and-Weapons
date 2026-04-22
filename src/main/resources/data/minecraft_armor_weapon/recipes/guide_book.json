@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "minecraft:book" },
+    { "item": "minecraft:paper" }
+  ],
+  "result": {
+    "item": "minecraft_armor_weapon:guide_book",
+    "count": 1
+  }
+}

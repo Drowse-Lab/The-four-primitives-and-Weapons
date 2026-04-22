@@ -1,5 +1,6 @@
 package minecraftarmorweapon.mana;
 
+import minecraftarmorweapon.compat.SpellbooksCompat;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModAttributes;
 
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -22,11 +23,20 @@ public final class ManaHelper {
     private ManaHelper() {}
 
     public static double getMana(Player player) {
+        // Iron's Spellbooks が入っていたら向こうの Mana を参照
+        if (SpellbooksCompat.isLoaded()) {
+            double v = SpellbooksCompat.getMana(player);
+            if (v >= 0) return v;
+        }
         AttributeInstance ai = player.getAttribute(MinecraftArmorWeaponModAttributes.MANA.get());
         return ai == null ? 0 : ai.getBaseValue();
     }
 
     public static void setMana(Player player, double v) {
+        if (SpellbooksCompat.isLoaded()) {
+            SpellbooksCompat.setMana(player, v);
+            return;
+        }
         AttributeInstance ai = player.getAttribute(MinecraftArmorWeaponModAttributes.MANA.get());
         if (ai == null) return;
         ai.setBaseValue(Math.max(0, Math.min(MANA_MAX, v)));

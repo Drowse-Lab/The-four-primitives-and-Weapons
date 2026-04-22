@@ -34,6 +34,10 @@ public class ThrowingKnifeRenderer extends EntityRenderer<ThrowingKnifeEntity> {
     // SCREW 回転速度は entity 側に定数があるので、renderer はそれを参照する。
     // (パーティクル渦方向との同期のため一元管理)
 
+    // renderStatic に渡す ItemStack は毎フレームアロケートしていたが、
+    // 描画中に count や NBT を変えないので 1 個を共有して GC 圧を減らす。
+    private static ItemStack sharedStack;
+
     public ThrowingKnifeRenderer(EntityRendererProvider.Context context) {
         super(context);
     }
@@ -41,7 +45,11 @@ public class ThrowingKnifeRenderer extends EntityRenderer<ThrowingKnifeEntity> {
     @Override
     public void render(ThrowingKnifeEntity entity, float entityYaw, float partialTicks,
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        ItemStack stack = new ItemStack(CustomEntityInit.THROWING_KNIFE.get());
+        ItemStack stack = sharedStack;
+        if (stack == null) {
+            stack = new ItemStack(CustomEntityInit.THROWING_KNIFE.get());
+            sharedStack = stack;
+        }
 
         poseStack.pushPose();
 

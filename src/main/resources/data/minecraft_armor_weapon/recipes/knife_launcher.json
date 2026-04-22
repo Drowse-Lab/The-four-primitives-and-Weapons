@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " KI",
+    "KI ",
+    "S  "
+  ],
+  "key": {
+    "K": { "item": "minecraft_armor_weapon:throwing_knife" },
+    "I": { "item": "minecraft:iron_ingot" },
+    "S": { "item": "minecraft:stick" }
+  },
+  "result": {
+    "item": "minecraft_armor_weapon:knife_launcher",
+    "count": 1
+  }
+}

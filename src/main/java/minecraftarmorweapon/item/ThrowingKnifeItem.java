@@ -73,28 +73,37 @@ public class ThrowingKnifeItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        double cost = manaCost();
+        boolean needsMp = cost > 0 && !player.getAbilities().instabuild;
 
-        // MP不足チェック
-        if (manaCost() > 0 && !ManaHelper.tryConsume(player, manaCost())) {
+        // MP チェックは両サイドで実施 (UI の即時フィードバックのため)。ただし
+        // 消費はサーバー側のみで行う。両サイドで tryConsume すると Attribute 同期の
+        // タイムラグで片側だけ failして片側成功する "不発" が発生する。
+        if (needsMp && ManaHelper.getMana(player) < cost) {
             if (!level.isClientSide) {
-                player.displayClientMessage(Component.literal("§b✦ MP不足 (" + (int)manaCost() + ")"), true);
+                player.displayClientMessage(Component.literal("§b✦ MP不足 (" + (int)cost + ")"), true);
             }
             return InteractionResultHolder.fail(stack);
         }
 
-        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+        // player 引数を渡すとサーバー側では当該プレイヤー以外にブロードキャスト、
+        // クライアント側ではローカル再生だけ → 投擲者に二重に聞こえない。
+        level.playSound(player, player.getX(), player.getY(), player.getZ(),
             SoundEvents.SNOWBALL_THROW, SoundSource.PLAYERS, 0.7f,
             0.4f / (level.getRandom().nextFloat() * 0.4f + 0.8f));
 
         if (!level.isClientSide) {
+            // サーバーのみで MP 消費 (権威あり)
+            if (needsMp) {
+                ManaHelper.setMana(player, ManaHelper.getMana(player) - cost);
+            }
+
             ThrowingKnifeEntity knife = new ThrowingKnifeEntity(level, player);
             knife.setItem(stack);
             knife.setKnifeType(getKnifeType());
             knife.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0f, 1.6f, 1.0f);
 
-            // HOMING: 視線先30°コーン内の最近接Mobを初期目標として保存。
-            // 実際の追尾は ThrowingKnifeEntity.tick() ではなくここではできないので
-            // 簡易にDeltaMovementをわずかに目標方向へ補正するだけにする (毎tick補正は別途追加可能)
+            // HOMING: 視線先30°コーン内の最近接Mobへ初期方向を補正
             if (getKnifeType() == KnifeType.HOMING) {
                 LivingEntity tgt = pickHomingTarget(player);
                 if (tgt != null) {

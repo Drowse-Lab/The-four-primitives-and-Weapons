@@ -56,6 +56,8 @@ public class CreativeTabPopulator {
 			event.accept(CustomEntityInit.STUN_KNIFE);
 			event.accept(CustomEntityInit.SCREW_KNIFE);
 			event.accept(CustomEntityInit.HOMING_KNIFE);
+			event.accept(CustomEntityInit.KNIFE_LAUNCHER);
+			event.accept(CustomEntityInit.GUIDE_BOOK);
 			event.accept(CustomEntityInit.UNDEAD_ARMY_BANISH);
 		}
 

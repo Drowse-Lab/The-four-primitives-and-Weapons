@@ -184,6 +184,16 @@ public class CustomEntityInit {
     public static final RegistryObject<Item> HOMING_KNIFE =
         CUSTOM_ITEMS.register("homing_knife", () -> new HomingKnifeItem());
 
+    // 投げナイフランチャー — 技選択 (モード/本数) で多段投擲する武器
+    public static final RegistryObject<Item> KNIFE_LAUNCHER =
+        CUSTOM_ITEMS.register("knife_launcher",
+            () -> new minecraftarmorweapon.item.KnifeLauncherItem());
+
+    // ガイドブック — ワールド初回入場時に支給、操作/技/mob を画像付きで紹介
+    public static final RegistryObject<Item> GUIDE_BOOK =
+        CUSTOM_ITEMS.register("guide_book",
+            () -> new minecraftarmorweapon.item.GuideBookItem());
+
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(COMMON_SOLDIER.get(), CommonSoldierEntity.createAttributes().build());
