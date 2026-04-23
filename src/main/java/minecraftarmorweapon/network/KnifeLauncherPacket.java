@@ -63,8 +63,8 @@ public class KnifeLauncherPacket {
                 int idx = Math.max(0, Math.min(modes.length - 1, msg.param));
                 KnifeLauncherItem.setMode(stack, modes[idx]);
             } else if (msg.action == ACTION_SET_COUNT) {
-                int n = Math.max(1, Math.min(KnifeLauncherItem.MAX_COUNT, msg.param));
-                KnifeLauncherItem.setCount(stack, n);
+                // setCount 内部でモード別最大値へ clamp される
+                KnifeLauncherItem.setCount(stack, msg.param);
             }
         });
         ctx.get().setPacketHandled(true);

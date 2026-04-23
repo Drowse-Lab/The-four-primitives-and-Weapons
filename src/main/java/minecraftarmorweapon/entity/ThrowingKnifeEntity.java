@@ -143,7 +143,12 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
     protected void onHitEntity(EntityHitResult result) {
         super.onHitEntity(result);
         Entity target = result.getEntity();
-        if (target == this.getOwner()) return;
+        // オーナー除外: 参照比較と UUID 比較の両方。getOwner() が null を返す瞬間
+        // (再ログイン直後等) でも self-hit を拾えるように UUID 保持側もチェックする。
+        Entity owner = this.getOwner();
+        if (target == owner) return;
+        if (owner != null && target.getUUID() != null && target.getUUID().equals(owner.getUUID())) return;
+
         KnifeType type = getKnifeType();
         float dmg = switch (type) {
             case GRIP   -> DAMAGE + 2.0f;
@@ -152,10 +157,15 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
             case HOMING -> DAMAGE;
             default     -> DAMAGE;
         };
-        target.hurt(this.damageSources().thrown(this, this.getOwner()), dmg);
+        target.hurt(this.damageSources().thrown(this, owner), dmg);
 
-        // STUN: 感電(雷視覚) + 移動速度低下/弱体化
+        // STUN: 感電(雷視覚) + 移動速度低下/弱体化 + 電気属性の追加ダメージ
         if (type == KnifeType.STUN && target instanceof net.minecraft.world.entity.LivingEntity le) {
+            // 追加の電気属性ダメージ (導体装備ボーナス込み)。自傷しないよう target 限定で hurt。
+            float electricBase = 3.0f;
+            float electricDmg = minecraftarmorweapon.damage.ElectricElementDamageHandler
+                .calculateDamage(le, electricBase, 1, le.damageSources().lightningBolt());
+            le.hurt(le.damageSources().lightningBolt(), electricDmg);
             le.addEffect(new net.minecraft.world.effect.MobEffectInstance(
                 net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN, 60, 3, false, true));
             le.addEffect(new net.minecraft.world.effect.MobEffectInstance(

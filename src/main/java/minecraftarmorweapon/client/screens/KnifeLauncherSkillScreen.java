@@ -92,7 +92,8 @@ public class KnifeLauncherSkillScreen extends Screen {
         ItemStack s = holdingStack();
         if (s.isEmpty()) return;
         int cur = KnifeLauncherItem.getCount(s);
-        int next = Math.max(1, Math.min(KnifeLauncherItem.MAX_COUNT, cur + delta));
+        int max = KnifeLauncherItem.maxCountFor(KnifeLauncherItem.getMode(s));
+        int next = Math.max(1, Math.min(max, cur + delta));
         KnifeLauncherItem.setCount(s, next);
         MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
             new KnifeLauncherPacket(KnifeLauncherPacket.ACTION_SET_COUNT, next));
@@ -117,10 +118,17 @@ public class KnifeLauncherSkillScreen extends Screen {
         // モードラベル
         g.drawString(mc.font, "モード", panelX + 16, panelY + 30, 0xFFFFFFFF, false);
 
-        // 本数表示
+        // 本数表示 (モード別の上限も併記)
         g.drawString(mc.font, "一度に投げる数", panelX + 16, panelY + 78, 0xFFFFFFFF, false);
         ItemStack s = holdingStack();
-        String countText = s.isEmpty() ? "-" : String.valueOf(KnifeLauncherItem.getCount(s));
+        String countText;
+        if (s.isEmpty()) {
+            countText = "-";
+        } else {
+            int cur = KnifeLauncherItem.getCount(s);
+            int max = KnifeLauncherItem.maxCountFor(KnifeLauncherItem.getMode(s));
+            countText = cur + "/" + max;
+        }
         int nx = panelX + (PANEL_W - mc.font.width(countText) * 2) / 2;
         // 数字を大きめに描画 (2倍スケール)
         g.pose().pushPose();

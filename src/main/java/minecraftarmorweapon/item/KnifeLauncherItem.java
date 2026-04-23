@@ -17,6 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
@@ -35,11 +36,15 @@ public class KnifeLauncherItem extends Item {
 
     public static final String TAG_MODE  = "Mode";
     public static final String TAG_COUNT = "Count";
+    /** モード共通の絶対上限 (通常用)。モード別上限は maxCountFor() で取得。 */
     public static final int MAX_COUNT = 10;
 
-    /** 扇形の総角度上限 (度)。数が多いほど広がるが MAX_ARC_DEG を超えない。 */
-    private static final float MAX_ARC_DEG = 50f;
-    private static final float ARC_PER_KNIFE = 7f;
+    /**
+     * スポーン位置オフセット (プレイヤー視線に対する垂直方向の最大ずれ、ブロック単位)。
+     * 値は Lisp (data/minecraft_armor_weapon/knife_launcher/formula.lisp) から読む。
+     */
+    public static float spawnOffsetH() { return KnifeLauncherFormula.spawnOffsetH(); }
+    public static float spawnOffsetV() { return KnifeLauncherFormula.spawnOffsetV(); }
 
     public KnifeLauncherItem() {
         super(new Item.Properties().stacksTo(1));
@@ -57,25 +62,36 @@ public class KnifeLauncherItem extends Item {
         stack.getOrCreateTag().putInt(TAG_MODE, mode.ordinal());
     }
 
+    /** モード別の最大投擲数上限。値は Lisp (formula.lisp) から。 */
+    public static int maxCountFor(KnifeType mode) {
+        return KnifeLauncherFormula.maxCountFor(mode);
+    }
+
     public static int getCount(ItemStack stack) {
         CompoundTag tag = stack.getTag();
         int c = tag != null ? tag.getInt(TAG_COUNT) : 0;
         if (c <= 0) c = 1;
-        if (c > MAX_COUNT) c = MAX_COUNT;
+        int max = maxCountFor(getMode(stack));
+        if (c > max) c = max;
         return c;
     }
 
     public static void setCount(ItemStack stack, int count) {
-        stack.getOrCreateTag().putInt(TAG_COUNT, Math.max(1, Math.min(MAX_COUNT, count)));
+        int max = maxCountFor(getMode(stack));
+        stack.getOrCreateTag().putInt(TAG_COUNT, Math.max(1, Math.min(max, count)));
     }
 
-    /** 通常 → スタン → スクリュー → 通常 ... */
+    /** 通常 → スタン → スクリュー → 通常 ... 新モードの上限より大きな数は clamp する。 */
     public static void cycleMode(ItemStack stack) {
         KnifeType[] modes = { KnifeType.NORMAL, KnifeType.STUN, KnifeType.SCREW };
         KnifeType cur = getMode(stack);
         int idx = 0;
         for (int i = 0; i < modes.length; i++) if (modes[i] == cur) { idx = i; break; }
-        setMode(stack, modes[(idx + 1) % modes.length]);
+        KnifeType next = modes[(idx + 1) % modes.length];
+        setMode(stack, next);
+        // モード変更で上限が下がる場合はその場で clamp (setMode が既に tag を確保している)
+        int max = maxCountFor(next);
+        if (stack.getOrCreateTag().getInt(TAG_COUNT) > max) setCount(stack, max);
     }
 
     // --- Mode-dependent values ----------------------------------------
@@ -88,21 +104,14 @@ public class KnifeLauncherItem extends Item {
         };
     }
 
-    /** 1本あたりのMP消費 (個別アイテムの manaCost に合わせる) */
+    /** 1本あたりのMP消費 (formula.lisp の mana-xxx で調整可能) */
     public static double manaCostPer(KnifeType mode) {
-        return switch (mode) {
-            case STUN  -> 25.0;
-            case SCREW -> 10.0;
-            default    -> 0.0;
-        };
+        return KnifeLauncherFormula.manaCostFor(mode);
     }
 
+    /** クールダウン (tick) — formula.lisp の cooldown-xxx で調整可能 */
     public static int cooldownFor(KnifeType mode) {
-        return switch (mode) {
-            case STUN  -> 16;
-            case SCREW -> 10;
-            default    -> 8;
-        };
+        return KnifeLauncherFormula.cooldownFor(mode);
     }
 
     public static String modeLabel(KnifeType m) {
@@ -160,25 +169,49 @@ public class KnifeLauncherItem extends Item {
                 ManaHelper.setMana(player, ManaHelper.getMana(player) - totalMp);
             }
 
-            // 扇形スプレッド + 本数依存のブレ (多いほど精度低下)
-            // fan (対称配置) + noise (ランダム散り) の合成
-            float arcDeg = Math.min(MAX_ARC_DEG, toThrow * ARC_PER_KNIFE);
-            // 1本=0°, 10本=~13.5° のランダム上限
-            float jitterDeg = (toThrow - 1) * 1.5f;
+            // 全員同じ方向 (プレイヤーの視線) に飛ぶが、スポーン位置を視線に対して
+            // 横/縦にランダムにずらす。扇形ではない "同方向別位置から同時発射" 挙動。
+            Vec3 look = player.getLookAngle().normalize();
+            // 視線に直交する basis を作る
+            Vec3 worldUp = new Vec3(0, 1, 0);
+            Vec3 right = look.cross(worldUp);
+            if (right.lengthSqr() < 1e-6) {
+                // 真上/真下を向いている時のフォールバック
+                right = new Vec3(1, 0, 0);
+            } else {
+                right = right.normalize();
+            }
+            Vec3 up = right.cross(look).normalize();
+
+            double eyeX = player.getX();
+            double eyeY = player.getEyeY() - 0.1;
+            double eyeZ = player.getZ();
+
+            // 本数に応じて散布幅をスケール: 1本=0 (ピンポイント) / 上限=1.0 (最大広がり)。
+            // モード別の最大本数を分母にするので、スタン 3本/スクリュー 5本でも "上限本数=最大広がり" の
+            // 体感になり、本数を減らせば素直に狙いが絞れる。
+            int maxForMode = maxCountFor(mode);
+            float spreadScale = maxForMode <= 1 ? 0f
+                : (toThrow - 1) / (float)(maxForMode - 1);
+
             var rng = level.getRandom();
             for (int i = 0; i < toThrow; i++) {
-                float fanYaw = toThrow == 1 ? 0f
-                    : (-arcDeg / 2f) + arcDeg * i / (float)(toThrow - 1);
-                float randYaw   = (rng.nextFloat() - 0.5f) * 2.0f * jitterDeg;
-                float randPitch = (rng.nextFloat() - 0.5f) * 2.0f * jitterDeg;
+                // -1.0〜+1.0 の uniform ランダム × 最大オフセット × 本数スケール
+                double randH = (rng.nextDouble() - 0.5) * 2.0 * KnifeLauncherFormula.spawnOffsetH() * spreadScale;
+                double randV = (rng.nextDouble() - 0.5) * 2.0 * KnifeLauncherFormula.spawnOffsetV() * spreadScale;
+                double offX = right.x * randH + up.x * randV;
+                double offY = right.y * randH + up.y * randV;
+                double offZ = right.z * randH + up.z * randV;
 
                 ThrowingKnifeEntity knife = new ThrowingKnifeEntity(level, player);
                 knife.setItem(new ItemStack(ammoItem));
                 knife.setKnifeType(mode);
+                // 同じ向きで発射 (ブレなし、全弾同方向)。初速は formula.lisp の shoot-velocity。
                 knife.shootFromRotation(player,
-                    player.getXRot() + randPitch,
-                    player.getYRot() + fanYaw + randYaw,
-                    0.0f, 1.6f, 1.0f);
+                    player.getXRot(), player.getYRot(),
+                    0.0f, KnifeLauncherFormula.shootVelocity(), 1.0f);
+                // スポーン位置を視線垂直方向にランダムにオフセット
+                knife.setPos(eyeX + offX, eyeY + offY, eyeZ + offZ);
                 level.addFreshEntity(knife);
             }
 
@@ -223,11 +256,12 @@ public class KnifeLauncherItem extends Item {
         super.appendHoverText(stack, level, tooltip, flag);
         KnifeType mode = getMode(stack);
         tooltip.add(Component.literal("§7▶ モード: " + modeLabel(mode)));
+        int max = maxCountFor(mode);
         tooltip.add(Component.literal("§7▶ 一度に投げる数: §f" + getCount(stack)
-            + " §8(最大 " + MAX_COUNT + ")"));
+            + "§8 / " + max));
         tooltip.add(Component.literal("§8シフト+左クリック: 技選択画面を開く"));
         tooltip.add(Component.literal("§8右クリック: 設定された技で投擲"));
-        tooltip.add(Component.literal("§8※本数が多いほどブレが大きくなる"));
+        tooltip.add(Component.literal("§8※同方向に飛ぶが位置がランダムにずれる"));
         double mp = manaCostPer(mode);
         if (mp > 0) {
             tooltip.add(Component.literal("§b✦ MP消費: §f" + (int)mp + " §8/本"));
