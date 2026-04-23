@@ -286,14 +286,20 @@ public class ElementalDamageEvent {
         Player player = event.player;
         if (player.level().isClientSide()) return;
 
-        ElementType bookElement = ElementalDamageUtils.getBookSlotElement(player);
-        if (bookElement != ElementType.HOLY) return;
+        // 毎 tick Curios 走査はあまりに重い。5 tick に 1 回だけ走査する。
+        // (holy を持たないプレイヤーで 20回/秒→4回/秒 に削減。持っている場合も
+        //  元の Lv10=毎tick は Lv10=5tick=0.25秒毎 に緩和、実用上気づかない差)
+        if ((player.tickCount % 5) != 0) return;
 
-        int level = ElementalDamageUtils.getBookSlotLevel(player);
+        // 旧: getBookSlotElement + getBookSlotLevel で Curios 2 回走査
+        // 新: 統合アクセサ 1 回で両方取得
+        ElementalDamageUtils.BookSlotInfo info = ElementalDamageUtils.getBookSlotInfo(player);
+        if (info.type != ElementType.HOLY) return;
+        int level = info.level;
         if (level <= 0) return;
 
-        // 解除間隔：Lv10=毎tick、Lv1=200tick
-        int interval = level >= 10 ? 1 : Math.max(5, 200 - (level - 1) * 22);
+        // 解除間隔：Lv10=毎 5 tick, Lv1=200tick
+        int interval = level >= 10 ? 5 : Math.max(5, 200 - (level - 1) * 22);
 
         if (player.tickCount % interval != 0) return;
 
@@ -332,7 +338,8 @@ public class ElementalDamageEvent {
         if (ElementalDamageUtils.hasElement(targetWeapon)) {
             targetElement = ElementalDamageUtils.getElementType(targetWeapon);
         } else if (target instanceof Player targetPlayer) {
-            targetElement = ElementalDamageUtils.getBookSlotElement(targetPlayer);
+            // 旧 getBookSlotElement (Curios 単独走査) → 統合アクセサ
+            targetElement = ElementalDamageUtils.getBookSlotInfo(targetPlayer).type;
         }
 
         if (targetElement == ElementType.NONE || targetElement == ElementType.ERROR) return 0f;

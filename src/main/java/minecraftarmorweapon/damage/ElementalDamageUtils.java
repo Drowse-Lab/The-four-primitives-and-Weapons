@@ -294,7 +294,8 @@ public class ElementalDamageUtils {
         if (damageElement == ElementType.NONE) return false;
         if (!(target instanceof Player player)) return false;
 
-        ElementType bookElement = getBookSlotElement(player);
+        // Curios 走査 1 回で element/level をまとめて取得 (以前は 2 関数で別走査)
+        ElementType bookElement = getBookSlotInfo(player).type;
         if (bookElement == ElementType.NONE) return false;
 
         // 通常のカウンターチェック
