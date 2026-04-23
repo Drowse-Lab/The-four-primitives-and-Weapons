@@ -194,6 +194,11 @@ public class CustomEntityInit {
         CUSTOM_ITEMS.register("guide_book",
             () -> new minecraftarmorweapon.item.GuideBookItem());
 
+    // マナポーション — 飲むと MP 回復 (Iron's Spellbooks が入ってれば向こうの mana に routed)
+    public static final RegistryObject<Item> MANA_POTION =
+        CUSTOM_ITEMS.register("mana_potion",
+            () -> new minecraftarmorweapon.item.ManaPotionItem());
+
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(COMMON_SOLDIER.get(), CommonSoldierEntity.createAttributes().build());

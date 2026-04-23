@@ -231,21 +231,27 @@ public class CustomDifficultyEventHandler {
             return;
         }
 
+        // 高頻度で走る必要のない処理は 20tick (1秒) に 1 回まで削減。
+        // Monster は常に多数存在するのでここを絞るだけでサーバー tick 負荷が大幅減。
+        boolean slowTick = (monster.tickCount % 20) == 0;
+        boolean fastTick = true; // 落下ダメージ無効は追跡中のみなので毎tick必要
+
         CustomDifficulty diff = CustomDifficultyCommand.getCurrentDifficulty();
 
-        // 壁越し感知: 追跡範囲を拡大
-        if (diff.isWallSenseEnabled() && monster.getTarget() == null) {
-            if (monster.getAttribute(Attributes.FOLLOW_RANGE) != null) {
-                double currentRange = monster.getAttribute(Attributes.FOLLOW_RANGE).getBaseValue();
+        // 壁越し感知: 追跡範囲を拡大 (1秒毎でOK)
+        if (slowTick && diff.isWallSenseEnabled() && monster.getTarget() == null) {
+            var attr = monster.getAttribute(Attributes.FOLLOW_RANGE);
+            if (attr != null) {
+                double currentRange = attr.getBaseValue();
                 double boostedRange = 32.0 + diff.getAiLevel() * 8.0; // aiLevel 3→56, 5→72
                 if (currentRange < boostedRange) {
-                    monster.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(boostedRange);
+                    attr.setBaseValue(boostedRange);
                 }
             }
         }
 
         // 落下ダメージ無効: 追跡中の敵は落下ダメージを受けない
-        if (diff.isFallDmgImmune() && monster.getTarget() != null) {
+        if (fastTick && diff.isFallDmgImmune() && monster.getTarget() != null) {
             monster.fallDistance = 0;
         }
     }

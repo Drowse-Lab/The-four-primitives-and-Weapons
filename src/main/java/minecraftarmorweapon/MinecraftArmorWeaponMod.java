@@ -69,6 +69,7 @@ public class MinecraftArmorWeaponMod {
 		MinecraftArmorWeaponModCustomEntities.REGISTRY.register(bus);
 		CustomEntityInit.CUSTOM_ENTITIES.register(bus);
 		CustomEntityInit.CUSTOM_ITEMS.register(bus);
+		minecraftarmorweapon.init.KnifeExtrasRegistrar.ITEMS.register(bus);
 		MinecraftArmorWeaponModBlockEntities.REGISTRY.register(bus);
 		MinecraftArmorWeaponModFeatures.REGISTRY.register(bus);
 

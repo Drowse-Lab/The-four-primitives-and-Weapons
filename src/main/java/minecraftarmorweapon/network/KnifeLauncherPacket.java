@@ -59,7 +59,7 @@ public class KnifeLauncherPacket {
             if (!(stack.getItem() instanceof KnifeLauncherItem)) return;
 
             if (msg.action == ACTION_SET_MODE) {
-                KnifeType[] modes = { KnifeType.NORMAL, KnifeType.STUN, KnifeType.SCREW };
+                KnifeType[] modes = { KnifeType.NORMAL, KnifeType.STUN, KnifeType.SCREW, KnifeType.HOMING };
                 int idx = Math.max(0, Math.min(modes.length - 1, msg.param));
                 KnifeLauncherItem.setMode(stack, modes[idx]);
             } else if (msg.action == ACTION_SET_COUNT) {

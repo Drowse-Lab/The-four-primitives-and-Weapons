@@ -100,25 +100,28 @@ public final class KnifeLauncherFormula {
 
     public static int maxCountFor(KnifeType mode) {
         return switch (mode) {
-            case STUN  -> getInt("max-stun",   3);
-            case SCREW -> getInt("max-screw",  5);
-            default    -> getInt("max-normal", 10);
+            case STUN   -> getInt("max-stun",   3);
+            case SCREW  -> getInt("max-screw",  5);
+            case HOMING -> getInt("max-homing", 3);
+            default     -> getInt("max-normal", 10);
         };
     }
 
     public static int cooldownFor(KnifeType mode) {
         return switch (mode) {
-            case STUN  -> getInt("cooldown-stun",   16);
-            case SCREW -> getInt("cooldown-screw",  10);
-            default    -> getInt("cooldown-normal", 8);
+            case STUN   -> getInt("cooldown-stun",   16);
+            case SCREW  -> getInt("cooldown-screw",  10);
+            case HOMING -> getInt("cooldown-homing", 12);
+            default     -> getInt("cooldown-normal", 8);
         };
     }
 
     public static double manaCostFor(KnifeType mode) {
         return switch (mode) {
-            case STUN  -> getDouble("mana-stun",   25.0);
-            case SCREW -> getDouble("mana-screw",  10.0);
-            default    -> getDouble("mana-normal", 0.0);
+            case STUN   -> getDouble("mana-stun",   25.0);
+            case SCREW  -> getDouble("mana-screw",  10.0);
+            case HOMING -> getDouble("mana-homing", 30.0);
+            default     -> getDouble("mana-normal", 0.0);
         };
     }
 

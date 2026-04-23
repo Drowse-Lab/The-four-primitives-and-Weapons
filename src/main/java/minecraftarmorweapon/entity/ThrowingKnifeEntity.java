@@ -84,6 +84,17 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
     private static final EntityDataAccessor<Integer> DATA_KNIFE_TYPE =
         SynchedEntityData.defineId(ThrowingKnifeEntity.class, EntityDataSerializers.INT);
 
+    /** 反重力腕輪装備時の空中分解距離 (ブロック)。 */
+    private static final double ANTIGRAV_MAX_DISTANCE = 100.0;
+
+    /** 直進飛行モード (反重力腕輪装備時) — サーバー側で判定。 */
+    private boolean straightFlight = false;
+    /** 反重力腕輪ONで飛行中の累積距離 (ブロック)。 */
+    private double straightFlownBlocks = 0.0;
+    /** 直前 tick のサーバー位置 (距離計測用)。 */
+    private double lastTickX, lastTickY, lastTickZ;
+    private boolean lastTickPosInit = false;
+
     // @StickParams - 着弾時の調整値 (手動編集してビルド) — 単位: 1 = 1/100ブロック
     public static double STICK_OFFSET_NORMAL  = -5;  // 衝突面の法線方向 (壁から外向き)。+ = 手前に出る/浮く, - = めり込む
     public static double STICK_OFFSET_FORWARD = 20;  // 進行方向 (投げた方向)。0 = 刃先がブロック表面に接する, + = もっと突き刺さる, - = 手前に止まる
@@ -157,6 +168,13 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
             case HOMING -> DAMAGE;
             default     -> DAMAGE;
         };
+        // レアリティ強化台で付与された WeaponRarity の攻撃力ボーナスを加算
+        ItemStack raw = this.getItemRaw();
+        if (!raw.isEmpty()) {
+            minecraftarmorweapon.item.rarity.WeaponRarity r =
+                minecraftarmorweapon.item.rarity.WeaponRarity.getFromStack(raw);
+            if (r != null) dmg += (float) r.getAttackBonus();
+        }
         target.hurt(this.damageSources().thrown(this, owner), dmg);
 
         // STUN: 感電(雷視覚) + 移動速度低下/弱体化 + 電気属性の追加ダメージ
@@ -188,6 +206,12 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
     protected void onHitBlock(BlockHitResult result) {
         super.onHitBlock(result);
         if (this.level().isClientSide) return;
+
+        // 爆発ナイフ: ブロックを破壊せず 3x3x3 の範囲でダメージ爆発を起こして消滅
+        if (isExplosive()) {
+            detonateExplosiveKnife();
+            return;
+        }
 
         // SCREW: 木材/木製コンテナを破壊して貫通継続
         if (getKnifeType() == KnifeType.SCREW && tryScrewBreak(result)) return;
@@ -268,6 +292,12 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
             }
             return;
         }
+        // 反重力腕輪: オーナーが装備していれば重力を無効化 → 直進。
+        // 100 ブロック飛行後に空中分解 (自壊)。
+        if (!this.level().isClientSide && !isStuck()) {
+            updateStraightFlight();
+            if (straightFlight && !checkAntigravRange()) return;
+        }
         // HOMING: 飛翔中に最近接Mobへ徐々に旋回 (4tick毎で十分、負荷軽減)
         if (!this.level().isClientSide && getKnifeType() == KnifeType.HOMING && this.tickCount % 4 == 0) {
             applyHoming();
@@ -289,6 +319,94 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
             this.yRotO = yaw;
             this.xRotO = pitch;
         }
+    }
+
+    /**
+     * 反重力腕輪を装備しているオーナーか判定。
+     * Curios が入っている前提で全スロットを総当たりし、AntiGravityBraceletItem を探す。
+     * Curios 未導入環境でもクラスロードが走らないよう参照は Curios 依存側に閉じ込めている。
+     */
+    private boolean ownerHasAntiGravityBracelet() {
+        Entity owner = this.getOwner();
+        if (!(owner instanceof net.minecraft.world.entity.LivingEntity le)) return false;
+        try {
+            var opt = top.theillusivec4.curios.api.CuriosApi.getCuriosHelper().findFirstCurio(le,
+                minecraftarmorweapon.init.KnifeExtrasRegistrar.ANTI_GRAVITY_BRACELET.get());
+            return opt.isPresent();
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /**
+     * 毎 tick: オーナーが腕輪装備中なら直進モードに切替。
+     * 切替時は重力を無効化し、それまでの deltaMovement を維持して直進させる。
+     */
+    private void updateStraightFlight() {
+        boolean equipped = ownerHasAntiGravityBracelet();
+        if (equipped && !straightFlight) {
+            straightFlight = true;
+            this.setNoGravity(true);
+            straightFlownBlocks = 0.0;
+            lastTickPosInit = false;
+        } else if (!equipped && straightFlight) {
+            // 外された場合は通常飛行へ復帰 (重力再開)
+            straightFlight = false;
+            this.setNoGravity(false);
+        }
+    }
+
+    /**
+     * 直進モード中の飛行距離を積算し、上限を超えたら空中分解する。
+     * 戻り値: false = 上限到達で discard 済み (呼び出し元は以降の処理をスキップ)
+     */
+    private boolean checkAntigravRange() {
+        double x = this.getX(), y = this.getY(), z = this.getZ();
+        if (!lastTickPosInit) {
+            lastTickX = x; lastTickY = y; lastTickZ = z;
+            lastTickPosInit = true;
+            return true;
+        }
+        double dx = x - lastTickX, dy = y - lastTickY, dz = z - lastTickZ;
+        lastTickX = x; lastTickY = y; lastTickZ = z;
+        straightFlownBlocks += Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (straightFlownBlocks < ANTIGRAV_MAX_DISTANCE) return true;
+
+        // 空中分解: パーティクル + 音 + discard (アイテムドロップしない)
+        if (this.level() instanceof net.minecraft.server.level.ServerLevel sl) {
+            sl.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD,
+                x, y, z, 20, 0.3, 0.3, 0.3, 0.05);
+            sl.sendParticles(net.minecraft.core.particles.ParticleTypes.CRIT,
+                x, y, z, 12, 0.2, 0.2, 0.2, 0.1);
+        }
+        this.level().playSound(null, x, y, z,
+            SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 0.6f, 1.3f);
+        this.discard();
+        return false;
+    }
+
+    /** アイテムスタックが爆発属性付き投げナイフかどうか判定 */
+    private boolean isExplosive() {
+        ItemStack raw = this.getItemRaw();
+        return !raw.isEmpty() && raw.getItem() instanceof
+            minecraftarmorweapon.item.ExplosiveThrowingKnifeItem;
+    }
+
+    /**
+     * 3x3x3 範囲の非破壊爆発。
+     * ブロック破壊なし・エンティティのみ被弾。オーナーは除外。
+     */
+    private void detonateExplosiveKnife() {
+        double x = this.getX(), y = this.getY(), z = this.getZ();
+        // 半径 1.5 ≒ 3x3x3。ExplosionInteraction.NONE でブロック被害なし。
+        Entity src = this.getOwner() != null ? this.getOwner() : this;
+        this.level().explode(src, x, y, z, 1.5f,
+            net.minecraft.world.level.Level.ExplosionInteraction.NONE);
+        if (this.level() instanceof net.minecraft.server.level.ServerLevel sl) {
+            sl.sendParticles(net.minecraft.core.particles.ParticleTypes.EXPLOSION,
+                x, y, z, 1, 0, 0, 0, 0);
+        }
+        this.discard();
     }
 
     private void applyHoming() {

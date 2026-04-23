@@ -6,7 +6,8 @@
   "refmap": "minecraft_armor_weapon.refmap.json",
   "mixins": [
     "DamageSourceMixin",
-    "TotemBypassMixin"
+    "TotemBypassMixin",
+    "ArrowInfinityMixin"
   ],
   "client": [
   ],

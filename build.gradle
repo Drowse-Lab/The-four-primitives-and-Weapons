@@ -10,6 +10,11 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 
+// Iron's Spells 'n Spellbooks をテスト用に同梱する。
+// 有効化: ./gradlew runClient -PwithSpellbooks=true
+//         または gradle.properties に withSpellbooks=true
+def withSpellbooks = project.findProperty('withSpellbooks') == 'true'
+
 version = '1.0'
 group = 'com.hrmcngs.minecraft_armor_weapon'
 archivesBaseName = 'The four primitives and Weapons-forge-1.20.1-'
@@ -60,8 +65,37 @@ minecraft {
     }
 }
 
+repositories {
+    // CurseForge Maven (Iron's Spellbooks など、CurseForge 公開 MOD の取得用)
+    maven {
+        url 'https://cursemaven.com'
+        content { includeGroup 'curse.maven' }
+    }
+    // Iron's Spellbooks 依存: Playeranimator / Geckolib など
+    maven { url 'https://thedarkcolour.github.io/KotlinForForge/' } // kotlin for forge (transitive)
+    maven { url 'https://maven.blamejared.com' }                    // Playeranimator
+    maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' } // GeckoLib
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${forge_version}"
+
+    if (withSpellbooks) {
+        // CurseForge project IDs for Iron's Spells 'n Spellbooks (1.20.1 Forge):
+        //   projectId:    855414     (irons-spells-n-spellbooks)
+        //   fileId:       YYYYYYY    ← 最新版の fileId に置き換える
+        // 手動指定例 (fileId は https://www.curseforge.com/minecraft/mc-mods/irons-spells-n-spellbooks/files から取得):
+        // runtimeOnly fg.deobf("curse.maven:irons-spells-n-spellbooks-855414:5500000")
+        //
+        // より確実な方法: ローカルに JAR をドロップ。次の行を有効化する:
+        // runtimeOnly fg.deobf(files('libs/ironsspellbooks-1.20.1.jar'))
+        println "[Build] withSpellbooks=true: Iron's Spellbooks を実行時に読み込みます (libs/ に JAR を置いてください)"
+        if (file('libs/ironsspellbooks-1.20.1.jar').exists()) {
+            runtimeOnly fg.deobf(files('libs/ironsspellbooks-1.20.1.jar'))
+        } else {
+            println "[Build] libs/ironsspellbooks-1.20.1.jar が見つかりません。run/mods/ に直接置いても動作します。"
+        }
+    }
 }
 
 processResources {

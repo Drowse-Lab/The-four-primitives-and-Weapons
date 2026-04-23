@@ -52,12 +52,18 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.GOLD_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.OFUDA);
 			event.accept(CustomEntityInit.THROWING_KNIFE);
-			event.accept(CustomEntityInit.GRIP_KNIFE);
-			event.accept(CustomEntityInit.STUN_KNIFE);
-			event.accept(CustomEntityInit.SCREW_KNIFE);
-			event.accept(CustomEntityInit.HOMING_KNIFE);
+			// ナイフ系は通常投げナイフ + ホルダーのみプレイヤーに提供。
+			// スタン/スクリュー/ホーミング/グリップ の個別アイテムは入手不可
+			// (KnifeLauncher の mode 切替で全機能にアクセス可能)。
+			// - event.accept(CustomEntityInit.GRIP_KNIFE);
+			// - event.accept(CustomEntityInit.STUN_KNIFE);
+			// - event.accept(CustomEntityInit.SCREW_KNIFE);
+			// - event.accept(CustomEntityInit.HOMING_KNIFE);
 			event.accept(CustomEntityInit.KNIFE_LAUNCHER);
+			event.accept(KnifeExtrasRegistrar.EXPLOSIVE_THROWING_KNIFE);
+			event.accept(KnifeExtrasRegistrar.ANTI_GRAVITY_BRACELET);
 			event.accept(CustomEntityInit.GUIDE_BOOK);
+			event.accept(CustomEntityInit.MANA_POTION);
 			event.accept(CustomEntityInit.UNDEAD_ARMY_BANISH);
 		}
 

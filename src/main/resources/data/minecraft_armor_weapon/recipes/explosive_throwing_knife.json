@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "minecraft_armor_weapon:throwing_knife" },
+    { "item": "minecraft:gunpowder" }
+  ],
+  "result": {
+    "item": "minecraft_armor_weapon:explosive_throwing_knife",
+    "count": 1
+  }
+}

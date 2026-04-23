@@ -22,12 +22,12 @@ import net.minecraft.world.item.ItemStack;
  */
 public class KnifeLauncherSkillScreen extends Screen {
 
-    private static final int PANEL_W = 240;
+    private static final int PANEL_W = 280;
     private static final int PANEL_H = 160;
 
     private int panelX;
     private int panelY;
-    private Button[] modeButtons = new Button[3];
+    private Button[] modeButtons = new Button[4];
     private Button minusBtn;
     private Button plusBtn;
 
@@ -47,15 +47,15 @@ public class KnifeLauncherSkillScreen extends Screen {
         this.panelX = (this.width - PANEL_W) / 2;
         this.panelY = (this.height - PANEL_H) / 2;
 
-        KnifeType[] modes = { KnifeType.NORMAL, KnifeType.STUN, KnifeType.SCREW };
-        String[] labels   = { "通常", "スタン", "スクリュー" };
+        KnifeType[] modes = { KnifeType.NORMAL, KnifeType.STUN, KnifeType.SCREW, KnifeType.HOMING };
+        String[] labels   = { "通常", "スタン", "スクリュー", "オート" };
 
-        int btnW = 70;
+        int btnW = 60;
         int gap = 4;
-        int totalW = btnW * 3 + gap * 2;
+        int totalW = btnW * 4 + gap * 3;
         int startX = panelX + (PANEL_W - totalW) / 2;
         int y = panelY + 40;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             final int idx = i;
             modeButtons[i] = Button.builder(
                 Component.literal(labels[i]),
@@ -142,8 +142,8 @@ public class KnifeLauncherSkillScreen extends Screen {
         // 現在モードの強調
         if (!s.isEmpty()) {
             KnifeType cur = KnifeLauncherItem.getMode(s);
-            KnifeType[] modes = { KnifeType.NORMAL, KnifeType.STUN, KnifeType.SCREW };
-            for (int i = 0; i < 3; i++) {
+            KnifeType[] modes = { KnifeType.NORMAL, KnifeType.STUN, KnifeType.SCREW, KnifeType.HOMING };
+            for (int i = 0; i < 4; i++) {
                 if (modes[i] == cur && modeButtons[i] != null) {
                     int bx = modeButtons[i].getX();
                     int by = modeButtons[i].getY();

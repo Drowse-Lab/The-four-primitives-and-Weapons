@@ -1,10 +1,12 @@
 package minecraftarmorweapon.events;
 
+import minecraftarmorweapon.item.ThrowingKnifeItem;
 import minecraftarmorweapon.item.rarity.WeaponRarity;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import net.minecraftforge.api.distmarker.Dist;
@@ -28,7 +30,7 @@ public class WeaponRarityEventHandler {
         if (event.getSlotType() != EquipmentSlot.MAINHAND) return;
 
         ItemStack stack = event.getItemStack();
-        if (!(stack.getItem() instanceof SwordItem)) return;
+        if (!(stack.getItem() instanceof SwordItem) && !(stack.getItem() instanceof ThrowingKnifeItem)) return;
 
         WeaponRarity rarity = WeaponRarity.getFromStack(stack);
         double catalystBonus = WeaponRarity.getCatalystBonus(stack);
@@ -48,7 +50,7 @@ public class WeaponRarityEventHandler {
     @OnlyIn(Dist.CLIENT)
     public static void onItemTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
-        if (!(stack.getItem() instanceof SwordItem)) return;
+        if (!(stack.getItem() instanceof SwordItem) && !(stack.getItem() instanceof ThrowingKnifeItem)) return;
 
         WeaponRarity rarity = WeaponRarity.getFromStack(stack);
         if (rarity == null) return;
