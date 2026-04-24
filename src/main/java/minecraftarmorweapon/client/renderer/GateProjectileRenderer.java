@@ -44,13 +44,16 @@ public class GateProjectileRenderer extends EntityRenderer<GateProjectileEntity>
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         poseStack.pushPose();
 
-        // 速度ベクトルからYawを計算（水平方向の進行方向に追従）
-        net.minecraft.world.phys.Vec3 vel = entity.getDeltaMovement();
-        float yaw = (float)(Math.atan2(vel.x, vel.z) * (180.0 / Math.PI));
+        // 投げナイフと同じく entity の YRot/XRot (モーションから projectile 基底が
+        // 毎tick更新) を使って 3D で整列する。これで上下方向にも切先が向く。
+        float yaw   = Mth.lerp(partialTick, entity.yRotO, entity.getYRot());
+        float pitch = Mth.lerp(partialTick, entity.xRotO, entity.getXRot());
 
-        // FlyingAttackerRenderer の剣表示と同じ方式
-        poseStack.mulPose(Axis.YP.rotationDegrees(-yaw + YAW_OFFSET));
-        poseStack.mulPose(Axis.XP.rotationDegrees(90f + PITCH_OFFSET));
+        // 進行方向に整列 (矢方式): Y 軸で左右, Z 軸で上下
+        poseStack.mulPose(Axis.YP.rotationDegrees(yaw - 90f + YAW_OFFSET));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(pitch + PITCH_OFFSET));
+        // 金の直刀 (THIRD_PERSON_RIGHT_HAND) のモデル基底姿勢に合わせて補正
+        poseStack.mulPose(Axis.XP.rotationDegrees(90f));
         poseStack.mulPose(Axis.ZP.rotationDegrees(-180f + ROLL_OFFSET));
 
         poseStack.scale(SCALE_X, SCALE_Y, SCALE_Z);

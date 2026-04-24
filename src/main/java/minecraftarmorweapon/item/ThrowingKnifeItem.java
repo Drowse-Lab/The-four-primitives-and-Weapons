@@ -103,9 +103,19 @@ public class ThrowingKnifeItem extends Item {
             knife.setKnifeType(getKnifeType());
             knife.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0f, 1.6f, 1.0f);
 
-            // HOMING: 視線先30°コーン内の最近接Mobへ初期方向を補正
+            // HOMING: ロック対象があれば優先追尾、無ければ視線先コーン内の最近接 Mob へ
+            // 初期方向を補正しつつ UUID も転写して entity 側の強力追尾を有効化。
             if (getKnifeType() == KnifeType.HOMING) {
-                LivingEntity tgt = pickHomingTarget(player);
+                java.util.UUID lock = minecraftarmorweapon.event.HomingLockTracker.getLockedTargetUuid(player);
+                LivingEntity tgt;
+                if (lock != null
+                        && level instanceof net.minecraft.server.level.ServerLevel sl
+                        && sl.getEntity(lock) instanceof LivingEntity locked && locked.isAlive()) {
+                    tgt = locked;
+                    knife.setLockedTarget(lock);
+                } else {
+                    tgt = pickHomingTarget(player);
+                }
                 if (tgt != null) {
                     Vec3 to = tgt.getEyePosition().subtract(knife.position()).normalize();
                     Vec3 mv = knife.getDeltaMovement();

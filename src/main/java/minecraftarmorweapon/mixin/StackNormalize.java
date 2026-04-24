@@ -1,6 +1,7 @@
 package minecraftarmorweapon.mixin;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 
@@ -17,7 +18,9 @@ import java.util.Objects;
  *   - {@code Inventory.canMergeItems}      — 拾った時に既存スタックへ合流できるか
  *
  *   これら 3 箇所すべてが同じ抜け方をするので、共通ヘルパーで統一的に Normalize して
- *   比較する。
+ *   比較する。正規化は "デフォルト値 / 空コンテナ" を除去し、意味のある NBT だけ残す。
+ *   結果、同一 NBT のアイテムは必ず stack、真に異なる NBT (Enchantments 配列の中身が違う・
+ *   display.Name が違う等) は今まで通り区別される。
  */
 public final class StackNormalize {
     private StackNormalize() {}
@@ -37,30 +40,55 @@ public final class StackNormalize {
     /**
      * CompoundTag を "意味のある差分のみ残す" 形に正規化して返す。
      *   - null / 空 Compound → null
-     *   - {@code RepairCost == 0} を除去 (金床未使用と同等)
-     *   - 再帰的に空 sub-Compound を除去
+     *   - トップレベルのデフォルト値を除去:
+     *       RepairCost == 0 (金床未使用)
+     *       Damage == 0     (未使用ツール; stacksTo>1 の消耗なしアイテムに付くと差になる)
+     *       Unbreakable = 0b / false
+     *   - 再帰的に空 sub-Compound / 空 List を除去
      *   - 再帰後も空なら null
      */
     public static CompoundTag normalize(CompoundTag tag) {
         if (tag == null || tag.isEmpty()) return null;
         CompoundTag copy = tag.copy();
 
+        // --- 既定値の削除 -------------------------------------------------
         if (copy.contains("RepairCost", Tag.TAG_INT) && copy.getInt("RepairCost") == 0) {
             copy.remove("RepairCost");
         }
+        // Damage:0 を除去 — ツールは stacksTo(1) なので影響しないが、
+        // 一部アイテム (stacksTo>1) で Damage タグが残って別スロット化するのを防ぐ
+        if (copy.contains("Damage", Tag.TAG_INT) && copy.getInt("Damage") == 0) {
+            copy.remove("Damage");
+        }
+        if (copy.contains("Unbreakable", Tag.TAG_ANY_NUMERIC)
+                && copy.getBoolean("Unbreakable") == false) {
+            copy.remove("Unbreakable");
+        }
 
-        stripEmptySubCompounds(copy);
+        // --- 空の入れ子コンテナを再帰除去 ---------------------------------
+        stripEmptyContainers(copy);
 
         return copy.isEmpty() ? null : copy;
     }
 
-    private static void stripEmptySubCompounds(CompoundTag tag) {
+    /**
+     * 再帰的に空の CompoundTag / ListTag を除去する。
+     * 例: {@code {display:{},Enchantments:[]}} → {@code {}}
+     */
+    private static void stripEmptyContainers(CompoundTag tag) {
         List<String> toRemove = new ArrayList<>();
         for (String key : tag.getAllKeys()) {
             Tag child = tag.get(key);
             if (child instanceof CompoundTag ct) {
-                stripEmptySubCompounds(ct);
+                stripEmptyContainers(ct);
                 if (ct.isEmpty()) toRemove.add(key);
+            } else if (child instanceof ListTag lt) {
+                // ListTag の各 Compound 要素も再帰
+                for (int i = 0; i < lt.size(); i++) {
+                    Tag el = lt.get(i);
+                    if (el instanceof CompoundTag ect) stripEmptyContainers(ect);
+                }
+                if (lt.isEmpty()) toRemove.add(key);
             }
         }
         for (String k : toRemove) tag.remove(k);

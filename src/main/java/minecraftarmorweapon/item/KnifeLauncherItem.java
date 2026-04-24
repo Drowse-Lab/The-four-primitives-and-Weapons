@@ -544,6 +544,12 @@ public class KnifeLauncherItem extends Item {
                 // onHitBlock 検出が正しく動く。
                 knife.setItem(new ItemStack(perShotItem[i]));
                 knife.setKnifeType(mode);
+                // HOMING: プレイヤーが数秒カーソルを当てて "ロック" した対象があれば
+                // 各ナイフに UUID を転写して長距離追尾を有効化。
+                if (mode == KnifeType.HOMING) {
+                    java.util.UUID lock = minecraftarmorweapon.event.HomingLockTracker.getLockedTargetUuid(player);
+                    if (lock != null) knife.setLockedTarget(lock);
+                }
                 // 同じ向きで発射 (ブレなし、全弾同方向)。初速は formula.lisp の shoot-velocity。
                 knife.shootFromRotation(player,
                     player.getXRot(), player.getYRot(),

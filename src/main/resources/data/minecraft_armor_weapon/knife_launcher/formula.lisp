@@ -8,7 +8,7 @@
 (define max-normal 10)
 (define max-stun   3)
 (define max-screw  5)
-(define max-homing 3)
+(define max-homing 15)
 
 ;; --- モード別のクールダウン (tick, 20tick=1秒) ---
 (define cooldown-normal 8)

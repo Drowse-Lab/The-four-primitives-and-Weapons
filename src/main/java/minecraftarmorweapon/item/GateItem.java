@@ -58,26 +58,28 @@ public class GateItem extends SwordItem {
             double rightX = -Math.cos(yawRad);
             double rightZ = -Math.sin(yawRad);
 
-            // 3本の剣: 右側、正面上、左側（データパック準拠）
-            // {横オフセット(右+), 縦オフセット, 前後オフセット(後ろ+)}
-            double[][] localOffsets = {
-                {  3.5, 0.3, -2 },  // 右
-                {  0,   0.6, -2 },  // 正面上
-                { -3.5, 0.7, -2 },  // 左
-            };
+            // 本数と展開幅は gate/formula.lisp から読み取る。
+            // 横オフセットは本数に対して等間隔に -side〜+side で展開し、
+            // 縦/前後は lisp の単一値を全本に適用 (シンプル化)。
+            int count = GateFormula.gateProjectileCount();
+            double side = GateFormula.gateSideSpread();
+            double fwd  = GateFormula.gateForwardOffset();
+            double vy   = GateFormula.gateVerticalOffset();
+            double speed = GateFormula.gateShootVelocity();
 
-            for (double[] local : localOffsets) {
+            for (int i = 0; i < count; i++) {
+                // 本数 1 なら中央、2 以上なら -side〜+side で等分
+                double lateral = count <= 1 ? 0.0
+                    : -side + (2.0 * side * i / (count - 1));
+
                 minecraftarmorweapon.entity.GateProjectileEntity projectile =
                         new minecraftarmorweapon.entity.GateProjectileEntity(level, player);
 
-                // プレイヤーの向きに合わせてスポーン位置を計算
-                double spawnX = eyePos.x + rightX * local[0] + forwardX * local[2];
-                double spawnY = eyePos.y + local[1];
-                double spawnZ = eyePos.z + rightZ * local[0] + forwardZ * local[2];
+                double spawnX = eyePos.x + rightX * lateral + forwardX * fwd;
+                double spawnY = eyePos.y + vy;
+                double spawnZ = eyePos.z + rightZ * lateral + forwardZ * fwd;
                 projectile.setPos(spawnX, spawnY, spawnZ);
 
-                // 視線方向に平行にまっすぐ飛ぶ（収束しない）
-                double speed = 2.0;
                 projectile.setDeltaMovement(
                         lookVec.x * speed,
                         lookVec.y * speed,
@@ -87,17 +89,19 @@ public class GateItem extends SwordItem {
                 level.addFreshEntity(projectile);
             }
 
-            // 発射音（データパック準拠: wither.shoot × 4回 = 大音量）
-            for (int i = 0; i < 4; i++) {
+            // 発射音 (wither.shoot × N)
+            int soundReps = GateFormula.gateSoundReps();
+            for (int i = 0; i < soundReps; i++) {
                 level.playSound(null, player.getX(), player.getY(), player.getZ(),
                         SoundEvents.WITHER_SHOOT, SoundSource.PLAYERS, 2.0f, 1.0f);
             }
 
-            // 耐性付与（短時間、反動防止）
+            // 耐性付与 (反動防止)
             player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
-                    net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 20, 4, true, false));
+                    net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE,
+                    GateFormula.gateResistDur(), GateFormula.gateResistAmp(), true, false));
 
-            player.getCooldowns().addCooldown(this, 20); // 1秒クールダウン
+            player.getCooldowns().addCooldown(this, GateFormula.gateCooldown());
         }
 
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());

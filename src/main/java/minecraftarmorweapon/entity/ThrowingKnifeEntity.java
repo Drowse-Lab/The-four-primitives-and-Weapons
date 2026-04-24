@@ -95,6 +95,10 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
     private double lastTickX, lastTickY, lastTickZ;
     private boolean lastTickPosInit = false;
 
+    /** ロック中ターゲットの UUID — HOMING 射出時に {@code HomingLockTracker} から転写される。 */
+    private java.util.UUID lockedTargetUuid;
+    public void setLockedTarget(java.util.UUID id) { this.lockedTargetUuid = id; }
+
     // @StickParams - 着弾時の調整値 (手動編集してビルド) — 単位: 1 = 1/100ブロック
     public static double STICK_OFFSET_NORMAL  = -5;  // 衝突面の法線方向 (壁から外向き)。+ = 手前に出る/浮く, - = めり込む
     public static double STICK_OFFSET_FORWARD = 20;  // 進行方向 (投げた方向)。0 = 刃先がブロック表面に接する, + = もっと突き刺さる, - = 手前に止まる
@@ -409,23 +413,65 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         this.discard();
     }
 
+    /**
+     * HOMING 追尾。2 モードある:
+     *   1. ロック中 (lockedTargetUuid != null): 距離・角度無視でその UUID を追尾。
+     *      見失った場合 (死亡 / unloaded) は一時的に auto モードへフォールバック。
+     *      強い旋回でほぼ当たる。
+     *   2. 非ロック: 進行方向前方コーン内から近距離を優先して acquire。
+     *      近距離は強く旋回、中距離は弱い (低確率 hit)、遠距離は無反応。
+     */
     private void applyHoming() {
         Vec3 mv = this.getDeltaMovement();
         if (mv.lengthSqr() < 0.04) return;
         Vec3 pos = this.position();
-        net.minecraft.world.entity.LivingEntity tgt = this.level().getEntitiesOfClass(
-                net.minecraft.world.entity.LivingEntity.class,
-                this.getBoundingBox().inflate(16.0)).stream()
-            .filter(e -> e != this.getOwner() && e.isAlive() && !e.isSpectator())
-            .filter(e -> {
-                Vec3 to = e.getEyePosition().subtract(pos).normalize();
-                return to.dot(mv.normalize()) > 0.4;
-            })
-            .min(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(this)))
-            .orElse(null);
-        if (tgt == null) return;
+
+        net.minecraft.world.entity.LivingEntity tgt = null;
+        boolean locked = false;
+
+        // 1) ロック対象の優先参照
+        if (lockedTargetUuid != null
+                && this.level() instanceof net.minecraft.server.level.ServerLevel sl) {
+            net.minecraft.world.entity.Entity e = sl.getEntity(lockedTargetUuid);
+            if (e instanceof net.minecraft.world.entity.LivingEntity le
+                    && le.isAlive() && !le.isSpectator() && le != this.getOwner()) {
+                tgt = le;
+                locked = true;
+            }
+        }
+
+        // 2) 非ロック: 近傍を自動 acquire
+        //    半径 24 ブロック、前方コーン dot > 0.1 (ほぼ 170°) まで広めに拾う
+        if (tgt == null) {
+            final Vec3 mvN = mv.normalize();
+            tgt = this.level().getEntitiesOfClass(
+                    net.minecraft.world.entity.LivingEntity.class,
+                    this.getBoundingBox().inflate(24.0)).stream()
+                .filter(e -> e != this.getOwner() && e.isAlive() && !e.isSpectator())
+                .filter(e -> {
+                    Vec3 to = e.getEyePosition().subtract(pos).normalize();
+                    return to.dot(mvN) > 0.1;
+                })
+                .min(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(this)))
+                .orElse(null);
+            if (tgt == null) return;
+        }
+
+        // 旋回強度: ロックは強く、非ロックは距離で減衰
+        double dist = Math.sqrt(tgt.distanceToSqr(this));
+        double power;
+        if (locked) {
+            power = 0.55;                          // ロックは強力旋回 (ほぼ必中)
+        } else if (dist < 8.0) {
+            power = 0.45;                          // 近距離: 強い → "絶対当たる"
+        } else if (dist < 18.0) {
+            // 中距離: 低めの旋回 + ランダムで跳ねる → "時々当たる"
+            power = 0.12 + this.level().getRandom().nextDouble() * 0.15;
+        } else {
+            return;                                // 遠距離 (非ロック) は放置
+        }
+
         Vec3 to = tgt.getEyePosition().subtract(pos).normalize();
-        double power = 0.18;
         Vec3 newMv = mv.normalize().scale(1.0 - power)
             .add(to.scale(power)).normalize().scale(mv.length());
         this.setDeltaMovement(newMv);
@@ -562,6 +608,7 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         tag.putFloat("StuckYaw", getStuckYaw());
         tag.putFloat("StuckPitch", getStuckPitch());
         tag.putInt("KnifeType", getKnifeType().ordinal());
+        if (lockedTargetUuid != null) tag.putUUID("LockUUID", lockedTargetUuid);
     }
 
     @Override
@@ -574,6 +621,7 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         if (tag.contains("KnifeType")) {
             this.entityData.set(DATA_KNIFE_TYPE, tag.getInt("KnifeType"));
         }
+        if (tag.hasUUID("LockUUID")) this.lockedTargetUuid = tag.getUUID("LockUUID");
     }
 
     @Override

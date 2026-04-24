@@ -15,6 +15,7 @@ import org.joml.Vector3f;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModEntities;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
+import minecraftarmorweapon.item.GateFormula;
 
 /**
  * Gateの飛び道具 - 金の直刀の見た目+金色パーティクル。
@@ -59,16 +60,18 @@ public class GateProjectileEntity extends ThrowableProjectile implements ItemSup
         super.tick();
         life++;
 
-        // 金色パーティクル
-        if (level() instanceof ServerLevel serverLevel) {
+        // 金色パーティクル (本数は lisp 設定)
+        int particles = GateFormula.projParticlesPerTick();
+        if (particles > 0 && level() instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(GOLD_PARTICLE,
-                    getX(), getY(), getZ(), 3, 0.1, 0.1, 0.1, 0.0);
+                    getX(), getY(), getZ(), particles, 0.1, 0.1, 0.1, 0.0);
         }
 
-        // 100tick(5秒)後に消滅（爆発エフェクト付き）
-        if (life > 100) {
+        // 自動消滅: lifetime tick 後に爆発エフェクト付きで discard
+        if (life > GateFormula.projLifetime()) {
             if (!level().isClientSide) {
-                level().explode(this, getX(), getY(), getZ(), 1.5f, Level.ExplosionInteraction.NONE);
+                level().explode(this, getX(), getY(), getZ(),
+                        GateFormula.projEndRadius(), Level.ExplosionInteraction.NONE);
             }
             discard();
         }
@@ -79,13 +82,14 @@ public class GateProjectileEntity extends ThrowableProjectile implements ItemSup
         if (level().isClientSide) return;
         if (result.getEntity() == getOwner()) return;
 
-        // ダメージ
+        // ダメージ (lisp 設定)
         if (result.getEntity() instanceof LivingEntity target) {
-            target.hurt(damageSources().explosion(this, getOwner()), 15.0f);
+            target.hurt(damageSources().explosion(this, getOwner()), GateFormula.projHitDamage());
         }
 
         // 爆発エフェクト（地形破壊なし）
-        level().explode(this, getX(), getY(), getZ(), 2.0f, Level.ExplosionInteraction.NONE);
+        level().explode(this, getX(), getY(), getZ(),
+                GateFormula.projHitRadius(), Level.ExplosionInteraction.NONE);
         discard();
     }
 
@@ -93,13 +97,14 @@ public class GateProjectileEntity extends ThrowableProjectile implements ItemSup
     protected void onHitBlock(BlockHitResult result) {
         // 爆発エフェクト（地形破壊なし）
         if (!level().isClientSide) {
-            level().explode(this, getX(), getY(), getZ(), 2.0f, Level.ExplosionInteraction.NONE);
+            level().explode(this, getX(), getY(), getZ(),
+                    GateFormula.projHitRadius(), Level.ExplosionInteraction.NONE);
         }
         discard();
     }
 
     @Override
     protected float getGravity() {
-        return 0.0f; // 完全直進（向きが変わらない）
+        return GateFormula.projGravity();  // 0 = 完全直進
     }
 }
