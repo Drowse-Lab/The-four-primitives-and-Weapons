@@ -81,10 +81,15 @@ public class KnifeLauncherItem extends Item {
 
     // ----- Bundle 風のインベントリ操作 ------------------------------
 
-    /** 内蔵できるのは通常の投げナイフだけ */
-    private static boolean isAmmo(ItemStack s) {
-        return !s.isEmpty() && s.getItem() == CustomEntityInit.THROWING_KNIFE.get();
+    /** 内蔵可能なナイフ種: 通常の投げナイフ + 爆発ナイフ */
+    public static boolean isStorableKnife(ItemStack s) {
+        if (s.isEmpty()) return false;
+        Item it = s.getItem();
+        return it == CustomEntityInit.THROWING_KNIFE.get()
+            || it == minecraftarmorweapon.init.KnifeExtrasRegistrar.EXPLOSIVE_THROWING_KNIFE.get();
     }
+
+    private static boolean isAmmo(ItemStack s) { return isStorableKnife(s); }
 
     /**
      * インベントリで「ランチャーをカーソル、他スロットに向けて右クリック」した時。
@@ -247,7 +252,7 @@ public class KnifeLauncherItem extends Item {
      * ByteTag オーバーフローを避けるため 1 エントリを PER_ENTRY_MAX までに抑える。
      */
     public static int insertStack(ItemStack holder, ItemStack incoming) {
-        if (incoming.isEmpty() || incoming.getItem() != CustomEntityInit.THROWING_KNIFE.get()) return 0;
+        if (!isAmmo(incoming)) return 0;
         int total = getStored(holder);
         int room = MAX_STORED - total;
         if (room <= 0) return 0;
@@ -500,6 +505,31 @@ public class KnifeLauncherItem extends Item {
             float spreadScale = maxForMode <= 1 ? 0f
                 : (toThrow - 1) / (float)(maxForMode - 1);
 
+            // 発射する各弾のアイテム種別を事前計算:
+            //   - 通常: 在庫 LIFO 順に実スタックの Item を採用 (爆発ナイフが先頭なら
+            //           その分は爆発ナイフとして発射される)。在庫が尽きたらインベントリの
+            //           base ナイフにフォールバック。
+            //   - Infinity: 在庫トップのナイフが "種" として全弾に適用される (消費なし)。
+            Item[] perShotItem = new Item[toThrow];
+            java.util.List<ItemStack> storedList = getStoredStacks(stack);
+            if (infinite && !storedList.isEmpty()) {
+                Item seed = storedList.get(0).getItem();
+                for (int i = 0; i < toThrow; i++) perShotItem[i] = seed;
+            } else {
+                int si = 0, sc = 0;
+                for (int i = 0; i < toThrow; i++) {
+                    while (si < storedList.size() && sc >= storedList.get(si).getCount()) {
+                        si++; sc = 0;
+                    }
+                    if (si < storedList.size()) {
+                        perShotItem[i] = storedList.get(si).getItem();
+                        sc++;
+                    } else {
+                        perShotItem[i] = ammoItem;
+                    }
+                }
+            }
+
             var rng = level.getRandom();
             for (int i = 0; i < toThrow; i++) {
                 // -1.0〜+1.0 の uniform ランダム × 最大オフセット × 本数スケール
@@ -510,7 +540,9 @@ public class KnifeLauncherItem extends Item {
                 double offZ = right.z * randH + up.z * randV;
 
                 ThrowingKnifeEntity knife = new ThrowingKnifeEntity(level, player);
-                knife.setItem(new ItemStack(ammoItem));
+                // 実際に消費される/種となるアイテムを setItem — これで ExplosiveThrowingKnifeItem の
+                // onHitBlock 検出が正しく動く。
+                knife.setItem(new ItemStack(perShotItem[i]));
                 knife.setKnifeType(mode);
                 // 同じ向きで発射 (ブレなし、全弾同方向)。初速は formula.lisp の shoot-velocity。
                 knife.shootFromRotation(player,

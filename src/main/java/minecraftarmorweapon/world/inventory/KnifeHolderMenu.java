@@ -1,6 +1,5 @@
 package minecraftarmorweapon.world.inventory;
 
-import minecraftarmorweapon.init.CustomEntityInit;
 import minecraftarmorweapon.init.MawExtraMenus;
 import minecraftarmorweapon.item.KnifeLauncherItem;
 
@@ -137,8 +136,8 @@ public class KnifeHolderMenu extends AbstractContainerMenu {
                     return ItemStack.EMPTY;
                 }
             } else {
-                // プレイヤーインベントリ → ホルダー (投げナイフのみ)
-                if (stack.getItem() != CustomEntityInit.THROWING_KNIFE.get()) return ItemStack.EMPTY;
+                // プレイヤーインベントリ → ホルダー (投げナイフ / 爆発ナイフのみ)
+                if (!KnifeLauncherItem.isStorableKnife(stack)) return ItemStack.EMPTY;
                 if (!this.moveItemStackTo(stack, 0, HOLDER_SIZE, false)) {
                     return ItemStack.EMPTY;
                 }
@@ -157,7 +156,7 @@ public class KnifeHolderMenu extends AbstractContainerMenu {
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return stack.isEmpty() || stack.getItem() == CustomEntityInit.THROWING_KNIFE.get();
+            return stack.isEmpty() || KnifeLauncherItem.isStorableKnife(stack);
         }
 
         @Override
