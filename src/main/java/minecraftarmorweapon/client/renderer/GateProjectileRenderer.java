@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.client.Minecraft;
 
 import minecraftarmorweapon.entity.GateProjectileEntity;
+import minecraftarmorweapon.entity.ThrowingKnifeEntity;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 
 /**
@@ -33,6 +34,8 @@ public class GateProjectileRenderer extends EntityRenderer<GateProjectileEntity>
     public static float SCALE_Y = 0.8f; // Yサイズ
     public static float SCALE_Z = 0.8f; // Zサイズ
     // @EndRotationParams
+    private static ItemStack sharedStack;
+    
 
     public GateProjectileRenderer(EntityRendererProvider.Context ctx) {
         super(ctx);
@@ -53,8 +56,9 @@ public class GateProjectileRenderer extends EntityRenderer<GateProjectileEntity>
         poseStack.mulPose(Axis.YP.rotationDegrees(yaw - 90f + YAW_OFFSET));
         poseStack.mulPose(Axis.ZP.rotationDegrees(pitch + PITCH_OFFSET));
         // 金の直刀 (THIRD_PERSON_RIGHT_HAND) のモデル基底姿勢に合わせて補正
-        poseStack.mulPose(Axis.XP.rotationDegrees(90f));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(-180f + ROLL_OFFSET));
+        poseStack.mulPose(Axis.XP.rotationDegrees(0f));
+        // モデルの刃を motion 方向に揃える (GROUND display の-180°反転を考慮して+90°)
+        poseStack.mulPose(Axis.ZP.rotationDegrees(90f));
 
         poseStack.scale(SCALE_X, SCALE_Y, SCALE_Z);
 
