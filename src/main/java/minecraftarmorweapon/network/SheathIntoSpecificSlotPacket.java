@@ -4,6 +4,7 @@ import minecraftarmorweapon.util.CuriosScabbardHelper;
 import minecraftarmorweapon.util.CuriosScabbardHelper.ScabbardLocation;
 import minecraftarmorweapon.events.DodgeAndBattouHandler;
 import minecraftarmorweapon.item.TyokutoSayaItem;
+import minecraftarmorweapon.item.SwordSayaItem;
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
 import net.minecraftforge.network.NetworkEvent;
@@ -137,8 +138,9 @@ public class SheathIntoSpecificSlotPacket {
     private static void performSheathing(Player player, ItemStack weaponStack,
                                           ItemStack scabbard, InteractionHand weaponHand) {
         boolean isTyokutoSaya = scabbard.getItem() instanceof TyokutoSayaItem;
+        boolean isSwordSaya = scabbard.getItem() instanceof SwordSayaItem;
         CompoundTag sheathTag = scabbard.getOrCreateTag();
-        String storageKey = isTyokutoSaya ? "StoredSword" : "StoredKatana";
+        String storageKey = (isTyokutoSaya || isSwordSaya) ? "StoredSword" : "StoredKatana";
 
         CompoundTag weaponData = weaponStack.save(new CompoundTag());
         sheathTag.put(storageKey, weaponData);
@@ -146,6 +148,8 @@ public class SheathIntoSpecificSlotPacket {
         int modelData;
         if (isTyokutoSaya) {
             modelData = TyokutoSayaItem.getSwordModelData(weaponStack);
+        } else if (isSwordSaya) {
+            modelData = SwordSayaItem.getSwordModelData(weaponStack);
         } else {
             modelData = CuriosScabbardHelper.getWeaponModelDataForSaya(weaponStack);
         }

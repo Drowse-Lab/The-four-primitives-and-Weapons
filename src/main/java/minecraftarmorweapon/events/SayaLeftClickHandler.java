@@ -136,6 +136,7 @@ public class SayaLeftClickHandler {
     private static boolean isSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
-        return itemName.equals("SayaItem") || itemName.equals("TyokutoSayaItem");
+        return itemName.equals("SayaItem") || itemName.equals("TyokutoSayaItem")
+            || itemName.equals("SwordSayaItem");
     }
 }

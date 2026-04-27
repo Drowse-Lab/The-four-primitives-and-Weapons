@@ -642,6 +642,11 @@ public class DodgeAndBattouHandler {
             return stack.hasTag() && stack.getTag().contains("StoredKatana");
         }
 
+        // SwordSayaItemは鞘そのもの（"Sword"部分文字列の誤検知防止）
+        if (itemName.equals("SwordSayaItem")) {
+            return stack.hasTag() && stack.getTag().contains("StoredSword");
+        }
+
         // 直刀の判定
         if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(stack)) {
             return true;
@@ -656,13 +661,20 @@ public class DodgeAndBattouHandler {
     public static boolean isSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
-        return itemName.equals("SayaItem") || itemName.equals("TyokutoSayaItem");
+        return itemName.equals("SayaItem") || itemName.equals("TyokutoSayaItem")
+            || itemName.equals("SwordSayaItem");
     }
 
     private static boolean isTyokutouSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
         return itemName.equals("TyokutoSayaItem");
+    }
+
+    private static boolean isSwordSaya(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        String itemName = stack.getItem().getClass().getSimpleName();
+        return itemName.equals("SwordSayaItem");
     }
     
     // 納刀処理
@@ -685,6 +697,18 @@ public class DodgeAndBattouHandler {
             return;
         }
 
+        // 剣の鞘の場合
+        if (isSwordSaya(sheathStack)) {
+            if (minecraftarmorweapon.item.SwordSayaItem.canSheathe(weaponStack)) {
+                minecraftarmorweapon.item.SwordSayaItem.sheatheSword(
+                    player, weaponStack, sheathStack, weaponHand, sheathHand
+                );
+            } else {
+                player.displayClientMessage(Component.literal("§cこの鞘にはこの剣を納刀できません"), true);
+            }
+            return;
+        }
+
         // 通常の鞘の処理
         CompoundTag sheathTag = sheathStack.getOrCreateTag();
 
@@ -693,6 +717,11 @@ public class DodgeAndBattouHandler {
             // 直刀は通常の鞘には納刀不可
             if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(weaponStack)) {
                 player.displayClientMessage(Component.literal("§c直刀は専用の鞘が必要です"), true);
+                return;
+            }
+            // 剣の鞘対象アイテムは専用鞘が必要
+            if (minecraftarmorweapon.item.SwordSayaItem.canSheathe(weaponStack)) {
+                player.displayClientMessage(Component.literal("§cこの剣は専用の鞘が必要です"), true);
                 return;
             }
 

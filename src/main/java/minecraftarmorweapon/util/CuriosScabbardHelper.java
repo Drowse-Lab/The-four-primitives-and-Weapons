@@ -11,6 +11,7 @@ import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
 
 import minecraftarmorweapon.item.SayaItem;
 import minecraftarmorweapon.item.TyokutoSayaItem;
+import minecraftarmorweapon.item.SwordSayaItem;
 import minecraftarmorweapon.events.DodgeAndBattouHandler;
 
 import javax.annotation.Nullable;
@@ -108,6 +109,7 @@ public class CuriosScabbardHelper {
 
         ItemStack sheathStack = info.stack;
         boolean isTyokutoSaya = sheathStack.getItem() instanceof TyokutoSayaItem;
+        boolean isSwordSaya = sheathStack.getItem() instanceof SwordSayaItem;
 
         // 直刀鞘の場合、直刀のみ納刀可能
         if (isTyokutoSaya) {
@@ -115,16 +117,26 @@ public class CuriosScabbardHelper {
                 player.displayClientMessage(Component.literal("§cこの鞘には直刀のみ納刀可能です"), true);
                 return false;
             }
+        } else if (isSwordSaya) {
+            // 剣の鞘の場合、登録済みのvanilla剣のみ納刀可能
+            if (!SwordSayaItem.canSheathe(weaponStack)) {
+                player.displayClientMessage(Component.literal("§cこの鞘にはこの武器を納刀できません"), true);
+                return false;
+            }
         } else {
-            // 通常の鞘には直刀は不可
+            // 通常の鞘には直刀・剣の鞘対象武器は不可
             if (minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(weaponStack)) {
                 player.displayClientMessage(Component.literal("§c直刀は専用の鞘が必要です"), true);
+                return false;
+            }
+            if (SwordSayaItem.canSheathe(weaponStack)) {
+                player.displayClientMessage(Component.literal("§cこの剣は専用の鞘が必要です"), true);
                 return false;
             }
         }
 
         CompoundTag sheathTag = sheathStack.getOrCreateTag();
-        String storageKey = isTyokutoSaya ? "StoredSword" : "StoredKatana";
+        String storageKey = (isTyokutoSaya || isSwordSaya) ? "StoredSword" : "StoredKatana";
 
         // 武器のNBTデータを保存
         CompoundTag weaponData = weaponStack.save(new CompoundTag());
@@ -134,6 +146,8 @@ public class CuriosScabbardHelper {
         int modelData;
         if (isTyokutoSaya) {
             modelData = TyokutoSayaItem.getSwordModelData(weaponStack);
+        } else if (isSwordSaya) {
+            modelData = SwordSayaItem.getSwordModelData(weaponStack);
         } else {
             modelData = getWeaponModelDataForSaya(weaponStack);
         }
@@ -197,7 +211,9 @@ public class CuriosScabbardHelper {
      */
     public static boolean isScabbard(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        return stack.getItem() instanceof SayaItem || stack.getItem() instanceof TyokutoSayaItem;
+        return stack.getItem() instanceof SayaItem
+            || stack.getItem() instanceof TyokutoSayaItem
+            || stack.getItem() instanceof SwordSayaItem;
     }
 
     /**
@@ -337,11 +353,15 @@ public class CuriosScabbardHelper {
      */
     public static boolean isCompatible(ItemStack weaponStack, ItemStack scabbardStack) {
         boolean isTyokutoSaya = scabbardStack.getItem() instanceof TyokutoSayaItem;
+        boolean isSwordSaya = scabbardStack.getItem() instanceof SwordSayaItem;
         boolean isStraightSword = minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(weaponStack);
+        boolean isSwordSayaTarget = SwordSayaItem.canSheathe(weaponStack);
         if (isTyokutoSaya) {
             return isStraightSword;
+        } else if (isSwordSaya) {
+            return isSwordSayaTarget;
         } else {
-            return !isStraightSword;
+            return !isStraightSword && !isSwordSayaTarget;
         }
     }
 

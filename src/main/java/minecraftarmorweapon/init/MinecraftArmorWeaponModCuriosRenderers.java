@@ -20,6 +20,7 @@ public class MinecraftArmorWeaponModCuriosRenderers {
 		evt.enqueueWork(() -> {
 			CuriosRendererRegistry.register(MinecraftArmorWeaponModItems.SAYA.get(), ScabbardCurioRenderer::new);
 			CuriosRendererRegistry.register(MinecraftArmorWeaponModItems.TYOKUTO_SAYA.get(), ScabbardCurioRenderer::new);
+			CuriosRendererRegistry.register(MinecraftArmorWeaponModItems.SWORD_SAYA.get(), ScabbardCurioRenderer::new);
 		});
 	}
 }

@@ -129,18 +129,17 @@ public class BattouFromSpecificSlotPacket {
         ItemStack weapon = CuriosScabbardHelper.extractWeaponFromScabbard(scabbard);
         if (weapon.isEmpty()) return;
 
-        // 鞘を空にする
-        CuriosScabbardHelper.clearWeaponFromScabbard(scabbard);
-
+        // オフハンドの鞘から抜刀する場合、メインハンドが埋まっていたら何もしない
+        // （鞘をクリアする前に確認することで、保存されていた武器の消失を防ぐ）
         if (hand == InteractionHand.OFF_HAND) {
-            // オフハンドの鞘から抜刀：メインハンドが空でなければ抜刀しない
             ItemStack mainHandItem = player.getItemInHand(InteractionHand.MAIN_HAND);
             if (!mainHandItem.isEmpty()) return;
-            player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
-        } else {
-            // メインハンドの鞘から抜刀
-            player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
         }
+
+        // ここまで来たら必ず抜刀するので、鞘を空にする
+        CuriosScabbardHelper.clearWeaponFromScabbard(scabbard);
+
+        player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
 
         if (hand == InteractionHand.OFF_HAND) {
             // オフハンドの場合: 空の鞘はオフハンドに残す

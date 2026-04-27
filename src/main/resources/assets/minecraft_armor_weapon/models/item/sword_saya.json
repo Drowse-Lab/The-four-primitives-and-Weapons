@@ -1,0 +1,23 @@
+{
+	"parent": "minecraft_armor_weapon:custom/saya_sword_kara",
+	"overrides": [
+		{
+			"predicate": {
+				"custom_model_data": 0
+			},
+			"model": "minecraft_armor_weapon:custom/saya_sword_kara"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 1
+			},
+			"model": "minecraft_armor_weapon:custom/saya_sword_iron_sword"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 2
+			},
+			"model": "minecraft_armor_weapon:custom/saya_sword_golden_sword"
+		}
+	]
+}

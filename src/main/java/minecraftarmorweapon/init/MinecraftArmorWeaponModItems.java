@@ -25,6 +25,7 @@ import minecraftarmorweapon.item.WindStepItem;
 import minecraftarmorweapon.item.WardenArmorItem;
 import minecraftarmorweapon.item.WarabitetouItem;
 import minecraftarmorweapon.item.TyokutoSayaItem;
+import minecraftarmorweapon.item.SwordSayaItem;
 import minecraftarmorweapon.item.TukaenaItem;
 import minecraftarmorweapon.item.ThunderboltItem;
 import minecraftarmorweapon.item.TestBowItem;
@@ -281,6 +282,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> GOLD_TYOKUTO = REGISTRY.register("gold_tyokuto", () -> new minecraftarmorweapon.item.GoldTyokutoItem());
 	public static final RegistryObject<Item> SAYA = REGISTRY.register("saya", () -> new SayaItem());
 	public static final RegistryObject<Item> TYOKUTO_SAYA = REGISTRY.register("tyokuto_saya", () -> new TyokutoSayaItem());
+	public static final RegistryObject<Item> SWORD_SAYA = REGISTRY.register("sword_saya", () -> new SwordSayaItem());
 	public static final RegistryObject<Item> ICE_BOOK = REGISTRY.register("ice_book", () -> new IceBookItem());
 	public static final RegistryObject<Item> ELECTRIC_BOOK = REGISTRY.register("electric_book", () -> new ElectricBookItem());
 	public static final RegistryObject<Item> CORROSION_BOOK = REGISTRY.register("corrosion_book", () -> new CorrosionBookItem());
