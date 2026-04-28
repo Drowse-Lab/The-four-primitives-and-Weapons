@@ -47,5 +47,9 @@ public class CustomEntityRenderers {
         // 投げナイフ飛翔体 (FlyingAttackerEntity が投げナイフを持った時と同じ見た目)
         event.registerEntityRenderer(CustomEntityInit.THROWING_KNIFE_ENTITY.get(),
                 minecraftarmorweapon.client.renderer.ThrowingKnifeRenderer::new);
+
+        // 透明アーマースタンド (pose別の全体回転を適用するカスタムレンダラ)
+        event.registerEntityRenderer(CustomEntityInit.DISPLAY_ARMOR_STAND.get(),
+                minecraftarmorweapon.client.renderer.DisplayArmorStandRenderer::new);
     }
 }

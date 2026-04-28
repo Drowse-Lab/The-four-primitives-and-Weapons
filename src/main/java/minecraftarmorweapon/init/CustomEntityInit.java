@@ -19,6 +19,7 @@ import minecraftarmorweapon.entity.HeroicTierEntity;
 import minecraftarmorweapon.entity.DebugMobEntity;
 import minecraftarmorweapon.entity.AngelTrioEntity;
 import minecraftarmorweapon.entity.ThrowingKnifeEntity;
+import minecraftarmorweapon.entity.DisplayArmorStandEntity;
 import minecraftarmorweapon.item.UndeadArmyBanishItem;
 import minecraftarmorweapon.item.ThrowingKnifeItem;
 import minecraftarmorweapon.item.GripKnifeItem;
@@ -199,6 +200,20 @@ public class CustomEntityInit {
         CUSTOM_ITEMS.register("mana_potion",
             () -> new minecraftarmorweapon.item.ManaPotionItem());
 
+    // 透明アーマースタンド — 武器を3D展示するための見えないアーマースタンド
+    public static final RegistryObject<EntityType<DisplayArmorStandEntity>> DISPLAY_ARMOR_STAND =
+        CUSTOM_ENTITIES.register("display_armor_stand",
+            () -> EntityType.Builder.<DisplayArmorStandEntity>of(DisplayArmorStandEntity::new, MobCategory.MISC)
+                .setShouldReceiveVelocityUpdates(false)
+                .setTrackingRange(64)
+                .setUpdateInterval(20)
+                .sized(0.5f, 1.975f)
+                .build("display_armor_stand"));
+
+    public static final RegistryObject<Item> DISPLAY_ARMOR_STAND_ITEM =
+        CUSTOM_ITEMS.register("display_armor_stand",
+            () -> new minecraftarmorweapon.item.DisplayArmorStandItem());
+
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(COMMON_SOLDIER.get(), CommonSoldierEntity.createAttributes().build());
@@ -209,6 +224,8 @@ public class CustomEntityInit {
         event.put(ANGEL_SERIOUS.get(), AngelTrioEntity.createAttributes().build());
         event.put(ANGEL_MOCKER1.get(), AngelTrioEntity.createAttributes().build());
         event.put(ANGEL_MOCKER2.get(), AngelTrioEntity.createAttributes().build());
+        // ArmorStand を継承する透明アーマースタンドも LivingEntity の属性が必要
+        event.put(DISPLAY_ARMOR_STAND.get(), net.minecraft.world.entity.LivingEntity.createLivingAttributes().build());
     }
 
     // Modのコンストラクタやメインクラスで呼び出す必要があります
