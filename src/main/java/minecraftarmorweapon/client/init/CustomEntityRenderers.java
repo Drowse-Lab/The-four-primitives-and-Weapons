@@ -2,6 +2,7 @@ package minecraftarmorweapon.client.init;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -48,8 +49,19 @@ public class CustomEntityRenderers {
         event.registerEntityRenderer(CustomEntityInit.THROWING_KNIFE_ENTITY.get(),
                 minecraftarmorweapon.client.renderer.ThrowingKnifeRenderer::new);
 
-        // 透明アーマースタンド (pose別の全体回転を適用するカスタムレンダラ)
-        event.registerEntityRenderer(CustomEntityInit.DISPLAY_ARMOR_STAND.get(),
-                minecraftarmorweapon.client.renderer.DisplayArmorStandRenderer::new);
+        // Arsenal式 武器ラック
+        event.registerEntityRenderer(CustomEntityInit.WEAPON_RACK.get(),
+                minecraftarmorweapon.client.renderer.WeaponRackRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void registerExtraModels(ModelEvent.RegisterAdditional event) {
+        // weapon_rack のブロックモデル(Block未登録のため明示ロード)。
+        // 天井=チェーン版 / 床=A-frameスタンド / 壁=フック単体 を direction で切替。
+        event.register(minecraftarmorweapon.client.renderer.WeaponRackRenderer.MODEL_CHAIN);
+        event.register(minecraftarmorweapon.client.renderer.WeaponRackRenderer.MODEL_HOOK);
+        event.register(minecraftarmorweapon.client.renderer.WeaponRackRenderer.MODEL_STAND);
+        // pk_racks ベースの head 形状ラック (CC BY-NC-SA 4.0, KawaMood)
+        event.register(minecraftarmorweapon.client.renderer.WeaponRackRenderer.MODEL_PK_OAK);
     }
 }

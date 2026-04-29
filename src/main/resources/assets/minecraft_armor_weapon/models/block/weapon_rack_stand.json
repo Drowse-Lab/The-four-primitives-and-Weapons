@@ -1,0 +1,75 @@
+{
+	"credit": "Custom: A-frame floor weapon rack stand (oak)",
+	"textures": {
+		"wood":  "minecraft:block/oak_planks",
+		"particle": "minecraft:block/oak_planks"
+	},
+	"elements": [
+		{
+			"name": "top_bar",
+			"from": [2, 13, 5],
+			"to":   [14, 15, 11],
+			"faces": {
+				"north": {"uv": [2, 1, 14, 3],  "texture": "#wood"},
+				"south": {"uv": [2, 1, 14, 3],  "texture": "#wood"},
+				"east":  {"uv": [5, 1, 11, 3],  "texture": "#wood"},
+				"west":  {"uv": [5, 1, 11, 3],  "texture": "#wood"},
+				"up":    {"uv": [2, 5, 14, 11], "texture": "#wood"},
+				"down":  {"uv": [2, 5, 14, 11], "texture": "#wood"}
+			}
+		},
+		{
+			"name": "front_left_leg",
+			"from": [1, 0, 4],
+			"to":   [4, 14, 7],
+			"rotation": {"angle": 0, "axis": "z", "origin": [3, 14, 6]},
+			"faces": {
+				"north": {"uv": [1, 0, 4, 14],  "texture": "#wood"},
+				"south": {"uv": [1, 0, 4, 14],  "texture": "#wood"},
+				"east":  {"uv": [4, 0, 7, 14],  "texture": "#wood"},
+				"west":  {"uv": [4, 0, 7, 14],  "texture": "#wood"},
+				"up":    {"uv": [1, 4, 4, 7],   "texture": "#wood"},
+				"down":  {"uv": [1, 4, 4, 7],   "texture": "#wood"}
+			}
+		},
+		{
+			"name": "front_right_leg",
+			"from": [12, 0, 4],
+			"to":   [15, 14, 7],
+			"faces": {
+				"north": {"uv": [12, 0, 15, 14], "texture": "#wood"},
+				"south": {"uv": [12, 0, 15, 14], "texture": "#wood"},
+				"east":  {"uv": [4, 0, 7, 14],   "texture": "#wood"},
+				"west":  {"uv": [4, 0, 7, 14],   "texture": "#wood"},
+				"up":    {"uv": [12, 4, 15, 7],  "texture": "#wood"},
+				"down":  {"uv": [12, 4, 15, 7],  "texture": "#wood"}
+			}
+		},
+		{
+			"name": "back_left_leg",
+			"from": [1, 0, 9],
+			"to":   [4, 14, 12],
+			"faces": {
+				"north": {"uv": [1, 0, 4, 14],  "texture": "#wood"},
+				"south": {"uv": [1, 0, 4, 14],  "texture": "#wood"},
+				"east":  {"uv": [9, 0, 12, 14], "texture": "#wood"},
+				"west":  {"uv": [9, 0, 12, 14], "texture": "#wood"},
+				"up":    {"uv": [1, 9, 4, 12],  "texture": "#wood"},
+				"down":  {"uv": [1, 9, 4, 12],  "texture": "#wood"}
+			}
+		},
+		{
+			"name": "back_right_leg",
+			"from": [12, 0, 9],
+			"to":   [15, 14, 12],
+			"faces": {
+				"north": {"uv": [12, 0, 15, 14], "texture": "#wood"},
+				"south": {"uv": [12, 0, 15, 14], "texture": "#wood"},
+				"east":  {"uv": [9, 0, 12, 14],  "texture": "#wood"},
+				"west":  {"uv": [9, 0, 12, 14],  "texture": "#wood"},
+				"up":    {"uv": [12, 9, 15, 12], "texture": "#wood"},
+				"down":  {"uv": [12, 9, 15, 12], "texture": "#wood"}
+			}
+		}
+	]
+}

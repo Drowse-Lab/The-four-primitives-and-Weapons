@@ -1,0 +1,17 @@
+Files in this folder named `rack_*.png` are derived from pk_racks by KawaMood
+(https://www.kawamood.com / Modrinth: https://modrinth.com/user/KawaMood).
+
+License: Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+         (CC BY-NC-SA 4.0)
+         https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+Original textures hosted on Mojang's texture CDN, referenced by player_head NBT
+in the pk_racks data pack. Copies were downloaded for use in this Forge mod
+under the terms of CC BY-NC-SA 4.0:
+
+  - Attribution (BY): credit retained to KawaMood (this file)
+  - NonCommercial (NC): this mod is distributed free of charge with no paywall
+  - ShareAlike (SA): this mod inherits CC BY-NC-SA 4.0 for the affected assets
+
+Texture file → original Mojang CDN URL:
+  rack_oak.png      → http://textures.minecraft.net/texture/da97d2373842129c6df7398141ed421b041db6874f869fde1c56fbf995d31676

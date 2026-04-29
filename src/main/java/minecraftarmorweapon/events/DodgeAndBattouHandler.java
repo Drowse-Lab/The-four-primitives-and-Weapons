@@ -353,6 +353,11 @@ public class DodgeAndBattouHandler {
                 player.getItemInHand(event.getHand()).getItem() instanceof BlockItem) {
                 return; // ブロック設置を許可
             }
+            // 武器ラック (ItemFrame派生エンティティを設置するアイテム) も設置を許可
+            if (player.getItemInHand(event.getHand()).getItem()
+                    instanceof minecraftarmorweapon.item.WeaponRackItem) {
+                return;
+            }
 
             // それ以外の場合は回避を実行
             event.setCanceled(true);
@@ -396,6 +401,10 @@ public class DodgeAndBattouHandler {
         if (player.isShiftKeyDown()) {
             return;
         }
+        // 武器ラックへの着脱・回転は許可
+        if (event.getTarget() instanceof minecraftarmorweapon.entity.WeaponRackEntity) {
+            return;
+        }
 
         // 武器を持っている場合は回避を優先（回避モード選択時のみキャンセル）
         if (canDodgeWithHands(player) && isRightClickDodgeEnabled(player)) {
@@ -413,6 +422,10 @@ public class DodgeAndBattouHandler {
 
         // シフトキーが押されている場合は通常の相互作用を許可
         if (player.isShiftKeyDown()) {
+            return;
+        }
+        // 武器ラックへの着脱・回転は許可
+        if (event.getTarget() instanceof minecraftarmorweapon.entity.WeaponRackEntity) {
             return;
         }
 

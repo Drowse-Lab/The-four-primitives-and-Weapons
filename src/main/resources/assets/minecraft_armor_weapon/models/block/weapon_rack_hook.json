@@ -1,0 +1,62 @@
+{
+	"credit": "Wall rack: dual wooden brackets with brass-look hooks (inspired by towel hooks)",
+	"textures": {
+		"wood":  "minecraft:block/dark_oak_planks",
+		"brass": "minecraft:block/gold_block",
+		"particle": "minecraft:block/dark_oak_planks"
+	},
+	"elements": [
+		{
+			"name": "left_bracket",
+			"from": [2, 5, 14],
+			"to":   [6, 11, 16],
+			"faces": {
+				"north": {"uv": [2, 5, 6, 11],  "texture": "#wood"},
+				"south": {"uv": [2, 5, 6, 11],  "texture": "#wood"},
+				"east":  {"uv": [14, 5, 16, 11], "texture": "#wood"},
+				"west":  {"uv": [14, 5, 16, 11], "texture": "#wood"},
+				"up":    {"uv": [2, 14, 6, 16], "texture": "#wood"},
+				"down":  {"uv": [2, 14, 6, 16], "texture": "#wood"}
+			}
+		},
+		{
+			"name": "left_hook",
+			"from": [3, 7, 10],
+			"to":   [5, 9, 14],
+			"faces": {
+				"north": {"uv": [3, 7, 5, 9],   "texture": "#brass"},
+				"south": {"uv": [3, 7, 5, 9],   "texture": "#brass"},
+				"east":  {"uv": [10, 7, 14, 9], "texture": "#brass"},
+				"west":  {"uv": [10, 7, 14, 9], "texture": "#brass"},
+				"up":    {"uv": [3, 10, 5, 14], "texture": "#brass"},
+				"down":  {"uv": [3, 10, 5, 14], "texture": "#brass"}
+			}
+		},
+		{
+			"name": "right_bracket",
+			"from": [10, 5, 14],
+			"to":   [14, 11, 16],
+			"faces": {
+				"north": {"uv": [10, 5, 14, 11], "texture": "#wood"},
+				"south": {"uv": [10, 5, 14, 11], "texture": "#wood"},
+				"east":  {"uv": [14, 5, 16, 11], "texture": "#wood"},
+				"west":  {"uv": [14, 5, 16, 11], "texture": "#wood"},
+				"up":    {"uv": [10, 14, 14, 16], "texture": "#wood"},
+				"down":  {"uv": [10, 14, 14, 16], "texture": "#wood"}
+			}
+		},
+		{
+			"name": "right_hook",
+			"from": [11, 7, 10],
+			"to":   [13, 9, 14],
+			"faces": {
+				"north": {"uv": [11, 7, 13, 9],  "texture": "#brass"},
+				"south": {"uv": [11, 7, 13, 9],  "texture": "#brass"},
+				"east":  {"uv": [10, 7, 14, 9],  "texture": "#brass"},
+				"west":  {"uv": [10, 7, 14, 9],  "texture": "#brass"},
+				"up":    {"uv": [11, 10, 13, 14], "texture": "#brass"},
+				"down":  {"uv": [11, 10, 13, 14], "texture": "#brass"}
+			}
+		}
+	]
+}

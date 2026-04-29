@@ -19,7 +19,7 @@ import minecraftarmorweapon.entity.HeroicTierEntity;
 import minecraftarmorweapon.entity.DebugMobEntity;
 import minecraftarmorweapon.entity.AngelTrioEntity;
 import minecraftarmorweapon.entity.ThrowingKnifeEntity;
-import minecraftarmorweapon.entity.DisplayArmorStandEntity;
+import minecraftarmorweapon.entity.WeaponRackEntity;
 import minecraftarmorweapon.item.UndeadArmyBanishItem;
 import minecraftarmorweapon.item.ThrowingKnifeItem;
 import minecraftarmorweapon.item.GripKnifeItem;
@@ -200,19 +200,19 @@ public class CustomEntityInit {
         CUSTOM_ITEMS.register("mana_potion",
             () -> new minecraftarmorweapon.item.ManaPotionItem());
 
-    // 透明アーマースタンド — 武器を3D展示するための見えないアーマースタンド
-    public static final RegistryObject<EntityType<DisplayArmorStandEntity>> DISPLAY_ARMOR_STAND =
-        CUSTOM_ENTITIES.register("display_armor_stand",
-            () -> EntityType.Builder.<DisplayArmorStandEntity>of(DisplayArmorStandEntity::new, MobCategory.MISC)
+    // Arsenal式 武器ラック (ItemFrame ベース)
+    public static final RegistryObject<EntityType<WeaponRackEntity>> WEAPON_RACK =
+        CUSTOM_ENTITIES.register("weapon_rack",
+            () -> EntityType.Builder.<WeaponRackEntity>of(WeaponRackEntity::new, MobCategory.MISC)
                 .setShouldReceiveVelocityUpdates(false)
                 .setTrackingRange(64)
                 .setUpdateInterval(20)
-                .sized(0.5f, 1.975f)
-                .build("display_armor_stand"));
+                .sized(0.75f, 0.75f)
+                .build("weapon_rack"));
 
-    public static final RegistryObject<Item> DISPLAY_ARMOR_STAND_ITEM =
-        CUSTOM_ITEMS.register("display_armor_stand",
-            () -> new minecraftarmorweapon.item.DisplayArmorStandItem());
+    public static final RegistryObject<Item> WEAPON_RACK_ITEM =
+        CUSTOM_ITEMS.register("weapon_rack",
+            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties()));
 
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
@@ -224,8 +224,6 @@ public class CustomEntityInit {
         event.put(ANGEL_SERIOUS.get(), AngelTrioEntity.createAttributes().build());
         event.put(ANGEL_MOCKER1.get(), AngelTrioEntity.createAttributes().build());
         event.put(ANGEL_MOCKER2.get(), AngelTrioEntity.createAttributes().build());
-        // ArmorStand を継承する透明アーマースタンドも LivingEntity の属性が必要
-        event.put(DISPLAY_ARMOR_STAND.get(), net.minecraft.world.entity.LivingEntity.createLivingAttributes().build());
     }
 
     // Modのコンストラクタやメインクラスで呼び出す必要があります

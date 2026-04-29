@@ -1,0 +1,144 @@
+{
+	"credit": "Custom: chain-hanging weapon rack — designed so pitch=90 (DOWN face/ceiling) makes chains hang downward",
+	"textures": {
+		"wood":  "minecraft:block/oak_planks",
+		"chain": "minecraft:block/chain",
+		"hook":  "minecraft:block/iron_block",
+		"particle": "minecraft:block/oak_planks"
+	},
+	"elements": [
+		{
+			"name": "top_mount",
+			"from": [4, 7, 14],
+			"to":   [12, 9, 16],
+			"faces": {
+				"north": {"uv": [4, 7, 12, 9],  "texture": "#wood"},
+				"south": {"uv": [4, 7, 12, 9],  "texture": "#wood"},
+				"east":  {"uv": [14, 7, 16, 9], "texture": "#wood"},
+				"west":  {"uv": [14, 7, 16, 9], "texture": "#wood"},
+				"up":    {"uv": [4, 14, 12, 16], "texture": "#wood"},
+				"down":  {"uv": [4, 14, 12, 16], "texture": "#wood"}
+			}
+		},
+		{
+			"name": "left_chain_a",
+			"from": [2.5, 8, 4],
+			"to":   [5.5, 8, 14],
+			"rotation": {"angle": 45, "axis": "z", "origin": [4, 8, 9]},
+			"shade": false,
+			"faces": {
+				"up":   {"uv": [0, 0, 3, 16], "texture": "#chain"},
+				"down": {"uv": [0, 0, 3, 16], "texture": "#chain"}
+			}
+		},
+		{
+			"name": "left_chain_b",
+			"from": [4, 6.5, 4],
+			"to":   [4, 9.5, 14],
+			"rotation": {"angle": 45, "axis": "z", "origin": [4, 8, 9]},
+			"shade": false,
+			"faces": {
+				"east": {"uv": [3, 0, 6, 16], "texture": "#chain"},
+				"west": {"uv": [3, 0, 6, 16], "texture": "#chain"}
+			}
+		},
+		{
+			"name": "right_chain_a",
+			"from": [10.5, 8, 4],
+			"to":   [13.5, 8, 14],
+			"rotation": {"angle": 45, "axis": "z", "origin": [12, 8, 9]},
+			"shade": false,
+			"faces": {
+				"up":   {"uv": [0, 0, 3, 16], "texture": "#chain"},
+				"down": {"uv": [0, 0, 3, 16], "texture": "#chain"}
+			}
+		},
+		{
+			"name": "right_chain_b",
+			"from": [12, 6.5, 4],
+			"to":   [12, 9.5, 14],
+			"rotation": {"angle": 45, "axis": "z", "origin": [12, 8, 9]},
+			"shade": false,
+			"faces": {
+				"east": {"uv": [3, 0, 6, 16], "texture": "#chain"},
+				"west": {"uv": [3, 0, 6, 16], "texture": "#chain"}
+			}
+		},
+		{
+			"name": "left_hook_back",
+			"from": [3, 7, 2],
+			"to":   [5, 9, 4],
+			"faces": {
+				"north": {"uv": [3, 7, 5, 9],  "texture": "#wood"},
+				"south": {"uv": [3, 7, 5, 9],  "texture": "#wood"},
+				"east":  {"uv": [2, 7, 4, 9],  "texture": "#wood"},
+				"west":  {"uv": [2, 7, 4, 9],  "texture": "#wood"},
+				"up":    {"uv": [3, 2, 5, 4],  "texture": "#wood"},
+				"down":  {"uv": [3, 2, 5, 4],  "texture": "#wood"}
+			}
+		},
+		{
+			"name": "left_hook_arm",
+			"from": [3.5, 9, 0],
+			"to":   [4.5, 11, 3],
+			"faces": {
+				"north": {"uv": [3.5, 9, 4.5, 11], "texture": "#hook"},
+				"south": {"uv": [3.5, 9, 4.5, 11], "texture": "#hook"},
+				"east":  {"uv": [0, 9, 3, 11],     "texture": "#hook"},
+				"west":  {"uv": [0, 9, 3, 11],     "texture": "#hook"},
+				"up":    {"uv": [3.5, 0, 4.5, 3],  "texture": "#hook"},
+				"down":  {"uv": [3.5, 0, 4.5, 3],  "texture": "#hook"}
+			}
+		},
+		{
+			"name": "left_hook_tip",
+			"from": [3.5, 11, 0],
+			"to":   [4.5, 12, 1],
+			"faces": {
+				"north": {"uv": [3.5, 11, 4.5, 12], "texture": "#hook"},
+				"south": {"uv": [3.5, 11, 4.5, 12], "texture": "#hook"},
+				"east":  {"uv": [0, 11, 1, 12],     "texture": "#hook"},
+				"west":  {"uv": [0, 11, 1, 12],     "texture": "#hook"},
+				"up":    {"uv": [3.5, 0, 4.5, 1],   "texture": "#hook"}
+			}
+		},
+		{
+			"name": "right_hook_back",
+			"from": [11, 7, 2],
+			"to":   [13, 9, 4],
+			"faces": {
+				"north": {"uv": [11, 7, 13, 9],   "texture": "#wood"},
+				"south": {"uv": [11, 7, 13, 9],   "texture": "#wood"},
+				"east":  {"uv": [2, 7, 4, 9],     "texture": "#wood"},
+				"west":  {"uv": [2, 7, 4, 9],     "texture": "#wood"},
+				"up":    {"uv": [11, 2, 13, 4],   "texture": "#wood"},
+				"down":  {"uv": [11, 2, 13, 4],   "texture": "#wood"}
+			}
+		},
+		{
+			"name": "right_hook_arm",
+			"from": [11.5, 9, 0],
+			"to":   [12.5, 11, 3],
+			"faces": {
+				"north": {"uv": [11.5, 9, 12.5, 11], "texture": "#hook"},
+				"south": {"uv": [11.5, 9, 12.5, 11], "texture": "#hook"},
+				"east":  {"uv": [0, 9, 3, 11],       "texture": "#hook"},
+				"west":  {"uv": [0, 9, 3, 11],       "texture": "#hook"},
+				"up":    {"uv": [11.5, 0, 12.5, 3],  "texture": "#hook"},
+				"down":  {"uv": [11.5, 0, 12.5, 3],  "texture": "#hook"}
+			}
+		},
+		{
+			"name": "right_hook_tip",
+			"from": [11.5, 11, 0],
+			"to":   [12.5, 12, 1],
+			"faces": {
+				"north": {"uv": [11.5, 11, 12.5, 12], "texture": "#hook"},
+				"south": {"uv": [11.5, 11, 12.5, 12], "texture": "#hook"},
+				"east":  {"uv": [0, 11, 1, 12],       "texture": "#hook"},
+				"west":  {"uv": [0, 11, 1, 12],       "texture": "#hook"},
+				"up":    {"uv": [11.5, 0, 12.5, 1],   "texture": "#hook"}
+			}
+		}
+	]
+}

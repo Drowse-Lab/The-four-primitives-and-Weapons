@@ -1,0 +1,29 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft_armor_weapon:hammer",
+    "minecraft_armor_weapon:scythe",
+    "minecraft_armor_weapon:machete",
+    "minecraft_armor_weapon:iron_katana",
+    "minecraft_armor_weapon:gold_katana",
+    "minecraft_armor_weapon:stone_katana",
+    "minecraft_armor_weapon:netherite_katana",
+    "minecraft_armor_weapon:wither_katana",
+    "minecraft_armor_weapon:darkness_katana",
+    "minecraft_armor_weapon:magical_katana",
+    "minecraft_armor_weapon:magisches_feen_katana",
+    "minecraft_armor_weapon:my_test_iron_katana",
+    "minecraft_armor_weapon:old_katana",
+    "minecraft_armor_weapon:prototype_katana",
+    "minecraft_armor_weapon:rivers_of_blood",
+    "minecraft_armor_weapon:luna",
+    "minecraft_armor_weapon:warabitetou",
+    "minecraft_armor_weapon:bluepurge",
+    "minecraft_armor_weapon:bluepurge_utigatana",
+    "minecraft_armor_weapon:bluepurge_tyokutou",
+    "minecraft_armor_weapon:iron_tyokuto",
+    "minecraft_armor_weapon:gold_tyokuto",
+    "minecraft_armor_weapon:replica_sword_of_light",
+    "#minecraft_armor_weapon:tridents"
+  ]
+}

@@ -41,7 +41,7 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.SAYA);
 			event.accept(MinecraftArmorWeaponModItems.TYOKUTO_SAYA);
 			event.accept(MinecraftArmorWeaponModItems.SWORD_SAYA);
-			event.accept(CustomEntityInit.DISPLAY_ARMOR_STAND_ITEM);
+			event.accept(CustomEntityInit.WEAPON_RACK_ITEM);
 			event.accept(MinecraftArmorWeaponModItems.TEST_BOW);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE_UTIGATANA);
