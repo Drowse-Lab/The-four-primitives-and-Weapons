@@ -45,9 +45,23 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 	/** 床設置 (UP face): A-frame スタンド */
 	public static final ResourceLocation MODEL_STAND =
 		new ResourceLocation(MODID, "block/weapon_rack_stand");
-	/** pk_racks オーク版 (KawaMood, CC BY-NC-SA 4.0): 8×8×8 head 形状 */
-	public static final ResourceLocation MODEL_PK_OAK =
-		new ResourceLocation(MODID, "block/weapon_rack_pk_oak");
+	/** pk_racks 系ラック (KawaMood, CC BY-NC-SA 4.0): 8×8×8 head 形状を skin で変えるバリアント。
+	 * pale_oak は 1.20.1 に存在しないため除外。 */
+	public static final ResourceLocation[] MODEL_PK_VARIANTS = {
+		new ResourceLocation(MODID, "block/weapon_rack_pk_oak"),
+		new ResourceLocation(MODID, "block/weapon_rack_pk_spruce"),
+		new ResourceLocation(MODID, "block/weapon_rack_pk_birch"),
+		new ResourceLocation(MODID, "block/weapon_rack_pk_jungle"),
+		new ResourceLocation(MODID, "block/weapon_rack_pk_acacia"),
+		new ResourceLocation(MODID, "block/weapon_rack_pk_dark_oak"),
+		new ResourceLocation(MODID, "block/weapon_rack_pk_mangrove"),
+		new ResourceLocation(MODID, "block/weapon_rack_pk_cherry"),
+		new ResourceLocation(MODID, "block/weapon_rack_pk_bamboo"),
+		new ResourceLocation(MODID, "block/weapon_rack_pk_crimson"),
+		new ResourceLocation(MODID, "block/weapon_rack_pk_warped"),
+	};
+	/** 後方互換 */
+	public static final ResourceLocation MODEL_PK_OAK = MODEL_PK_VARIANTS[0];
 	/** 後方互換: 古い MODEL 参照用 */
 	public static final ResourceLocation MODEL = MODEL_CHAIN;
 
@@ -97,14 +111,14 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation * 360.0F / 8.0F));
 
 		if (!invisible) {
-			// 天井 (DOWN) → チェーン版 / 床 (UP) → A-frame スタンド / 壁 (横) → フック単体
+			// 天井 (DOWN) → チェーン版 / 床 (UP) → A-frame スタンド / 壁 (横) → pk_racks オーク
 			ResourceLocation modelRL;
 			if (facing == Direction.DOWN) {
 				modelRL = MODEL_CHAIN;
 			} else if (facing == Direction.UP) {
 				modelRL = MODEL_STAND;
 			} else {
-				modelRL = MODEL_HOOK;
+				modelRL = MODEL_PK_OAK;
 			}
 			poseStack.pushPose();
 			poseStack.translate(-0.5F, -0.5F, -0.5F);

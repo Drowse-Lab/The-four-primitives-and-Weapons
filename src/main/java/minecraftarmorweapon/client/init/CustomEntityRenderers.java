@@ -61,7 +61,9 @@ public class CustomEntityRenderers {
         event.register(minecraftarmorweapon.client.renderer.WeaponRackRenderer.MODEL_CHAIN);
         event.register(minecraftarmorweapon.client.renderer.WeaponRackRenderer.MODEL_HOOK);
         event.register(minecraftarmorweapon.client.renderer.WeaponRackRenderer.MODEL_STAND);
-        // pk_racks ベースの head 形状ラック (CC BY-NC-SA 4.0, KawaMood)
-        event.register(minecraftarmorweapon.client.renderer.WeaponRackRenderer.MODEL_PK_OAK);
+        // pk_racks ベースの head 形状ラック バリアント (CC BY-NC-SA 4.0, KawaMood)
+        for (net.minecraft.resources.ResourceLocation rl : minecraftarmorweapon.client.renderer.WeaponRackRenderer.MODEL_PK_VARIANTS) {
+            event.register(rl);
+        }
     }
 }

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": { "item": "minecraft:spruce_planks" },
+    "S": { "item": "minecraft:stick" }
+  },
+  "pattern": [
+    "PPP",
+    "S S"
+  ],
+  "result": {
+    "item": "minecraft_armor_weapon:weapon_rack",
+    "count": 1
+  }
+}
