@@ -46,20 +46,31 @@ public class WeaponRackEntity extends ItemFrame {
 
 	@Override
 	public InteractionResult interact(Player player, InteractionHand hand) {
-		// Sneak+右クリックで台座を非表示化トグル: 武器が入っている + 手が空の時のみ
+		ItemStack stackInHand = player.getItemInHand(hand);
+
+		// Sneak+右クリック with 武器入り + 空手: pk_racks 風のポーズ切り替え
+		// 床ラックは 6 ポーズ、壁ラックは 4 ポーズ、天井は 1 ポーズ。
 		if (player.isShiftKeyDown()
 				&& !this.getItem().isEmpty()
-				&& player.getItemInHand(hand).isEmpty()) {
-			this.setInvisible(!this.isInvisible());
+				&& stackInHand.isEmpty()) {
+			int poseCount = poseCountForDirection(this.getDirection());
+			int nextPose = (this.getRotation() + 1) % poseCount;
+			this.setRotation(nextPose);
 			return InteractionResult.SUCCESS;
 		}
 
-		ItemStack stackInHand = player.getItemInHand(hand);
 		if (!this.getItem().isEmpty()
 				|| (this.getItem().isEmpty() && stackInHand.is(DISPLAYABLE))) {
 			return super.interact(player, hand);
 		}
 		return InteractionResult.PASS;
+	}
+
+	/** pk_racks 仕様: ground=6 / wall=4 / ceiling=1 */
+	public static int poseCountForDirection(Direction direction) {
+		if (direction == Direction.UP) return 6;
+		if (direction == Direction.DOWN) return 1;
+		return 4;
 	}
 
 	@Override

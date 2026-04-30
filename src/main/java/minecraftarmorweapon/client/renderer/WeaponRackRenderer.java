@@ -3,6 +3,8 @@ package minecraftarmorweapon.client.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 
+import org.joml.Quaternionf;
+
 import minecraftarmorweapon.entity.WeaponRackEntity;
 
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -78,6 +80,29 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 		TagKey.create(net.minecraft.core.registries.Registries.ITEM,
 			new ResourceLocation(MODID, "tridents"));
 
+	/**
+	 * pk_racks (KawaMood) の ground rack 用 sword/tool 6 ポーズ。
+	 * Quaternion (x, y, z, w) は pk_racks のデータパックから移植。
+	 * シフト+空手で右クリックで 0→1→...→5→0 と循環。
+	 */
+	public static final Quaternionf[] FLOOR_POSES = {
+		new Quaternionf(0.653f, 0.271f,  0.653f,  0.271f),
+		new Quaternionf(0.854f, 0.354f,  0.354f,  0.146f),
+		new Quaternionf(0.854f, 0.354f, -0.354f, -0.146f),
+		new Quaternionf(0.653f, 0.271f, -0.653f, -0.271f),
+		new Quaternionf(0.354f, 0.146f, -0.854f, -0.354f),
+		new Quaternionf(0.354f, 0.146f,  0.854f,  0.354f),
+	};
+
+	/**
+	 * 壁ラック用 4 ポーズ。zRot を変えるだけのシンプル版。
+	 *   pose 0: 水平 (左右の腕に乗る)
+	 *   pose 1: 右肩下がり (右の腕に立てかけ)
+	 *   pose 2: 左肩下がり (左の腕に立てかけ)
+	 *   pose 3: 縦 (両腕の隙間に縦差し込み)
+	 */
+	private static final float[] WALL_POSE_Z_ROT = { 90f, 45f, 135f, 0f };
+
 	private final ItemRenderer itemRenderer;
 	private final BlockRenderDispatcher blockRenderer;
 
@@ -108,17 +133,18 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 		boolean invisible = entity.isInvisible();
 		ItemStack stack = entity.getItem();
 		int rotation = entity.getRotation();
-		poseStack.mulPose(Axis.ZP.rotationDegrees(rotation * 360.0F / 8.0F));
 
+		// vanilla ItemFrameRenderer と同様、ブロックモデルは回転スロットの影響を受けず固定配置。
+		// 回転スロット (rotation slot) はアイテム表示にのみ適用する。
 		if (!invisible) {
-			// 天井 (DOWN) → チェーン版 / 床 (UP) → A-frame スタンド / 壁 (横) → pk_racks オーク
+			// 天井 (DOWN) → チェーン版 / 床 (UP) → A-frame スタンド / 壁 (横) → 壁掛けフック
 			ResourceLocation modelRL;
 			if (facing == Direction.DOWN) {
 				modelRL = MODEL_CHAIN;
 			} else if (facing == Direction.UP) {
 				modelRL = MODEL_STAND;
 			} else {
-				modelRL = MODEL_PK_OAK;
+				modelRL = MODEL_HOOK;
 			}
 			poseStack.pushPose();
 			poseStack.translate(-0.5F, -0.5F, -0.5F);
@@ -135,7 +161,7 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 		}
 
 		if (!stack.isEmpty()) {
-			// Arsenal (doctor4t) と同じ default 値に統一:
+			// 武器の種類別の scale / zRot デフォルト
 			//   default       : zRot 135°, scale 0.85
 			//   big_weapons   : scale 1.6
 			//   ranged_weapons: zRot 45°
@@ -156,18 +182,43 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 			if (stack.is(TRIDENTS)) {
 				zRot = -45f;
 			}
-			// 壁掛け (横方向) ラックは2つのフックに武器を水平に乗せるデザインなので zRot 90° に上書き
-			// （default 135° の剣のみ。盾・弓・トライデントは個別 zRot を維持）
-			if (facing.getAxis().isHorizontal() && zRot == 135f) {
-				zRot = 90f;
-			}
-			poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
 
+			boolean horizontalWallRack = facing.getAxis().isHorizontal();
+			boolean floorRack = facing == Direction.UP;
+
+			// rotation スロットを pk_racks 風の pose index として使う
+			// (シフト+右クリックで cycle される)
+			int pose = rotation;
 			float zFightOffset = Mth.getSeed(entity.getBlockX(), entity.getBlockY(), entity.getBlockZ()) * 0.00000000000000001f;
-			if (invisible) {
-				poseStack.translate(zFightOffset, zFightOffset, 0.4375F + zFightOffset);
+
+			if (floorRack) {
+				// 床ラック: pk_racks の 6 ポーズ用 quaternion を直接適用。
+				// pk_racks の left position translation [0.155, 0.168, 0] のうち X は左右オフセットなので、
+				// 単一武器の中心配置では Y のみ採用 (0.168)。
+				poseStack.translate(zFightOffset, 0.168f + zFightOffset, zFightOffset);
+				poseStack.mulPose(FLOOR_POSES[pose % FLOOR_POSES.length]);
+			} else if (horizontalWallRack) {
+				// 壁ラック: pose index で zRot を上書き (default 135° の剣のみ)
+				if (zRot == 135f) {
+					zRot = WALL_POSE_Z_ROT[pose % WALL_POSE_Z_ROT.length];
+				}
+				// 斜め腕の上端 (model y≈14) に剣が乗るように持ち上げる
+				poseStack.translate(0F, 0.375F, 0F);
+				poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
+				if (invisible) {
+					poseStack.translate(zFightOffset, zFightOffset, 0.4375F + zFightOffset);
+				} else {
+					poseStack.translate(zFightOffset, zFightOffset, 0.3F + zFightOffset);
+				}
 			} else {
-				poseStack.translate(zFightOffset, zFightOffset, 0.3F + zFightOffset);
+				// 天井ラック (DOWN): デフォルト動作 (rotation slot を ZP に直接適用)
+				poseStack.mulPose(Axis.ZP.rotationDegrees(rotation * 360.0F / 8.0F));
+				poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
+				if (invisible) {
+					poseStack.translate(zFightOffset, zFightOffset, 0.4375F + zFightOffset);
+				} else {
+					poseStack.translate(zFightOffset, zFightOffset, 0.3F + zFightOffset);
+				}
 			}
 
 			poseStack.scale(scale, scale, scale);
