@@ -408,5 +408,13 @@
   "item.minecraft_armor_weapon.angel_serious_spawn_egg": "??? スポーンエッグ",
   "item.minecraft_armor_weapon.angel_mocker1_spawn_egg": "??? スポーンエッグ",
   "item.minecraft_armor_weapon.angel_mocker2_spawn_egg": "??? スポーンエッグ",
-  "enchantment.minecraft_armor_weapon.reel_in": "強引き寄せ"
+  "enchantment.minecraft_armor_weapon.reel_in": "強引き寄せ",
+  "key.categories.minecraft_armor_weapon.rack": "武器ラック編集",
+  "key.minecraft_armor_weapon.rack_x_plus": "ラック: X軸+回転",
+  "key.minecraft_armor_weapon.rack_x_minus": "ラック: X軸-回転",
+  "key.minecraft_armor_weapon.rack_y_plus": "ラック: Y軸+回転",
+  "key.minecraft_armor_weapon.rack_y_minus": "ラック: Y軸-回転",
+  "key.minecraft_armor_weapon.rack_z_plus": "ラック: Z軸+回転",
+  "key.minecraft_armor_weapon.rack_z_minus": "ラック: Z軸-回転",
+  "key.minecraft_armor_weapon.rack_reset": "ラック: 回転リセット"
 }

@@ -2,8 +2,8 @@
 	"format_version": "1.21.11",
 	"credit": "Wall weapon rack: tall vertical wooden post on wall + diagonal wooden arm at 45 degrees from middle of post",
 	"textures": {
-		"particle": "block/oak_planks",
-		"wood": "block/oak_planks"
+		"particle": "minecraft:block/oak_planks",
+		"wood": "minecraft:block/oak_planks"
 	},
 	"elements": [
 		{

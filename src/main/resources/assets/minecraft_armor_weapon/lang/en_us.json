@@ -412,5 +412,13 @@
   "item.minecraft_armor_weapon.angel_serious_spawn_egg": "Angel Serious Spawn Egg",
   "item.minecraft_armor_weapon.angel_mocker1_spawn_egg": "Angel Mocker1 Spawn Egg",
   "item.minecraft_armor_weapon.angel_mocker2_spawn_egg": "Angel Mocker2 Spawn Egg",
-  "enchantment.minecraft_armor_weapon.reel_in": "Reel In"
+  "enchantment.minecraft_armor_weapon.reel_in": "Reel In",
+  "key.categories.minecraft_armor_weapon.rack": "Weapon Rack Edit",
+  "key.minecraft_armor_weapon.rack_x_plus": "Rack: Rotate X +",
+  "key.minecraft_armor_weapon.rack_x_minus": "Rack: Rotate X -",
+  "key.minecraft_armor_weapon.rack_y_plus": "Rack: Rotate Y +",
+  "key.minecraft_armor_weapon.rack_y_minus": "Rack: Rotate Y -",
+  "key.minecraft_armor_weapon.rack_z_plus": "Rack: Rotate Z +",
+  "key.minecraft_armor_weapon.rack_z_minus": "Rack: Rotate Z -",
+  "key.minecraft_armor_weapon.rack_reset": "Rack: Reset Rotation"
 }

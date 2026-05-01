@@ -5,6 +5,10 @@ import minecraftarmorweapon.init.CustomEntityInit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -15,9 +19,12 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.function.Predicate;
 
@@ -32,6 +39,22 @@ public class WeaponRackEntity extends ItemFrame {
 
 	private static final Predicate<Entity> HANGING_PREDICATE = e -> e instanceof HangingEntity;
 
+	// ホットキー編集で蓄積される追加回転 (degrees)。プリセットポーズの上に乗る。
+	private static final EntityDataAccessor<Float> DATA_EXTRA_ROT_X =
+		SynchedEntityData.defineId(WeaponRackEntity.class, EntityDataSerializers.FLOAT);
+	private static final EntityDataAccessor<Float> DATA_EXTRA_ROT_Y =
+		SynchedEntityData.defineId(WeaponRackEntity.class, EntityDataSerializers.FLOAT);
+	private static final EntityDataAccessor<Float> DATA_EXTRA_ROT_Z =
+		SynchedEntityData.defineId(WeaponRackEntity.class, EntityDataSerializers.FLOAT);
+
+	// 床ラック専用: 2 個目のアイテムスロット (右側)。
+	// 1 個目 (左側) は ItemFrame の DATA_ITEM をそのまま使う。
+	private static final EntityDataAccessor<ItemStack> DATA_ITEM_2 =
+		SynchedEntityData.defineId(WeaponRackEntity.class, EntityDataSerializers.ITEM_STACK);
+
+	// interactAt で記録した最後のクリック位置 (world coords)。interact で使う。
+	private Vec3 lastInteractAt = null;
+
 	public WeaponRackEntity(EntityType<? extends WeaponRackEntity> type, Level level) {
 		super(type, level);
 	}
@@ -45,32 +68,161 @@ public class WeaponRackEntity extends ItemFrame {
 	}
 
 	@Override
+	protected void defineSynchedData() {
+		super.defineSynchedData();
+		this.entityData.define(DATA_EXTRA_ROT_X, 0f);
+		this.entityData.define(DATA_EXTRA_ROT_Y, 0f);
+		this.entityData.define(DATA_EXTRA_ROT_Z, 0f);
+		this.entityData.define(DATA_ITEM_2, ItemStack.EMPTY);
+	}
+
+	@Override
+	public void addAdditionalSaveData(CompoundTag tag) {
+		super.addAdditionalSaveData(tag);
+		tag.putFloat("ExtraRotX", this.getExtraRotX());
+		tag.putFloat("ExtraRotY", this.getExtraRotY());
+		tag.putFloat("ExtraRotZ", this.getExtraRotZ());
+		if (!this.getItem2().isEmpty()) {
+			tag.put("Item2", this.getItem2().save(new CompoundTag()));
+		}
+	}
+
+	@Override
+	public void readAdditionalSaveData(CompoundTag tag) {
+		super.readAdditionalSaveData(tag);
+		this.entityData.set(DATA_EXTRA_ROT_X, tag.getFloat("ExtraRotX"));
+		this.entityData.set(DATA_EXTRA_ROT_Y, tag.getFloat("ExtraRotY"));
+		this.entityData.set(DATA_EXTRA_ROT_Z, tag.getFloat("ExtraRotZ"));
+		if (tag.contains("Item2")) {
+			this.setItem2(ItemStack.of(tag.getCompound("Item2")));
+		} else {
+			this.setItem2(ItemStack.EMPTY);
+		}
+	}
+
+	public ItemStack getItem2() { return this.entityData.get(DATA_ITEM_2); }
+	public void setItem2(ItemStack stack) {
+		ItemStack copy = stack.isEmpty() ? ItemStack.EMPTY : stack.copy();
+		if (!copy.isEmpty()) copy.setCount(1);
+		this.entityData.set(DATA_ITEM_2, copy);
+	}
+
+	/** 床 + 壁ラックは 2 スロット対応。天井のみ 1 スロット。 */
+	public boolean supportsTwoSlots() {
+		Direction d = this.getDirection();
+		return d == Direction.UP || (d != null && d.getAxis().isHorizontal());
+	}
+
+	/**
+	 * クリック位置からスロット 2 (右側) かを判定。
+	 *   床/天井: hit.x > 0 で右側 (model の長軸 X 上の右)
+	 *   壁: facing の counter-clockwise 方向 (= プレイヤー視点の右) に projection
+	 */
+	private boolean isHittingSlot2Side(Vec3 hit) {
+		Direction d = this.getDirection();
+		if (d == null) return false;
+		if (d.getAxis() == Direction.Axis.Y) {
+			return hit.x > 0;
+		}
+		Direction right = d.getCounterClockWise();
+		double dot = hit.x * right.getStepX() + hit.z * right.getStepZ();
+		return dot > 0;
+	}
+
+	public float getExtraRotX() { return this.entityData.get(DATA_EXTRA_ROT_X); }
+	public float getExtraRotY() { return this.entityData.get(DATA_EXTRA_ROT_Y); }
+	public float getExtraRotZ() { return this.entityData.get(DATA_EXTRA_ROT_Z); }
+
+	public void setExtraRotX(float v) { this.entityData.set(DATA_EXTRA_ROT_X, normalizeDeg(v)); }
+	public void setExtraRotY(float v) { this.entityData.set(DATA_EXTRA_ROT_Y, normalizeDeg(v)); }
+	public void setExtraRotZ(float v) { this.entityData.set(DATA_EXTRA_ROT_Z, normalizeDeg(v)); }
+
+	public void resetExtraRot() {
+		this.entityData.set(DATA_EXTRA_ROT_X, 0f);
+		this.entityData.set(DATA_EXTRA_ROT_Y, 0f);
+		this.entityData.set(DATA_EXTRA_ROT_Z, 0f);
+	}
+
+	private static float normalizeDeg(float v) {
+		v = v % 360f;
+		if (v > 180f) v -= 360f;
+		if (v < -180f) v += 360f;
+		return v;
+	}
+
+	@Override
+	public InteractionResult interactAt(Player player, Vec3 vec, InteractionHand hand) {
+		// クリック位置を保存して interact() で参照する。Vec3 は entity 座標系のオフセット。
+		this.lastInteractAt = vec;
+		return InteractionResult.PASS;
+	}
+
+	@Override
 	public InteractionResult interact(Player player, InteractionHand hand) {
 		ItemStack stackInHand = player.getItemInHand(hand);
+		boolean handHasItem = !stackInHand.isEmpty();
+		boolean twoSlots = this.supportsTwoSlots();
 
-		// Sneak+右クリック with 武器入り + 空手: pk_racks 風のポーズ切り替え
-		// 床ラックは 6 ポーズ、壁ラックは 4 ポーズ、天井は 1 ポーズ。
-		if (player.isShiftKeyDown()
-				&& !this.getItem().isEmpty()
-				&& stackInHand.isEmpty()) {
+		// クリック位置からスロット判別 (右側 = slot 2)。
+		boolean useSlot2 = twoSlots && this.lastInteractAt != null && isHittingSlot2Side(this.lastInteractAt);
+		this.lastInteractAt = null;
+
+		ItemStack slotItem = useSlot2 ? this.getItem2() : this.getItem();
+		boolean slotHasItem = !slotItem.isEmpty();
+		boolean anyHasItem = !this.getItem().isEmpty() || !this.getItem2().isEmpty();
+
+		// Sneak+右クリック with 何かアイテム入り + 空手 → ポーズ切り替え
+		if (player.isShiftKeyDown() && anyHasItem && !handHasItem) {
 			int poseCount = poseCountForDirection(this.getDirection());
 			int nextPose = (this.getRotation() + 1) % poseCount;
 			this.setRotation(nextPose);
 			return InteractionResult.SUCCESS;
 		}
 
-		if (!this.getItem().isEmpty()
-				|| (this.getItem().isEmpty() && stackInHand.is(DISPLAYABLE))) {
-			return super.interact(player, hand);
+		// 該当スロットが空 + displayable アイテムを持っている → 設置
+		if (!slotHasItem && stackInHand.is(DISPLAYABLE)) {
+			if (!this.level().isClientSide()) {
+				ItemStack toPlace = stackInHand.copy();
+				toPlace.setCount(1);
+				if (useSlot2) {
+					this.setItem2(toPlace);
+				} else {
+					this.setItem(toPlace);
+				}
+				if (!player.getAbilities().instabuild) {
+					stackInHand.shrink(1);
+				}
+			}
+			return InteractionResult.sidedSuccess(this.level().isClientSide());
 		}
+
+		// 該当スロットに既にアイテム入り + 空手 → アイテムを取り戻す
+		if (slotHasItem && !handHasItem && !player.isShiftKeyDown()) {
+			if (!this.level().isClientSide()) {
+				ItemStack item = slotItem.copy();
+				if (useSlot2) {
+					this.setItem2(ItemStack.EMPTY);
+				} else {
+					this.setItem(ItemStack.EMPTY);
+				}
+				if (!player.getAbilities().instabuild) {
+					if (!player.getInventory().add(item)) {
+						player.drop(item, false);
+					}
+				}
+			}
+			return InteractionResult.sidedSuccess(this.level().isClientSide());
+		}
+
+		// それ以外は何もしない (vanilla の rotation slot 自動インクリメントを抑制)
 		return InteractionResult.PASS;
 	}
 
-	/** pk_racks 仕様: ground=6 / wall=4 / ceiling=1 */
+	/** ground=6 (pk_racks準拠) / wall=8 (45°刻み) / ceiling=1 */
 	public static int poseCountForDirection(Direction direction) {
 		if (direction == Direction.UP) return 6;
 		if (direction == Direction.DOWN) return 1;
-		return 4;
+		return 8;
 	}
 
 	@Override
@@ -83,6 +235,48 @@ public class WeaponRackEntity extends ItemFrame {
 		return this.level().getEntities(this, this.getBoundingBox(), HANGING_PREDICATE).isEmpty();
 	}
 
+	/**
+	 * デフォルトの ItemFrame hitbox は薄い板状で、立体的なラックには小さすぎる。
+	 * facing に応じてラック本体をカバーするように拡張する。
+	 *   床 (UP): 1ブロック立方体 (脚〜天板)
+	 *   天井 (DOWN): 1ブロック立方体 (チェーン〜フック)
+	 *   壁 (横): 0.5ブロック前方 + 1ブロック高 (ポスト + 斜め腕)
+	 */
+	@Override
+	protected void recalculateBoundingBox() {
+		super.recalculateBoundingBox();
+		Direction dir = this.getDirection();
+		if (dir == null) return;
+		double cx = this.getX();
+		double cy = this.getY();
+		double cz = this.getZ();
+		AABB box;
+		if (dir == Direction.UP) {
+			// 床ラック: 床に乗る 1 ブロック立方体
+			box = new AABB(cx - 0.5, cy - 0.03, cz - 0.5, cx + 0.5, cy + 0.97, cz + 0.5);
+		} else if (dir == Direction.DOWN) {
+			// 天井ラック: 天井から下に 1 ブロック
+			box = new AABB(cx - 0.5, cy - 0.97, cz - 0.5, cx + 0.5, cy + 0.03, cz + 0.5);
+		} else {
+			// 壁ラック: 1ブロック高、壁から前方 (facing 方向) に 0.5 ブロック張り出し。
+			// entity は壁面から +0.03 内側にあるので、facing 方向に +0.5 伸ばすだけで概ねカバー。
+			double sx = dir.getStepX();
+			double sz = dir.getStepZ();
+			if (dir.getAxis() == Direction.Axis.X) {
+				// EAST/WEST: X方向に伸ばす、Y/Zは1ブロック幅
+				box = new AABB(
+					Math.min(cx, cx + sx * 0.5) - 0.05, cy - 0.5, cz - 0.5,
+					Math.max(cx, cx + sx * 0.5) + 0.05, cy + 0.5, cz + 0.5);
+			} else {
+				// NORTH/SOUTH: Z方向に伸ばす、X/Yは1ブロック幅
+				box = new AABB(
+					cx - 0.5, cy - 0.5, Math.min(cz, cz + sz * 0.5) - 0.05,
+					cx + 0.5, cy + 0.5, Math.max(cz, cz + sz * 0.5) + 0.05);
+			}
+		}
+		this.setBoundingBox(box);
+	}
+
 	@Override
 	protected ItemStack getFrameItemStack() {
 		return new ItemStack(CustomEntityInit.WEAPON_RACK_ITEM.get());
@@ -90,8 +284,43 @@ public class WeaponRackEntity extends ItemFrame {
 
 	@Override
 	public boolean isInvulnerableTo(DamageSource source) {
+		// 両スロットが空のとき + プレイヤーが non-sneak で攻撃 → 無敵 (壊れない)
 		return source.getEntity() instanceof Player p
 			&& this.getItem().isEmpty()
+			&& this.getItem2().isEmpty()
 			&& !p.isShiftKeyDown();
+	}
+
+	/**
+	 * 両スロットの drop を処理する hurt オーバーライド。
+	 *   slot 1 にアイテムあり → slot 1 をドロップ (フレームは残る)
+	 *   slot 1 空 + slot 2 にアイテムあり → slot 2 をドロップ (フレームは残る)
+	 *   両方空 → vanilla に委ねる (フレーム破壊)
+	 */
+	@Override
+	public boolean hurt(DamageSource source, float amount) {
+		if (this.isInvulnerableTo(source)) return false;
+		if (!source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) && !this.level().isClientSide()) {
+			boolean creative = source.getEntity() instanceof Player p && p.getAbilities().instabuild;
+			if (!this.getItem().isEmpty()) {
+				ItemStack item = this.getItem().copy();
+				this.setItem(ItemStack.EMPTY);
+				if (!creative) spawnDrop(item);
+				return true;
+			}
+			if (!this.getItem2().isEmpty()) {
+				ItemStack item = this.getItem2().copy();
+				this.setItem2(ItemStack.EMPTY);
+				if (!creative) spawnDrop(item);
+				return true;
+			}
+		}
+		return super.hurt(source, amount);
+	}
+
+	private void spawnDrop(ItemStack stack) {
+		ItemEntity drop = new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), stack);
+		drop.setDefaultPickUpDelay();
+		this.level().addFreshEntity(drop);
 	}
 }

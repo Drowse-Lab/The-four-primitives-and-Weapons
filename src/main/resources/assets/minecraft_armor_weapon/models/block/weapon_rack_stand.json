@@ -2,8 +2,8 @@
 	"format_version": "1.21.11",
 	"credit": "Custom: sawhorse-style floor weapon rack (oak), X-axis splayed legs (front legs tilt forward, back legs tilt backward), inspired by pk_racks (KawaMood)",
 	"textures": {
-		"particle": "block/oak_planks",
-		"wood": "block/oak_planks"
+		"particle": "minecraft:block/oak_planks",
+		"wood": "minecraft:block/oak_planks"
 	},
 	"elements": [
 		{
@@ -38,7 +38,7 @@
 			"name": "front_left_leg",
 			"from": [0, -1.8, 6.25],
 			"to": [2, 14.95, 8.25],
-			"rotation": {"angle": 25, "axis": "x", "origin": [1, 12.75, 7.25]},
+			"rotation": {"angle": 22.5, "axis": "x", "origin": [1, 12.75, 7.25]},
 			"faces": {
 				"north": {"uv": [3, 0, 5, 14], "texture": "#wood"},
 				"east": {"uv": [3, 0, 5, 14], "texture": "#wood"},
@@ -52,7 +52,7 @@
 			"name": "front_right_leg",
 			"from": [14, -1.8, 6.25],
 			"to": [16, 14.95, 8.25],
-			"rotation": {"angle": 25, "axis": "x", "origin": [15, 12.75, 7.25]},
+			"rotation": {"angle": 22.5, "axis": "x", "origin": [15, 12.75, 7.25]},
 			"faces": {
 				"north": {"uv": [11, 0, 13, 14], "texture": "#wood"},
 				"east": {"uv": [11, 0, 13, 14], "texture": "#wood"},
@@ -66,7 +66,7 @@
 			"name": "back_left_leg",
 			"from": [0, -1.85, 7.925],
 			"to": [2, 14.9, 9.925],
-			"rotation": {"angle": -25, "axis": "x", "origin": [1, 12.75, 8.7531]},
+			"rotation": {"angle": -22.5, "axis": "x", "origin": [1, 12.75, 8.7531]},
 			"faces": {
 				"north": {"uv": [3, 0, 5, 14], "texture": "#wood"},
 				"east": {"uv": [3, 0, 5, 14], "texture": "#wood"},
@@ -80,7 +80,7 @@
 			"name": "back_right_leg",
 			"from": [14, -1.85, 7.925],
 			"to": [16, 14.9, 9.925],
-			"rotation": {"angle": -25, "axis": "x", "origin": [15, 12.75, 8.75309]},
+			"rotation": {"angle": -22.5, "axis": "x", "origin": [15, 12.75, 8.75309]},
 			"faces": {
 				"north": {"uv": [11, 0, 13, 14], "texture": "#wood"},
 				"east": {"uv": [11, 0, 13, 14], "texture": "#wood"},

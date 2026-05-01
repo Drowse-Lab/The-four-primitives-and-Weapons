@@ -95,13 +95,17 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 	};
 
 	/**
-	 * 壁ラック用 4 ポーズ。zRot を変えるだけのシンプル版。
-	 *   pose 0: 水平 (左右の腕に乗る)
-	 *   pose 1: 右肩下がり (右の腕に立てかけ)
-	 *   pose 2: 左肩下がり (左の腕に立てかけ)
-	 *   pose 3: 縦 (両腕の隙間に縦差し込み)
+	 * 壁ラック用 8 ポーズ。45° 刻みで全方向回転。
+	 *   pose 0:   90° (水平、柄が右)
+	 *   pose 1:   45° (右上斜め)
+	 *   pose 2:    0° (縦、刃が上)
+	 *   pose 3:  -45° (左上斜め)
+	 *   pose 4:  -90° (水平ミラー、柄が左)
+	 *   pose 5: -135° (左下斜め)
+	 *   pose 6:  180° (縦、刃が下、傘立て差し込み)
+	 *   pose 7:  135° (右下斜め)
 	 */
-	private static final float[] WALL_POSE_Z_ROT = { 90f, 45f, 135f, 0f };
+	private static final float[] WALL_POSE_Z_ROT = { 90f, 45f, 0f, -45f, -90f, -135f, 180f, 135f };
 
 	private final ItemRenderer itemRenderer;
 	private final BlockRenderDispatcher blockRenderer;
@@ -160,82 +164,127 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 			poseStack.popPose();
 		}
 
-		if (!stack.isEmpty()) {
-			// 武器の種類別の scale / zRot デフォルト
-			//   default       : zRot 135°, scale 0.85
-			//   big_weapons   : scale 1.6
-			//   ranged_weapons: zRot 45°
-			//   shields       : scale 1.8, zRot 0°
-			//   tridents      : zRot -45°
+		boolean horizontalWallRack = facing.getAxis().isHorizontal();
+		boolean floorRack = facing == Direction.UP;
+		float zFightOffset = Mth.getSeed(entity.getBlockX(), entity.getBlockY(), entity.getBlockZ()) * 0.00000000000000001f;
+
+		// 床ラック・壁ラックは 2 スロット (slot 1 / slot 2)。天井ラックは slot 1 のみ。
+		ItemStack stack2 = entity.getItem2();
+		if (floorRack) {
+			if (!stack.isEmpty()) {
+				poseStack.pushPose();
+				renderItemForFloor(entity, stack, true, rotation, zFightOffset, poseStack, buffer, packedLight);
+				poseStack.popPose();
+			}
+			if (!stack2.isEmpty()) {
+				poseStack.pushPose();
+				renderItemForFloor(entity, stack2, false, rotation, zFightOffset, poseStack, buffer, packedLight);
+				poseStack.popPose();
+			}
+		} else if (horizontalWallRack) {
+			if (!stack.isEmpty()) {
+				poseStack.pushPose();
+				renderItemForWall(entity, stack, true, rotation, invisible, zFightOffset, poseStack, buffer, packedLight);
+				poseStack.popPose();
+			}
+			if (!stack2.isEmpty()) {
+				poseStack.pushPose();
+				renderItemForWall(entity, stack2, false, rotation, invisible, zFightOffset, poseStack, buffer, packedLight);
+				poseStack.popPose();
+			}
+		} else if (!stack.isEmpty()) {
+			// 天井ラック (DOWN): 1 スロット
 			float zRot = 135f;
 			float scale = 0.85f;
-			if (stack.is(BIG_WEAPONS)) {
-				scale = 1.6f;
-			}
-			if (stack.is(RANGED_WEAPONS)) {
-				zRot = 45f;
-			}
-			if (stack.is(SHIELDS)) {
-				scale = 1.8f;
-				zRot = 0f;
-			}
-			if (stack.is(TRIDENTS)) {
-				zRot = -45f;
-			}
+			if (stack.is(BIG_WEAPONS)) scale = 1.6f;
+			if (stack.is(RANGED_WEAPONS)) zRot = 45f;
+			if (stack.is(SHIELDS)) { scale = 1.8f; zRot = 0f; }
+			if (stack.is(TRIDENTS)) zRot = -45f;
 
-			boolean horizontalWallRack = facing.getAxis().isHorizontal();
-			boolean floorRack = facing == Direction.UP;
-
-			// rotation スロットを pk_racks 風の pose index として使う
-			// (シフト+右クリックで cycle される)
-			int pose = rotation;
-			float zFightOffset = Mth.getSeed(entity.getBlockX(), entity.getBlockY(), entity.getBlockZ()) * 0.00000000000000001f;
-
-			if (floorRack) {
-				// 床ラック: pk_racks の 6 ポーズ用 quaternion を直接適用。
-				// pk_racks の left position translation [0.155, 0.168, 0] のうち X は左右オフセットなので、
-				// 単一武器の中心配置では Y のみ採用 (0.168)。
-				poseStack.translate(zFightOffset, 0.168f + zFightOffset, zFightOffset);
-				poseStack.mulPose(FLOOR_POSES[pose % FLOOR_POSES.length]);
-			} else if (horizontalWallRack) {
-				// 壁ラック: pose index で zRot を上書き (default 135° の剣のみ)
-				if (zRot == 135f) {
-					zRot = WALL_POSE_Z_ROT[pose % WALL_POSE_Z_ROT.length];
-				}
-				// 斜め腕の上端 (model y≈14) に剣が乗るように持ち上げる
-				poseStack.translate(0F, 0.375F, 0F);
-				poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
-				if (invisible) {
-					poseStack.translate(zFightOffset, zFightOffset, 0.4375F + zFightOffset);
-				} else {
-					poseStack.translate(zFightOffset, zFightOffset, 0.3F + zFightOffset);
-				}
+			poseStack.mulPose(Axis.ZP.rotationDegrees(rotation * 360.0F / 8.0F));
+			poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
+			if (invisible) {
+				poseStack.translate(zFightOffset, zFightOffset, 0.4375F + zFightOffset);
 			} else {
-				// 天井ラック (DOWN): デフォルト動作 (rotation slot を ZP に直接適用)
-				poseStack.mulPose(Axis.ZP.rotationDegrees(rotation * 360.0F / 8.0F));
-				poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
-				if (invisible) {
-					poseStack.translate(zFightOffset, zFightOffset, 0.4375F + zFightOffset);
-				} else {
-					poseStack.translate(zFightOffset, zFightOffset, 0.3F + zFightOffset);
-				}
+				poseStack.translate(zFightOffset, zFightOffset, 0.3F + zFightOffset);
 			}
 
+			applyExtraRotation(entity, poseStack);
 			poseStack.scale(scale, scale, scale);
 
 			this.itemRenderer.renderStatic(
-				stack,
-				ItemDisplayContext.FIXED,
-				packedLight,
-				OverlayTexture.NO_OVERLAY,
-				poseStack,
-				buffer,
-				entity.level(),
-				entity.getId()
+				stack, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY,
+				poseStack, buffer, entity.level(), entity.getId()
 			);
 		}
 
 		poseStack.popPose();
+	}
+
+	private static void applyExtraRotation(WeaponRackEntity entity, PoseStack poseStack) {
+		float exX = entity.getExtraRotX();
+		float exY = entity.getExtraRotY();
+		float exZ = entity.getExtraRotZ();
+		if (exX != 0f) poseStack.mulPose(Axis.XP.rotationDegrees(exX));
+		if (exY != 0f) poseStack.mulPose(Axis.YP.rotationDegrees(exY));
+		if (exZ != 0f) poseStack.mulPose(Axis.ZP.rotationDegrees(exZ));
+	}
+
+	/** 床ラック (sawhorse) で 1 つのアイテムを描画。slot1=true なら左、false なら右側にオフセット。 */
+	private void renderItemForFloor(WeaponRackEntity entity, ItemStack stack, boolean isSlot1,
+									int rotation, float zFightOffset,
+									PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+		float scale = 0.85f;
+		if (stack.is(BIG_WEAPONS)) scale = 1.6f;
+		if (stack.is(SHIELDS)) scale = 1.8f;
+
+		// pk_racks 風の左右オフセット (pose stack +X = world -X なので slot1 = +0.155 で world 西側に表示)
+		float xOffset = isSlot1 ? +0.155f : -0.155f;
+		poseStack.translate(xOffset + zFightOffset, 0.168f + zFightOffset, zFightOffset);
+		poseStack.mulPose(FLOOR_POSES[rotation % FLOOR_POSES.length]);
+
+		applyExtraRotation(entity, poseStack);
+		poseStack.scale(scale, scale, scale);
+
+		this.itemRenderer.renderStatic(
+			stack, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY,
+			poseStack, buffer, entity.level(), entity.getId()
+		);
+	}
+
+	/** 壁ラックで 1 つのアイテムを描画。slot1=true なら左、false なら右側にオフセット。 */
+	private void renderItemForWall(WeaponRackEntity entity, ItemStack stack, boolean isSlot1,
+								   int rotation, boolean invisible, float zFightOffset,
+								   PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+		float zRot = 135f;
+		float scale = 0.85f;
+		if (stack.is(BIG_WEAPONS)) scale = 1.6f;
+		if (stack.is(RANGED_WEAPONS)) zRot = 45f;
+		if (stack.is(SHIELDS)) { scale = 1.8f; zRot = 0f; }
+		if (stack.is(TRIDENTS)) zRot = -45f;
+		if (zRot == 135f) {
+			zRot = WALL_POSE_Z_ROT[rotation % WALL_POSE_Z_ROT.length];
+		}
+
+		// pose stack +X = world -X (どの壁の facing 方向でも YP 回転後の +X 方向は player から見た「左」を向く)
+		// → slot1 = +0.2 で player 視点の左に、slot2 = -0.2 で右に表示
+		float xOffset = isSlot1 ? +0.2f : -0.2f;
+		// Y-lift で斜め腕の上端 (model y≈14) に持ち上げる
+		poseStack.translate(xOffset, 0.375F, 0F);
+		poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
+		if (invisible) {
+			poseStack.translate(zFightOffset, zFightOffset, 0.4375F + zFightOffset);
+		} else {
+			poseStack.translate(zFightOffset, zFightOffset, 0.25F + zFightOffset);
+		}
+
+		applyExtraRotation(entity, poseStack);
+		poseStack.scale(scale, scale, scale);
+
+		this.itemRenderer.renderStatic(
+			stack, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY,
+			poseStack, buffer, entity.level(), entity.getId()
+		);
 	}
 
 	@Override
