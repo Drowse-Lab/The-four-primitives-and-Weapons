@@ -35,19 +35,42 @@ public class ClientEventHandler {
     @SubscribeEvent
     public static void onScreenInit(ScreenEvent.Init.Post event) {
         if (event.getScreen() instanceof ControlsScreen controlsScreen) {
+            // vanilla の Done ボタン (width/2 - 100, width 200) を探す
+            AbstractWidget doneButton = null;
+            for (var listener : event.getListenersList()) {
+                if (listener instanceof AbstractWidget widget) {
+                    String msg = widget.getMessage().getString();
+                    if (msg.equals("Done") || msg.equals("完了")) {
+                        doneButton = widget;
+                        break;
+                    }
+                }
+            }
+
+            // vanilla 行 1-3 と同じ X 座標 (左列 width/2-155、右列 width/2+5、150x20)
+            int leftX = controlsScreen.width / 2 - 155;
+            int rightX = controlsScreen.width / 2 + 5;
+            // 行 4 の Y = 元の Done 位置 (vanilla では height/6 - 12 + 72 = height/6 + 60)
+            int rowY = doneButton != null ? doneButton.getY() : controlsScreen.height / 6 + 60;
+
             Button dodgeConfigButton = Button.builder(
-                    Component.literal("回避設定..."),
+                    Component.translatable("screen.minecraft_armor_weapon.dodge_config"),
                     btn -> Minecraft.getInstance().setScreen(new DodgeConfigScreen(controlsScreen)))
-                    .bounds(controlsScreen.width / 2 + 5, controlsScreen.height / 6 + 72 + 24 * 2, 150, 20)
+                    .bounds(leftX, rowY, 150, 20)
                     .build();
             event.addListener(dodgeConfigButton);
 
             Button debugConfigButton = Button.builder(
-                    Component.literal("デバッグ設定..."),
+                    Component.translatable("screen.minecraft_armor_weapon.debug_config"),
                     btn -> Minecraft.getInstance().setScreen(new DebugConfigScreen(controlsScreen)))
-                    .bounds(controlsScreen.width / 2 + 5, controlsScreen.height / 6 + 72 + 24 * 3, 150, 20)
+                    .bounds(rightX, rowY, 150, 20)
                     .build();
             event.addListener(debugConfigButton);
+
+            // 既存の Done ボタンを 1 行下にずらして衝突回避
+            if (doneButton != null) {
+                doneButton.setY(doneButton.getY() + 24);
+            }
         }
 
         if (event.getScreen() instanceof OptionsScreen optionsScreen) {

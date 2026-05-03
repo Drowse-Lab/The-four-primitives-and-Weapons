@@ -40,6 +40,10 @@ public class SkillRegistry {
         public MotionCategory getCategory() { return category; }
         public Set<AttackSlot> getCompatibleSlots() { return compatibleSlots; }
         public String getRequiredWeaponClass() { return requiredWeaponClass; }
+        /** 翻訳キー: motion.minecraft_armor_weapon.&lt;id&gt; (未翻訳の場合は displayName にフォールバック) */
+        public String translationKey() { return "motion.minecraft_armor_weapon." + id; }
+        /** 説明文の翻訳キー: motion.minecraft_armor_weapon.&lt;id&gt;.desc */
+        public String descriptionTranslationKey() { return "motion.minecraft_armor_weapon." + id + ".desc"; }
     }
 
     private static final Map<String, MotionInfo> BY_ID = new LinkedHashMap<>();

@@ -41,6 +41,8 @@ public class PlayerSkillData {
 
         public String getDisplayName() { return displayName; }
         public String getId() { return id; }
+        /** 翻訳キー: attack_slot.minecraft_armor_weapon.&lt;id&gt; */
+        public String translationKey() { return "attack_slot.minecraft_armor_weapon." + id; }
 
         public static AttackSlot fromId(String id) {
             for (AttackSlot slot : values()) {
@@ -68,6 +70,8 @@ public class PlayerSkillData {
 
         public String getDisplayName() { return displayName; }
         public String getId() { return id; }
+        /** 翻訳キー: weapon_proficiency.minecraft_armor_weapon.&lt;id&gt; */
+        public String translationKey() { return "weapon_proficiency.minecraft_armor_weapon." + id; }
 
         public static WeaponProficiency fromId(String id) {
             for (WeaponProficiency p : values()) {

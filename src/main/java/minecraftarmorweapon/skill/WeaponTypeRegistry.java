@@ -73,6 +73,8 @@ public class WeaponTypeRegistry extends SimplePreparableReloadListener<Map<Strin
         public Set<String> getPreferredMotions() { return preferredMotions; }
         public Set<String> getNormalMotions() { return normalMotions; }
         public Set<String> getDislikedMotions() { return dislikedMotions; }
+        /** 翻訳キー: weapon_type.minecraft_armor_weapon.&lt;id&gt; (未翻訳の場合は displayName にフォールバック) */
+        public String translationKey() { return "weapon_type.minecraft_armor_weapon." + id; }
 
         /**
          * 得意技か判定（combatスロット技のみ対象）。

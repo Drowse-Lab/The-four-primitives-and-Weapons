@@ -195,7 +195,9 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                     }
 
                     if (hover && hasWeapon) {
-                        hoveredDescription = weapon.getHoverName().getString() + " \u306E\u6280\u8A2D\u5B9A";
+                        hoveredDescription = Component.translatable(
+                            "screen.minecraft_armor_weapon.skill_selection.weapon_skill_settings",
+                            weapon.getHoverName().getString()).getString();
                     }
                 }
 
@@ -220,12 +222,12 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         // 右側に縦並びでタイプボタンを配置
         for (WeaponTypeRegistry.WeaponTypeData type : types) {
             final String typeId = type.getId();
-            String label = type.getDisplayName();
+            Component labelComp = Component.translatableWithFallback(type.translationKey(), type.getDisplayName());
+            String label = labelComp.getString();
             int btnW = Math.max(20, font.width(label) + 6);
             int bx = btnX - btnW;
 
-            addRenderableWidget(new AbstractButton(bx, btnY, btnW, 10,
-                    Component.literal(label)) {
+            addRenderableWidget(new AbstractButton(bx, btnY, btnW, 10, labelComp) {
                 @Override
                 public void onPress() {
                     selectedLoadoutIndex = -1;
@@ -270,8 +272,9 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         int btnX = leftPos + 3;
         int btnY = topPos + SkillSelectionMenu.INV_START_Y - 16;
 
+        Component currentName = Component.translatable(current.translationKey());
         addRenderableWidget(new AbstractButton(btnX, btnY, btnW, btnH,
-                Component.literal("\u5F97\u610F: " + current.getDisplayName())) {
+                Component.translatable("screen.minecraft_armor_weapon.skill_selection.proficiency", currentName)) {
             @Override
             public void onPress() {
                 WeaponProficiency next = current.next();
@@ -289,7 +292,8 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                 drawBorder(g, getX(), getY(), width, height, COLOR_BORDER);
                 g.drawCenteredString(font, getMessage(), getX() + width / 2, getY() + (height - 8) / 2, COLOR_SLOT_LABEL);
                 if (isHoveredOrFocused()) {
-                    hoveredDescription = "\u30AF\u30EA\u30C3\u30AF\u3067\u5F97\u610F\u6B66\u5668\u30BF\u30A4\u30D7\u3092\u5207\u308A\u66FF\u3048";
+                    hoveredDescription = Component.translatable(
+                        "screen.minecraft_armor_weapon.skill_selection.proficiency_hover").getString();
                 }
             }
 
@@ -320,12 +324,12 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
 
             int btnX = btnAreaLeft;
             for (MotionInfo motion : motions) {
-                int btnWidth = Math.max(28, font.width(motion.getDisplayName()) + 6);
+                Component motionLabel = Component.translatableWithFallback(motion.translationKey(), motion.getDisplayName());
+                int btnWidth = Math.max(28, font.width(motionLabel) + 6);
                 final AttackSlot finalSlot = slot;
                 final MotionInfo finalMotion = motion;
 
-                addRenderableWidget(new AbstractButton(btnX, rowY, btnWidth, btnHeight,
-                        Component.literal(motion.getDisplayName())) {
+                addRenderableWidget(new AbstractButton(btnX, rowY, btnWidth, btnHeight, motionLabel) {
                     @Override
                     public void onPress() {
                         if (selectedTypeId != null) {
@@ -391,7 +395,9 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                             isSelected ? 0x7FFF7F : 0xFFFFFF);
 
                         if (isHover) {
-                            hoveredDescription = finalMotion.getDescription();
+                            hoveredDescription = Component.translatableWithFallback(
+                                finalMotion.descriptionTranslationKey(),
+                                finalMotion.getDescription()).getString();
                         }
                     }
 
@@ -462,11 +468,11 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         drawBorder(g, leftPos, topPos, imageWidth, imageHeight, 0xFF555577);
 
         // ヘッダー（バーなし、テキストのみ）
-        g.drawCenteredString(font, Component.literal("\u2694 \u6280\u306E\u9078\u629E \u2694"),
+        g.drawCenteredString(font, Component.translatable("screen.minecraft_armor_weapon.skill_selection.header"),
             leftPos + imageWidth / 2, topPos + 3, COLOR_HEADER_TEXT);
 
         // 武器スロットセクションラベル
-        g.drawString(font, Component.literal("\u25BC \u6B66\u5668\u30B9\u30ED\u30C3\u30C8"),
+        g.drawString(font, Component.translatable("screen.minecraft_armor_weapon.skill_selection.weapon_slots"),
             leftPos + 4, topPos + 18, COLOR_SLOT_LABEL, false);
 
         // 武器スロットの背景と枠線
@@ -480,7 +486,9 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         String editingLabel;
         if (selectedTypeId != null) {
             WeaponTypeRegistry.WeaponTypeData typeData = WeaponTypeRegistry.getType(selectedTypeId);
-            String typeName = typeData != null ? typeData.getDisplayName() : selectedTypeId;
+            String typeName = typeData != null
+                ? Component.translatableWithFallback(typeData.translationKey(), typeData.getDisplayName()).getString()
+                : selectedTypeId;
             editingLabel = "[ " + typeName + " ]";
         } else if (selectedLoadoutIndex >= 0) {
             ItemStack weapon = menu.getSlot(selectedLoadoutIndex).getItem();
@@ -496,7 +504,7 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         int btnHeight = 14;
         int rowGap = 2;
         for (AttackSlot slot : AttackSlot.values()) {
-            g.drawString(font, Component.literal(slot.getDisplayName()),
+            g.drawString(font, Component.translatable(slot.translationKey()),
                 leftPos + 3, rowY + (btnHeight - 8) / 2, COLOR_SLOT_LABEL, false);
             rowY += btnHeight + rowGap;
         }
@@ -538,7 +546,7 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         }
 
         // "インベントリ" ラベル
-        g.drawString(font, Component.literal("Inventory"),
+        g.drawString(font, Component.translatable("container.inventory"),
             invSlotX, invPanelY + 4, 0xFF404040, false);
     }
 
