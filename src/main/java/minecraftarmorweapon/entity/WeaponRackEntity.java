@@ -169,15 +169,10 @@ public class WeaponRackEntity extends ItemFrame {
 
 		ItemStack slotItem = useSlot2 ? this.getItem2() : this.getItem();
 		boolean slotHasItem = !slotItem.isEmpty();
-		boolean anyHasItem = !this.getItem().isEmpty() || !this.getItem2().isEmpty();
 
-		// Sneak+右クリック with 何かアイテム入り + 空手 → ポーズ切り替え
-		if (player.isShiftKeyDown() && anyHasItem && !handHasItem) {
-			int poseCount = poseCountForDirection(this.getDirection());
-			int nextPose = (this.getRotation() + 1) % poseCount;
-			this.setRotation(nextPose);
-			return InteractionResult.SUCCESS;
-		}
+		// 注: 旧バージョンの「Sneak+右クリックでポーズ循環」は廃止。
+		// 回転は WeaponRackEditKeys のホットキー (Sneak + Q/E/A/D/Z/C) のみで行う。
+		// rotation slot は使わないので、左右反転 (mirror pose) は発生しない。
 
 		// 該当スロットが空 + displayable アイテムを持っている → 設置
 		if (!slotHasItem && stackInHand.is(DISPLAYABLE)) {

@@ -12,7 +12,7 @@
 ;; 前後オフセット (負=後方スポーン、ブロック)
 (define gate-forward-offset -2)
 ;; 垂直オフセット (目の高さ基準、ブロック)
-(define gate-vertical-offset 0.5)
+(define gate-vertical-offset 1.0)
 ;; 初速 (blocks/tick 相当; projectile の deltaMovement 倍率)
 (define gate-shoot-velocity 2.0)
 ;; クールダウン (tick)
@@ -25,7 +25,7 @@
 
 ;; --- ConvergentGateItem (収束型) --------------------------------------
 ;; 収束地点までの距離 (ブロック)
-(define converge-distance 20.0)
+(define converge-distance 20.0) ;; 収束しなくていい
 ;; 左右の展開幅 (±SPREAD、ブロック)
 (define converge-spread 5.0)
 ;; 本数 (≧2; 等間隔配置に 2 以上必要)

@@ -2,7 +2,7 @@
   "_comment": "チャラい男（結んだ長髪・黒髪に赤黒）の会話ツリー",
 
   "start": {
-    "text": "うぇーいｗ何？ｗ",
+    "text": "何？",
     "choices": [
       {"text": "お前誰？", "next": "ask_who"},
       {"text": "何してるの？", "next": "ask_what"},
@@ -13,7 +13,7 @@
   },
 
   "ask_who": {
-    "text": "俺？ｗまぁ天使みたいなもんっしょｗ",
+    "text": "俺？まぁ天使みたいなもんっしょ",
     "choices": [
       {"text": "天使ってキャラじゃないだろ", "next": "not_angel"},
       {"text": "強いの？", "next": "who_strong"},
@@ -22,13 +22,13 @@
     ]
   },
   "not_angel": {
-    "text": "ｗｗたしかにｗでもまぁ中身はいいやつだぜｗ",
+    "text": "たしかに？でも見た目で判断するのは良くないぜ",
     "choices": [
       {"text": "最初に戻る", "next": "start"}
     ]
   },
   "who_strong": {
-    "text": "あー強いよ俺ｗ結構やばいよｗ",
+    "text": "あー強いよ俺そこそこにね",
     "choices": [
       {"text": "自信すごいな", "next": "confident"},
       {"text": "見せてよ", "next": "show_off"},
@@ -36,19 +36,19 @@
     ]
   },
   "confident": {
-    "text": "自信じゃないってｗ事実っしょｗ",
+    "text": "自信じゃないって事実っしょ",
     "choices": [
       {"text": "最初に戻る", "next": "start"}
     ]
   },
   "show_off": {
-    "text": "まぁ今はめんどいからなｗ気が向いたらｗ",
+    "text": "まぁ今はめんどいからな気が向いたら",
     "choices": [
       {"text": "最初に戻る", "next": "start"}
     ]
   },
   "who_why": {
-    "text": "んー、まぁ色々あってさｗ話すとだりーわｗ",
+    "text": "んー、まぁ色々あってさ話すとだりーわ",
     "choices": [
       {"text": "聞かせて", "next": "tell_me"},
       {"text": "最初に戻る", "next": "start"}
@@ -62,7 +62,7 @@
   },
 
   "ask_what": {
-    "text": "んー、暇してるわｗ何かおもろいことねーの？ｗ",
+    "text": "んー、暇してるわ何かおもろいことねーの？",
     "choices": [
       {"text": "一緒に遊ぶ？", "next": "play_together"},
       {"text": "自分で探せ", "next": "find_self"},
@@ -70,7 +70,7 @@
     ]
   },
   "play_together": {
-    "text": "おーいいじゃんｗ何すんの？ｗ",
+    "text": "おーいいじゃん何すんの？",
     "choices": [
       {"text": "冒険しよう", "next": "adventure"},
       {"text": "話するだけでいい", "next": "just_talk"},
@@ -78,26 +78,26 @@
     ]
   },
   "adventure": {
-    "text": "冒険？ｗいいねーｗまぁ動くのだりーけどｗｗ",
+    "text": "冒険？ｗいいねーまぁ動くのだりーけど",
     "choices": [
       {"text": "最初に戻る", "next": "start"}
     ]
   },
   "just_talk": {
-    "text": "あー話すだけな、楽でいいわｗ",
+    "text": "あー話すだけな、楽でいいわ",
     "choices": [
       {"text": "最初に戻る", "next": "start"}
     ]
   },
   "find_self": {
-    "text": "ｗｗ冷たｗまぁ正論だわｗ",
+    "text": "冷た、まぁ正論だわ",
     "choices": [
       {"text": "最初に戻る", "next": "start"}
     ]
   },
 
   "ask_name": {
-    "text": "えー名前？ｗんー内緒ｗ",
+    "text": "えー名前？んー内緒",
     "choices": [
       {"text": "なぜ内緒", "next": "why_secret"},
       {"text": "俺の名前は教えたのに", "next": "not_fair"},
@@ -106,26 +106,26 @@
     ]
   },
   "why_secret": {
-    "text": "うーん、なんとなくｗ気分ｗ",
+    "text": "うーん、なんとなく気分",
     "choices": [
       {"text": "最初に戻る", "next": "start"}
     ]
   },
   "not_fair": {
-    "text": "まぁ教えてねーしｗ気にすんなってｗ",
+    "text": "まぁ教えてねーし気にすんなって",
     "choices": [
       {"text": "最初に戻る", "next": "start"}
     ]
   },
   "stingy": {
-    "text": "ケチじゃねーよｗまぁそのうち教えるってｗ",
+    "text": "ケチじゃねーよまぁそのうち教えるって",
     "choices": [
       {"text": "最初に戻る", "next": "start"}
     ]
   },
 
   "chara": {
-    "text": "ｗまぁそう見えるよなｗでも中身は真面目だぜ？ｗ嘘だけどｗ",
+    "text": "まぁそう見えるよなｗでも中身は真面目だぜ？知らんけど",
     "choices": [
       {"text": "嘘かよ", "next": "lying"},
       {"text": "やっぱチャラいわ", "next": "confirmed"},
@@ -133,20 +133,20 @@
     ]
   },
   "lying": {
-    "text": "ｗｗまぁ半分嘘、半分本当かなｗ",
+    "text": "まぁ半分嘘、半分本当かな",
     "choices": [
       {"text": "最初に戻る", "next": "start"}
     ]
   },
   "confirmed": {
-    "text": "ｗ否定しねーｗまぁそのままで好きでいてくれｗ",
+    "text": "否定しねーまぁそのままで好きでいてくれ",
     "choices": [
       {"text": "最初に戻る", "next": "start"}
     ]
   },
 
   "end_bye": {
-    "text": "おーまたなーｗ",
+    "text": "おーまたなー",
     "end": true
   }
 }

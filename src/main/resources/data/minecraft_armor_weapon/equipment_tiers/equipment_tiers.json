@@ -137,7 +137,7 @@
         "minecraft:stray": {
           "head":     { "item": "minecraft:diamond_helmet",     "chance": 0.80, "drop_chance": 0.0 },
           "chest":    { "item": "minecraft:diamond_chestplate", "chance": 0.70, "drop_chance": 0.0 },
-          "mainhand": { "item": "minecraft:bow", "enchantments": [{"id": "minecraft:power", "level": 4}, {"id": "minecraft:punch", "level": 2}], "chance": 0.95, "drop_chance": 0.0 },
+          "mainhand": { "item": "minecraft:bow", "enchantments": [{"id": "minecraft:power", "level": 4}, {"id": "minecraft:punch", "level": 2}], "chance": 0.95, "drop_chance": 0.2 },
           "offhand":  { "item": "minecraft:shield", "chance": 0.50, "drop_chance": 0.0 }
         },
         "minecraft:wither_skeleton": {

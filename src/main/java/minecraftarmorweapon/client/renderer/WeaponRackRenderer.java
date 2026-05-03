@@ -209,7 +209,6 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 				poseStack.translate(zFightOffset, zFightOffset, 0.3F + zFightOffset);
 			}
 
-			applyExtraRotation(entity, poseStack);
 			poseStack.scale(scale, scale, scale);
 
 			this.itemRenderer.renderStatic(
@@ -219,15 +218,6 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 		}
 
 		poseStack.popPose();
-	}
-
-	private static void applyExtraRotation(WeaponRackEntity entity, PoseStack poseStack) {
-		float exX = entity.getExtraRotX();
-		float exY = entity.getExtraRotY();
-		float exZ = entity.getExtraRotZ();
-		if (exX != 0f) poseStack.mulPose(Axis.XP.rotationDegrees(exX));
-		if (exY != 0f) poseStack.mulPose(Axis.YP.rotationDegrees(exY));
-		if (exZ != 0f) poseStack.mulPose(Axis.ZP.rotationDegrees(exZ));
 	}
 
 	/** 床ラック (sawhorse) で 1 つのアイテムを描画。slot1=true なら左、false なら右側にオフセット。 */
@@ -243,7 +233,6 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 		poseStack.translate(xOffset + zFightOffset, 0.168f + zFightOffset, zFightOffset);
 		poseStack.mulPose(FLOOR_POSES[rotation % FLOOR_POSES.length]);
 
-		applyExtraRotation(entity, poseStack);
 		poseStack.scale(scale, scale, scale);
 
 		this.itemRenderer.renderStatic(
@@ -278,7 +267,6 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 			poseStack.translate(zFightOffset, zFightOffset, 0.25F + zFightOffset);
 		}
 
-		applyExtraRotation(entity, poseStack);
 		poseStack.scale(scale, scale, scale);
 
 		this.itemRenderer.renderStatic(
