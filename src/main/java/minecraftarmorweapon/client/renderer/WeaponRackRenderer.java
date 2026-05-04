@@ -241,31 +241,33 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 		);
 	}
 
-	/** 壁ラックで 1 つのアイテムを描画。slot1=true なら左、false なら右側にオフセット。 */
+	/** 壁ラックで 1 つのアイテムを描画。slot1/slot2 で左右ミラー (handle 外向き / blade 内向き)。
+	 *  rotation スロット (entity.getRotation()) は使わない (古い NBT で 135° などになるのを防ぐ)。 */
 	private void renderItemForWall(WeaponRackEntity entity, ItemStack stack, boolean isSlot1,
 								   int rotation, boolean invisible, float zFightOffset,
 								   PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-		float zRot = 135f;
 		float scale = 0.85f;
 		if (stack.is(BIG_WEAPONS)) scale = 1.6f;
-		if (stack.is(RANGED_WEAPONS)) zRot = 45f;
-		if (stack.is(SHIELDS)) { scale = 1.8f; zRot = 0f; }
-		if (stack.is(TRIDENTS)) zRot = -45f;
-		if (zRot == 135f) {
-			zRot = WALL_POSE_Z_ROT[rotation % WALL_POSE_Z_ROT.length];
+		if (stack.is(SHIELDS)) scale = 1.8f;
+
+		// ★ 壁掛けは「水平・壁に平行」がデフォルト。slot1 と slot2 で左右ミラー。
+		//   slot1 (player 視点の右) : zRot = -90°  (柄が中央側 / 刃先が右へ)
+		//   slot2 (player 視点の左) : zRot = +90°  (柄が中央側 / 刃先が左へ)
+		// 銃 (RANGED) や三叉 (TRIDENT) も同じ向きで揃え、シールドだけ正立。
+		float zRot;
+		if (stack.is(SHIELDS)) {
+			zRot = 0f;
+		} else {
+			zRot = isSlot1 ? -90f : 90f;
 		}
 
-		// pose stack +X = world -X (どの壁の facing 方向でも YP 回転後の +X 方向は player から見た「左」を向く)
-		// → slot1 = +0.2 で player 視点の左に、slot2 = -0.2 で右に表示
-		float xOffset = isSlot1 ? +0.2f : -0.2f;
-		// Y-lift で斜め腕の上端 (model y≈14) に持ち上げる
-		poseStack.translate(xOffset, 0.375F, 0F);
+		// pose stack +X = world -X (YP(180) 後)。slot1 を pose +0.25 (= world -0.25 = player 視点の右)、
+		// slot2 を pose -0.25 (= world +0.25 = player 視点の左) に置く。模型の post 中心 (model x=4 / x=12) と一致。
+		float xOffset = isSlot1 ? +0.25f : -0.25f;
+		// Y は腕の高さに合わせる。壁に近づける為 z オフセットは 0.06 (壁から少し浮かす程度) に絞る。
+		poseStack.translate(xOffset, 0.0F, 0F);
 		poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
-		if (invisible) {
-			poseStack.translate(zFightOffset, zFightOffset, 0.4375F + zFightOffset);
-		} else {
-			poseStack.translate(zFightOffset, zFightOffset, 0.25F + zFightOffset);
-		}
+		poseStack.translate(zFightOffset, zFightOffset, 0.0625F + zFightOffset);
 
 		poseStack.scale(scale, scale, scale);
 

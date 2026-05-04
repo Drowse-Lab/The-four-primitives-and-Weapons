@@ -98,6 +98,10 @@ public class WeaponRackEntity extends ItemFrame {
 		} else {
 			this.setItem2(ItemStack.EMPTY);
 		}
+		// 旧バージョンの NBT 残骸を強制クリア (回転スロットや非表示フラグは現バージョンでは使用しない)。
+		// これがないと既存ラックの剣が斜めに表示される / ラック本体が透明のままになる。
+		this.setRotation(0);
+		this.setInvisible(false);
 	}
 
 	public ItemStack getItem2() { return this.entityData.get(DATA_ITEM_2); }
@@ -160,7 +164,6 @@ public class WeaponRackEntity extends ItemFrame {
 	@Override
 	public InteractionResult interact(Player player, InteractionHand hand) {
 		ItemStack stackInHand = player.getItemInHand(hand);
-		boolean handHasItem = !stackInHand.isEmpty();
 		boolean twoSlots = this.supportsTwoSlots();
 
 		// クリック位置からスロット判別 (右側 = slot 2)。
@@ -170,11 +173,7 @@ public class WeaponRackEntity extends ItemFrame {
 		ItemStack slotItem = useSlot2 ? this.getItem2() : this.getItem();
 		boolean slotHasItem = !slotItem.isEmpty();
 
-		// 注: 旧バージョンの「Sneak+右クリックでポーズ循環」は廃止。
-		// 回転は WeaponRackEditKeys のホットキー (Sneak + Q/E/A/D/Z/C) のみで行う。
-		// rotation slot は使わないので、左右反転 (mirror pose) は発生しない。
-
-		// 該当スロットが空 + displayable アイテムを持っている → 設置
+		// vanilla ItemFrame 風: 該当スロットが空 + displayable アイテム → 設置
 		if (!slotHasItem && stackInHand.is(DISPLAYABLE)) {
 			if (!this.level().isClientSide()) {
 				ItemStack toPlace = stackInHand.copy();
@@ -184,6 +183,9 @@ public class WeaponRackEntity extends ItemFrame {
 				} else {
 					this.setItem(toPlace);
 				}
+				// 古い NBT で rotation や invisible が残ってると見た目が崩れる為、設置時に必ずリセットする。
+				this.setRotation(0);
+				this.setInvisible(false);
 				if (!player.getAbilities().instabuild) {
 					stackInHand.shrink(1);
 				}
@@ -191,25 +193,9 @@ public class WeaponRackEntity extends ItemFrame {
 			return InteractionResult.sidedSuccess(this.level().isClientSide());
 		}
 
-		// 該当スロットに既にアイテム入り + 空手 → アイテムを取り戻す
-		if (slotHasItem && !handHasItem && !player.isShiftKeyDown()) {
-			if (!this.level().isClientSide()) {
-				ItemStack item = slotItem.copy();
-				if (useSlot2) {
-					this.setItem2(ItemStack.EMPTY);
-				} else {
-					this.setItem(ItemStack.EMPTY);
-				}
-				if (!player.getAbilities().instabuild) {
-					if (!player.getInventory().add(item)) {
-						player.drop(item, false);
-					}
-				}
-			}
-			return InteractionResult.sidedSuccess(this.level().isClientSide());
-		}
-
-		// それ以外は何もしない (vanilla の rotation slot 自動インクリメントを抑制)
+		// それ以外は何もしない。
+		// vanilla ItemFrame は filled rack で rotation を自動インクリメントするが、
+		// 本ラックでは回転は行わず、アイテムの取り戻しは「攻撃 (左クリック)」のみで行う (額縁同様)。
 		return InteractionResult.PASS;
 	}
 
@@ -222,7 +208,9 @@ public class WeaponRackEntity extends ItemFrame {
 
 	@Override
 	public boolean isInvisible() {
-		return super.isInvisible() && !this.getItem().isEmpty();
+		// ラックは常に表示する。旧バージョンで Sneak+右クリックで非表示トグルしてた時の
+		// NBT (Invisible: true) が残ってても無視して常に可視に。
+		return false;
 	}
 
 	@Override

@@ -1,4 +1,5 @@
 {
+	"parent": "minecraft:block/block",
 	"credit": "pk_racks oak rack visual by KawaMood (kawamood.com), used under CC BY-NC-SA 4.0",
 	"texture_size": [64, 64],
 	"textures": {
