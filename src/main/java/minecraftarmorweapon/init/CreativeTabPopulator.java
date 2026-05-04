@@ -42,6 +42,16 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.TYOKUTO_SAYA);
 			event.accept(MinecraftArmorWeaponModItems.SWORD_SAYA);
 			event.accept(CustomEntityInit.WEAPON_RACK_ITEM);
+			event.accept(CustomEntityInit.WEAPON_RACK_SPRUCE);
+			event.accept(CustomEntityInit.WEAPON_RACK_BIRCH);
+			event.accept(CustomEntityInit.WEAPON_RACK_JUNGLE);
+			event.accept(CustomEntityInit.WEAPON_RACK_ACACIA);
+			event.accept(CustomEntityInit.WEAPON_RACK_DARK_OAK);
+			event.accept(CustomEntityInit.WEAPON_RACK_MANGROVE);
+			event.accept(CustomEntityInit.WEAPON_RACK_CHERRY);
+			event.accept(CustomEntityInit.WEAPON_RACK_BAMBOO);
+			event.accept(CustomEntityInit.WEAPON_RACK_CRIMSON);
+			event.accept(CustomEntityInit.WEAPON_RACK_WARPED);
 			event.accept(MinecraftArmorWeaponModItems.TEST_BOW);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE_UTIGATANA);

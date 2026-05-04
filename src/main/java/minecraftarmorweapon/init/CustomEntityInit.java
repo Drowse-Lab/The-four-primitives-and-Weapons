@@ -212,7 +212,39 @@ public class CustomEntityInit {
 
     public static final RegistryObject<Item> WEAPON_RACK_ITEM =
         CUSTOM_ITEMS.register("weapon_rack",
-            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties()));
+            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 0));
+
+    // 木の種類別ラック (oak は WEAPON_RACK_ITEM = woodIndex 0)。
+    public static final RegistryObject<Item> WEAPON_RACK_SPRUCE =
+        CUSTOM_ITEMS.register("weapon_rack_spruce",
+            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 1));
+    public static final RegistryObject<Item> WEAPON_RACK_BIRCH =
+        CUSTOM_ITEMS.register("weapon_rack_birch",
+            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 2));
+    public static final RegistryObject<Item> WEAPON_RACK_JUNGLE =
+        CUSTOM_ITEMS.register("weapon_rack_jungle",
+            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 3));
+    public static final RegistryObject<Item> WEAPON_RACK_ACACIA =
+        CUSTOM_ITEMS.register("weapon_rack_acacia",
+            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 4));
+    public static final RegistryObject<Item> WEAPON_RACK_DARK_OAK =
+        CUSTOM_ITEMS.register("weapon_rack_dark_oak",
+            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 5));
+    public static final RegistryObject<Item> WEAPON_RACK_MANGROVE =
+        CUSTOM_ITEMS.register("weapon_rack_mangrove",
+            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 6));
+    public static final RegistryObject<Item> WEAPON_RACK_CHERRY =
+        CUSTOM_ITEMS.register("weapon_rack_cherry",
+            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 7));
+    public static final RegistryObject<Item> WEAPON_RACK_BAMBOO =
+        CUSTOM_ITEMS.register("weapon_rack_bamboo",
+            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 8));
+    public static final RegistryObject<Item> WEAPON_RACK_CRIMSON =
+        CUSTOM_ITEMS.register("weapon_rack_crimson",
+            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 9));
+    public static final RegistryObject<Item> WEAPON_RACK_WARPED =
+        CUSTOM_ITEMS.register("weapon_rack_warped",
+            () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 10));
 
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {

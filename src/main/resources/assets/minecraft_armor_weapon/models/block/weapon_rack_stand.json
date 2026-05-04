@@ -1,5 +1,4 @@
 {
-	"format_version": "1.21.11",
 	"credit": "Custom: sawhorse-style floor weapon rack (oak), X-axis splayed legs (front legs tilt forward, back legs tilt backward), inspired by pk_racks (KawaMood)",
 	"textures": {
 		"particle": "minecraft:block/oak_planks",

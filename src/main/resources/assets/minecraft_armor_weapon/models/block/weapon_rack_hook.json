@@ -1,6 +1,5 @@
 {
-	"format_version": "1.21.11",
-	"credit": "Wall weapon rack: tall vertical wooden post on wall + diagonal wooden arm at 45 degrees from middle of post",
+	"credit": "Wall weapon rack: two vertical wooden posts in front of wall + diagonal wooden arms tilted forward and up",
 	"textures": {
 		"particle": "minecraft:block/oak_planks",
 		"wood": "minecraft:block/oak_planks"
@@ -8,58 +7,56 @@
 	"elements": [
 		{
 			"name": "right_post",
-			"from": [10, 8, 14],
-			"to": [14, 15, 15.5],
-			"rotation": {"angle": 0, "axis": "y", "origin": [2, 0, 0]},
+			"from": [10, 8, 8],
+			"to": [14, 15, 9.5],
 			"faces": {
 				"north": {"uv": [11, 4, 13, 12], "texture": "#wood"},
-				"east": {"uv": [14, 4, 16, 12], "texture": "#wood"},
+				"east":  {"uv": [14, 4, 16, 12], "texture": "#wood"},
 				"south": {"uv": [11, 4, 13, 12], "texture": "#wood"},
-				"west": {"uv": [14, 4, 16, 12], "texture": "#wood"},
-				"up": {"uv": [11, 14, 13, 16], "texture": "#wood"},
-				"down": {"uv": [11, 14, 13, 16], "texture": "#wood"}
+				"west":  {"uv": [14, 4, 16, 12], "texture": "#wood"},
+				"up":    {"uv": [11, 14, 13, 16], "texture": "#wood"},
+				"down":  {"uv": [11, 14, 13, 16], "texture": "#wood"}
 			}
 		},
 		{
-			"name": "right_post",
-			"from": [2, 8, 14],
-			"to": [6, 15, 15.5],
-			"rotation": {"angle": 0, "axis": "y", "origin": [-6, 3, 0]},
+			"name": "left_post",
+			"from": [2, 8, 8],
+			"to": [6, 15, 9.5],
 			"faces": {
 				"north": {"uv": [11, 4, 13, 12], "texture": "#wood"},
-				"east": {"uv": [14, 4, 16, 12], "texture": "#wood"},
+				"east":  {"uv": [14, 4, 16, 12], "texture": "#wood"},
 				"south": {"uv": [11, 4, 13, 12], "texture": "#wood"},
-				"west": {"uv": [14, 4, 16, 12], "texture": "#wood"},
-				"up": {"uv": [11, 14, 13, 16], "texture": "#wood"},
-				"down": {"uv": [11, 14, 13, 16], "texture": "#wood"}
+				"west":  {"uv": [14, 4, 16, 12], "texture": "#wood"},
+				"up":    {"uv": [11, 14, 13, 16], "texture": "#wood"},
+				"down":  {"uv": [11, 14, 13, 16], "texture": "#wood"}
 			}
 		},
 		{
 			"name": "right_arm",
-			"from": [11, 7, 8],
-			"to": [13, 9, 14.25],
-			"rotation": {"angle": 45, "axis": "x", "origin": [12, 8, 16]},
+			"from": [11, 7, 2],
+			"to": [13, 9, 8.25],
+			"rotation": {"angle": 45, "axis": "x", "origin": [12, 8, 10]},
 			"faces": {
 				"north": {"uv": [11, 7, 13, 9], "texture": "#wood"},
-				"east": {"uv": [8, 7, 13, 9], "texture": "#wood"},
+				"east":  {"uv": [8, 7, 13, 9],  "texture": "#wood"},
 				"south": {"uv": [11, 7, 13, 9], "texture": "#wood"},
-				"west": {"uv": [8, 7, 13, 9], "texture": "#wood"},
-				"up": {"uv": [11, 8, 13, 16], "texture": "#wood"},
-				"down": {"uv": [11, 8, 13, 16], "texture": "#wood"}
+				"west":  {"uv": [8, 7, 13, 9],  "texture": "#wood"},
+				"up":    {"uv": [11, 8, 13, 16], "texture": "#wood"},
+				"down":  {"uv": [11, 8, 13, 16], "texture": "#wood"}
 			}
 		},
 		{
 			"name": "left_arm",
-			"from": [3, 7, 8],
-			"to": [5, 9, 14.25],
-			"rotation": {"angle": 45, "axis": "x", "origin": [4, 8, 16]},
+			"from": [3, 7, 2],
+			"to": [5, 9, 8.25],
+			"rotation": {"angle": 45, "axis": "x", "origin": [4, 8, 10]},
 			"faces": {
 				"north": {"uv": [11, 7, 13, 9], "texture": "#wood"},
-				"east": {"uv": [8, 7, 13, 9], "texture": "#wood"},
+				"east":  {"uv": [8, 7, 13, 9],  "texture": "#wood"},
 				"south": {"uv": [11, 7, 13, 9], "texture": "#wood"},
-				"west": {"uv": [8, 7, 13, 9], "texture": "#wood"},
-				"up": {"uv": [11, 8, 13, 16], "texture": "#wood"},
-				"down": {"uv": [11, 8, 13, 16], "texture": "#wood"}
+				"west":  {"uv": [8, 7, 13, 9],  "texture": "#wood"},
+				"up":    {"uv": [11, 8, 13, 16], "texture": "#wood"},
+				"down":  {"uv": [11, 8, 13, 16], "texture": "#wood"}
 			}
 		}
 	]

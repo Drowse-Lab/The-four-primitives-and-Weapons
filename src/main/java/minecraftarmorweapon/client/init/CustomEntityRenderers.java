@@ -65,5 +65,13 @@ public class CustomEntityRenderers {
         for (net.minecraft.resources.ResourceLocation rl : minecraftarmorweapon.client.renderer.WeaponRackRenderer.MODEL_PK_VARIANTS) {
             event.register(rl);
         }
+        // 木の種類別 chain/stand/hook バリアント (oak 以外)。
+        String[] woods = minecraftarmorweapon.entity.WeaponRackEntity.WOOD_TYPES;
+        for (int i = 1; i < woods.length; i++) {
+            String w = woods[i];
+            event.register(new net.minecraft.resources.ResourceLocation("minecraft_armor_weapon", "block/weapon_rack_chain_" + w));
+            event.register(new net.minecraft.resources.ResourceLocation("minecraft_armor_weapon", "block/weapon_rack_stand_" + w));
+            event.register(new net.minecraft.resources.ResourceLocation("minecraft_armor_weapon", "block/weapon_rack_hook_" + w));
+        }
     }
 }

@@ -20,11 +20,19 @@ import net.minecraft.world.level.gameevent.GameEvent;
 /**
  * WeaponRackEntity を設置するアイテム。
  * vanilla の ItemFrameItem と同等の設置ロジック。
+ * woodIndex は WeaponRackEntity.WOOD_TYPES のインデックス (0=oak, 1=spruce, ...)。
  */
 public class WeaponRackItem extends Item {
 
+	private final int woodIndex;
+
 	public WeaponRackItem(Item.Properties props) {
+		this(props, 0);
+	}
+
+	public WeaponRackItem(Item.Properties props, int woodIndex) {
 		super(props);
+		this.woodIndex = woodIndex;
 	}
 
 	@Override
@@ -41,6 +49,7 @@ public class WeaponRackItem extends Item {
 
 		Level level = context.getLevel();
 		WeaponRackEntity rack = new WeaponRackEntity(level, placePos, face);
+		rack.setWoodIndex(this.woodIndex);
 
 		CompoundTag tag = stack.getTag();
 		if (tag != null) {

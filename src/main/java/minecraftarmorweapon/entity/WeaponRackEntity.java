@@ -39,6 +39,15 @@ public class WeaponRackEntity extends ItemFrame {
 
 	private static final Predicate<Entity> HANGING_PREDICATE = e -> e instanceof HangingEntity;
 
+	/** ラックの木の種類。index = NBT に保存する byte 値。順番固定 (oak=0)。 */
+	public static final String[] WOOD_TYPES = {
+		"oak", "spruce", "birch", "jungle", "acacia",
+		"dark_oak", "mangrove", "cherry", "bamboo", "crimson", "warped"
+	};
+
+	private static final EntityDataAccessor<Byte> DATA_WOOD_TYPE =
+		SynchedEntityData.defineId(WeaponRackEntity.class, EntityDataSerializers.BYTE);
+
 	// ホットキー編集で蓄積される追加回転 (degrees)。プリセットポーズの上に乗る。
 	private static final EntityDataAccessor<Float> DATA_EXTRA_ROT_X =
 		SynchedEntityData.defineId(WeaponRackEntity.class, EntityDataSerializers.FLOAT);
@@ -74,6 +83,21 @@ public class WeaponRackEntity extends ItemFrame {
 		this.entityData.define(DATA_EXTRA_ROT_Y, 0f);
 		this.entityData.define(DATA_EXTRA_ROT_Z, 0f);
 		this.entityData.define(DATA_ITEM_2, ItemStack.EMPTY);
+		this.entityData.define(DATA_WOOD_TYPE, (byte) 0);
+	}
+
+	public int getWoodIndex() {
+		int idx = this.entityData.get(DATA_WOOD_TYPE) & 0xFF;
+		return idx < WOOD_TYPES.length ? idx : 0;
+	}
+
+	public String getWoodName() {
+		return WOOD_TYPES[this.getWoodIndex()];
+	}
+
+	public void setWoodIndex(int index) {
+		if (index < 0 || index >= WOOD_TYPES.length) index = 0;
+		this.entityData.set(DATA_WOOD_TYPE, (byte) index);
 	}
 
 	@Override
@@ -85,6 +109,7 @@ public class WeaponRackEntity extends ItemFrame {
 		if (!this.getItem2().isEmpty()) {
 			tag.put("Item2", this.getItem2().save(new CompoundTag()));
 		}
+		tag.putByte("WoodType", (byte) this.getWoodIndex());
 	}
 
 	@Override
@@ -102,6 +127,10 @@ public class WeaponRackEntity extends ItemFrame {
 		// これがないと既存ラックの剣が斜めに表示される / ラック本体が透明のままになる。
 		this.setRotation(0);
 		this.setInvisible(false);
+		// 旧 NBT 互換: WoodType が無ければ oak (=0)。
+		if (tag.contains("WoodType")) {
+			this.setWoodIndex(tag.getByte("WoodType") & 0xFF);
+		}
 	}
 
 	public ItemStack getItem2() { return this.entityData.get(DATA_ITEM_2); }
@@ -262,7 +291,23 @@ public class WeaponRackEntity extends ItemFrame {
 
 	@Override
 	protected ItemStack getFrameItemStack() {
-		return new ItemStack(CustomEntityInit.WEAPON_RACK_ITEM.get());
+		return new ItemStack(itemForWoodIndex(this.getWoodIndex()));
+	}
+
+	private static Item itemForWoodIndex(int idx) {
+		return switch (idx) {
+			case 1 -> CustomEntityInit.WEAPON_RACK_SPRUCE.get();
+			case 2 -> CustomEntityInit.WEAPON_RACK_BIRCH.get();
+			case 3 -> CustomEntityInit.WEAPON_RACK_JUNGLE.get();
+			case 4 -> CustomEntityInit.WEAPON_RACK_ACACIA.get();
+			case 5 -> CustomEntityInit.WEAPON_RACK_DARK_OAK.get();
+			case 6 -> CustomEntityInit.WEAPON_RACK_MANGROVE.get();
+			case 7 -> CustomEntityInit.WEAPON_RACK_CHERRY.get();
+			case 8 -> CustomEntityInit.WEAPON_RACK_BAMBOO.get();
+			case 9 -> CustomEntityInit.WEAPON_RACK_CRIMSON.get();
+			case 10 -> CustomEntityInit.WEAPON_RACK_WARPED.get();
+			default -> CustomEntityInit.WEAPON_RACK_ITEM.get();
+		};
 	}
 
 	@Override

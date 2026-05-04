@@ -142,13 +142,19 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 		// 回転スロット (rotation slot) はアイテム表示にのみ適用する。
 		if (!invisible) {
 			// 天井 (DOWN) → チェーン版 / 床 (UP) → A-frame スタンド / 壁 (横) → 壁掛けフック
+			// 木の種類に応じてバリアントモデルを選択 (oak はベースモデルを再利用)。
+			String wood = entity.getWoodName();
+			boolean isOak = wood.equals("oak");
 			ResourceLocation modelRL;
 			if (facing == Direction.DOWN) {
-				modelRL = MODEL_CHAIN;
+				modelRL = isOak ? MODEL_CHAIN
+					: new ResourceLocation(MODID, "block/weapon_rack_chain_" + wood);
 			} else if (facing == Direction.UP) {
-				modelRL = MODEL_STAND;
+				modelRL = isOak ? MODEL_STAND
+					: new ResourceLocation(MODID, "block/weapon_rack_stand_" + wood);
 			} else {
-				modelRL = MODEL_HOOK;
+				modelRL = isOak ? MODEL_HOOK
+					: new ResourceLocation(MODID, "block/weapon_rack_hook_" + wood);
 			}
 			poseStack.pushPose();
 			poseStack.translate(-0.5F, -0.5F, -0.5F);
@@ -241,8 +247,8 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 		);
 	}
 
-	/** 壁ラックで 1 つのアイテムを描画。slot1/slot2 で左右ミラー (handle 外向き / blade 内向き)。
-	 *  rotation スロット (entity.getRotation()) は使わない (古い NBT で 135° などになるのを防ぐ)。 */
+	/** 壁ラックで 1 つのアイテムを描画。slot1/slot2 ともに同じ向き (= 互いに平行 / 壁にも平行)、
+	 *  位置だけが左右で違う。rotation スロット (entity.getRotation()) は使わない。 */
 	private void renderItemForWall(WeaponRackEntity entity, ItemStack stack, boolean isSlot1,
 								   int rotation, boolean invisible, float zFightOffset,
 								   PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
@@ -250,21 +256,16 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 		if (stack.is(BIG_WEAPONS)) scale = 1.6f;
 		if (stack.is(SHIELDS)) scale = 1.8f;
 
-		// ★ 壁掛けは「水平・壁に平行」がデフォルト。slot1 と slot2 で左右ミラー。
-		//   slot1 (player 視点の右) : zRot = -90°  (柄が中央側 / 刃先が右へ)
-		//   slot2 (player 視点の左) : zRot = +90°  (柄が中央側 / 刃先が左へ)
-		// 銃 (RANGED) や三叉 (TRIDENT) も同じ向きで揃え、シールドだけ正立。
-		float zRot;
-		if (stack.is(SHIELDS)) {
-			zRot = 0f;
-		} else {
-			zRot = isSlot1 ? -90f : 90f;
-		}
+		// ★ 壁掛け剣は両スロット共通: 縦置き (柄=下 / 刃=上)、壁に平行に立つ。
+		//   2 本並べて飾った時に「平行」に見えるよう、slot1/slot2 で zRot は変えない。
+		//   左右の差は xOffset (位置) のみで表現する。
+		float zRot = 0f;
 
-		// pose stack +X = world -X (YP(180) 後)。slot1 を pose +0.25 (= world -0.25 = player 視点の右)、
-		// slot2 を pose -0.25 (= world +0.25 = player 視点の左) に置く。模型の post 中心 (model x=4 / x=12) と一致。
+		// pose stack +X = world -X (YP(180) 後)。
+		// slot1 を pose +0.25 (= 左 post 位置)、slot2 を pose -0.25 (= 右 post 位置) に配置。
+		// 模型の post 中心 (model x=4 と x=12) と一致するので、剣がブラケット上にきれいに乗る。
 		float xOffset = isSlot1 ? +0.25f : -0.25f;
-		// Y は腕の高さに合わせる。壁に近づける為 z オフセットは 0.06 (壁から少し浮かす程度) に絞る。
+		// Y は中央 (= 腕の高さに近い) に置く。壁から 0.0625 だけ前に出す。
 		poseStack.translate(xOffset, 0.0F, 0F);
 		poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
 		poseStack.translate(zFightOffset, zFightOffset, 0.0625F + zFightOffset);
