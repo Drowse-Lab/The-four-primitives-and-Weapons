@@ -1,5 +1,5 @@
 {
-	"credit": "Wall weapon rack: two vertical wooden posts in front of wall + diagonal wooden arms tilted forward and up",
+	"credit": "Wall weapon rack: vanilla item_frame と同じ配置 (model z=16 が壁表面)。post back face が wall surface に密着、diagonal arms は前方+上方に伸びる。",
 	"textures": {
 		"particle": "minecraft:block/oak_planks",
 		"wood": "minecraft:block/oak_planks"
@@ -7,8 +7,8 @@
 	"elements": [
 		{
 			"name": "right_post",
-			"from": [10, 8, 8],
-			"to": [14, 15, 9.5],
+			"from": [10, 8, 14.5],
+			"to": [14, 15, 16],
 			"faces": {
 				"north": {"uv": [11, 4, 13, 12], "texture": "#wood"},
 				"east":  {"uv": [14, 4, 16, 12], "texture": "#wood"},
@@ -20,8 +20,8 @@
 		},
 		{
 			"name": "left_post",
-			"from": [2, 8, 8],
-			"to": [6, 15, 9.5],
+			"from": [2, 8, 14.5],
+			"to": [6, 15, 16],
 			"faces": {
 				"north": {"uv": [11, 4, 13, 12], "texture": "#wood"},
 				"east":  {"uv": [14, 4, 16, 12], "texture": "#wood"},
@@ -33,9 +33,9 @@
 		},
 		{
 			"name": "right_arm",
-			"from": [11, 7, 2],
-			"to": [13, 9, 8.25],
-			"rotation": {"angle": 45, "axis": "x", "origin": [12, 8, 10]},
+			"from": [11, 7, 8],
+			"to": [13, 9, 14.25],
+			"rotation": {"angle": 45, "axis": "x", "origin": [12, 8, 16]},
 			"faces": {
 				"north": {"uv": [11, 7, 13, 9], "texture": "#wood"},
 				"east":  {"uv": [8, 7, 13, 9],  "texture": "#wood"},
@@ -47,9 +47,9 @@
 		},
 		{
 			"name": "left_arm",
-			"from": [3, 7, 2],
-			"to": [5, 9, 8.25],
-			"rotation": {"angle": 45, "axis": "x", "origin": [4, 8, 10]},
+			"from": [3, 7, 8],
+			"to": [5, 9, 14.25],
+			"rotation": {"angle": 45, "axis": "x", "origin": [4, 8, 16]},
 			"faces": {
 				"north": {"uv": [11, 7, 13, 9], "texture": "#wood"},
 				"east":  {"uv": [8, 7, 13, 9],  "texture": "#wood"},

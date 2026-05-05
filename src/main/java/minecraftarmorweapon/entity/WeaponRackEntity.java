@@ -123,9 +123,8 @@ public class WeaponRackEntity extends ItemFrame {
 		} else {
 			this.setItem2(ItemStack.EMPTY);
 		}
-		// 旧バージョンの NBT 残骸を強制クリア (回転スロットや非表示フラグは現バージョンでは使用しない)。
-		// これがないと既存ラックの剣が斜めに表示される / ラック本体が透明のままになる。
-		this.setRotation(0);
+		// 旧バージョンの NBT 残骸: invisible フラグだけクリア (透明化バグ対策)。
+		// rotation は新仕様で 8 段階回転に再利用するので保持。
 		this.setInvisible(false);
 		// 旧 NBT 互換: WoodType が無ければ oak (=0)。
 		if (tag.contains("WoodType")) {
@@ -202,7 +201,7 @@ public class WeaponRackEntity extends ItemFrame {
 		ItemStack slotItem = useSlot2 ? this.getItem2() : this.getItem();
 		boolean slotHasItem = !slotItem.isEmpty();
 
-		// vanilla ItemFrame 風: 該当スロットが空 + displayable アイテム → 設置
+		// 1. 設置: 該当スロットが空 + displayable アイテム
 		if (!slotHasItem && stackInHand.is(DISPLAYABLE)) {
 			if (!this.level().isClientSide()) {
 				ItemStack toPlace = stackInHand.copy();
@@ -212,7 +211,7 @@ public class WeaponRackEntity extends ItemFrame {
 				} else {
 					this.setItem(toPlace);
 				}
-				// 古い NBT で rotation や invisible が残ってると見た目が崩れる為、設置時に必ずリセットする。
+				// 設置時は rotation を 0 にリセット (base pose から始まる)、 invisible も外す
 				this.setRotation(0);
 				this.setInvisible(false);
 				if (!player.getAbilities().instabuild) {
@@ -222,9 +221,16 @@ public class WeaponRackEntity extends ItemFrame {
 			return InteractionResult.sidedSuccess(this.level().isClientSide());
 		}
 
-		// それ以外は何もしない。
-		// vanilla ItemFrame は filled rack で rotation を自動インクリメントするが、
-		// 本ラックでは回転は行わず、アイテムの取り戻しは「攻撃 (左クリック)」のみで行う (額縁同様)。
+		// 2. 回転: 該当スロットに既にアイテムが入っている場合 → rotation++ で次のポーズへ
+		//    壁: 8 段階 (45° 刻み) / 床: 6 段階 (pk_racks ポーズ) / 天井: 1 (回転なし)
+		if (slotHasItem) {
+			if (!this.level().isClientSide()) {
+				int max = poseCountForDirection(this.getDirection());
+				this.setRotation((this.getRotation() + 1) % Math.max(1, max));
+			}
+			return InteractionResult.sidedSuccess(this.level().isClientSide());
+		}
+
 		return InteractionResult.PASS;
 	}
 

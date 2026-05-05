@@ -77,6 +77,7 @@ public class CreativeTabPopulator {
 			event.accept(CustomEntityInit.GUIDE_BOOK);
 			event.accept(CustomEntityInit.MANA_POTION);
 			event.accept(CustomEntityInit.UNDEAD_ARMY_BANISH);
+			event.accept(CustomEntityInit.MOMENTUM_HOOKSHOT);
 		}
 
 		// === TAB_MAGIC_BOOKS ===

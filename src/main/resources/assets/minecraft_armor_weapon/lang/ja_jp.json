@@ -10,6 +10,8 @@
   "item.minecraft_armor_weapon.mana_potion": "§bマナポーション",
   "item.minecraft_armor_weapon.explosive_throwing_knife": "§c爆裂投げナイフ",
   "item.minecraft_armor_weapon.anti_gravity_bracelet": "§b反重力の腕輪",
+  "item.minecraft_armor_weapon.momentum_hookshot": "§bMomentum Hookshot",
+  "entity.minecraft_armor_weapon.momentum_hook": "フック",
   "guidebook.minecraft_armor_weapon.welcome.title": "§eようこそ",
   "guidebook.minecraft_armor_weapon.welcome.body": "§7The Four Primitives and Weapons へようこそ。\n\n§fこの本は:\n§7・武器の操作方法\n§7・技の選択方法\n§7・登場 Mob\n§fを紹介します。\n\n§8左右の矢印でページを送る。",
   "guidebook.minecraft_armor_weapon.launcher.title": "§eナイフホルダー",

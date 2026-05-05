@@ -246,6 +246,21 @@ public class CustomEntityInit {
         CUSTOM_ITEMS.register("weapon_rack_warped",
             () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 10));
 
+    // Momentum Hookshot (Java port of Chuzume's data pack — swing/launch style)
+    public static final RegistryObject<EntityType<minecraftarmorweapon.entity.MomentumHookEntity>> MOMENTUM_HOOK_ENTITY =
+        CUSTOM_ENTITIES.register("momentum_hook",
+            () -> EntityType.Builder.<minecraftarmorweapon.entity.MomentumHookEntity>of(
+                    minecraftarmorweapon.entity.MomentumHookEntity::new, MobCategory.MISC)
+                .setShouldReceiveVelocityUpdates(true)
+                .setTrackingRange(96)
+                .setUpdateInterval(1)
+                .sized(0.4f, 0.4f)
+                .build("momentum_hook"));
+
+    public static final RegistryObject<Item> MOMENTUM_HOOKSHOT =
+        CUSTOM_ITEMS.register("momentum_hookshot",
+            () -> new minecraftarmorweapon.item.MomentumHookshotItem());
+
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(COMMON_SOLDIER.get(), CommonSoldierEntity.createAttributes().build());

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft_armor_weapon:item/3dmodel/weapon/momentum_hookshot/standby_use",
+  "overrides": [
+    { "predicate": { "minecraft_armor_weapon:momentum_state": 1 }, "model": "minecraft_armor_weapon:item/3dmodel/weapon/momentum_hookshot/reload" }
+  ]
+}

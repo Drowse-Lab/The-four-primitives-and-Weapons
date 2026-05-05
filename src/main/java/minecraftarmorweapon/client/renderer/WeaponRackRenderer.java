@@ -256,19 +256,22 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 		if (stack.is(BIG_WEAPONS)) scale = 1.6f;
 		if (stack.is(SHIELDS)) scale = 1.8f;
 
-		// ★ 壁掛け剣は両スロット共通: 縦置き (柄=下 / 刃=上)、壁に平行に立つ。
-		//   2 本並べて飾った時に「平行」に見えるよう、slot1/slot2 で zRot は変えない。
-		//   左右の差は xOffset (位置) のみで表現する。
-		float zRot = 0f;
+		// ★ 壁掛け剣の向き: rotation スロットで 45° 刻み 8 段階切替。
+		//   index 0 = -90° (水平 blade 外向き右) を slot1 デフォルト、slot2 はミラー (符号反転)。
+		//   filled rack に空手で右クリックすると rotation++ で次のポーズに切り替わる。
+		//   WALL_POSE_Z_ROT = { 90, 45, 0, -45, -90, -135, 180, 135 } を index ベースで使用。
+		float baseRot = WALL_POSE_Z_ROT[Math.floorMod(rotation, WALL_POSE_Z_ROT.length)];
+		float zRot = isSlot1 ? -baseRot : baseRot;
 
 		// pose stack +X = world -X (YP(180) 後)。
 		// slot1 を pose +0.25 (= 左 post 位置)、slot2 を pose -0.25 (= 右 post 位置) に配置。
 		// 模型の post 中心 (model x=4 と x=12) と一致するので、剣がブラケット上にきれいに乗る。
 		float xOffset = isSlot1 ? +0.25f : -0.25f;
-		// Y は中央 (= 腕の高さに近い) に置く。壁から 0.0625 だけ前に出す。
+		// vanilla ItemFrame と同じ Z translate (0.4375) で剣を壁面ピッタリに置く。
+		// → 剣の plane が wall plane と並行で flush 表示 (額縁にアイテム入れた時と同じ)。
 		poseStack.translate(xOffset, 0.0F, 0F);
 		poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
-		poseStack.translate(zFightOffset, zFightOffset, 0.0625F + zFightOffset);
+		poseStack.translate(zFightOffset, zFightOffset, 0.4375F + zFightOffset);
 
 		poseStack.scale(scale, scale, scale);
 

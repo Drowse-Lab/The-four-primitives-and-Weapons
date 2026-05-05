@@ -52,6 +52,10 @@ public class CustomEntityRenderers {
         // Arsenal式 武器ラック
         event.registerEntityRenderer(CustomEntityInit.WEAPON_RACK.get(),
                 minecraftarmorweapon.client.renderer.WeaponRackRenderer::new);
+
+        // Momentum Hookshot
+        event.registerEntityRenderer(CustomEntityInit.MOMENTUM_HOOK_ENTITY.get(),
+                minecraftarmorweapon.client.renderer.MomentumHookRenderer::new);
     }
 
     @SubscribeEvent

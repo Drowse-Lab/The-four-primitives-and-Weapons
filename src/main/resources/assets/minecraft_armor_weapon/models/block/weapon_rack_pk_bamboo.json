@@ -1,6 +1,6 @@
 {
-	"credit": "pk_racks bamboo rack visual by KawaMood (kawamood.com), used under CC BY-NC-SA 4.0",
-	"texture_size": [64, 64],
+	"parent": "minecraft:block/block",
+	"credit": "pk_racks bamboo rack visual by KawaMood",
 	"textures": {
 		"skin":     "minecraft_armor_weapon:block/rack_bamboo",
 		"particle": "minecraft_armor_weapon:block/rack_bamboo"
@@ -9,37 +9,7 @@
 		"gui": {
 			"rotation": [30, 45, 0],
 			"translation": [0, 3, 0],
-			"scale": [1.4, 1.4, 1.4]
-		},
-		"fixed": {
-			"rotation": [0, 180, 0],
-			"translation": [0, 4, 0],
 			"scale": [1, 1, 1]
-		},
-		"ground": {
-			"rotation": [0, 0, 0],
-			"translation": [0, 3, 0],
-			"scale": [0.5, 0.5, 0.5]
-		},
-		"thirdperson_righthand": {
-			"rotation": [45, 45, 0],
-			"translation": [0, 3, 0],
-			"scale": [0.5, 0.5, 0.5]
-		},
-		"thirdperson_lefthand": {
-			"rotation": [45, 45, 0],
-			"translation": [0, 3, 0],
-			"scale": [0.5, 0.5, 0.5]
-		},
-		"firstperson_righthand": {
-			"rotation": [0, -90, 0],
-			"translation": [0, 0, 0],
-			"scale": [0.65, 0.65, 0.65]
-		},
-		"firstperson_lefthand": {
-			"rotation": [0, 90, 0],
-			"translation": [0, 0, 0],
-			"scale": [0.65, 0.65, 0.65]
 		}
 	},
 	"elements": [
@@ -48,25 +18,12 @@
 			"from": [4, 4, 4],
 			"to":   [12, 12, 12],
 			"faces": {
-				"north": {"uv": [8, 8, 16, 16],  "texture": "#skin"},
-				"south": {"uv": [24, 8, 32, 16], "texture": "#skin"},
-				"east":  {"uv": [0, 8, 8, 16],   "texture": "#skin"},
-				"west":  {"uv": [16, 8, 24, 16], "texture": "#skin"},
-				"up":    {"uv": [8, 0, 16, 8],   "texture": "#skin"},
-				"down":  {"uv": [16, 0, 24, 8],  "texture": "#skin"}
-			}
-		},
-		{
-			"name": "rack_hat",
-			"from": [3.75, 3.75, 3.75],
-			"to":   [12.25, 12.25, 12.25],
-			"faces": {
-				"north": {"uv": [40, 8, 48, 16], "texture": "#skin"},
-				"south": {"uv": [56, 8, 64, 16], "texture": "#skin"},
-				"east":  {"uv": [32, 8, 40, 16], "texture": "#skin"},
-				"west":  {"uv": [48, 8, 56, 16], "texture": "#skin"},
-				"up":    {"uv": [40, 0, 48, 8],  "texture": "#skin"},
-				"down":  {"uv": [48, 0, 56, 8],  "texture": "#skin"}
+				"north": {"uv": [2, 2, 4, 4],  "texture": "#skin"},
+				"south": {"uv": [6, 2, 8, 4],  "texture": "#skin"},
+				"east":  {"uv": [0, 2, 2, 4],  "texture": "#skin"},
+				"west":  {"uv": [4, 2, 6, 4],  "texture": "#skin"},
+				"up":    {"uv": [2, 0, 4, 2],  "texture": "#skin"},
+				"down":  {"uv": [4, 0, 6, 2],  "texture": "#skin"}
 			}
 		}
 	]

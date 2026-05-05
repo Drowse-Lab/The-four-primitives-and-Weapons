@@ -10,6 +10,8 @@
   "item.minecraft_armor_weapon.mana_potion": "§bMana Potion",
   "item.minecraft_armor_weapon.explosive_throwing_knife": "§cExplosive Throwing Knife",
   "item.minecraft_armor_weapon.anti_gravity_bracelet": "§bAnti-Gravity Bracelet",
+  "item.minecraft_armor_weapon.momentum_hookshot": "§bMomentum Hookshot",
+  "entity.minecraft_armor_weapon.momentum_hook": "Hook",
   "guidebook.minecraft_armor_weapon.welcome.title": "§eWelcome",
   "guidebook.minecraft_armor_weapon.welcome.body": "§7Welcome to The Four Primitives and Weapons.\n\n§fThis book covers:\n§7- Weapon controls\n§7- Skill selection\n§7- Mob info\n\n§8Use the left/right arrows to turn pages.",
   "guidebook.minecraft_armor_weapon.launcher.title": "§eKnife Holder",
