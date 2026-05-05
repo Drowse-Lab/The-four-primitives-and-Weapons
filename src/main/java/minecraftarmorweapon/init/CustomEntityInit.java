@@ -271,6 +271,8 @@ public class CustomEntityInit {
         event.put(ANGEL_SERIOUS.get(), AngelTrioEntity.createAttributes().build());
         event.put(ANGEL_MOCKER1.get(), AngelTrioEntity.createAttributes().build());
         event.put(ANGEL_MOCKER2.get(), AngelTrioEntity.createAttributes().build());
+        event.put(MOMENTUM_HOOK_ENTITY.get(),
+            minecraftarmorweapon.entity.MomentumHookEntity.createAttributes().build());
     }
 
     // Modのコンストラクタやメインクラスで呼び出す必要があります

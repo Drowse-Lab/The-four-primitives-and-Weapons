@@ -10,6 +10,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -17,6 +18,9 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Marker;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
@@ -46,20 +50,20 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Momentum Hookshot のフック飛翔体 (Java port of Chuzume's Momentum Hookshot).
+ * Momentum Hookshot のフック実体 (Java port of Chuzume's Momentum Hookshot).
  *
- * 元データパック:
- *  - 70 substeps × 0.2 block × 1 tick = 14 block/tick (相当)
- *  - 80 block 射程
- *  - block hit / heavy entity hit → プレイヤーに impulse + levitation で着弾点へ吹っ飛ばす
- *  - light entity hit → 対象を引き寄せる
+ * 元データパックは {@code summon bat} で生成し、{@code data modify entity @s Leash.UUID}
+ * で player に繋ぐ — つまり **vanilla の lead/leash システム**を使ってロープを表現している。
  *
- * Java 版:
- *  - 12 block/tick (12 substeps × 1 block) + 12 tick max → 144 block 射程 (元パック相当 +α)
- *  - 着弾後はその場に短時間留まる → ロープが見える時間を確保 → 自爆
- *  - vehicle なし。プレイヤーへの影響は単発 impulse + 短期 boost (PD で持続) のみ
+ * Java 移植もこれに合わせて **{@link Mob}** として実装し、{@link Mob#setLeashedTo} で
+ * player に繋ぐ。これで vanilla の {@code MobRenderer.renderLeash} がそのままロープ描画を担当する。
+ *
+ *  - NoAI / Silent / Invulnerable / NoGravity / NoPhysics で完全に "操作可能な無生物" 化
+ *  - {@link #tickLeash()} を no-op して vanilla の auto-break (10 block) /
+ *    auto-pull (6 block) を無効化 (フックは 80+ block 飛ぶので必須)
+ *  - 飛翔ロジック (14 substeps × 1 block = 14 block/tick × 6 tick = 84 block 射程) は自前
  */
-public class MomentumHookEntity extends Projectile {
+public class MomentumHookEntity extends Mob {
 
     public enum State { FLYING, ANCHORED, DEAD }
 
@@ -67,28 +71,34 @@ public class MomentumHookEntity extends Projectile {
         SynchedEntityData.defineId(MomentumHookEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Optional<UUID>> DATA_OWNER_UUID =
         SynchedEntityData.defineId(MomentumHookEntity.class, EntityDataSerializers.OPTIONAL_UUID);
+    private static final EntityDataAccessor<Boolean> DATA_OFF_HAND =
+        SynchedEntityData.defineId(MomentumHookEntity.class, EntityDataSerializers.BOOLEAN);
 
-    // 元データパック: 70 substeps × 0.2 block × 1 tick = 14 block/tick
-    public static final int FLY_SUBSTEPS = 14;       // 14 block/tick (元準拠)
+    public static final int FLY_SUBSTEPS = 14;
     public static final double SUBSTEP_DIST = 1.0;
-    public static final int MAX_FLY_TICKS = 6;       // 14 × 6 = 84 block 射程 (元 ≒ 80)
-    public static final int ANCHOR_DURATION = 6;     // 着弾後 visual hold tick
+    public static final int MAX_FLY_TICKS = 6;
+    public static final int ANCHOR_DURATION = 6;
 
     private int flyTicks = 0;
     private int anchorTicks = 0;
 
     public MomentumHookEntity(EntityType<? extends MomentumHookEntity> type, Level level) {
         super(type, level);
+        this.setNoAi(true);
+        this.setSilent(true);
+        this.setInvulnerable(true);
+        this.setNoGravity(true);
+        this.noPhysics = true;
     }
 
     public MomentumHookEntity(PlayMessages.SpawnEntity packet, Level level) {
-        super(CustomEntityInit.MOMENTUM_HOOK_ENTITY.get(), level);
+        this(CustomEntityInit.MOMENTUM_HOOK_ENTITY.get(), level);
     }
 
-    public MomentumHookEntity(Level level, LivingEntity owner) {
-        super(CustomEntityInit.MOMENTUM_HOOK_ENTITY.get(), level);
-        this.setOwner(owner);
+    public MomentumHookEntity(Level level, LivingEntity owner, boolean offHand) {
+        this(CustomEntityInit.MOMENTUM_HOOK_ENTITY.get(), level);
         this.entityData.set(DATA_OWNER_UUID, Optional.of(owner.getUUID()));
+        this.entityData.set(DATA_OFF_HAND, offHand);
         Vec3 eye = owner.getEyePosition();
         Vec3 dir = owner.getLookAngle();
         this.setPos(eye.x + dir.x * 0.5, eye.y - 0.2 + dir.y * 0.5, eye.z + dir.z * 0.5);
@@ -100,10 +110,25 @@ public class MomentumHookEntity extends Projectile {
         this.xRotO = this.getXRot();
     }
 
+    /** Mob には attribute 必須. event 側で {@link CustomEntityInit#registerAttributes} に登録 */
+    public static AttributeSupplier.Builder createAttributes() {
+        return Mob.createMobAttributes()
+            .add(Attributes.MAX_HEALTH, 1.0)
+            .add(Attributes.FOLLOW_RANGE, 0.0)
+            .add(Attributes.MOVEMENT_SPEED, 0.0);
+    }
+
+    @Override
+    protected void registerGoals() {
+        // No AI goals — マーカー的な存在
+    }
+
     @Override
     protected void defineSynchedData() {
+        super.defineSynchedData();   // Mob/LivingEntity の synced data も初期化必要
         this.entityData.define(DATA_STATE, State.FLYING.ordinal());
         this.entityData.define(DATA_OWNER_UUID, Optional.empty());
+        this.entityData.define(DATA_OFF_HAND, false);
     }
 
     public State getState() {
@@ -114,7 +139,14 @@ public class MomentumHookEntity extends Projectile {
 
     public void setState(State s) { this.entityData.set(DATA_STATE, s.ordinal()); }
 
+    public boolean isOffHand() {
+        return this.entityData.get(DATA_OFF_HAND);
+    }
+
     public Player getOwnerPlayer() {
+        // Mob.getLeashHolder() を優先 (vanilla 同期). 無ければ DATA_OWNER_UUID に fallback.
+        Entity holder = this.getLeashHolder();
+        if (holder instanceof Player p) return p;
         Optional<UUID> id = this.entityData.get(DATA_OWNER_UUID);
         if (id.isEmpty()) return null;
         return this.level().getPlayerByUUID(id.get());
@@ -127,16 +159,33 @@ public class MomentumHookEntity extends Projectile {
 
     @Override public boolean isPickable() { return false; }
     @Override public boolean isPushable() { return false; }
-    @Override public boolean isNoGravity() { return true; }
+    @Override public boolean canBeCollidedWith() { return false; }
+    @Override public boolean isAttackable() { return false; }
+    @Override public boolean isInvulnerableTo(DamageSource source) { return true; }
 
     @Override
     public boolean shouldRenderAtSqrDistance(double dsq) {
         return dsq < 64 * 64 * 64;
     }
 
+    /**
+     * vanilla leash の auto-break (距離 10 block で切れる) と auto-pull (距離 6 block で
+     * 引き寄せ) を完全無効化. フックは 80 block 先まで飛ぶので必須.
+     */
+    @Override
+    public void tickLeash() {
+        // No-op — vanilla の leash physics をスキップ. NBT/同期はそのまま機能する.
+    }
+
+    @Override
+    public void aiStep() {
+        // vanilla mob の aiStep (移動入力, 効果適用 etc) をスキップ.
+        // 私の tick 側で全部制御するので不要.
+    }
+
     @Override
     public void tick() {
-        super.tick();
+        super.tick();   // Entity / LivingEntity の base tick (位置補間 etc)
         if (this.level().isClientSide) return;
         Player owner = getOwnerPlayer();
         if (owner == null || !owner.isAlive() || owner.level() != this.level()) {
@@ -196,7 +245,9 @@ public class MomentumHookEntity extends Projectile {
     }
 
     private boolean isHookable(Entity e) {
-        if (e == this || e == this.getOwner()) return false;
+        if (e == this) return false;
+        Player owner = getOwnerPlayer();
+        if (e == owner) return false;
         if (!e.isAlive()) return false;
         if (e instanceof MomentumHookEntity) return false;
         if (e instanceof Player) return false;
@@ -241,7 +292,6 @@ public class MomentumHookEntity extends Projectile {
             setState(State.ANCHORED);
             MomentumPlayerHandler.launchPlayer(owner, anchor);
         } else {
-            // light: 対象をプレイヤーへ引き寄せる
             Vec3 dirToOwner = owner.position().add(0, 0.6, 0).subtract(target.position()).normalize();
             double dist = owner.distanceTo(target);
             double power = Math.min(2.5, 0.5 + dist * 0.06);
@@ -252,7 +302,7 @@ public class MomentumHookEntity extends Projectile {
     }
 
     private void playHitSound() {
-        // 元データパック hit/block.mcfunction: iron_door.open + blaze.hurt + item.break
+        // 元 hit/block.mcfunction: iron_door.open + blaze.hurt + item.break
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
             SoundEvents.IRON_DOOR_OPEN, SoundSource.PLAYERS, 2.0f, 1.0f);
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
@@ -262,7 +312,8 @@ public class MomentumHookEntity extends Projectile {
     }
 
     @Override
-    protected void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+    public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
         flyTicks = tag.getInt("FlyTicks");
         anchorTicks = tag.getInt("AnchorTicks");
         if (tag.contains("State")) {
@@ -273,7 +324,8 @@ public class MomentumHookEntity extends Projectile {
     }
 
     @Override
-    protected void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+    public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
         tag.putInt("FlyTicks", flyTicks);
         tag.putInt("AnchorTicks", anchorTicks);
         tag.putInt("State", getState().ordinal());

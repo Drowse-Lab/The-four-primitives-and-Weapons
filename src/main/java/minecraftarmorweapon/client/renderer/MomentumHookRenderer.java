@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.LightLayer;
 
@@ -26,7 +27,8 @@ import minecraftarmorweapon.entity.MomentumHookEntity;
  * Java 移植では:
  *  - フック本体は invisible (元 bat も極小で目立たないので)
  *  - ロープは vanilla MobRenderer.renderLeash と同じロジックで描画
- *    (色: 茶色レザー (0.5,0.4,0.3) ×明暗交互, 厚み 0.025, 放物線 sag, ライティング有り)
+ *  - **どちらの手で発射されたかを entity に問い合わせて hand position を切替**
+ *    (vanilla FishingHookRenderer 同様の handMul 計算)
  */
 public class MomentumHookRenderer extends EntityRenderer<MomentumHookEntity> {
 
@@ -37,7 +39,6 @@ public class MomentumHookRenderer extends EntityRenderer<MomentumHookEntity> {
     @Override
     public void render(MomentumHookEntity entity, float entityYaw, float partialTicks,
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        // フック本体は描画しない (元 bat は invisible に近い)
         Player owner = entity.getOwnerPlayer();
         if (owner != null) {
             renderLeash(entity, owner, partialTicks, poseStack, buffer);
@@ -46,42 +47,57 @@ public class MomentumHookRenderer extends EntityRenderer<MomentumHookEntity> {
     }
 
     /**
-     * vanilla MobRenderer.renderLeash の移植.
-     * フックエンティティの origin から player の rope hold position まで rope を描画する.
+     * vanilla MobRenderer.renderLeash + FishingHookRenderer の hand position 計算を組み合わせ.
      */
     private void renderLeash(MomentumHookEntity hook, Player owner, float partialTicks,
                              PoseStack poseStack, MultiBufferSource buffer) {
         poseStack.pushPose();
 
-        // フック位置 (現 entity の補間位置)
+        // フック位置
         double hx = Mth.lerp(partialTicks, hook.xo, hook.getX());
         double hy = Mth.lerp(partialTicks, hook.yo, hook.getY());
         double hz = Mth.lerp(partialTicks, hook.zo, hook.getZ());
 
-        // プレイヤーの rope hold position (vanilla 標準実装)
-        net.minecraft.world.phys.Vec3 holdPos = owner.getRopeHoldPosition(partialTicks);
-        float dx = (float)(holdPos.x - hx);
-        float dy = (float)(holdPos.y - hy);
-        float dz = (float)(holdPos.z - hz);
+        // どちらの手で持っているか — vanilla FishingHookRenderer と同じロジック
+        boolean rightArm = owner.getMainArm() == HumanoidArm.RIGHT;
+        int handMul = rightArm ? 1 : -1;
+        if (hook.isOffHand()) handMul = -handMul;
+
+        // 手の位置を計算 (vanilla FishingHookRenderer の hand position 公式を移植)
+        float yawRad = Mth.lerp(partialTicks, owner.yBodyRotO, owner.yBodyRot)
+                     * (float)(Math.PI / 180.0);
+        double cosYaw = Math.cos(yawRad);
+        double sinYaw = Math.sin(yawRad);
+        double offsetX = handMul * 0.35;
+        double offsetY = 0.8;
+        double playerX = Mth.lerp(partialTicks, owner.xo, owner.getX());
+        double playerY = Mth.lerp(partialTicks, owner.yo, owner.getY());
+        double playerZ = Mth.lerp(partialTicks, owner.zo, owner.getZ());
+        double handX = playerX - cosYaw * offsetX - sinYaw * 0.8;
+        double handY = playerY + owner.getEyeHeight() - offsetY;
+        double handZ = playerZ - sinYaw * offsetX + cosYaw * 0.8;
+
+        float dx = (float)(handX - hx);
+        float dy = (float)(handY - hy);
+        float dz = (float)(handZ - hz);
 
         VertexConsumer vc = buffer.getBuffer(RenderType.leash());
         Matrix4f matrix = poseStack.last().pose();
 
-        // 厚み計算: 進行方向に垂直な offset を 0.025/2 に設定
+        // 厚み計算
         float xzInv = Mth.invSqrt(dx * dx + dz * dz);
         float xzScale = xzInv * 0.025f / 2f;
         float xPart = dz * xzScale;
         float zPart = dx * xzScale;
 
-        // ライティング: 両端の block/sky light を線形補間
+        // ライティング
         BlockPos hookBP = BlockPos.containing(hx, hy, hz);
-        BlockPos holderBP = BlockPos.containing(holdPos.x, holdPos.y, holdPos.z);
+        BlockPos holderBP = BlockPos.containing(handX, handY, handZ);
         int hookBlockLight = hook.level().getBrightness(LightLayer.BLOCK, hookBP);
         int holderBlockLight = owner.level().getBrightness(LightLayer.BLOCK, holderBP);
         int hookSkyLight = hook.level().getBrightness(LightLayer.SKY, hookBP);
         int holderSkyLight = owner.level().getBrightness(LightLayer.SKY, holderBP);
 
-        // 24 セグメントで rope を描画 (vanilla と同じ解像度)
         for (int i = 0; i <= 24; i++) {
             addLeashVertex(vc, matrix, dx, dy, dz,
                 hookBlockLight, holderBlockLight, hookSkyLight, holderSkyLight,
@@ -96,7 +112,6 @@ public class MomentumHookRenderer extends EntityRenderer<MomentumHookEntity> {
         poseStack.popPose();
     }
 
-    /** vanilla MobRenderer.addVertexPair 相当. */
     private static void addLeashVertex(VertexConsumer vc, Matrix4f matrix,
                                        float dx, float dy, float dz,
                                        int hookLight, int holderLight, int hookSky, int holderSky,
@@ -106,13 +121,11 @@ public class MomentumHookRenderer extends EntityRenderer<MomentumHookEntity> {
         int light = (int) Mth.lerp(t, (float) hookLight, (float) holderLight);
         int sky = (int) Mth.lerp(t, (float) hookSky, (float) holderSky);
         int packedLight = LightTexture.pack(light, sky);
-        // 明暗交互で rope の編み目感を出す (vanilla と同じ)
         float color = (idx % 2 == (reverse ? 1 : 0)) ? 0.7f : 1.0f;
         float r = 0.5f * color;
         float g = 0.4f * color;
         float b = 0.3f * color;
         float x = dx * t;
-        // 放物線 sag (vanilla: y = dy*t² if dy>0 else dy - dy*(1-t)²)
         float y = dy > 0 ? dy * t * t : dy - dy * (1f - t) * (1f - t);
         float z = dz * t;
         vc.vertex(matrix, x - xPart, y + zScale, z + zPart)
