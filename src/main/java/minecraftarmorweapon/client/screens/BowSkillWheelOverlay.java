@@ -12,6 +12,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -29,10 +31,25 @@ import java.util.List;
 @Mod.EventBusSubscriber({Dist.CLIENT})
 public class BowSkillWheelOverlay {
 
-    private static final float WHEEL_RADIUS = 70.0f;
+    private static final float WHEEL_RADIUS = 60.0f;
+    private static final float ICON_SIZE = 16.0f;
     private static final int BG_COLOR = 0xAA1A1A2E;
     private static final int SELECTED_COLOR = 0x884CAF50;
     private static final int CIRCLE_SEGMENTS = 64;
+
+    private static ItemStack iconFor(String motionId) {
+        return switch (motionId) {
+            case "bow_power_shot" -> new ItemStack(Items.SPECTRAL_ARROW);
+            case "bow_explosive"  -> new ItemStack(Items.TNT);
+            case "bow_pierce"     -> new ItemStack(Items.ARROW);
+            case "bow_heavy_blow" -> new ItemStack(Items.IRON_INGOT);
+            case "bow_homing"     -> new ItemStack(Items.COMPASS);
+            case "bow_rapid_fire" -> new ItemStack(Items.FEATHER);
+            case "dodge"          -> new ItemStack(Items.LEATHER_BOOTS);
+            case "none_right"     -> new ItemStack(Items.BOW);
+            default               -> new ItemStack(Items.BOW);
+        };
+    }
 
     @SubscribeEvent(priority = EventPriority.NORMAL)
     public static void onRenderGui(RenderGuiEvent.Pre event) {
@@ -55,38 +72,44 @@ public class BowSkillWheelOverlay {
 
         PoseStack pose = g.pose();
 
-        renderCircle(pose, cx, cy, WHEEL_RADIUS + 25, BG_COLOR);
+        renderCircle(pose, cx, cy, WHEEL_RADIUS + 20, BG_COLOR);
 
         if (selected >= 0 && selected < count) {
             double segStart = (2.0 * Math.PI * selected / count) - Math.PI / 2.0 - Math.PI / count;
             double segEnd = segStart + 2.0 * Math.PI / count;
-            renderArc(pose, cx, cy, WHEEL_RADIUS + 25, segStart, segEnd, SELECTED_COLOR);
+            renderArc(pose, cx, cy, WHEEL_RADIUS + 20, segStart, segEnd, SELECTED_COLOR);
         }
 
         for (int i = 0; i < count; i++) {
             MotionInfo info = motions.get(i);
             double angle = (2.0 * Math.PI * i / count) - Math.PI / 2.0;
-            int ix = (int) (cx + Math.cos(angle) * WHEEL_RADIUS);
-            int iy = (int) (cy + Math.sin(angle) * WHEEL_RADIUS);
+            int iconX = (int) (cx + Math.cos(angle) * WHEEL_RADIUS - ICON_SIZE / 2);
+            int iconY = (int) (cy + Math.sin(angle) * WHEEL_RADIUS - ICON_SIZE / 2);
+
+            ItemStack displayIcon = iconFor(info.getId());
+
+            if (i == selected) {
+                pose.pushPose();
+                pose.translate(iconX + ICON_SIZE / 2, iconY + ICON_SIZE / 2, 0);
+                pose.scale(1.5f, 1.5f, 1.0f);
+                pose.translate(-(ICON_SIZE / 2), -(ICON_SIZE / 2), 0);
+                g.renderItem(displayIcon, 0, 0);
+                pose.popPose();
+            } else {
+                g.renderItem(displayIcon, iconX, iconY);
+            }
 
             String name = Component.translatable(info.translationKey()).getString();
-            int color = (i == selected) ? 0xFFFFFF : 0xCCCCCC;
-            int prefix = (i == selected) ? 0xFFFFD700 : 0x888888;
-
-            g.fill(ix - 4, iy - 4, ix + 4, iy + 4, 0xFF000000 | prefix);
-
-            int nameY = iy + 8;
-            g.drawCenteredString(mc.font, name, ix, nameY, color);
+            int nameColor = (i == selected) ? 0xFFFFFF : 0xAAAAAA;
+            int nameY = iconY + (int) ICON_SIZE + 2;
+            g.drawCenteredString(mc.font, name, iconX + (int)(ICON_SIZE / 2), nameY, nameColor);
         }
 
         if (selected >= 0 && selected < count) {
             String desc = Component.translatable(motions.get(selected).descriptionTranslationKey()).getString();
-            int dy = cy + (int) WHEEL_RADIUS + 50;
+            int dy = cy + (int) WHEEL_RADIUS + 40;
             g.drawCenteredString(mc.font, desc, cx, dy, 0xAAAAAA);
         }
-
-        String header = Component.translatable("motion.minecraft_armor_weapon.bow_wheel.title").getString();
-        g.drawCenteredString(mc.font, header, cx, cy - (int) WHEEL_RADIUS - 35, 0xFFFFD700);
 
         g.fill(cx - 1, cy - 5, cx + 1, cy + 5, 0xAAFFFFFF);
         g.fill(cx - 5, cy - 1, cx + 5, cy + 1, 0xAAFFFFFF);
