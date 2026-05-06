@@ -48,7 +48,10 @@ public class RecrossReticleOverlay {
 
         RecrossHookshotItem held = getHookshotItem(p);
         if (held == null) return;
-        double maxReach = held.maxRange;
+        // rarity 反映後の射程をレチクル判定にも使う
+        net.minecraft.world.item.ItemStack heldStack =
+            (p.getMainHandItem().getItem() instanceof RecrossHookshotItem) ? p.getMainHandItem() : p.getOffhandItem();
+        double maxReach = held.getEffectiveRange(heldStack);
 
         long now = System.nanoTime();
         boolean canHook;

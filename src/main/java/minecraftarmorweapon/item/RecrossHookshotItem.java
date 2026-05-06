@@ -102,9 +102,9 @@ public class RecrossHookshotItem extends Item {
             level.playSound(null, p.getX(), p.getY(), p.getZ(),
                 SoundEvents.CROSSBOW_LOADING_END, SoundSource.PLAYERS, 1.0f, 1.0f);
         }
-        fireHook(level, p, p.getUsedItemHand());
+        fireHook(level, p, p.getUsedItemHand(), stack);
         CrossbowItem.setCharged(stack, false);
-        p.getCooldowns().addCooldown(this, RELOAD_TICKS);
+        p.getCooldowns().addCooldown(this, getEffectiveCooldown(stack));
     }
 
     @Override
@@ -113,16 +113,20 @@ public class RecrossHookshotItem extends Item {
         if (!(entity instanceof Player p)) return stack;
         if (p.getCooldowns().isOnCooldown(this)) return stack;
         if (hasFlyingHook(level, p)) return stack;
-        fireHook(level, p, p.getUsedItemHand());
-        p.getCooldowns().addCooldown(this, RELOAD_TICKS);
+        fireHook(level, p, p.getUsedItemHand(), stack);
+        p.getCooldowns().addCooldown(this, getEffectiveCooldown(stack));
         return stack;
     }
 
-    private void fireHook(Level level, Player player, InteractionHand hand) {
+    private void fireHook(Level level, Player player, InteractionHand hand, ItemStack stack) {
         if (level.isClientSide) return;
 
+        // ★ rarity による飛距離スケーリング
+        double scale = getRangeScale(stack);
+        int scaledMaxFlyTicks = (int) Math.max(1, Math.round(maxFlyTicks * scale));
+
         boolean offHand = (hand == InteractionHand.OFF_HAND);
-        RecrossHookEntity hook = new RecrossHookEntity(level, player, offHand, flyStep, maxFlyTicks);
+        RecrossHookEntity hook = new RecrossHookEntity(level, player, offHand, flyStep, scaledMaxFlyTicks);
         level.addFreshEntity(hook);
 
         // 発射音
@@ -134,6 +138,24 @@ public class RecrossHookshotItem extends Item {
             SoundEvents.IRON_DOOR_OPEN, SoundSource.PLAYERS, 2.0f, 1.0f);
 
         player.awardStat(Stats.ITEM_USED.get(this));
+    }
+
+    /** rarity を考慮した実効クールダウン (tick). 最低 1 tick. */
+    private int getEffectiveCooldown(ItemStack stack) {
+        var rarity = minecraftarmorweapon.item.rarity.WeaponRarity.getFromStack(stack);
+        double scale = (rarity != null) ? rarity.getHookshotCooldownScale() : 1.0;
+        return (int) Math.max(1, Math.round(RELOAD_TICKS * scale));
+    }
+
+    /** rarity を考慮した飛距離倍率. */
+    private double getRangeScale(ItemStack stack) {
+        var rarity = minecraftarmorweapon.item.rarity.WeaponRarity.getFromStack(stack);
+        return (rarity != null) ? rarity.getHookshotRangeScale() : 1.0;
+    }
+
+    /** Tooltip 等で使う rarity 適用後の最大射程 (block). */
+    public double getEffectiveRange(ItemStack stack) {
+        return maxRange * getRangeScale(stack);
     }
 
     private boolean hasFlyingHook(Level level, Player player) {
@@ -155,7 +177,10 @@ public class RecrossHookshotItem extends Item {
     public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(Component.literal(" "));
-        tooltip.add(Component.literal(String.format("§f[Range: %.0f blocks]", maxRange)));
+        double effRange = getEffectiveRange(stack);
+        int effCooldown = getEffectiveCooldown(stack);
+        tooltip.add(Component.literal(String.format("§f[Range: %.0f blocks]", effRange)));
+        tooltip.add(Component.literal(String.format("§f[Cooldown: %.2fs]", effCooldown / 20.0)));
         tooltip.add(Component.literal("§f[RClick (hold & release): Shoot]"));
         tooltip.add(Component.literal("§f[Sneak (mid-air): Float]"));
         tooltip.add(Component.literal(" "));

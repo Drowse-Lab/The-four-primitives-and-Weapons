@@ -50,6 +50,38 @@ public enum WeaponRarity {
     public ChatFormatting getChatColor() { return chatColor; }
     public double getAttackBonus() { return attackBonus; }
 
+    /**
+     * Hookshot 用 — 飛距離倍率 (高 rarity ほど遠くまで届く).
+     * COMMON: x1.0 / UNCOMMON: x1.1 / RARE: x1.25 / EPIC: x1.5 / LEGENDARY: x1.75 / FORBIDDEN: x2.0
+     */
+    public double getHookshotRangeScale() {
+        switch (this) {
+            case UNCOMMON: return 1.10;
+            case RARE:     return 1.25;
+            case EPIC:     return 1.50;
+            case LEGENDARY:return 1.75;
+            case FORBIDDEN:return 2.00;
+            case COMMON:
+            default:       return 1.00;
+        }
+    }
+
+    /**
+     * Hookshot 用 — クールダウン倍率 (高 rarity ほど短い).
+     * COMMON: x1.0 / UNCOMMON: x0.9 / RARE: x0.75 / EPIC: x0.6 / LEGENDARY: x0.4 / FORBIDDEN: x0.2
+     */
+    public double getHookshotCooldownScale() {
+        switch (this) {
+            case UNCOMMON: return 0.90;
+            case RARE:     return 0.75;
+            case EPIC:     return 0.60;
+            case LEGENDARY:return 0.40;
+            case FORBIDDEN:return 0.20;
+            case COMMON:
+            default:       return 1.00;
+        }
+    }
+
     public String getColoredName() {
         return colorCode + displayName;
     }

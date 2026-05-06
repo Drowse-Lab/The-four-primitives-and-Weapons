@@ -95,6 +95,31 @@ public class RarityForgeJEIPlugin implements IModPlugin {
             Component.literal("木に当たると消滅、葉は貫通継続。"),
             Component.literal("MP 10/本 / クールダウン 10t。")
         );
+
+        // Re:Cross Hookshot Long
+        registration.addIngredientInfo(
+            new ItemStack(CustomEntityInit.RECROSS_HOOKSHOT_LONG.get()),
+            VanillaTypes.ITEM_STACK,
+            Component.literal("§6Re:Cross Hookshot (Long)"),
+            Component.literal("§f射程: 80 ブロック"),
+            Component.literal("右クリック押し → 離して発射。"),
+            Component.literal("地形に当てると着弾点まで自動移動。"),
+            Component.literal("エンティティ/アイテムに当てると引き寄せ。"),
+            Component.literal("§cガスト/ジャイアント/ウィザー/エンドラ等"),
+            Component.literal("§cヘヴィ系に当てると逆に自分が引っ張られる。"),
+            Component.literal("引き寄せ中に Sneak でキャンセル。"),
+            Component.literal("空中で Sneak 押下中は浮遊 (燃料 40t、着地リセット)。")
+        );
+
+        // Re:Cross Hookshot Short
+        registration.addIngredientInfo(
+            new ItemStack(CustomEntityInit.RECROSS_HOOKSHOT_SHORT.get()),
+            VanillaTypes.ITEM_STACK,
+            Component.literal("§6Re:Cross Hookshot (Short)"),
+            Component.literal("§f射程: 60 ブロック"),
+            Component.literal("操作・特性は Long と同じ。"),
+            Component.literal("射程と引き換えにレシピが安価。")
+        );
     }
 
     private void registerSayaCraftingRecipes(IRecipeRegistration registration) {
