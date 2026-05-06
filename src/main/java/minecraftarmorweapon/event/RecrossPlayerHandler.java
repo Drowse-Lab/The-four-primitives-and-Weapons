@@ -35,8 +35,10 @@ public class RecrossPlayerHandler {
     /** 到達判定 — anchor との距離がこの値以下になったら pull 終了 (元データパック {@code distance=..1}). */
     public static final double ARRIVAL_DIST = 1.5;
 
-    /** 浮遊の最大持続 tick (元 ReCr_FloatFuel 上限). */
+    /** 浮遊の最大持続 tick の基本値 (rarity 無し時). rarity 付なら WeaponRarity の値が優先. */
     public static final int FLOAT_FUEL_MAX = 40;
+    /** Sneak 解除後の落下ダメージ無効 grace 基本値 (rarity 無し時). */
+    public static final int DEFAULT_FALL_IMMUNITY_TICKS = 3;
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -141,26 +143,70 @@ public class RecrossPlayerHandler {
     }
 
     private static void tickFloat(ServerPlayer sp) {
-        if (!isHoldingHookshot(sp)) return;
+        if (!isHoldingHookshot(sp)) {
+            // hookshot を手放した → grace は維持しつつ消化 (落下中の場合の保険)
+            tickFallImmunity(sp);
+            return;
+        }
         if (sp.onGround()) {
-            // 着地でリセット
+            // 着地で全リセット (浮遊残量・grace 共に)
             FloatFuel.reset(sp);
-            return;
-        }
-        if (!sp.isShiftKeyDown()) return;
-
-        int fuel = FloatFuel.get(sp);
-        if (fuel >= FLOAT_FUEL_MAX) {
-            // 燃料切れ — 効果クリア
-            sp.removeEffect(MobEffects.LEVITATION);
+            FallImmunity.reset(sp);
             return;
         }
 
-        // levitation amplifier 1 (= 上昇するが弱め) を 2 tick 維持
-        sp.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 2, 1, false, false, false));
-        // ★ 浮遊中は落下ダメージリセット — 落下→空中シフトでセーフ着地できるように
+        int fuelMax = getFloatFuelMax(sp);
+        int graceMax = getFallImmunityMax(sp);
+
+        if (sp.isShiftKeyDown()) {
+            int fuel = FloatFuel.get(sp);
+            if (fuel >= fuelMax) {
+                // 燃料切れ — levitation 解除. grace は与える (浮遊→落下の保護)
+                sp.removeEffect(MobEffects.LEVITATION);
+                FallImmunity.set(sp, graceMax);
+                return;
+            }
+            // 浮遊中: levitation 適用 + 落下リセット + 燃料消費 (押し続けの間のみ).
+            // ★ Sneak 離す → 燃料消費停止 (リセットしない).
+            //    再度 Sneak すれば残り燃料で浮遊継続 → 着地までで何回でも分割使用可.
+            sp.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 5, 1, false, false, false));
+            sp.fallDistance = 0f;
+            FloatFuel.add(sp, 1);
+            FallImmunity.set(sp, graceMax);
+        } else {
+            // Sneak 離した → 燃料は据え置き (リセット無し). grace を消化.
+            tickFallImmunity(sp);
+        }
+    }
+
+    /** grace 残量 > 0 の間は fallDistance を 0 に保つ. 毎 tick 1 減算. */
+    private static void tickFallImmunity(ServerPlayer sp) {
+        int rem = FallImmunity.get(sp);
+        if (rem <= 0) return;
         sp.fallDistance = 0f;
-        FloatFuel.add(sp, 1);
+        FallImmunity.set(sp, rem - 1);
+    }
+
+    private static int getFloatFuelMax(ServerPlayer sp) {
+        var r = getHeldHookshotRarity(sp);
+        return (r != null) ? r.getHookshotFloatFuelMax() : FLOAT_FUEL_MAX;
+    }
+
+    private static int getFallImmunityMax(ServerPlayer sp) {
+        var r = getHeldHookshotRarity(sp);
+        return (r != null) ? r.getHookshotFallImmunityTicks() : DEFAULT_FALL_IMMUNITY_TICKS;
+    }
+
+    private static minecraftarmorweapon.item.rarity.WeaponRarity getHeldHookshotRarity(ServerPlayer sp) {
+        var main = sp.getMainHandItem();
+        if (main.getItem() instanceof minecraftarmorweapon.item.RecrossHookshotItem) {
+            return minecraftarmorweapon.item.rarity.WeaponRarity.getFromStack(main);
+        }
+        var off = sp.getOffhandItem();
+        if (off.getItem() instanceof minecraftarmorweapon.item.RecrossHookshotItem) {
+            return minecraftarmorweapon.item.rarity.WeaponRarity.getFromStack(off);
+        }
+        return null;
     }
 
     private static RecrossHookEntity findAnchoredHook(ServerPlayer sp) {
@@ -183,6 +229,17 @@ public class RecrossPlayerHandler {
         private static final java.util.Map<java.util.UUID, Integer> map = new java.util.concurrent.ConcurrentHashMap<>();
         static int get(ServerPlayer p) { return map.getOrDefault(p.getUUID(), 0); }
         static void add(ServerPlayer p, int n) { map.merge(p.getUUID(), n, Integer::sum); }
+        static void reset(ServerPlayer p) { map.remove(p.getUUID()); }
+    }
+
+    /** Sneak 解除後の落下ダメ無効 grace カウンタ — 着地 / 燃料切れ後リセット. */
+    private static final class FallImmunity {
+        private static final java.util.Map<java.util.UUID, Integer> map = new java.util.concurrent.ConcurrentHashMap<>();
+        static int get(ServerPlayer p) { return map.getOrDefault(p.getUUID(), 0); }
+        static void set(ServerPlayer p, int n) {
+            if (n <= 0) map.remove(p.getUUID());
+            else map.put(p.getUUID(), n);
+        }
         static void reset(ServerPlayer p) { map.remove(p.getUUID()); }
     }
 }

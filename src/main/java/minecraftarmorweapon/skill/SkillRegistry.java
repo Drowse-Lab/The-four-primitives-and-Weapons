@@ -89,6 +89,18 @@ public class SkillRegistry {
                 MotionCategory.UNIVERSAL, rightClickOnly, null);
         register("trident_throw", "投擲", "右クリックでトライデントを投擲する（vanilla挙動）",
                 MotionCategory.UNIVERSAL, rightClickOnly, null);
+        register("bow_power_shot", "集中射撃", "矢のダメージ +4 + クリティカル",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
+        register("bow_explosive", "爆裂矢", "矢が命中時に爆発（範囲ダメージ）",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
+        register("bow_pierce", "貫通矢", "矢が貫通（最大5体）+ ダメージ +1",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
+        register("bow_heavy_blow", "強撃", "矢のダメージ +2",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
+        register("bow_homing", "追尾矢", "矢が近くの敵に追尾する",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
+        register("bow_rapid_fire", "連射", "射撃時に追加で2本同時射出",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
         register("sword_of_night_special", "夜の剣・特殊技", "右クリック:レーザー / 長押し:テレポート",
                 MotionCategory.SPECIAL, rightClickOnly, "SwordOfNightItem");
         register("gate_special", "Gate・投刃", "右クリック:放射状に直刀を投げる",

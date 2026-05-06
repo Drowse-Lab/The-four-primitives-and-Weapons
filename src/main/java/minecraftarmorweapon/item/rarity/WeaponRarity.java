@@ -82,6 +82,38 @@ public enum WeaponRarity {
         }
     }
 
+    /**
+     * Hookshot 用 — Sneak 浮遊の持続 tick (Float Fuel 上限).
+     * 高 rarity ほど長く浮遊できる. 基準 40t (= 2 秒).
+     */
+    public int getHookshotFloatFuelMax() {
+        switch (this) {
+            case UNCOMMON: return 50;
+            case RARE:     return 65;
+            case EPIC:     return 80;
+            case LEGENDARY:return 100;
+            case FORBIDDEN:return 140;
+            case COMMON:
+            default:       return 40;
+        }
+    }
+
+    /**
+     * Hookshot 用 — Sneak 解除後の落下ダメージ無効 grace 期間 (tick).
+     * 高 rarity ほど長く保護される.
+     */
+    public int getHookshotFallImmunityTicks() {
+        switch (this) {
+            case UNCOMMON: return 8;
+            case RARE:     return 14;
+            case EPIC:     return 20;
+            case LEGENDARY:return 30;
+            case FORBIDDEN:return 50;
+            case COMMON:
+            default:       return 3;
+        }
+    }
+
     public String getColoredName() {
         return colorCode + displayName;
     }

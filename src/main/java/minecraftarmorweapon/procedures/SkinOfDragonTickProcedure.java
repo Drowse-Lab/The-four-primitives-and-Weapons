@@ -74,93 +74,9 @@ public class SkinOfDragonTickProcedure {
 				}
 			} else {
 				if (world instanceof ServerLevel _level && _level.getServer() != null) {
-					Optional<CommandFunction> _fopt = _level.getServer().getFunctions().get(new ResourceLocation("minecraft_armor_weapon:test_bow_tick"));
-					if (_fopt.isPresent())
-						_level.getServer().getFunctions().execute(_fopt.get(), new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null));
-				}
-				if (world instanceof ServerLevel _level && _level.getServer() != null) {
 					Optional<CommandFunction> _fopt = _level.getServer().getFunctions().get(new ResourceLocation("minecraft_armor_weapon:armor_stand_tobasu_enma_tick_kill"));
 					if (_fopt.isPresent())
 						_level.getServer().getFunctions().execute(_fopt.get(), new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null));
-				}
-			}
-			{
-				Entity _ent = entity;
-				if (!_ent.level().isClientSide() && _ent.getServer() != null) {
-					_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-							_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/kill @e[type=minecraft_armor_weapon:projectile_test_bow]");
-				}
-			}
-			if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.TEST_BOW.get()) {
-				if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 2) {
-					{
-						String _setval = "\u666E\u901A\u306E\u77E2";
-						entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-							capability.ddd = _setval;
-							capability.syncPlayerVariables(entity);
-						});
-					}
-				}
-				if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 3) {
-					{
-						String _setval = "\u76F4\u7DDA\u306E\u77E2";
-						entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-							capability.ddd = _setval;
-							capability.syncPlayerVariables(entity);
-						});
-					}
-				}
-				if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 4) {
-					{
-						String _setval = "\u540C\u3058\u9AD8\u3055";
-						entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-							capability.ddd = _setval;
-							capability.syncPlayerVariables(entity);
-						});
-					}
-				}
-				if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 5) {
-					{
-						String _setval = "\u62E1\u6563";
-						entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-							capability.ddd = _setval;
-							capability.syncPlayerVariables(entity);
-						});
-					}
-				}
-				if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 6) {
-					{
-						String _setval = "\u901F\u3081\u306E\u77E2";
-						entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-							capability.ddd = _setval;
-							capability.syncPlayerVariables(entity);
-						});
-					}
-				}
-				if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa == 7) {
-					{
-						String _setval = "\u5F57\u661F";
-						entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-							capability.ddd = _setval;
-							capability.syncPlayerVariables(entity);
-						});
-					}
-				}
-				if ((entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new MinecraftArmorWeaponModVariables.PlayerVariables())).aaa >= 8) {
-					{
-						double _setval = 2;
-						entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-							capability.aaa = _setval;
-							capability.syncPlayerVariables(entity);
-						});
-					}
-					{
-						String _setval = "\u666E\u901A\u306E\u77E2";
-						entity.getCapability(MinecraftArmorWeaponModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
-							capability.ddd = _setval;
-							capability.syncPlayerVariables(entity);
-						});
-					}
 				}
 			}
 			if (world instanceof ServerLevel _level)

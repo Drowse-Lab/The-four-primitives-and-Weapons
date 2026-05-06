@@ -2,7 +2,6 @@
   "replace": false,
   "values": [
     "minecraft:bow",
-    "minecraft:crossbow",
-    "minecraft_armor_weapon:test_bow"
+    "minecraft:crossbow"
   ]
 }

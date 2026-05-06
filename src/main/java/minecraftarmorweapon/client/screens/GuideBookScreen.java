@@ -1,23 +1,16 @@
 package minecraftarmorweapon.client.screens;
 
-import minecraftarmorweapon.entity.AngelTrioEntity;
-import minecraftarmorweapon.entity.BlackholeEntity;
-import minecraftarmorweapon.entity.CommonSoldierEntity;
-import minecraftarmorweapon.entity.EliteSoldierEntity;
-import minecraftarmorweapon.entity.HeroicTierEntity;
-import minecraftarmorweapon.entity.SingularityEntity;
 import minecraftarmorweapon.init.CustomEntityInit;
-import minecraftarmorweapon.init.MinecraftArmorWeaponModEntities;
+import minecraftarmorweapon.init.KnifeExtrasRegistrar;
 import minecraftarmorweapon.init.MinecraftArmorWeaponModItems;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +18,12 @@ import java.util.function.Supplier;
 
 /**
  * モッド内容を画像付きで紹介するガイドブック画面。
- *   ページ毎にタイトル / 本文 / 右側に "イラスト" (アイテムアイコンや mob プレビュー)
- *   左右ボタンでページ送り。ESC で閉じる。
+ *
+ * 構成:
+ *   page 1 — このmodについて
+ *   page 2 — スキルについて
+ *   page 3 — スキルの変更方法
+ *   page 4+ — 武器を ABC 順 (item id 昇順) に各 2 ページずつ
  */
 public class GuideBookScreen extends Screen {
 
@@ -81,16 +78,12 @@ public class GuideBookScreen extends Screen {
         Page p = pages.get(pageIndex);
         Minecraft mc = Minecraft.getInstance();
 
-        // タイトル (翻訳キー解決して現在ロケールで描画)
         String titleText = tr(p.titleKey);
         g.drawString(mc.font, titleText, bx + 16, by + 10, 0xFFFFD700, false);
-        // ページ番号
         String pg = (pageIndex + 1) + "/" + pages.size();
         g.drawString(mc.font, pg, bx + BOOK_W - mc.font.width(pg) - 12, by + 10, 0xFF808080, false);
-        // 区切り線
         g.fill(bx + 10, by + 24, bx + BOOK_W - 10, by + 25, 0xFF605020);
 
-        // 本文 (左側 170px 幅で word-wrap)。\n で段落区切り。
         int tx = bx + 14;
         int ty = by + 32;
         int textW = 170;
@@ -104,7 +97,6 @@ public class GuideBookScreen extends Screen {
             }
         }
 
-        // 右側イラスト領域
         int ix = bx + BOOK_W - 100;
         int iy = by + 40;
         if (p.illustration != null) p.illustration.run(g, ix, iy);
@@ -115,110 +107,78 @@ public class GuideBookScreen extends Screen {
     @Override
     public boolean isPauseScreen() { return false; }
 
-    // --- Pages ---------------------------------------------------------
+    private static final String K = "guidebook.minecraft_armor_weapon.";
 
-    private static final String KEY_PREFIX = "guidebook.minecraft_armor_weapon.";
-
-    /** 翻訳キーから現在ロケールのテキストを取得。表示直前に呼ぶのでロケール切替にも追従する。 */
     private static String tr(String key) {
         return Component.translatable(key).getString();
     }
 
     private void buildPages() {
-        pages.add(new Page(KEY_PREFIX + "welcome.title", KEY_PREFIX + "welcome.body",
-            (g, x, y) -> drawItemIcon(g, new ItemStack(CustomEntityInit.KNIFE_LAUNCHER.get()), x, y, 4.0f)
-        ));
-        pages.add(new Page(KEY_PREFIX + "launcher.title", KEY_PREFIX + "launcher.body",
-            (g, x, y) -> drawItemIcon(g, new ItemStack(CustomEntityInit.KNIFE_LAUNCHER.get()), x, y, 4.0f)
-        ));
-        pages.add(new Page(KEY_PREFIX + "normal_knife.title", KEY_PREFIX + "normal_knife.body",
-            (g, x, y) -> drawItemIcon(g, new ItemStack(CustomEntityInit.THROWING_KNIFE.get()), x, y, 4.0f)
-        ));
-        pages.add(new Page(KEY_PREFIX + "stun_knife.title", KEY_PREFIX + "stun_knife.body",
-            (g, x, y) -> drawItemIcon(g, new ItemStack(CustomEntityInit.STUN_KNIFE.get()), x, y, 4.0f)
-        ));
-        pages.add(new Page(KEY_PREFIX + "screw_knife.title", KEY_PREFIX + "screw_knife.body",
-            (g, x, y) -> drawItemIcon(g, new ItemStack(CustomEntityInit.SCREW_KNIFE.get()), x, y, 4.0f)
-        ));
-        pages.add(new Page(KEY_PREFIX + "mana.title", KEY_PREFIX + "mana.body", null));
-        pages.add(new Page(KEY_PREFIX + "spellbooks_compat.title", KEY_PREFIX + "spellbooks_compat.body", null));
-        pages.add(new Page(KEY_PREFIX + "katana_saya.title", KEY_PREFIX + "katana_saya.body",
-            (g, x, y) -> drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.SAYA.get()), x, y, 4.0f)
-        ));
-        pages.add(new Page(KEY_PREFIX + "parry_shield.title", KEY_PREFIX + "parry_shield.body",
-            (g, x, y) -> drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.NIGU_SHIELD.get()), x, y, 4.0f)
-        ));
-        pages.add(new Page(KEY_PREFIX + "test_bow.title", KEY_PREFIX + "test_bow.body",
-            (g, x, y) -> drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.TEST_BOW.get()), x, y, 4.0f)
-        ));
-        pages.add(new Page(KEY_PREFIX + "magic_books.title", KEY_PREFIX + "magic_books.body",
-            (g, x, y) -> {
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.FIREBALL.get()),    x,      y,      2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.THUNDERBOLT.get()), x + 40, y,      2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.STORM.get()),       x,      y + 40, 2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.WIND_STEP.get()),   x + 40, y + 40, 2.8f);
-            }
-        ));
-        pages.add(new Page(KEY_PREFIX + "dragon_armor.title", KEY_PREFIX + "dragon_armor.body",
-            (g, x, y) -> {
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.DRAGON_ARMOR_HELMET.get()),     x,      y,      2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.DRAGON_ARMOR_CHESTPLATE.get()), x + 40, y,      2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.DRAGON_ARMOR_LEGGINGS.get()),   x,      y + 40, 2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.DRAGON_ARMOR_BOOTS.get()),      x + 40, y + 40, 2.8f);
-            }
-        ));
-        pages.add(new Page(KEY_PREFIX + "common_soldier.title", KEY_PREFIX + "common_soldier.body",
-            (g, x, y) -> drawEntity(g, () -> new CommonSoldierEntity(
-                CustomEntityInit.COMMON_SOLDIER.get(), Minecraft.getInstance().level), x, y, 36)
-        ));
-        pages.add(new Page(KEY_PREFIX + "elite_soldier.title", KEY_PREFIX + "elite_soldier.body",
-            (g, x, y) -> drawEntity(g, () -> new EliteSoldierEntity(
-                CustomEntityInit.ELITE_SOLDIER.get(), Minecraft.getInstance().level), x, y, 36)
-        ));
-        pages.add(new Page(KEY_PREFIX + "singularity.title", KEY_PREFIX + "singularity.body",
-            (g, x, y) -> drawEntity(g, () -> new SingularityEntity(
-                CustomEntityInit.SINGULARITY.get(), Minecraft.getInstance().level), x, y, 28)
-        ));
-        pages.add(new Page(KEY_PREFIX + "heroic_tier.title", KEY_PREFIX + "heroic_tier.body",
-            (g, x, y) -> drawEntity(g, () -> new HeroicTierEntity(
-                CustomEntityInit.HEROIC_TIER.get(), Minecraft.getInstance().level), x, y, 24)
-        ));
-        pages.add(new Page(KEY_PREFIX + "angel_trio.title", KEY_PREFIX + "angel_trio.body",
-            (g, x, y) -> drawEntity(g, () -> new AngelTrioEntity(
-                CustomEntityInit.ANGEL_SERIOUS.get(), Minecraft.getInstance().level), x, y, 28)
-        ));
-        pages.add(new Page(KEY_PREFIX + "blackhole.title", KEY_PREFIX + "blackhole.body",
-            (g, x, y) -> drawEntity(g, () -> new BlackholeEntity(
-                MinecraftArmorWeaponModEntities.BLACKHOLE.get(), Minecraft.getInstance().level), x, y, 20)
-        ));
-        // === 敵強化システム ===
-        pages.add(new Page(KEY_PREFIX + "mob_traits.title", KEY_PREFIX + "mob_traits.body", null));
-        pages.add(new Page(KEY_PREFIX + "distance_scaling.title", KEY_PREFIX + "distance_scaling.body", null));
-        // === 武器カテゴリ ===
-        pages.add(new Page(KEY_PREFIX + "katanas.title", KEY_PREFIX + "katanas.body",
-            (g, x, y) -> {
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.IRON_KATANA.get()),     x,      y,      2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.GOLD_KATANA.get()),     x + 40, y,      2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.NETHERITE_KATANA.get()),x,      y + 40, 2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.MAGICAL_KATANA.get()),  x + 40, y + 40, 2.8f);
-            }
-        ));
-        pages.add(new Page(KEY_PREFIX + "swords.title", KEY_PREFIX + "swords.body",
-            (g, x, y) -> {
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.SWORD_OF_NIGHT.get()),  x,      y,      2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.RIVERS_OF_BLOOD.get()), x + 40, y,      2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.PROTOTYPE_KATANA.get()),x,      y + 40, 2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.KURIKARAKEN.get()),     x + 40, y + 40, 2.8f);
-            }
-        ));
-        pages.add(new Page(KEY_PREFIX + "misc_weapons.title", KEY_PREFIX + "misc_weapons.body",
-            (g, x, y) -> {
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.HAMMER.get()), x,      y,      2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.SCYTHE.get()), x + 40, y,      2.8f);
-                drawItemIcon(g, new ItemStack(MinecraftArmorWeaponModItems.RAPIER.get()), x,      y + 40, 2.8f);
-            }
-        ));
+        // === Intro 3 ページ ===
+        pages.add(new Page(K + "about_mod.title", K + "about_mod.body",
+            (g, x, y) -> drawItemIcon(g, new ItemStack(CustomEntityInit.GUIDE_BOOK.get()), x, y, 4.0f)));
+        pages.add(new Page(K + "about_skills.title", K + "about_skills.body", null));
+        pages.add(new Page(K + "skill_change.title", K + "skill_change.body", null));
+
+        // === 武器ページ — ABC 順. 各武器 2 ページ. ===
+        for (WeaponEntry w : WEAPONS) {
+            pages.add(new Page(K + w.id + ".title", K + w.id + ".body",
+                (g, x, y) -> drawItemIcon(g, w.icon.get(), x, y, 4.0f)));
+            pages.add(new Page(K + w.id + ".title2", K + w.id + ".body2",
+                (g, x, y) -> drawItemIcon(g, w.icon.get(), x, y, 4.0f)));
+        }
     }
+
+    /** 武器 1 つを (item id, アイコン Supplier) で表す. ABC 順に並べる. */
+    private record WeaponEntry(String id, Supplier<ItemStack> icon) {}
+
+    /**
+     * ABC 順 (item id 昇順) の武器リスト.
+     * 新しい武器を追加するときはここに 1 行追加 + lang ファイルに 4 エントリ
+     * (`<id>.title`, `<id>.body`, `<id>.title2`, `<id>.body2`) を追加.
+     */
+    private static final List<WeaponEntry> WEAPONS = List.of(
+        new WeaponEntry("achromatic_shield",     () -> new ItemStack(MinecraftArmorWeaponModItems.ACHROMATIC_SHIELD.get())),
+        new WeaponEntry("anti_gravity_bracelet", () -> new ItemStack(KnifeExtrasRegistrar.ANTI_GRAVITY_BRACELET.get())),
+        new WeaponEntry("bluepurge",             () -> new ItemStack(MinecraftArmorWeaponModItems.BLUEPURGE.get())),
+        new WeaponEntry("bow",                   () -> new ItemStack(Items.BOW)),
+        new WeaponEntry("crossbow",              () -> new ItemStack(Items.CROSSBOW)),
+        new WeaponEntry("convergent_gate",       () -> new ItemStack(MinecraftArmorWeaponModItems.CONVERGENT_GATE.get())),
+        new WeaponEntry("darkness_katana",       () -> new ItemStack(MinecraftArmorWeaponModItems.DARKNESS_KATANA.get())),
+        new WeaponEntry("explosive_throwing_knife", () -> new ItemStack(KnifeExtrasRegistrar.EXPLOSIVE_THROWING_KNIFE.get())),
+        new WeaponEntry("gate",                  () -> new ItemStack(MinecraftArmorWeaponModItems.GATE.get())),
+        new WeaponEntry("gold_katana",           () -> new ItemStack(MinecraftArmorWeaponModItems.GOLD_KATANA.get())),
+        new WeaponEntry("gold_tyokuto",          () -> new ItemStack(MinecraftArmorWeaponModItems.GOLD_TYOKUTO.get())),
+        new WeaponEntry("hammer",                () -> new ItemStack(MinecraftArmorWeaponModItems.HAMMER.get())),
+        new WeaponEntry("immortal_core",         () -> new ItemStack(MinecraftArmorWeaponModItems.IMMORTAL_CORE.get())),
+        new WeaponEntry("iron_katana",           () -> new ItemStack(MinecraftArmorWeaponModItems.IRON_KATANA.get())),
+        new WeaponEntry("iron_tyokuto",          () -> new ItemStack(MinecraftArmorWeaponModItems.IRON_TYOKUTO.get())),
+        new WeaponEntry("katana_tobu",           () -> new ItemStack(MinecraftArmorWeaponModItems.KATANA_TOBU.get())),
+        new WeaponEntry("knife_launcher",        () -> new ItemStack(CustomEntityInit.KNIFE_LAUNCHER.get())),
+        new WeaponEntry("kurikaraken",           () -> new ItemStack(MinecraftArmorWeaponModItems.KURIKARAKEN.get())),
+        new WeaponEntry("loki_the_trickster",    () -> new ItemStack(MinecraftArmorWeaponModItems.LOKI_THE_TRICKSTER.get())),
+        new WeaponEntry("luna",                  () -> new ItemStack(MinecraftArmorWeaponModItems.LUNA.get())),
+        new WeaponEntry("machete",               () -> new ItemStack(MinecraftArmorWeaponModItems.MACHETE.get())),
+        new WeaponEntry("magical_katana",        () -> new ItemStack(MinecraftArmorWeaponModItems.MAGICAL_KATANA.get())),
+        new WeaponEntry("magisches_feen_katana", () -> new ItemStack(MinecraftArmorWeaponModItems.MAGISCHES_FEEN_KATANA.get())),
+        new WeaponEntry("mana_potion",           () -> new ItemStack(CustomEntityInit.MANA_POTION.get())),
+        new WeaponEntry("netherite_katana",      () -> new ItemStack(MinecraftArmorWeaponModItems.NETHERITE_KATANA.get())),
+        new WeaponEntry("nigu_shield",           () -> new ItemStack(MinecraftArmorWeaponModItems.NIGU_SHIELD.get())),
+        new WeaponEntry("ninjatou",              () -> new ItemStack(MinecraftArmorWeaponModItems.NINJATOU.get())),
+        new WeaponEntry("ofuda",                 () -> new ItemStack(MinecraftArmorWeaponModItems.OFUDA.get())),
+        new WeaponEntry("recross_hookshot_long", () -> new ItemStack(CustomEntityInit.RECROSS_HOOKSHOT_LONG.get())),
+        new WeaponEntry("recross_hookshot_short",() -> new ItemStack(CustomEntityInit.RECROSS_HOOKSHOT_SHORT.get())),
+        new WeaponEntry("replica_sword_of_light",() -> new ItemStack(MinecraftArmorWeaponModItems.REPLICA_SWORD_OF_LIGHT.get())),
+        new WeaponEntry("rivers_of_blood",       () -> new ItemStack(MinecraftArmorWeaponModItems.RIVERS_OF_BLOOD.get())),
+        new WeaponEntry("scythe",                () -> new ItemStack(MinecraftArmorWeaponModItems.SCYTHE.get())),
+        new WeaponEntry("small_sword",           () -> new ItemStack(MinecraftArmorWeaponModItems.SMALL_SWORD.get())),
+        new WeaponEntry("stone_katana",          () -> new ItemStack(MinecraftArmorWeaponModItems.STONE_KATANA.get())),
+        new WeaponEntry("sword_of_night",        () -> new ItemStack(MinecraftArmorWeaponModItems.SWORD_OF_NIGHT.get())),
+        new WeaponEntry("throwing_knife",        () -> new ItemStack(CustomEntityInit.THROWING_KNIFE.get())),
+        new WeaponEntry("undead_army_banish",    () -> new ItemStack(CustomEntityInit.UNDEAD_ARMY_BANISH.get())),
+        new WeaponEntry("warabitetou",           () -> new ItemStack(MinecraftArmorWeaponModItems.WARABITETOU.get())),
+        new WeaponEntry("wither_katana",         () -> new ItemStack(MinecraftArmorWeaponModItems.WITHER_KATANA.get()))
+    );
 
     private static void drawItemIcon(GuiGraphics g, ItemStack stack, int x, int y, float scale) {
         g.pose().pushPose();
@@ -228,26 +188,6 @@ public class GuideBookScreen extends Screen {
         g.pose().popPose();
     }
 
-    // エンティティは生成コストが高い (AI/ゴール/データウォッチャー初期化)。
-    // ページ毎に1個キャッシュして再利用。Supplier 参照をキーに保持するだけでOK。
-    private static final java.util.Map<Supplier<LivingEntity>, LivingEntity> entityCache
-        = new java.util.IdentityHashMap<>();
-
-    private static void drawEntity(GuiGraphics g, Supplier<LivingEntity> factory, int x, int y, int size) {
-        try {
-            LivingEntity e = entityCache.get(factory);
-            if (e == null) {
-                e = factory.get();
-                if (e == null) return;
-                entityCache.put(factory, e);
-            }
-            InventoryScreen.renderEntityInInventoryFollowsMouse(g, x + 35, y + 60, size, 0f, 0f, e);
-        } catch (Throwable ignored) {
-            // mob 生成に失敗 (level=null 等) したら描画スキップ
-        }
-    }
-
-    /** レンダラ関数のインタフェース (GuiGraphics + 位置で描画) */
     @FunctionalInterface
     private interface Illustration {
         void run(GuiGraphics g, int x, int y);

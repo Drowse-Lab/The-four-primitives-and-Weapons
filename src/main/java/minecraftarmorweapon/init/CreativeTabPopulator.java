@@ -52,7 +52,6 @@ public class CreativeTabPopulator {
 			event.accept(CustomEntityInit.WEAPON_RACK_BAMBOO);
 			event.accept(CustomEntityInit.WEAPON_RACK_CRIMSON);
 			event.accept(CustomEntityInit.WEAPON_RACK_WARPED);
-			event.accept(MinecraftArmorWeaponModItems.TEST_BOW);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE_UTIGATANA);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE_TYOKUTOU);

@@ -32,7 +32,6 @@ public class MinecraftArmorWeaponModEntityRenderers {
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.KATANA_TOBU.get(), KatanaTobuRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.BLACKHOLE.get(), BlackholeRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.LOKI_DECOYDASU.get(), ThrownItemRenderer::new);
-		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.TEST_BOW.get(), ThrownItemRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.COMET.get(), CometRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.COMET_KILL.get(), CometKillRenderer::new);
 		event.registerEntityRenderer(MinecraftArmorWeaponModEntities.METEOR_ARROW.get(), MeteorArrowRenderer::new);
