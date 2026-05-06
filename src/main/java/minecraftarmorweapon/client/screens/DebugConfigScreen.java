@@ -51,6 +51,17 @@ public class DebugConfigScreen extends Screen {
                 .bounds(centerX - btnW / 2, firstY, btnW, btnH)
                 .build());
 
+        // 設定2: Re:Cross Hookshot デバッグ表示
+        addRenderableWidget(Button.builder(
+                getRecrossDebugText(),
+                btn -> {
+                    DebugConfig.recrossHookshotDebugEnabled = !DebugConfig.recrossHookshotDebugEnabled;
+                    DebugConfig.save();
+                    btn.setMessage(getRecrossDebugText());
+                })
+                .bounds(centerX - btnW / 2, firstY + (btnH + 4), btnW, btnH)
+                .build());
+
         // Done ボタン (バニラと同じ位置)
         addRenderableWidget(Button.builder(
                 CommonComponents.GUI_DONE,
@@ -71,5 +82,12 @@ public class DebugConfigScreen extends Screen {
                 ? Component.literal("§aON")
                 : Component.literal("§cOFF");
         return Component.translatable("screen.minecraft_armor_weapon.debug_config.elemental").append(": ").append(status);
+    }
+
+    private Component getRecrossDebugText() {
+        Component status = DebugConfig.recrossHookshotDebugEnabled
+                ? Component.literal("§aON")
+                : Component.literal("§cOFF");
+        return Component.translatable("screen.minecraft_armor_weapon.debug_config.recross").append(": ").append(status);
     }
 }

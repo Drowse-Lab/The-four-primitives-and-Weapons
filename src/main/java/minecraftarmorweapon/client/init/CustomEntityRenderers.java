@@ -53,9 +53,9 @@ public class CustomEntityRenderers {
         event.registerEntityRenderer(CustomEntityInit.WEAPON_RACK.get(),
                 minecraftarmorweapon.client.renderer.WeaponRackRenderer::new);
 
-        // Momentum Hookshot
-        event.registerEntityRenderer(CustomEntityInit.MOMENTUM_HOOK_ENTITY.get(),
-                minecraftarmorweapon.client.renderer.MomentumHookRenderer::new);
+        // Re:Cross Hookshot
+        event.registerEntityRenderer(CustomEntityInit.RECROSS_HOOK_ENTITY.get(),
+                minecraftarmorweapon.client.renderer.RecrossHookRenderer::new);
     }
 
     @SubscribeEvent

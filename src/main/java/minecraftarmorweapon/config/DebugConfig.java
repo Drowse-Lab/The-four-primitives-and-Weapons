@@ -22,6 +22,13 @@ public class DebugConfig {
      */
     public static boolean elementalDebugEnabled = false;
 
+    /**
+     * ON: Re:Cross Hookshot の挙動を {@code logs/recross_hookshot.log} と
+     *      {@code logs/datapack_hookshot.log} に記録.
+     * OFF: 何もしない (デフォルト).
+     */
+    public static boolean recrossHookshotDebugEnabled = false;
+
     public static void load() {
         try {
             Path configDir = FMLPaths.CONFIGDIR.get();
@@ -31,6 +38,7 @@ public class DebugConfig {
                     ConfigData data = GSON.fromJson(reader, ConfigData.class);
                     if (data != null) {
                         elementalDebugEnabled = data.elementalDebugEnabled;
+                        recrossHookshotDebugEnabled = data.recrossHookshotDebugEnabled;
                     }
                 }
             } else {
@@ -47,6 +55,7 @@ public class DebugConfig {
             File file = configDir.resolve(FILE_NAME).toFile();
             ConfigData data = new ConfigData();
             data.elementalDebugEnabled = elementalDebugEnabled;
+            data.recrossHookshotDebugEnabled = recrossHookshotDebugEnabled;
             try (Writer writer = new FileWriter(file)) {
                 GSON.toJson(data, writer);
             }
@@ -57,5 +66,6 @@ public class DebugConfig {
 
     private static class ConfigData {
         boolean elementalDebugEnabled = false;
+        boolean recrossHookshotDebugEnabled = false;
     }
 }

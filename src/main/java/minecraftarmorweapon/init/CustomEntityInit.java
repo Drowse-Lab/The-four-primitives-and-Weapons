@@ -246,20 +246,29 @@ public class CustomEntityInit {
         CUSTOM_ITEMS.register("weapon_rack_warped",
             () -> new minecraftarmorweapon.item.WeaponRackItem(new Item.Properties(), 10));
 
-    // Momentum Hookshot (Java port of Chuzume's data pack — swing/launch style)
-    public static final RegistryObject<EntityType<minecraftarmorweapon.entity.MomentumHookEntity>> MOMENTUM_HOOK_ENTITY =
-        CUSTOM_ENTITIES.register("momentum_hook",
-            () -> EntityType.Builder.<minecraftarmorweapon.entity.MomentumHookEntity>of(
-                    minecraftarmorweapon.entity.MomentumHookEntity::new, MobCategory.MISC)
+    // Re:Cross Hookshot (Java port of Chuzume's data pack — short range, sneak-float)
+    public static final RegistryObject<EntityType<minecraftarmorweapon.entity.RecrossHookEntity>> RECROSS_HOOK_ENTITY =
+        CUSTOM_ENTITIES.register("recross_hook",
+            () -> EntityType.Builder.<minecraftarmorweapon.entity.RecrossHookEntity>of(
+                    minecraftarmorweapon.entity.RecrossHookEntity::new, MobCategory.MISC)
                 .setShouldReceiveVelocityUpdates(true)
                 .setTrackingRange(96)
                 .setUpdateInterval(1)
                 .sized(0.4f, 0.4f)
-                .build("momentum_hook"));
+                .build("recross_hook"));
 
-    public static final RegistryObject<Item> MOMENTUM_HOOKSHOT =
-        CUSTOM_ITEMS.register("momentum_hookshot",
-            () -> new minecraftarmorweapon.item.MomentumHookshotItem());
+    /**
+     * Long range = 80 block (flyStep 4 × maxFlyTicks 20 → 1 sec flight).
+     * Short range = 60 block (flyStep 3 × maxFlyTicks 20 → 1 sec flight).
+     * 高速で飛びつつ vanilla の client interpolation で滑らかに見せる.
+     */
+    public static final RegistryObject<Item> RECROSS_HOOKSHOT_LONG =
+        CUSTOM_ITEMS.register("recross_hookshot_long",
+            () -> new minecraftarmorweapon.item.RecrossHookshotItem(4.0, 20));
+
+    public static final RegistryObject<Item> RECROSS_HOOKSHOT_SHORT =
+        CUSTOM_ITEMS.register("recross_hookshot_short",
+            () -> new minecraftarmorweapon.item.RecrossHookshotItem(3.0, 20));
 
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
@@ -271,8 +280,8 @@ public class CustomEntityInit {
         event.put(ANGEL_SERIOUS.get(), AngelTrioEntity.createAttributes().build());
         event.put(ANGEL_MOCKER1.get(), AngelTrioEntity.createAttributes().build());
         event.put(ANGEL_MOCKER2.get(), AngelTrioEntity.createAttributes().build());
-        event.put(MOMENTUM_HOOK_ENTITY.get(),
-            minecraftarmorweapon.entity.MomentumHookEntity.createAttributes().build());
+        event.put(RECROSS_HOOK_ENTITY.get(),
+            minecraftarmorweapon.entity.RecrossHookEntity.createAttributes().build());
     }
 
     // Modのコンストラクタやメインクラスで呼び出す必要があります

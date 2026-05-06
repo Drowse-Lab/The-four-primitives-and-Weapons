@@ -23,16 +23,29 @@ public class ClientSetup {
                 ItemPropertyInit.registerItemProperties(itemObj.get());
             }
 
-            // Momentum Hookshot の状態切替 (cooldown は vanilla 同期される):
-            //   0 = 待機 (standby.json)
-            //   1 = リロード中/発射直後 (reload.json)
-            ItemProperties.register(CustomEntityInit.MOMENTUM_HOOKSHOT.get(),
-                new ResourceLocation(MinecraftArmorWeaponMod.MODID, "momentum_state"),
-                (stack, level, entity, seed) -> {
-                    if (!(entity instanceof net.minecraft.world.entity.player.Player p)) return 0f;
-                    if (p.getCooldowns().isOnCooldown(stack.getItem())) return 1f;
-                    return 0f;
-                });
+            // Re:Cross Hookshot 用の vanilla crossbow predicate を登録 (pull / pulling / charged).
+            // これで model JSON の overrides が動作 → 3D モデル切替が機能する.
+            for (var hookshot : new net.minecraft.world.item.Item[] {
+                    CustomEntityInit.RECROSS_HOOKSHOT_LONG.get(),
+                    CustomEntityInit.RECROSS_HOOKSHOT_SHORT.get() }) {
+                ItemProperties.register(hookshot, new ResourceLocation("pull"),
+                    (stack, lvl, entity, seed) -> {
+                        if (entity == null) return 0f;
+                        if (net.minecraft.world.item.CrossbowItem.isCharged(stack)) return 0f;
+                        return (stack.getUseDuration() - entity.getUseItemRemainingTicks())
+                            / (float) minecraftarmorweapon.item.RecrossHookshotItem.CHARGE_TICKS;
+                    });
+                ItemProperties.register(hookshot, new ResourceLocation("pulling"),
+                    (stack, lvl, entity, seed) ->
+                        entity != null
+                            && entity.isUsingItem()
+                            && entity.getUseItem() == stack
+                            && !net.minecraft.world.item.CrossbowItem.isCharged(stack)
+                        ? 1f : 0f);
+                ItemProperties.register(hookshot, new ResourceLocation("charged"),
+                    (stack, lvl, entity, seed) ->
+                        net.minecraft.world.item.CrossbowItem.isCharged(stack) ? 1f : 0f);
+            }
         });
     }
 }

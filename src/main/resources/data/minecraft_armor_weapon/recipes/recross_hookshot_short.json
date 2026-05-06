@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IBI",
+    "BCB",
+    "IRI"
+  ],
+  "key": {
+    "C": { "item": "minecraft:crossbow" },
+    "I": { "item": "minecraft:iron_ingot" },
+    "B": { "item": "minecraft:blaze_rod" },
+    "R": { "item": "minecraft:repeater" }
+  },
+  "result": {
+    "item": "minecraft_armor_weapon:recross_hookshot_short",
+    "count": 1
+  }
+}

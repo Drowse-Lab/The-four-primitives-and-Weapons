@@ -129,8 +129,12 @@
       "motions": {
         "combat": [],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right"],
+        "right_click": ["none_right", "dodge"],
         "shift_right_click": ["none_shift"]
+      },
+      "default_motions": {
+        "right_click": "none_right",
+        "shift_right_click": "none_shift"
       }
     },
     "crossbow": {
@@ -141,8 +145,12 @@
       "motions": {
         "combat": [],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right"],
+        "right_click": ["none_right", "dodge"],
         "shift_right_click": ["none_shift"]
+      },
+      "default_motions": {
+        "right_click": "none_right",
+        "shift_right_click": "none_shift"
       }
     },
     "throwing": {
