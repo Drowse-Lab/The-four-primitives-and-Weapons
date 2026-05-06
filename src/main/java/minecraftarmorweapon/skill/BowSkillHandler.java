@@ -40,6 +40,8 @@ public class BowSkillHandler {
     public static final String NBT_APPLIED = "msw_bow_skill_applied";
     public static final String NBT_EXPLOSIVE = "msw_bow_explosive";
     public static final String NBT_HOMING_POWER = "msw_bow_homing";
+    public static final String NBT_ARROW_RAIN = "msw_bow_arrow_rain";
+    public static final String NBT_WIND = "msw_bow_wind";
 
     private static final int HOMING_INTERVAL = 4;
     private static final double HOMING_RADIUS = 20.0;
@@ -93,6 +95,20 @@ public class BowSkillHandler {
                     arrow.level().addFreshEntity(extra);
                 }
             }
+            case "bow_arrow_rain" -> {
+                arrow.getPersistentData().putBoolean(NBT_ARROW_RAIN, true);
+            }
+            case "bow_quick_draw" -> {
+                Vec3 vel = arrow.getDeltaMovement();
+                arrow.setDeltaMovement(vel.scale(1.5));
+            }
+            case "bow_wind" -> {
+                Vec3 vel = arrow.getDeltaMovement();
+                arrow.setDeltaMovement(vel.scale(1.5));
+                arrow.setNoGravity(true);
+                arrow.setKnockback(arrow.getKnockback() + 2);
+                arrow.getPersistentData().putBoolean(NBT_WIND, true);
+            }
             default -> {}
         }
     }
@@ -102,12 +118,42 @@ public class BowSkillHandler {
         Projectile p = event.getProjectile();
         if (!(p instanceof Arrow arrow)) return;
         if (arrow.level().isClientSide) return;
-        if (!arrow.getPersistentData().getBoolean(NBT_EXPLOSIVE)) return;
 
-        Vec3 hit = event.getRayTraceResult().getLocation();
-        arrow.level().explode(arrow.getOwner(), hit.x, hit.y, hit.z, 2.0f, Level.ExplosionInteraction.NONE);
-        arrow.discard();
-        event.setCanceled(true);
+        if (arrow.getPersistentData().getBoolean(NBT_EXPLOSIVE)) {
+            Vec3 hit = event.getRayTraceResult().getLocation();
+            arrow.level().explode(arrow.getOwner(), hit.x, hit.y, hit.z, 2.0f, Level.ExplosionInteraction.NONE);
+            arrow.discard();
+            event.setCanceled(true);
+            return;
+        }
+
+        if (arrow.getPersistentData().getBoolean(NBT_ARROW_RAIN)) {
+            Vec3 hit = event.getRayTraceResult().getLocation();
+            spawnArrowRain(arrow, hit);
+            arrow.discard();
+            event.setCanceled(true);
+            return;
+        }
+    }
+
+    private static void spawnArrowRain(Arrow source, Vec3 center) {
+        Level level = source.level();
+        var owner = source.getOwner();
+        var random = level.getRandom();
+        for (int i = 0; i < 8; i++) {
+            double ox = (random.nextDouble() - 0.5) * 4.0;
+            double oz = (random.nextDouble() - 0.5) * 4.0;
+            double sx = center.x + ox;
+            double sy = center.y + 12.0;
+            double sz = center.z + oz;
+            Arrow rain = new Arrow(level, sx, sy, sz);
+            if (owner instanceof net.minecraft.world.entity.LivingEntity le) rain.setOwner(le);
+            rain.shoot(0.0, -1.0, 0.0, 2.5f, 1.5f);
+            rain.pickup = AbstractArrow.Pickup.DISALLOWED;
+            rain.setBaseDamage(rain.getBaseDamage() + 1.0);
+            rain.getPersistentData().putBoolean(NBT_APPLIED, true);
+            level.addFreshEntity(rain);
+        }
     }
 
     @SubscribeEvent

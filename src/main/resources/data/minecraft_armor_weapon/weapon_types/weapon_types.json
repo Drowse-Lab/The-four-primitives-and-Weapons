@@ -129,7 +129,7 @@
       "motions": {
         "combat": [],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["none_right", "bow_power_shot", "bow_explosive", "bow_pierce", "bow_heavy_blow", "bow_homing", "bow_rapid_fire", "dodge"],
+        "right_click": ["none_right", "bow_power_shot", "bow_explosive", "bow_pierce", "bow_rapid_fire", "bow_homing", "bow_arrow_rain", "bow_quick_draw", "bow_heavy_blow", "bow_wind", "dodge"],
         "shift_right_click": ["none_shift"]
       },
       "default_motions": {
@@ -145,7 +145,7 @@
       "motions": {
         "combat": [],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["none_right", "bow_power_shot", "bow_explosive", "bow_pierce", "bow_heavy_blow", "bow_homing", "bow_rapid_fire", "dodge"],
+        "right_click": ["none_right", "bow_power_shot", "bow_explosive", "bow_pierce", "bow_rapid_fire", "bow_homing", "bow_arrow_rain", "bow_quick_draw", "bow_heavy_blow", "bow_wind", "dodge"],
         "shift_right_click": ["none_shift"]
       },
       "default_motions": {

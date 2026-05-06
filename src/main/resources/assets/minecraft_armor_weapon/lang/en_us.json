@@ -491,6 +491,12 @@
   "motion.minecraft_armor_weapon.bow_homing.desc": "Arrow homes onto nearby enemies",
   "motion.minecraft_armor_weapon.bow_rapid_fire": "Rapid Fire",
   "motion.minecraft_armor_weapon.bow_rapid_fire.desc": "Fires 2 additional arrows at once",
+  "motion.minecraft_armor_weapon.bow_arrow_rain": "Arrow Rain",
+  "motion.minecraft_armor_weapon.bow_arrow_rain.desc": "8 arrows rain down on the impact point",
+  "motion.minecraft_armor_weapon.bow_quick_draw": "Quick Draw",
+  "motion.minecraft_armor_weapon.bow_quick_draw.desc": "Arrow speed x1.5",
+  "motion.minecraft_armor_weapon.bow_wind": "Wind Aura",
+  "motion.minecraft_armor_weapon.bow_wind.desc": "Arrow has no gravity, speed x1.5, stronger knockback",
   "motion.minecraft_armor_weapon.bow_wheel.title": "Bow Skill (hold Shift+Left-click)",
   "motion.minecraft_armor_weapon.sword_of_night_special": "Sword of Night - Special",
   "motion.minecraft_armor_weapon.sword_of_night_special.desc": "Right click: Laser / Hold: Teleport",
@@ -539,7 +545,7 @@
   "guidebook.minecraft_armor_weapon.bluepurge.body2": "§fLeft click: combo\n§fDash + left: dash slash\n§fRight click: depends on selected skill\n§7Press K to change skills.",
 
   "guidebook.minecraft_armor_weapon.bow.title": "§eBow",
-  "guidebook.minecraft_armor_weapon.bow.body": "§7Vanilla bow with optional bow skills.\nSet via Skill Selection (K) or switch on the fly\nwith the Shift + Left-click wheel.\n\n§fAvailable skills:\n§7- Power Shot / Explosive / Pierce\n§7- Heavy Blow / Homing / Rapid Fire",
+  "guidebook.minecraft_armor_weapon.bow.body": "§7Vanilla bow with optional bow skills.\nSet via Skill Selection (K) or switch on the fly\nwith the Shift + Left-click wheel.\n\n§fAvailable skills:\n§7- Power Shot / Explosive / Pierce\n§7- Rapid Fire / Homing / Arrow Rain\n§7- Quick Draw / Heavy Blow / Wind Aura",
   "guidebook.minecraft_armor_weapon.bow.title2": "§eBow — Controls",
   "guidebook.minecraft_armor_weapon.bow.body2": "§fHold right-click: draw (vanilla)\n§fRelease: shoot → applies selected skill\n\n§fShift + Left-click: bow skill wheel\n§7Quick tap: cycle to next skill\n§7Long press: open wheel → aim mouse → release to confirm\n\n§7Default is no skill (vanilla behavior).",
 
@@ -547,6 +553,33 @@
   "guidebook.minecraft_armor_weapon.crossbow.body": "§7Vanilla crossbow with optional bow skills.\nUses the same skill set as the bow.\nEffects apply to each arrow when multi-shot.",
   "guidebook.minecraft_armor_weapon.crossbow.title2": "§eCrossbow — Controls",
   "guidebook.minecraft_armor_weapon.crossbow.body2": "§fHold right-click: load\n§fRight click: shoot → applies selected skill\n\n§fShift + Left-click: bow skill wheel\n§7Same feel as the bow.",
+
+  "guidebook.minecraft_armor_weapon.bow_power_shot.title": "§eSkill: Power Shot",
+  "guidebook.minecraft_armor_weapon.bow_power_shot.body": "§7Trigger: bow/crossbow right-click shot\n\n§fArrow damage +4, critical hit.\n§7Best for single-target burst.\nIdeal for sniping tough enemies.",
+
+  "guidebook.minecraft_armor_weapon.bow_explosive.title": "§cSkill: Explosive Arrow",
+  "guidebook.minecraft_armor_weapon.bow_explosive.body": "§7Trigger: arrow impact\n\n§fSmall explosion (radius 2) at impact.\n§7No terrain damage, AoE.\nEffective against groups.",
+
+  "guidebook.minecraft_armor_weapon.bow_pierce.title": "§bSkill: Piercing Arrow",
+  "guidebook.minecraft_armor_weapon.bow_pierce.body": "§7Trigger: bow/crossbow right-click shot\n\n§fArrow pierces up to 5 targets, +1 damage.\n§7Best vs lined-up enemies.\nDoes not pierce walls or shields.",
+
+  "guidebook.minecraft_armor_weapon.bow_rapid_fire.title": "§aSkill: Rapid Fire",
+  "guidebook.minecraft_armor_weapon.bow_rapid_fire.body": "§7Trigger: bow/crossbow right-click shot\n\n§fFires 2 additional arrows (3 total per shot).\n§7Wider hit area.\nAll arrows follow the main trajectory.",
+
+  "guidebook.minecraft_armor_weapon.bow_homing.title": "§dSkill: Homing Arrow",
+  "guidebook.minecraft_armor_weapon.bow_homing.body": "§7Trigger: bow/crossbow right-click shot\n\n§fArrow homes onto nearest enemy within 20 blocks.\n§7Only targets within 60° of view direction.\nCourse-correct every 4 ticks.",
+
+  "guidebook.minecraft_armor_weapon.bow_arrow_rain.title": "§dSkill: Arrow Rain",
+  "guidebook.minecraft_armor_weapon.bow_arrow_rain.body": "§7Trigger: arrow impact\n\n§f8 arrows rain from the sky on impact point.\n§7Area suppression, main arrow consumed.\nMost effective outdoors.",
+
+  "guidebook.minecraft_armor_weapon.bow_quick_draw.title": "§fSkill: Quick Draw",
+  "guidebook.minecraft_armor_weapon.bow_quick_draw.body": "§7Trigger: bow/crossbow right-click shot\n\n§fArrow speed x1.5.\n§7Best for long-range, quick shots.\nSimple velocity buff, no quirks.",
+
+  "guidebook.minecraft_armor_weapon.bow_heavy_blow.title": "§6Skill: Heavy Blow",
+  "guidebook.minecraft_armor_weapon.bow_heavy_blow.body": "§7Trigger: bow/crossbow right-click shot\n\n§fArrow damage +2.\n§7Plain but steady damage buff.\nAll-rounder with no downside.",
+
+  "guidebook.minecraft_armor_weapon.bow_wind.title": "§9Skill: Wind Aura",
+  "guidebook.minecraft_armor_weapon.bow_wind.body": "§7Trigger: bow/crossbow right-click shot\n\n§fNo gravity, speed x1.5, knockback +2.\n§7Flat-line shots ignore the parabolic arc.\nKnockback creates distance.",
 
   "guidebook.minecraft_armor_weapon.convergent_gate.title": "§6Convergent Gate",
   "guidebook.minecraft_armor_weapon.convergent_gate.body": "§7Upgraded form of Gate. Throws multiple blades at once.\nA dense convergent strike that cleaves through space.",

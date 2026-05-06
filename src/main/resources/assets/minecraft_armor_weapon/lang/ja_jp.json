@@ -487,6 +487,12 @@
   "motion.minecraft_armor_weapon.bow_homing.desc": "矢が近くの敵に追尾する",
   "motion.minecraft_armor_weapon.bow_rapid_fire": "連射",
   "motion.minecraft_armor_weapon.bow_rapid_fire.desc": "射撃時に追加で2本同時射出",
+  "motion.minecraft_armor_weapon.bow_arrow_rain": "矢の雨",
+  "motion.minecraft_armor_weapon.bow_arrow_rain.desc": "命中地点に8本の矢が降り注ぐ",
+  "motion.minecraft_armor_weapon.bow_quick_draw": "速射",
+  "motion.minecraft_armor_weapon.bow_quick_draw.desc": "矢の速度 ×1.5",
+  "motion.minecraft_armor_weapon.bow_wind": "風纏い",
+  "motion.minecraft_armor_weapon.bow_wind.desc": "矢が無重力 + 速度 ×1.5 + ノックバック強化",
   "motion.minecraft_armor_weapon.bow_wheel.title": "弓スキル選択 (Shift+左クリック長押し)",
   "motion.minecraft_armor_weapon.sword_of_night_special": "夜の剣・特殊技",
   "motion.minecraft_armor_weapon.sword_of_night_special.desc": "右クリック:レーザー / 長押し:テレポート",
@@ -535,7 +541,7 @@
   "guidebook.minecraft_armor_weapon.bluepurge.body2": "§f左クリック: 連撃\n§fダッシュ + 左: 突進斬り\n§f右クリック: スキル選択次第\n§7スキル切替: K キー",
 
   "guidebook.minecraft_armor_weapon.bow.title": "§e弓",
-  "guidebook.minecraft_armor_weapon.bow.body": "§7バニラの弓に追加スキルを付与可能。\nスキル選択 (K) で右クリック技を設定するか、\nShift + 左クリックでホイールから即時切替。\n\n§f利用可能スキル:\n§7・集中射撃 / 爆裂矢 / 貫通矢\n§7・強撃 / 追尾矢 / 連射",
+  "guidebook.minecraft_armor_weapon.bow.body": "§7バニラの弓に追加スキルを付与可能。\nスキル選択 (K) で右クリック技を設定するか、\nShift + 左クリックでホイールから即時切替。\n\n§f利用可能スキル:\n§7・集中射撃 / 爆裂矢 / 貫通矢\n§7・連射 / 追尾矢 / 矢の雨\n§7・速射 / 強撃 / 風纏い",
   "guidebook.minecraft_armor_weapon.bow.title2": "§e弓 — 操作",
   "guidebook.minecraft_armor_weapon.bow.body2": "§f右クリック: 引き絞り (バニラ通り)\n§f離す: 矢を放つ → 設定スキル発動\n\n§fShift + 左クリック: スキル選択ホイール\n§7短押し: 次のスキルへ循環\n§7長押し: ホイール表示 → マウスで選択 → 離して確定\n\n§7初期設定はスキルなし (バニラ挙動)",
 
@@ -543,6 +549,33 @@
   "guidebook.minecraft_armor_weapon.crossbow.body": "§7バニラのクロスボウに追加スキルを付与可能。\n弓と同じスキル群が使用可能。\n複数装填中の各矢に効果が乗る。",
   "guidebook.minecraft_armor_weapon.crossbow.title2": "§eクロスボウ — 操作",
   "guidebook.minecraft_armor_weapon.crossbow.body2": "§f右クリック長押し: 装填\n§f右クリック: 発射 → 設定スキル発動\n\n§fShift + 左クリック: スキル選択ホイール\n§7操作感は弓と同じ。",
+
+  "guidebook.minecraft_armor_weapon.bow_power_shot.title": "§e技: 集中射撃",
+  "guidebook.minecraft_armor_weapon.bow_power_shot.body": "§7発動: 弓/クロスボウの右クリック射撃時\n\n§f矢のダメージ +4 + クリティカル化。\n§7単発火力を最重視するスキル。\n強敵への狙撃に最適。",
+
+  "guidebook.minecraft_armor_weapon.bow_explosive.title": "§c技: 爆裂矢",
+  "guidebook.minecraft_armor_weapon.bow_explosive.body": "§7発動: 矢の命中時\n\n§f命中地点で半径2の小爆発を起こす。\n§7地形破壊なし、複数体に範囲ダメージ。\n群れに有効。",
+
+  "guidebook.minecraft_armor_weapon.bow_pierce.title": "§b技: 貫通矢",
+  "guidebook.minecraft_armor_weapon.bow_pierce.body": "§7発動: 弓/クロスボウの右クリック射撃時\n\n§f矢が最大5体を貫通 + ダメージ +1。\n§7一直線に並んだ敵に有効。\n壁・盾は貫通しない。",
+
+  "guidebook.minecraft_armor_weapon.bow_rapid_fire.title": "§a技: 連射",
+  "guidebook.minecraft_armor_weapon.bow_rapid_fire.body": "§7発動: 弓/クロスボウの右クリック射撃時\n\n§f1回の射撃で追加2本同時射出 (合計3本)。\n§7当たり判定が広がる。\n弾道は本命と同じ方向。",
+
+  "guidebook.minecraft_armor_weapon.bow_homing.title": "§d技: 追尾矢",
+  "guidebook.minecraft_armor_weapon.bow_homing.body": "§7発動: 弓/クロスボウの右クリック射撃時\n\n§f矢が半径20以内の最寄り敵に追尾。\n§7視線方向の前60°のみ追尾対象。\n4tick ごとに進路補正。",
+
+  "guidebook.minecraft_armor_weapon.bow_arrow_rain.title": "§d技: 矢の雨",
+  "guidebook.minecraft_armor_weapon.bow_arrow_rain.body": "§7発動: 矢の命中時\n\n§f命中地点上空から8本の矢が降り注ぐ。\n§7範囲制圧用、本命の矢は消費される。\n屋外で最大効果。",
+
+  "guidebook.minecraft_armor_weapon.bow_quick_draw.title": "§f技: 速射",
+  "guidebook.minecraft_armor_weapon.bow_quick_draw.body": "§7発動: 弓/クロスボウの右クリック射撃時\n\n§f矢の速度 ×1.5。\n§7長距離・素早い狙撃に有効。\n弾速重視のシンプルなバフ。",
+
+  "guidebook.minecraft_armor_weapon.bow_heavy_blow.title": "§6技: 強撃",
+  "guidebook.minecraft_armor_weapon.bow_heavy_blow.body": "§7発動: 弓/クロスボウの右クリック射撃時\n\n§f矢のダメージ +2。\n§7地味だが安定した火力バフ。\n燃費・癖なしのオールラウンド。",
+
+  "guidebook.minecraft_armor_weapon.bow_wind.title": "§9技: 風纏い",
+  "guidebook.minecraft_armor_weapon.bow_wind.body": "§7発動: 弓/クロスボウの右クリック射撃時\n\n§f矢が無重力 + 速度 ×1.5 + ノックバック +2。\n§7放物線を無視した直射が可能。\n敵を吹き飛ばして距離を取る。",
 
   "guidebook.minecraft_armor_weapon.convergent_gate.title": "§6Convergent Gate",
   "guidebook.minecraft_armor_weapon.convergent_gate.body": "§7Gate の上位形態。複数の刃を同時投擲できる。\n空間を切り裂く高密度の収束攻撃。",

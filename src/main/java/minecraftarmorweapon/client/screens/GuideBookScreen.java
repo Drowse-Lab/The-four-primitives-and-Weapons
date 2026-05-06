@@ -127,7 +127,28 @@ public class GuideBookScreen extends Screen {
             pages.add(new Page(K + w.id + ".title2", K + w.id + ".body2",
                 (g, x, y) -> drawItemIcon(g, w.icon.get(), x, y, 4.0f)));
         }
+
+        // === 弓スキルページ — 各スキル 1 ページ ===
+        for (BowSkillEntry s : BOW_SKILLS) {
+            pages.add(new Page(K + s.id + ".title", K + s.id + ".body",
+                (g, x, y) -> drawItemIcon(g, s.icon.get(), x, y, 4.0f)));
+        }
     }
+
+    private record BowSkillEntry(String id, Supplier<ItemStack> icon) {}
+
+    /** 弓/クロスボウのスキル説明ページ. アイコンはホイールと同じ. */
+    private static final List<BowSkillEntry> BOW_SKILLS = List.of(
+        new BowSkillEntry("bow_power_shot", () -> new ItemStack(Items.SPECTRAL_ARROW)),
+        new BowSkillEntry("bow_explosive",  () -> new ItemStack(Items.TNT)),
+        new BowSkillEntry("bow_pierce",     () -> new ItemStack(Items.ARROW)),
+        new BowSkillEntry("bow_rapid_fire", () -> new ItemStack(Items.FEATHER)),
+        new BowSkillEntry("bow_homing",     () -> new ItemStack(Items.COMPASS)),
+        new BowSkillEntry("bow_arrow_rain", () -> new ItemStack(Items.WATER_BUCKET)),
+        new BowSkillEntry("bow_quick_draw", () -> new ItemStack(Items.SUGAR)),
+        new BowSkillEntry("bow_heavy_blow", () -> new ItemStack(Items.IRON_INGOT)),
+        new BowSkillEntry("bow_wind",       () -> new ItemStack(Items.PHANTOM_MEMBRANE))
+    );
 
     /** 武器 1 つを (item id, アイコン Supplier) で表す. ABC 順に並べる. */
     private record WeaponEntry(String id, Supplier<ItemStack> icon) {}

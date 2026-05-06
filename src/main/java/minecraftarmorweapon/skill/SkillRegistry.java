@@ -101,6 +101,12 @@ public class SkillRegistry {
                 MotionCategory.UNIVERSAL, rightClickOnly, null);
         register("bow_rapid_fire", "連射", "射撃時に追加で2本同時射出",
                 MotionCategory.UNIVERSAL, rightClickOnly, null);
+        register("bow_arrow_rain", "矢の雨", "命中地点に8本の矢が降り注ぐ",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
+        register("bow_quick_draw", "速射", "矢の速度 ×1.5 (引き絞り時間に依らず高速)",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
+        register("bow_wind", "風纏い", "矢が無重力 + 速度 ×1.5 + ノックバック強化",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
         register("sword_of_night_special", "夜の剣・特殊技", "右クリック:レーザー / 長押し:テレポート",
                 MotionCategory.SPECIAL, rightClickOnly, "SwordOfNightItem");
         register("gate_special", "Gate・投刃", "右クリック:放射状に直刀を投げる",

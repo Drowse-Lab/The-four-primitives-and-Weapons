@@ -45,6 +45,9 @@ public class BowSkillWheelOverlay {
             case "bow_heavy_blow" -> new ItemStack(Items.IRON_INGOT);
             case "bow_homing"     -> new ItemStack(Items.COMPASS);
             case "bow_rapid_fire" -> new ItemStack(Items.FEATHER);
+            case "bow_arrow_rain" -> new ItemStack(Items.WATER_BUCKET);
+            case "bow_quick_draw" -> new ItemStack(Items.SUGAR);
+            case "bow_wind"       -> new ItemStack(Items.PHANTOM_MEMBRANE);
             case "dodge"          -> new ItemStack(Items.LEATHER_BOOTS);
             case "none_right"     -> new ItemStack(Items.BOW);
             default               -> new ItemStack(Items.BOW);
