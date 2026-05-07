@@ -21,6 +21,7 @@ import net.minecraft.world.InteractionHand;
 import minecraftarmorweapon.network.RMessage;
 import minecraftarmorweapon.events.DodgeAndBattouHandler;
 import minecraftarmorweapon.client.WeaponWheelState;
+import minecraftarmorweapon.client.BowSkillWheelState;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 
@@ -40,6 +41,15 @@ public class MinecraftArmorWeaponModKeyMappings {
 					// 押下時: 手に武器があれば従来の納刀処理
 					ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
 					ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
+
+					// 弓/クロスボウを持っている場合は弓スキル選択ホイールへ
+					if (mainHand.getItem() instanceof net.minecraft.world.item.BowItem
+						|| mainHand.getItem() instanceof net.minecraft.world.item.CrossbowItem) {
+						if (BowSkillWheelState.openOnRKey()) {
+							isDownOld = isDown;
+							return;
+						}
+					}
 
 					// 鞘（納刀済み）やBluepurgeはホイール対象なので「武器」として扱わない
 					boolean mainIsRealWeapon = DodgeAndBattouHandler.isWeapon(mainHand)
@@ -67,6 +77,7 @@ public class MinecraftArmorWeaponModKeyMappings {
 					}
 				} else {
 					// リリース時
+					BowSkillWheelState.releaseOnRKey();
 					WeaponWheelState.onRKeyReleased();
 				}
 			}

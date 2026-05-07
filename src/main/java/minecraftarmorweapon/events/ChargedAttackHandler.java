@@ -172,9 +172,17 @@ public class ChargedAttackHandler {
             }
         }
 
-        // Decoy/Disarm Wind更新（サーバー側のみ）
-        if (!player.level().isClientSide && player.tickCount % 1 == 0) {
-            updateLokiEntities(player.level());
+        // Loki Decoy/Disarm Wind 更新は ServerTickEvent でグローバル 1 回に集約済み
+        // (updateLokiEntities() を per-player で毎 tick 呼ぶと N×20×全 ArmorStand スキャンで激重)
+    }
+
+    /** Loki Decoy/Decoy Ball/Disarm Wind の更新を全レベルでまとめて実行. */
+    @SubscribeEvent
+    public static void onServerTick(net.minecraftforge.event.TickEvent.ServerTickEvent event) {
+        if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+        if (event.getServer() == null) return;
+        for (ServerLevel level : event.getServer().getAllLevels()) {
+            updateLokiEntities(level);
         }
     }
 
@@ -1075,8 +1083,16 @@ public class ChargedAttackHandler {
     private static void updateLokiEntities(Level level) {
         if (level.isClientSide()) return;
 
-        AABB searchBox = new AABB(-30000000, -64, -30000000, 30000000, 320, 30000000);
-        List<ArmorStand> armorStands = level.getEntitiesOfClass(ArmorStand.class, searchBox);
+        // プレイヤー周辺 256 ブロック範囲のみスキャン (元: 60M×60M で激重)
+        // unloaded チャンクの ArmorStand は tick されないので遠方を走査しても無意味
+        if (!(level instanceof ServerLevel server)) return;
+        if (server.players().isEmpty()) return;
+        java.util.Set<ArmorStand> uniqueStands = new java.util.HashSet<>();
+        for (Player p : server.players()) {
+            AABB box = p.getBoundingBox().inflate(256);
+            uniqueStands.addAll(server.getEntitiesOfClass(ArmorStand.class, box));
+        }
+        List<ArmorStand> armorStands = new java.util.ArrayList<>(uniqueStands);
 
         for (ArmorStand stand : armorStands) {
             CompoundTag nbt = stand.getPersistentData();

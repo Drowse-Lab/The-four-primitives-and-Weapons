@@ -61,6 +61,10 @@ public class RecrossHookEntity extends Mob {
 
     private UUID ownerUuid;
     private int flyTicks = 0;
+    /** 状態にかかわらず存在 tick 数. ゾンビフックの保険 (生成から 200t = 10s 経過で強制 discard). */
+    private int totalTicks = 0;
+    /** 安全上限 — pull が完了せず長時間 ANCHORED したまま放置された hook の永続化を防ぐ. */
+    public static final int MAX_TOTAL_TICKS = 200;
 
     /**
      * Heavy エンティティを引っ掛けた場合に追従対象として保持 (transient, NBT 保存しない).
@@ -131,6 +135,14 @@ public class RecrossHookEntity extends Mob {
     public void tick() {
         super.tick();
         if (level().isClientSide) return;
+
+        // 絶対 tick 数で上限超過 → 強制 discard (ゾンビフック保険)
+        // pull が完了せず ANCHORED のまま放置 / heavyAnchor の dimension 跨ぎ等の異常系を防ぐ.
+        totalTicks++;
+        if (totalTicks > MAX_TOTAL_TICKS) {
+            this.discard();
+            return;
+        }
 
         // owner が居なくなった/距離離れすぎ → discard
         Player owner = getOwnerPlayer();

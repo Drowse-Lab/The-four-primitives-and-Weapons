@@ -42,6 +42,8 @@ public class WeaponProficiencyHandler {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+        // 5 tick おき (0.25秒) で十分 — 攻撃速度モディファイアは即時反映される必要なし
+        if (event.player.tickCount % 5 != 0) return;
         Player player = event.player;
         if (player.level().isClientSide()) return;
 

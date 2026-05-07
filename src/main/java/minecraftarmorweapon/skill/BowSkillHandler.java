@@ -60,7 +60,9 @@ public class BowSkillHandler {
 
         PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);
         String motion = skillData.getMotionForWeapon(AttackSlot.RIGHT_CLICK, bow);
-        if (motion == null) return;
+        // スキル未選択 (none_right) や dodge 設定の場合は完全にバニラ挙動
+        // → NBT 設定も含め一切の改変を行わない (バニラ弓/クロスボウの挙動を保証)
+        if (motion == null || "none_right".equals(motion) || "dodge".equals(motion)) return;
 
         arrow.getPersistentData().putBoolean(NBT_APPLIED, true);
 
@@ -90,7 +92,7 @@ public class BowSkillHandler {
                 for (int i = 0; i < 2; i++) {
                     Arrow extra = new Arrow(arrow.level(), player);
                     extra.shoot(vel.x, vel.y, vel.z, (float) speed, 4.0f);
-                    extra.pickup = AbstractArrow.Pickup.DISALLOWED;
+                    extra.pickup = creativePickup(player);
                     extra.getPersistentData().putBoolean(NBT_APPLIED, true);
                     arrow.level().addFreshEntity(extra);
                 }
@@ -134,6 +136,15 @@ public class BowSkillHandler {
             event.setCanceled(true);
             return;
         }
+
+        // 跳ね返り防止: skill 矢が敵の i-frame 中にヒットすると hurt() が false を返し
+        // バニラの onHitEntity が deltaMovement を反転させて矢が跳ね返る。
+        // skill 矢の場合は i-frame をリセットして必ずダメージが通るようにする。
+        if (arrow.getPersistentData().getBoolean(NBT_APPLIED)
+                && event.getRayTraceResult() instanceof net.minecraft.world.phys.EntityHitResult ehr
+                && ehr.getEntity() instanceof net.minecraft.world.entity.LivingEntity le) {
+            le.invulnerableTime = 0;
+        }
     }
 
     private static void spawnArrowRain(Arrow source, Vec3 center) {
@@ -149,7 +160,9 @@ public class BowSkillHandler {
             Arrow rain = new Arrow(level, sx, sy, sz);
             if (owner instanceof net.minecraft.world.entity.LivingEntity le) rain.setOwner(le);
             rain.shoot(0.0, -1.0, 0.0, 2.5f, 1.5f);
-            rain.pickup = AbstractArrow.Pickup.DISALLOWED;
+            rain.pickup = (owner instanceof ServerPlayer sp)
+                    ? creativePickup(sp)
+                    : AbstractArrow.Pickup.DISALLOWED;
             rain.setBaseDamage(rain.getBaseDamage() + 1.0);
             rain.getPersistentData().putBoolean(NBT_APPLIED, true);
             level.addFreshEntity(rain);
@@ -202,6 +215,13 @@ public class BowSkillHandler {
             .add(to.scale(power)).normalize().scale(motion.length());
         arrow.setDeltaMovement(newMotion);
         arrow.hasImpulse = true;
+    }
+
+    /** クリエイティブのみ回収可能。サバイバルでは拾えない (skill 矢の無限増殖防止)。 */
+    private static AbstractArrow.Pickup creativePickup(ServerPlayer player) {
+        return player.getAbilities().instabuild
+                ? AbstractArrow.Pickup.CREATIVE_ONLY
+                : AbstractArrow.Pickup.DISALLOWED;
     }
 
     private static ItemStack findBow(ServerPlayer player) {

@@ -287,27 +287,30 @@ public class MotionExecutor {
     }
 
     // === 回転斬り ===
+    /**
+     * 旧版は一瞬で全周ダメージ + setYRot(+720) だった.
+     * 新版は {@link SpinSlashTickHandler} に session 開始を委譲し、multi-tick で
+     *   - player を 720° 滑らかに回転
+     *   - 開始角 → 現在角 のアーク内の敵にだけダメージ
+     *   - electric_book / thunder_book 装備時は回転速度倍速
+     * を実現する.
+     */
     private static void performSpinSlash(Player player, Level world, Vec3 playerPos, float chargePercent) {
         boolean isCharged = chargePercent > 0.0f;
         float baseDamage = isCharged ? 12.0f * (1.0f + chargePercent * 1.5f) : 10.0f;
         double range = isCharged ? 4.0 + chargePercent * 2.0 : 3.5;
 
+        // 開始時の小さな視覚フラッシュ (足元のリング)
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
-
-            for (int ring = 0; ring < (isCharged ? 3 : 2); ring++) {
-                double r = range * (ring + 1) / (isCharged ? 3.0 : 2.0);
-                for (int i = 0; i < 360; i += 10) {
-                    double rad = Math.toRadians(i);
-                    serverWorld.sendParticles(
-                        ring == 0 ? ParticleTypes.SWEEP_ATTACK : ParticleTypes.CRIT,
-                        playerPos.x + Math.cos(rad) * r,
-                        playerPos.y + 1 + ring * 0.3,
-                        playerPos.z + Math.sin(rad) * r,
-                        1, 0, 0, 0, 0);
-                }
+            for (int i = 0; i < 360; i += 30) {
+                double rad = Math.toRadians(i);
+                serverWorld.sendParticles(ParticleTypes.CRIT,
+                    playerPos.x + Math.cos(rad) * range * 0.5,
+                    playerPos.y + 0.2,
+                    playerPos.z + Math.sin(rad) * range * 0.5,
+                    1, 0, 0, 0, 0);
             }
-
             if (isCharged && chargePercent >= 1.0f) {
                 for (int i = 0; i < 8; i++) {
                     double angle = Math.PI * 2 * i / 8;
@@ -320,29 +323,11 @@ public class MotionExecutor {
             }
         }
 
-        // 周囲の敵にダメージ
-        AABB searchArea = new AABB(
-            playerPos.x - range, playerPos.y - 1, playerPos.z - range,
-            playerPos.x + range, playerPos.y + 3, playerPos.z + range);
+        // multi-tick session 開始 — 以降の回転 + アークダメージは SpinSlashTickHandler が担当
+        SpinSlashTickHandler.start(player, baseDamage, range, isCharged);
 
-        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> entity != player && entity.distanceTo(player) <= range);
-
-        for (LivingEntity target : targets) {
-            ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
-            DamageCalculator.dealDamage(player, target, baseDamage, weapon);
-
-            Vec3 knockback = target.position().subtract(playerPos).normalize().scale(isCharged ? 1.0 + chargePercent : 0.6);
-            target.setDeltaMovement(knockback.x, 0.4, knockback.z);
-
-            if (isCharged && chargePercent >= 1.0f) {
-                target.setDeltaMovement(0, target.getDeltaMovement().y, 0);
-            }
-        }
-
-        player.setYRot(player.getYRot() + 720);
         world.playSound(null, playerPos.x, playerPos.y, playerPos.z,
-            SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.5f, 0.7f);
+            SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 1.0f);
     }
 
     // === 叩きつける ===

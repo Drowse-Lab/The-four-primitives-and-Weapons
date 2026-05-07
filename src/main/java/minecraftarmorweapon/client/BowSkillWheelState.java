@@ -20,22 +20,30 @@ import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import org.lwjgl.glfw.GLFW;
+
 import java.util.Collections;
 import java.util.List;
 
 /**
- * 弓スキル選択ホイール (Shift+左クリック長押し中に表示、マウス位置で選択、離して確定)。
+ * 弓スキル選択ホイール。
+ * 入力源は 2 通り:
+ *  - SHIFT_ATTACK: 弓所持中に Shift+左クリック長押し
+ *  - R_KEY: 弓所持中に R キー長押し (R キーホイールと同じ操作感)
  *
- * R キー納刀ホイール (WeaponWheelState) と同じ放射状 UI を流用。
- * 選択結果は SkillSelectionPacket.setTypeMotion で武器タイプ別モーションとして保存される。
+ * 操作: 短押し → 次のスキルへ循環 / 長押し → ホイール表示, マウス位置で選択, 離して確定。
  */
 @OnlyIn(Dist.CLIENT)
 public class BowSkillWheelState {
 
+    public enum InputMode { SHIFT_ATTACK, R_KEY }
+
     private static final int HOLD_THRESHOLD_TICKS = 5;
     private static final double DEAD_ZONE = 20.0;
 
-    private static boolean attackHeld = false;
+    private static boolean held = false;
+    private static InputMode inputMode = InputMode.SHIFT_ATTACK;
     private static long pressStartTick = -1;
     private static boolean wheelVisible = false;
     private static int selectedIndex = -1;
@@ -46,8 +54,34 @@ public class BowSkillWheelState {
     public static int getSelectedIndex() { return selectedIndex; }
     public static List<MotionInfo> getMotions() { return motions; }
     public static String getTypeId() { return typeId; }
+    public static boolean isHeld() { return held; }
 
-    /** Shift+Attack 押下開始 */
+    /**
+     * R キーから明示的に開く (MinecraftArmorWeaponModKeyMappings から呼び出す)。
+     * @return true=処理した (R キー側はこれ以降の処理を行わない), false=弓未所持等で処理しなかった
+     */
+    public static boolean openOnRKey() {
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
+        if (player == null || mc.level == null) return false;
+        ItemStack main = player.getMainHandItem();
+        if (!(main.getItem() instanceof BowItem || main.getItem() instanceof CrossbowItem)) return false;
+        if (held) return true; // 既に押下中ならそのまま継続
+
+        if (onPressed(player, main)) {
+            inputMode = InputMode.R_KEY;
+            return true;
+        }
+        return false;
+    }
+
+    /** R キー解除 (MinecraftArmorWeaponModKeyMappings から呼び出す) */
+    public static void releaseOnRKey() {
+        if (held && inputMode == InputMode.R_KEY) {
+            onReleased();
+        }
+    }
+
     private static boolean onPressed(Player player, ItemStack bow) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return false;
@@ -60,18 +94,14 @@ public class BowSkillWheelState {
 
         typeId = typeData.getId();
         motions = avail;
-        attackHeld = true;
+        held = true;
         pressStartTick = mc.level.getGameTime();
         selectedIndex = -1;
         return true;
     }
 
-    /** Shift+Attack 解除 — R キー納刀ホイールと同じ挙動:
-     *  ホイール表示済み + 有効選択 → そのモーションへ
-     *  ホイール未表示 (短押し) → 次のモーションへ循環
-     */
     private static void onReleased() {
-        if (!attackHeld) return;
+        if (!held) return;
 
         boolean wasVisible = wheelVisible;
         int savedIdx = selectedIndex;
@@ -89,7 +119,6 @@ public class BowSkillWheelState {
         if (wasVisible && savedIdx >= 0 && savedIdx < savedMotions.size()) {
             chosen = savedMotions.get(savedIdx).getId();
         } else if (!wasVisible) {
-            // 短押し: 現在のモーションから次へ循環
             chosen = nextMotionId(savedType, savedMotions);
         }
 
@@ -125,7 +154,6 @@ public class BowSkillWheelState {
         if (p != null) {
             p.getCapability(PlayerSkillData.SKILL_CAPABILITY).ifPresent(sd ->
                 sd.setTypeMotion(typeId, AttackSlot.RIGHT_CLICK, motionId));
-            // 短いフィードバック表示
             MotionInfo info = SkillRegistry.getById(motionId);
             if (info != null) {
                 p.displayClientMessage(
@@ -135,15 +163,25 @@ public class BowSkillWheelState {
         }
     }
 
+    /** GLFW で keyAttack の物理状態を確実に検出 (KeyMapping.isDown は不安定なため) */
+    private static boolean isAttackKeyHeldGlfw(Minecraft mc) {
+        long window = mc.getWindow().getWindow();
+        InputConstants.Key key = mc.options.keyAttack.getKey();
+        if (key.getType() == InputConstants.Type.MOUSE) {
+            return GLFW.glfwGetMouseButton(window, key.getValue()) == GLFW.GLFW_PRESS;
+        }
+        return InputConstants.isKeyDown(window, key.getValue());
+    }
+
     public static void tick() {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null || mc.level == null) {
-            if (attackHeld) reset();
+            if (held) reset();
             return;
         }
         if (mc.screen != null) {
-            if (attackHeld) {
+            if (held) {
                 boolean wasVisible = wheelVisible;
                 reset();
                 if (wasVisible) {
@@ -156,18 +194,32 @@ public class BowSkillWheelState {
         ItemStack main = player.getMainHandItem();
         boolean isBow = main.getItem() instanceof BowItem || main.getItem() instanceof CrossbowItem;
 
-        boolean shiftDown = player.isShiftKeyDown();
-        boolean attackDown = mc.options.keyAttack.isDown();
-        boolean activate = isBow && shiftDown && attackDown;
+        // SHIFT_ATTACK モードの場合、毎 tick で押下状態を判定 (R_KEY モードはキー側で開閉)
+        if (!held || inputMode == InputMode.SHIFT_ATTACK) {
+            boolean shiftDown = player.isShiftKeyDown();
+            boolean attackDown = isAttackKeyHeldGlfw(mc);
+            boolean activate = isBow && shiftDown && attackDown;
 
-        if (!attackHeld && activate) {
-            onPressed(player, main);
-        } else if (attackHeld && !activate) {
-            onReleased();
-            return;
+            if (!held && activate) {
+                inputMode = InputMode.SHIFT_ATTACK;
+                onPressed(player, main);
+            } else if (held && inputMode == InputMode.SHIFT_ATTACK && !activate) {
+                onReleased();
+                return;
+            }
         }
 
-        if (!attackHeld) return;
+        if (!held) return;
+
+        // R キー押下中も継続的にキー状態を確認 (フォーカス外などで取り逃しがあるため)
+        if (inputMode == InputMode.R_KEY) {
+            int rKey = minecraftarmorweapon.init.MinecraftArmorWeaponModKeyMappings.R.getKey().getValue();
+            boolean stillHeld = InputConstants.isKeyDown(mc.getWindow().getWindow(), rKey);
+            if (!stillHeld) {
+                onReleased();
+                return;
+            }
+        }
 
         long ticksHeld = mc.level.getGameTime() - pressStartTick;
         if (ticksHeld >= HOLD_THRESHOLD_TICKS && !wheelVisible) {
@@ -209,12 +261,13 @@ public class BowSkillWheelState {
     }
 
     private static void reset() {
-        attackHeld = false;
+        held = false;
         pressStartTick = -1;
         wheelVisible = false;
         selectedIndex = -1;
         motions = Collections.emptyList();
         typeId = null;
+        inputMode = InputMode.SHIFT_ATTACK;
     }
 
     @Mod.EventBusSubscriber(value = Dist.CLIENT)

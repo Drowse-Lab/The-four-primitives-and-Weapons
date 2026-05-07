@@ -34,11 +34,59 @@ import java.util.Optional;
 
 @Mod.EventBusSubscriber
 public class SkinOfDragonTickProcedure {
+	/** 重い /execute 全体スキャンの実行間隔 (tick). 元実装は毎 tick × プレイヤー数 で激重だった. */
+	private static final int GLOBAL_INTERVAL = 10;
+
 	@SubscribeEvent
 	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-		if (event.phase == TickEvent.Phase.END) {
-			execute(event, VersionHelper.getLevel(event.player), event.player.getX(), event.player.getY(), event.player.getZ(), event.player);
+		if (event.phase != TickEvent.Phase.END) return;
+		// プレイヤー固有処理は 5 tick おき (元実装は毎 tick で実害的なラグの一因)
+		if (event.player.tickCount % 5 != 0) return;
+		execute(event, VersionHelper.getLevel(event.player), event.player.getX(), event.player.getY(), event.player.getZ(), event.player);
+	}
+
+	/**
+	 * グローバル @e クエリ (アーマースタンドクリーンアップ + レシピ監視) は
+	 * ServerTickEvent で 1 回だけ実行 → プレイヤー数倍の重複呼出を排除.
+	 * 本体の execute メソッドは「per-player 部分のみ」になっているのでここでは呼び出さない.
+	 */
+	@SubscribeEvent
+	public static void onServerTick(TickEvent.ServerTickEvent event) {
+		if (event.phase != TickEvent.Phase.END) return;
+		if (event.getServer().getTickCount() % GLOBAL_INTERVAL != 0) return;
+		for (ServerLevel level : event.getServer().getAllLevels()) {
+			runGlobalCommands(level);
 		}
+	}
+
+	/** プレイヤー位置に依存しない @e ベースのバックグラウンド処理を 1 回実行. */
+	private static void runGlobalCommands(ServerLevel level) {
+		if (level.getServer() == null) return;
+		Vec3 origin = Vec3.ZERO;
+		CommandSourceStack src = new CommandSourceStack(CommandSource.NULL,
+				origin, Vec2.ZERO, level, 4, "", Component.literal(""), level.getServer(), null).withSuppressedOutput();
+
+		// アーマースタンドクリーンアップ (luna 持ってないやつ kill)
+		level.getServer().getCommands().performPrefixedCommand(src,
+				"execute as @e[type=minecraft:armor_stand, tag=minecraft_armor_weapon_item_stand_amor_stand] if entity @s[nbt=!{HandItems:[{id:\"minecraft_armor_weapon:luna\"}]}] run kill @s");
+		// nether_star + bone + iron_block 検出レシピ
+		level.getServer().getCommands().performPrefixedCommand(src,
+				"execute at @e[type=item,nbt={Item:{id:\"minecraft:nether_star\"}}] if entity @e[type=item,nbt={Item:{id:\"minecraft:bone\",Count:16b}},distance=..1.5] if entity @e[type=item,nbt={Item:{id:\"minecraft:iron_block\",Count:64b}},distance=..1.5] run function minecraft_armor_weapon:hardentity_function");
+		level.getServer().getCommands().performPrefixedCommand(src,
+				"execute at @e[type=item,nbt={Item:{id:\"minecraft:nether_star\"}}] if entity @e[type=item,nbt={Item:{id:\"minecraft_armor_weapon:wither_bone\",Count:16b}},distance=..1.5] if entity @e[type=item,nbt={Item:{id:\"minecraft:iron_block\",Count:64b}},distance=..1.5] run function minecraft_armor_weapon:hardentity_function_wither_skeleton");
+		level.getServer().getCommands().performPrefixedCommand(src,
+				"execute at @e[type=item,nbt={Item:{id:\"minecraft:nether_star\"}}] if entity @e[type=item,nbt={Item:{id:\"minecraft_armor_weapon:stray_bone\",Count:16b}},distance=..1.5] if entity @e[type=item,nbt={Item:{id:\"minecraft:iron_block\",Count:64b}},distance=..1.5] run function minecraft_armor_weapon:hardentity_function_stray");
+		// アーマースタンド (luna 用 / old_katana 用)
+		level.getServer().getCommands().performPrefixedCommand(src,
+				"execute as @e[type=minecraft:armor_stand, tag=minecraft_armor_weapon_item_stand_amor_stand_luna] if entity @s[nbt=!{HandItems:[{id:\"minecraft_armor_weapon:luna\"}]}] run kill @s");
+		level.getServer().getCommands().performPrefixedCommand(src,
+				"execute as @e[type=minecraft:armor_stand, tag=minecraft_armor_weapon_item_stand_amor_stand_old_katana] if entity @s[nbt=!{HandItems:[{id:\"minecraft_armor_weapon:old_katana\"}]}] run kill @s");
+		// alchemy_craft_block 魔法陣エフェクト
+		level.getServer().getCommands().performPrefixedCommand(src,
+				"execute as @e[type=minecraft:armor_stand, tag=minecraft_armor_weapon_alchemy_craft_block_mahouzinn] run effect give @s minecraft_armor_weapon:alchemy_craft_block_effect 1 1 true");
+		// iron_katana + beacon + iron_block on alchemy_craft_block レシピ
+		level.getServer().getCommands().performPrefixedCommand(src,
+				"execute at @e[type=item,nbt={Item:{id:\"minecraft_armor_weapon:iron_katana\"}}] if entity @e[type=item,nbt={Item:{id:\"minecraft:beacon\",Count:16b}},distance=..0.5] if entity @e[type=item,nbt={Item:{id:\"minecraft:iron_block\",Count:64b}},distance=..0.5] if block ~ ~-1 ~ minecraft_armor_weapon:alchemy_craft_block run function minecraft_armor_weapon:sword_stand_luna");
 	}
 
 	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
@@ -79,18 +127,7 @@ public class SkinOfDragonTickProcedure {
 						_level.getServer().getFunctions().execute(_fopt.get(), new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null));
 				}
 			}
-			if (world instanceof ServerLevel _level)
-				_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
-						"execute as @e[type=minecraft:armor_stand, tag=minecraft_armor_weapon_item_stand_amor_stand] if entity @s[nbt=!{HandItems:[{id:\"minecraft_armor_weapon:luna\"}]}] run kill @s");
-			if (world instanceof ServerLevel _level)
-				_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
-						"execute at @e[type=item,nbt={Item:{id:\"minecraft:nether_star\"}}] if entity @e[type=item,nbt={Item:{id:\"minecraft:bone\",Count:16b}},distance=..1.5] if entity @e[type=item,nbt={Item:{id:\"minecraft:iron_block\",Count:64b}},distance=..1.5] run function minecraft_armor_weapon:hardentity_function");
-			if (world instanceof ServerLevel _level)
-				_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
-						"execute at @e[type=item,nbt={Item:{id:\"minecraft:nether_star\"}}] if entity @e[type=item,nbt={Item:{id:\"minecraft_armor_weapon:wither_bone\",Count:16b}},distance=..1.5] if entity @e[type=item,nbt={Item:{id:\"minecraft:iron_block\",Count:64b}},distance=..1.5] run function minecraft_armor_weapon:hardentity_function_wither_skeleton");
-			if (world instanceof ServerLevel _level)
-				_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
-						"execute at @e[type=item,nbt={Item:{id:\"minecraft:nether_star\"}}] if entity @e[type=item,nbt={Item:{id:\"minecraft_armor_weapon:stray_bone\",Count:16b}},distance=..1.5] if entity @e[type=item,nbt={Item:{id:\"minecraft:iron_block\",Count:64b}},distance=..1.5] run function minecraft_armor_weapon:hardentity_function_stray");
+			// Kurikaraken の CustomModelData 自動リセット (player 固有なのでここに残す)
 			if (!(entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MinecraftArmorWeaponModMobEffects.TUNDERBOLTEFFRCT.get()) : false)
 					&& (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getOrCreateTag().getDouble("CustomModelData") == 1
 					&& ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KURIKARAKEN.get()
@@ -98,18 +135,7 @@ public class SkinOfDragonTickProcedure {
 							|| (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == MinecraftArmorWeaponModItems.KURIKARAKENUTIGATANA.get())) {
 				(entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getOrCreateTag().putDouble("CustomModelData", 0);
 			}
-			if (world instanceof ServerLevel _level)
-				_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
-						"execute as @e[type=minecraft:armor_stand, tag=minecraft_armor_weapon_item_stand_amor_stand_luna] if entity @s[nbt=!{HandItems:[{id:\"minecraft_armor_weapon:luna\"}]}] run kill @s");
-			if (world instanceof ServerLevel _level)
-				_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
-						"execute as @e[type=minecraft:armor_stand, tag=minecraft_armor_weapon_item_stand_amor_stand_old_katana] if entity @s[nbt=!{HandItems:[{id:\"minecraft_armor_weapon:old_katana\"}]}] run kill @s");
 		}
-		if (world instanceof ServerLevel _level)
-			_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
-					"execute as @e[type=minecraft:armor_stand, tag=minecraft_armor_weapon_alchemy_craft_block_mahouzinn] run effect give @s minecraft_armor_weapon:alchemy_craft_block_effect 1 1 true");
-		if (world instanceof ServerLevel _level)
-			_level.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, new Vec3(x, y, z), Vec2.ZERO, _level, 4, "", Component.literal(""), _level.getServer(), null).withSuppressedOutput(),
-					"execute at @e[type=item,nbt={Item:{id:\"minecraft_armor_weapon:iron_katana\"}}] if entity @e[type=item,nbt={Item:{id:\"minecraft:beacon\",Count:16b}},distance=..0.5] if entity @e[type=item,nbt={Item:{id:\"minecraft:iron_block\",Count:64b}},distance=..0.5] if block ~ ~-1 ~ minecraft_armor_weapon:alchemy_craft_block run function minecraft_armor_weapon:sword_stand_luna");
+		// グローバル @e コマンドは onServerTick → runGlobalCommands に移動済み
 	}
 }

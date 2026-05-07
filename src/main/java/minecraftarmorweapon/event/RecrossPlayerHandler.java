@@ -106,13 +106,23 @@ public class RecrossPlayerHandler {
         RecrossDebugLogger.logTick("PULL_TICK", sp, hook);
     }
 
-    /** 進路上 (足元 + 頭の高さ) にブロックがあるかチェック. */
+    /**
+     * 進路上に壁があるかチェック (水平方向のみ).
+     *
+     * 旧版の足元/頭の高さの ray-cast は、地面に向けて hook を撃った場合に進路が地中を通過し、
+     * 「飛ばない」バグの原因になっていた. 上下移動の衝突解決はバニラ物理に任せ、
+     * ここでは XZ 平面の壁衝突だけ検出する.
+     *
+     * - 胸の高さ (cur.y + 1.0) で XZ 平面の path を見る
+     * - 真下/真上に引っ張られる場合は XZ 距離 0 → ray 長 0 → 検出されない (= 続行)
+     * - 水平に壁へ突っ込む場合 → ray が壁を貫通 → 中断
+     */
     private static boolean isPathBlockedForPlayer(ServerPlayer sp, Vec3 cur, Vec3 next) {
-        Vec3 feet = cur.add(0, 0.1, 0);            // 足は地面ギリギリだと既に in-block 判定になりがちなので少し浮かす
-        Vec3 head = cur.add(0, sp.getEyeHeight(), 0);
-        Vec3 nextFeet = next.add(0, 0.1, 0);
-        Vec3 nextHead = next.add(0, sp.getEyeHeight(), 0);
-        return clipBlocked(sp, feet, nextFeet) || clipBlocked(sp, head, nextHead);
+        double chestY = cur.y + 1.0;
+        Vec3 chestCur = new Vec3(cur.x, chestY, cur.z);
+        Vec3 chestNextXZ = new Vec3(next.x, chestY, next.z);
+        if (chestCur.distanceToSqr(chestNextXZ) < 1.0E-6) return false;
+        return clipBlocked(sp, chestCur, chestNextXZ);
     }
 
     private static boolean clipBlocked(ServerPlayer sp, Vec3 from, Vec3 to) {

@@ -72,6 +72,12 @@ public class RecrossHookshotItem extends Item {
         if (player.getCooldowns().isOnCooldown(this)) {
             return InteractionResultHolder.fail(stack);
         }
+
+        // 防御: 前回サイクルの Charged フラグが残ってると vanilla 側の挙動と齟齬が出るので必ず初期化.
+        if (CrossbowItem.isCharged(stack)) {
+            CrossbowItem.setCharged(stack, false);
+        }
+
         if (hasFlyingHook(level, player)) {
             return InteractionResultHolder.fail(stack);
         }

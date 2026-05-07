@@ -18,10 +18,12 @@ public class SheathEffectHandler {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
-        
+        // 全インベントリスキャンを毎 tick から 10 tick (0.5秒) おきに変更
+        if (event.player.tickCount % 10 != 0) return;
+
         Player player = event.player;
         if (player.level().isClientSide) return;
-        
+
         // OldKatanaを手に持っているかチェック
         boolean hasOldKatanaInHand = player.getMainHandItem().getItem() == MinecraftArmorWeaponModItems.OLD_KATANA.get() ||
                                       player.getOffhandItem().getItem() == MinecraftArmorWeaponModItems.OLD_KATANA.get();

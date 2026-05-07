@@ -61,6 +61,8 @@ public class GateEventHandler {
     private static final double PROJECTILE_SPEED = 4.0;
     private static final double EXPLODE_RANGE    = 4.0;
     private static final double RITUAL_RANGE     = 1.5;
+    /** 儀式検知 (golden_sword + nether_star + gold_block) は重いので 20 tick (1秒) おき. */
+    private static final int RITUAL_INTERVAL = 20;
 
     // fr1のtickカウンタ { entityUUID -> tick }
     private static final Map<UUID, Integer> fr1TickMap = new ConcurrentHashMap<>();
@@ -91,10 +93,16 @@ public class GateEventHandler {
         if (event.phase != TickEvent.Phase.END) return;
         if (event.getServer() == null) return;
 
+        long tick = event.getServer().getTickCount();
+        // 儀式検知 = ワールド全 ItemEntity スキャンなので 20 tick (1秒) おき.
+        boolean runRitual = (tick % RITUAL_INTERVAL == 0);
+        // tickProjectiles は fr1 ホット時のみ実行 (空なら ArmorStand スキャン省略)
+        boolean hasActiveProjectiles = !fr1TickMap.isEmpty();
+
         for (ServerLevel level : event.getServer().getAllLevels()) {
-            tickRitual(level);
+            if (runRitual) tickRitual(level);
             tickPlayers(level);
-            tickProjectiles(level);
+            if (hasActiveProjectiles) tickProjectiles(level);
         }
     }
 
@@ -104,10 +112,11 @@ public class GateEventHandler {
     // ──────────────────────────────────────────────────────────────
 
     private static void tickRitual(ServerLevel level) {
-        // ドロップしている golden_sword を検索
+        // ドロップしている golden_sword を検索 (1秒に1回のみ実行)
         List<ItemEntity> swords = level.getEntitiesOfClass(ItemEntity.class,
                 new AABB(-30000, -64, -30000, 30000, 320, 30000),
                 e -> e.getItem().getItem() == Items.GOLDEN_SWORD);
+        if (swords.isEmpty()) return;
 
         for (ItemEntity swordEntity : swords) {
             Vec3 pos = swordEntity.position();
@@ -169,14 +178,16 @@ public class GateEventHandler {
                     pos.x - 0.4, pos.y + 1.0, pos.z + 0.5,
                     1, 0.2, 0.2, 0.2, 0.1);
 
-            // frマーカーをプレイヤーの前方50ブロックに移動
-            level.getEntitiesOfClass(ArmorStand.class,
-                    new AABB(pos, pos).inflate(200),
-                    e -> hasTag(e, TAG_FR)
-            ).forEach(fr -> {
-                Vec3 look = player.getLookAngle();
-                fr.setPos(pos.add(look.scale(50)).add(0, 1.5, 0));
-            });
+            // frマーカーをプレイヤーの前方50ブロックに移動 (200半径から100半径に縮小、5tickおき)
+            if (level.getGameTime() % 5 == 0) {
+                level.getEntitiesOfClass(ArmorStand.class,
+                        new AABB(pos, pos).inflate(100),
+                        e -> hasTag(e, TAG_FR)
+                ).forEach(fr -> {
+                    Vec3 look = player.getLookAngle();
+                    fr.setPos(pos.add(look.scale(50)).add(0, 1.5, 0));
+                });
+            }
 
             // 右クリック発動（GateItem.use()でGateProjectileEntityを発射するため、
             // ArmorStand式のfireProjectileは無効化。二重発射を防止）
@@ -221,14 +232,21 @@ public class GateEventHandler {
     // ──────────────────────────────────────────────────────────────
 
     private static void tickProjectiles(ServerLevel level) {
-        List<ArmorStand> fr1List = level.getEntitiesOfClass(ArmorStand.class,
-                new AABB(-30000, -64, -30000, 30000, 320, 30000),
-                e -> hasTag(e, TAG_FR1));
+        // fr1TickMap が空なら fr1 が世界に存在しないので即終了 (呼出元でガード済みだが念のため)
+        if (fr1TickMap.isEmpty()) return;
 
-        // frターゲット（一番近いもの）
-        List<ArmorStand> frList = level.getEntitiesOfClass(ArmorStand.class,
-                new AABB(-30000, -64, -30000, 30000, 320, 30000),
-                e -> hasTag(e, TAG_FR));
+        // プレイヤー周辺のみスキャン (フックショットの 160 と同程度)
+        // プロジェクタイルは 50 tick × 4b/tick = 200block 進行するが、
+        // 遠方のチャンクが unloaded ならどのみち tick されないため範囲を 256 に制限.
+        List<ArmorStand> fr1List = new java.util.ArrayList<>();
+        List<ArmorStand> frList = new java.util.ArrayList<>();
+        for (Player p : level.players()) {
+            AABB box = p.getBoundingBox().inflate(256);
+            for (ArmorStand stand : level.getEntitiesOfClass(ArmorStand.class, box)) {
+                if (hasTag(stand, TAG_FR1) && !fr1List.contains(stand)) fr1List.add(stand);
+                else if (hasTag(stand, TAG_FR) && !frList.contains(stand)) frList.add(stand);
+            }
+        }
 
         for (ArmorStand fr1 : fr1List) {
             UUID id  = fr1.getUUID();
