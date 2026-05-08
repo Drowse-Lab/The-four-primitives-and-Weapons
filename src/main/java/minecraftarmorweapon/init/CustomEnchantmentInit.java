@@ -1,6 +1,7 @@
 package minecraftarmorweapon.init;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
+import minecraftarmorweapon.enchantment.MultiJumpEnchantment;
 import minecraftarmorweapon.enchantment.ReelInEnchantment;
 
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -19,4 +20,8 @@ public class CustomEnchantmentInit {
     // 強引き寄せ（釣竿用）
     public static final RegistryObject<Enchantment> REEL_IN =
         REGISTRY.register("reel_in", () -> new ReelInEnchantment());
+
+    // ジャンプ回数強化（レギンス / フックショット用）
+    public static final RegistryObject<Enchantment> MULTI_JUMP =
+        REGISTRY.register("multi_jump", () -> new MultiJumpEnchantment());
 }

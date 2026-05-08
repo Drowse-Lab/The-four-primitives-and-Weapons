@@ -159,8 +159,15 @@ public class RecrossPlayerHandler {
             return;
         }
         if (sp.onGround()) {
-            // 着地で全リセット (浮遊残量・grace 共に)
-            FloatFuel.reset(sp);
+            // 着地中 — 時間経過で fuel を回復 (multi_jump エンチャでペースアップ)
+            // base 1/tick + level 分加算: lv0=1, lv1=2, lv2=3, lv3=4
+            int recover = 1 + MultiJumpHandler.getHookshotLevel(sp);
+            int cur = FloatFuel.get(sp);
+            if (cur > 0) {
+                int next = Math.max(0, cur - recover);
+                if (next == 0) FloatFuel.reset(sp);
+                else FloatFuel.set(sp, next);
+            }
             FallImmunity.reset(sp);
             return;
         }
@@ -234,11 +241,15 @@ public class RecrossPlayerHandler {
             || p.getOffhandItem().getItem() instanceof minecraftarmorweapon.item.RecrossHookshotItem;
     }
 
-    /** 1 player 1 fuel カウンタ — 着地でリセット. */
+    /** 1 player 1 fuel カウンタ — 着地で時間経過回復. */
     private static final class FloatFuel {
         private static final java.util.Map<java.util.UUID, Integer> map = new java.util.concurrent.ConcurrentHashMap<>();
         static int get(ServerPlayer p) { return map.getOrDefault(p.getUUID(), 0); }
         static void add(ServerPlayer p, int n) { map.merge(p.getUUID(), n, Integer::sum); }
+        static void set(ServerPlayer p, int n) {
+            if (n <= 0) map.remove(p.getUUID());
+            else map.put(p.getUUID(), n);
+        }
         static void reset(ServerPlayer p) { map.remove(p.getUUID()); }
     }
 

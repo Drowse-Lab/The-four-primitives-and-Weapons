@@ -15,6 +15,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 
 import net.minecraft.client.model.HumanoidModel;
@@ -65,6 +68,14 @@ public class RecrossHookshotItem extends Item {
         return CHARGE_TICKS + 3;   // +3 buffer (vanilla crossbow と同じ. release→チャージ完了の余裕)
     }
 
+    /**
+     * 動作 (vanilla クロスボウ風 + 自動再装填):
+     *   - Charged=true で右クリック     → 即発射 → Charged=false → cooldown 開始
+     *   - Charged=false で右クリック    → チャージ開始 (releaseUsing で Charged=true)
+     *   - cooldown 解除 (= フックの動作終了相当) → inventoryTick が自動で Charged=true へ復帰
+     *
+     * Charged=true の状態は NBT に保存されるので、別スロット切替やインベントリ保管を跨いでも維持される。
+     */
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
@@ -72,18 +83,19 @@ public class RecrossHookshotItem extends Item {
         if (player.getCooldowns().isOnCooldown(this)) {
             return InteractionResultHolder.fail(stack);
         }
-
-        // 防御: 前回サイクルの Charged フラグが残ってると vanilla 側の挙動と齟齬が出るので必ず初期化.
-        if (CrossbowItem.isCharged(stack)) {
-            CrossbowItem.setCharged(stack, false);
-        }
-
         if (hasFlyingHook(level, player)) {
             return InteractionResultHolder.fail(stack);
         }
 
-        // チャージ開始 (right click 押してホールド → pulling アニメ).
-        // 離した瞬間に releaseUsing で発射 — 1 アクションで完結.
+        // 装填済み → 即発射 (cooldown 解除されるまで Charged=false で "true" モデル表示)
+        if (CrossbowItem.isCharged(stack)) {
+            fireHook(level, player, hand, stack);
+            CrossbowItem.setCharged(stack, false);
+            player.getCooldowns().addCooldown(this, getEffectiveCooldown(stack));
+            return InteractionResultHolder.consume(stack);
+        }
+
+        // 未装填 → チャージ開始 (押しっぱなしで pulling アニメ → release/finish で Charged=true)
         player.startUsingItem(hand);
         if (!level.isClientSide) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
@@ -98,30 +110,47 @@ public class RecrossHookshotItem extends Item {
         int ticksHeld = getUseDuration(stack) - remainingUseTicks;
         // 早すぎる release はキャンセル (タップ誤射防止)
         if (ticksHeld < CHARGE_TICKS) return;
-        if (p.getCooldowns().isOnCooldown(this)) return;
-        if (hasFlyingHook(level, p)) return;
+        if (CrossbowItem.isCharged(stack)) return;
 
-        // チャージ完了 → そのまま発射 (シングル右クリ動作)
-        // Charged フラグは "発射エフェクト" として 1 フレーム立てる (3D model が一瞬 charged に変化).
+        // チャージ完了 → 装填済みで待機 (true_charged モデル)
         CrossbowItem.setCharged(stack, true);
         if (!level.isClientSide) {
             level.playSound(null, p.getX(), p.getY(), p.getZ(),
                 SoundEvents.CROSSBOW_LOADING_END, SoundSource.PLAYERS, 1.0f, 1.0f);
         }
-        fireHook(level, p, p.getUsedItemHand(), stack);
-        CrossbowItem.setCharged(stack, false);
-        p.getCooldowns().addCooldown(this, getEffectiveCooldown(stack));
     }
 
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
-        // 押しっぱなしで getUseDuration 到達 → フェイルセーフで発射
-        if (!(entity instanceof Player p)) return stack;
-        if (p.getCooldowns().isOnCooldown(this)) return stack;
-        if (hasFlyingHook(level, p)) return stack;
-        fireHook(level, p, p.getUsedItemHand(), stack);
-        p.getCooldowns().addCooldown(this, getEffectiveCooldown(stack));
+        // 押しっぱなしで getUseDuration 到達 → チャージ完了扱い (release と同じ)
+        if (!CrossbowItem.isCharged(stack)) {
+            CrossbowItem.setCharged(stack, true);
+            if (!level.isClientSide && entity instanceof Player p) {
+                level.playSound(null, p.getX(), p.getY(), p.getZ(),
+                    SoundEvents.CROSSBOW_LOADING_END, SoundSource.PLAYERS, 1.0f, 1.0f);
+            }
+        }
         return stack;
+    }
+
+    /**
+     * 自動再装填: 発射 → cooldown 終了 → インベントリ tick で Charged=true に戻す。
+     * これにより「打っている (cooldown 中) 間は true モデル、戻ったタイミングで true_charged モデル」
+     * というユーザー指定の見た目切り替えが実現される。
+     */
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, net.minecraft.world.entity.Entity entity, int slotId, boolean isSelected) {
+        if (level.isClientSide) return;
+        if (!(entity instanceof Player p)) return;
+        if (CrossbowItem.isCharged(stack)) return;
+        // 現在チャージアニメ中ならそちらに任せる (releaseUsing で Charged=true 化される)
+        if (p.isUsingItem() && p.getUseItem() == stack) return;
+        if (p.getCooldowns().isOnCooldown(this)) return;
+
+        // cooldown 解除直後 → 再装填
+        CrossbowItem.setCharged(stack, true);
+        level.playSound(null, p.getX(), p.getY(), p.getZ(),
+            SoundEvents.CROSSBOW_LOADING_END, SoundSource.PLAYERS, 0.5f, 1.2f);
     }
 
     private void fireHook(Level level, Player player, InteractionHand hand, ItemStack stack) {
@@ -146,11 +175,23 @@ public class RecrossHookshotItem extends Item {
         player.awardStat(Stats.ITEM_USED.get(this));
     }
 
-    /** rarity を考慮した実効クールダウン (tick). 最低 1 tick. */
+    /**
+     * rarity と Quick Charge エンチャを考慮した実効クールダウン (tick). 最低 1 tick.
+     * Quick Charge 1 レベルあたり 25% 短縮 (max level 3 で 75% 短縮、最低 25%)。
+     */
     private int getEffectiveCooldown(ItemStack stack) {
         var rarity = minecraftarmorweapon.item.rarity.WeaponRarity.getFromStack(stack);
-        double scale = (rarity != null) ? rarity.getHookshotCooldownScale() : 1.0;
-        return (int) Math.max(1, Math.round(RELOAD_TICKS * scale));
+        double rarityScale = (rarity != null) ? rarity.getHookshotCooldownScale() : 1.0;
+        int quickCharge = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.QUICK_CHARGE, stack);
+        double quickChargeScale = Math.max(0.25, 1.0 - 0.25 * quickCharge);
+        return (int) Math.max(1, Math.round(RELOAD_TICKS * rarityScale * quickChargeScale));
+    }
+
+    /** Quick Charge をエンチャテーブルでもフックショットに付与可能にする。 */
+    @Override
+    public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
+        if (enchantment == Enchantments.QUICK_CHARGE) return true;
+        return super.canApplyAtEnchantingTable(stack, enchantment);
     }
 
     /** rarity を考慮した飛距離倍率. */
@@ -195,11 +236,11 @@ public class RecrossHookshotItem extends Item {
     }
 
     /**
-     * クロスボウ構えポーズ:
+     * クロスボウ構えポーズ (常時):
      *   - 使用中 (チャージ中) → CROSSBOW_CHARGE
-     *   - charged → CROSSBOW_HOLD (構え)
-     *   - その他 → ITEM (vanilla 通常持ち)
+     *   - その他 (Charged=true でも false でも) → CROSSBOW_HOLD
      *
+     * Charged=false (= 撃った直後 / cooldown 中) でも構え視点を維持したい、というユーザー指定の挙動。
      * vanilla {@code PlayerRenderer.getArmPose} は {@code Items.CROSSBOW} のみ CROSSBOW_HOLD を
      * 返すので、custom item では IClientItemExtensions で上書き必須.
      */
@@ -211,10 +252,7 @@ public class RecrossHookshotItem extends Item {
                 if (entity.getUsedItemHand() == hand && entity.getUseItemRemainingTicks() > 0) {
                     return HumanoidModel.ArmPose.CROSSBOW_CHARGE;
                 }
-                if (CrossbowItem.isCharged(stack)) {
-                    return HumanoidModel.ArmPose.CROSSBOW_HOLD;
-                }
-                return HumanoidModel.ArmPose.ITEM;
+                return HumanoidModel.ArmPose.CROSSBOW_HOLD;
             }
         });
     }
