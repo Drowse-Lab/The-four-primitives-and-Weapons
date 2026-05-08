@@ -2,15 +2,25 @@ package minecraftarmorweapon.event;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.entity.RecrossHookEntity;
+import minecraftarmorweapon.events.DodgeAndBattouHandler;
+import minecraftarmorweapon.skill.WeaponTypeRegistry;
+import minecraftarmorweapon.util.DamageCalculator;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -103,7 +113,103 @@ public class RecrossPlayerHandler {
         sp.hurtMarked = true;        // ← この flag が立つと tick 末に ClientboundSetEntityMotionPacket が送信される
         sp.fallDistance = 0f;        // 着弾時の落下ダメージ防止
 
+        // pull 中の縦回転斬り — 小型武器を持っていれば Riptide アニメ + 衝突ダメージ
+        tickSpinSlash(sp);
+
         RecrossDebugLogger.logTick("PULL_TICK", sp, hook);
+    }
+
+    /** 螺旋刃の回転半径 (block) — player から刃中心までの距離. */
+    private static final double SPIRAL_BLADE_RADIUS = 1.5;
+    /** 刃のヒット判定半径 (block) — 刃中心から検出する球の大きさ. */
+    private static final double SPIRAL_HIT_RADIUS = 0.9;
+    /** 刃の縦回転速度 (rad/tick) — 60°/tick = 1 秒で 600° 回る. */
+    private static final double SPIRAL_ANGLE_PER_TICK = Math.toRadians(60);
+
+    /**
+     * Pull 中の縦回転スピン斬り — 進行方向を中心軸として、刃が forward-up 平面で
+     * 縦回転する螺旋状の攻撃判定。
+     *
+     *   - 各 tick で player 進行方向 (delta motion) を {@code forward} とする
+     *   - {@code forward} に垂直な {@code right} / {@code up} を作り、刃位置を
+     *     {@code playerPos + (-cos θ)·up + (sin θ)·forward × radius} で計算
+     *   - 角度 θ は session 中累積するので、player が pull で X 方向に進むと
+     *     forward 軸を中心に螺旋を描く軌跡になる
+     *   - 刃位置中心の小さな範囲で敵検出 → ダメージ (1 entity 1 hit)
+     */
+    private static void tickSpinSlash(ServerPlayer sp) {
+        ItemStack weapon = pickSpinWeapon(sp);
+        if (weapon.isEmpty() || isLargeWeapon(weapon)) {
+            SpinHits.reset(sp);
+            SpinPhase.reset(sp);
+            return;
+        }
+
+        // Riptide アニメを 5 tick だけ走らせ、毎 tick refresh で持続。
+        if (sp.getAutoSpinAttackTicks() < 3) {
+            sp.startAutoSpinAttack(10);
+        }
+
+        // (1) 進行方向 forward と、それに直交する right / up
+        Vec3 motion = sp.getDeltaMovement();
+        Vec3 forward = motion.lengthSqr() > 0.01 ? motion.normalize() : sp.getLookAngle();
+        Vec3 right = forward.cross(new Vec3(0, 1, 0));
+        if (right.lengthSqr() < 1.0E-4) {
+            // forward が垂直 (= 真上 / 真下) の場合のフォールバック
+            right = new Vec3(1, 0, 0);
+        }
+        right = right.normalize();
+        Vec3 up = right.cross(forward).normalize();
+
+        // (2) 縦回転角 θ — session 中累積
+        int phase = SpinPhase.getAndIncrement(sp);
+        double theta = phase * SPIRAL_ANGLE_PER_TICK;
+
+        // (3) 刃位置 = player + (-cos θ)·up + (sin θ)·forward, 半径 SPIRAL_BLADE_RADIUS
+        //     θ=0 で player の足元 (-up), θ=90° で前方 (+forward), θ=180° で頭上 (+up), θ=270° で後方 (-forward)
+        Vec3 bladeOffset = up.scale(-Math.cos(theta) * SPIRAL_BLADE_RADIUS)
+                            .add(forward.scale(Math.sin(theta) * SPIRAL_BLADE_RADIUS));
+        Vec3 bladePos = sp.position().add(0, 1.0, 0).add(bladeOffset);   // y+1.0 = 体の中心付近
+
+        // (4) 刃位置中心の球内の敵にダメージ (1 entity 1 hit)
+        AABB bladeBox = new AABB(bladePos, bladePos).inflate(SPIRAL_HIT_RADIUS);
+        Set<UUID> hits = SpinHits.getOrCreate(sp);
+        for (LivingEntity le : sp.level().getEntitiesOfClass(LivingEntity.class, bladeBox)) {
+            if (le == sp) continue;
+            if (!le.isAlive()) continue;
+            if (hits.contains(le.getUUID())) continue;
+            // bladePos から target の中心までの距離で球判定
+            Vec3 leMid = le.position().add(0, le.getBbHeight() * 0.5, 0);
+            if (leMid.distanceToSqr(bladePos) > (SPIRAL_HIT_RADIUS + le.getBbWidth() * 0.5)
+                    * (SPIRAL_HIT_RADIUS + le.getBbWidth() * 0.5)) continue;
+            DamageCalculator.dealDamage(sp, le, 6.0f, weapon);
+            hits.add(le.getUUID());
+        }
+
+        // (5) 刃の軌跡パーティクル (見た目の螺旋表現)
+        if (sp.level() instanceof ServerLevel sw) {
+            sw.sendParticles(net.minecraft.core.particles.ParticleTypes.SWEEP_ATTACK,
+                bladePos.x, bladePos.y, bladePos.z, 1, 0.05, 0.05, 0.05, 0);
+            sw.sendParticles(net.minecraft.core.particles.ParticleTypes.CRIT,
+                bladePos.x, bladePos.y, bladePos.z, 2, 0.05, 0.05, 0.05, 0.05);
+        }
+    }
+
+    /** 手の武器を 1 つ選ぶ — メインハンド優先、武器でなければオフハンド。 */
+    private static ItemStack pickSpinWeapon(ServerPlayer sp) {
+        ItemStack main = sp.getMainHandItem();
+        if (DodgeAndBattouHandler.isWeapon(main)) return main;
+        ItemStack off = sp.getOffhandItem();
+        if (DodgeAndBattouHandler.isWeapon(off)) return off;
+        return ItemStack.EMPTY;
+    }
+
+    /** 大剣 / 槍 = "大型" 判定 (両手で構える系)。それ以外 (刀 / 直刀 / 細剣 / 短剣 / 剣 等) は小型扱い。 */
+    private static boolean isLargeWeapon(ItemStack stack) {
+        WeaponTypeRegistry.WeaponTypeData type = WeaponTypeRegistry.getTypeForItem(stack);
+        if (type == null) return false;
+        String id = type.getId();
+        return "greatsword".equals(id) || "spear".equals(id);
     }
 
     /**
@@ -137,6 +243,8 @@ public class RecrossPlayerHandler {
         sp.setDeltaMovement(Vec3.ZERO);
         sp.hurtMarked = true;
         sp.fallDistance = 0f;
+        SpinHits.reset(sp);
+        SpinPhase.reset(sp);
         RecrossDebugLogger.endIfActive(sp, reason);
         hook.discard();
     }
@@ -145,6 +253,8 @@ public class RecrossPlayerHandler {
         sp.setNoGravity(false);
         sp.setDeltaMovement(0, 0.4, 0);   // 元データパック: 軽い jump (zombie.infect + dust effect)
         sp.hurtMarked = true;
+        SpinHits.reset(sp);
+        SpinPhase.reset(sp);
         sp.level().playSound(null, sp.getX(), sp.getY(), sp.getZ(),
             net.minecraft.sounds.SoundEvents.ZOMBIE_INFECT,
             net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 2.0f);
@@ -249,6 +359,25 @@ public class RecrossPlayerHandler {
         static void set(ServerPlayer p, int n) {
             if (n <= 0) map.remove(p.getUUID());
             else map.put(p.getUUID(), n);
+        }
+        static void reset(ServerPlayer p) { map.remove(p.getUUID()); }
+    }
+
+    /** Pull 中スピン斬りで既にヒットさせた敵の集合 — pull 開始/終了でリセット. */
+    private static final class SpinHits {
+        private static final java.util.Map<UUID, Set<UUID>> map = new ConcurrentHashMap<>();
+        static Set<UUID> getOrCreate(ServerPlayer p) {
+            return map.computeIfAbsent(p.getUUID(), k -> ConcurrentHashMap.newKeySet());
+        }
+        static void reset(ServerPlayer p) { map.remove(p.getUUID()); }
+    }
+
+    /** Pull 中の螺旋刃の累積回転 phase (tick 数) — pull 開始/終了でリセット. */
+    private static final class SpinPhase {
+        private static final java.util.Map<UUID, java.util.concurrent.atomic.AtomicInteger> map = new ConcurrentHashMap<>();
+        static int getAndIncrement(ServerPlayer p) {
+            return map.computeIfAbsent(p.getUUID(),
+                k -> new java.util.concurrent.atomic.AtomicInteger(0)).getAndIncrement();
         }
         static void reset(ServerPlayer p) { map.remove(p.getUUID()); }
     }
