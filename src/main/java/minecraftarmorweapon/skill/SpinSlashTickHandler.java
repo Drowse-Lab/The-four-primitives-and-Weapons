@@ -47,10 +47,10 @@ public class SpinSlashTickHandler {
 
     private static final Map<UUID, SpinSession> ACTIVE = new ConcurrentHashMap<>();
 
-    /** 通常時 — 720° を 8 tick (0.4 秒) で回転. */
-    public static final int BASE_TOTAL_TICKS = 8;
-    /** electric_book / thunder_book 装備時 — 720° を 4 tick (0.2 秒) で回転. */
-    public static final int BOOSTED_TOTAL_TICKS = 4;
+    /** 通常時 — 720° を 16 tick (0.8 秒) で回転. */
+    public static final int BASE_TOTAL_TICKS = 16;
+    /** electric_book / thunder_book 装備時 — 720° を 8 tick (0.4 秒) で回転. */
+    public static final int BOOSTED_TOTAL_TICKS = 8;
     /** 1 回転で player が回る角度 (= 2 周). */
     public static final float TOTAL_ROTATION_DEG = 720f;
 
