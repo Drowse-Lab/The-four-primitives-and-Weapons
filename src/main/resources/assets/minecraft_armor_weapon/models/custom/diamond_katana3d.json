@@ -1543,7 +1543,7 @@
     }
   ],
   "textures": {
-    "0": "minecraft_armor_weapon:block/netherite_katana",
-    "particle": "minecraft_armor_weapon:block/netherite_katana"
+    "0": "minecraft:block/diamond_block",
+    "particle": "minecraft:block/diamond_block"
   }
 }

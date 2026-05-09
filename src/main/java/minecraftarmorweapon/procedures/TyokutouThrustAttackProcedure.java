@@ -34,7 +34,10 @@ public class TyokutouThrustAttackProcedure {
         "KurikarakenswordItem",
         "KurikarakenItem",
         "IronTyokutoItem",
-        "GoldTyokutoItem"
+        "GoldTyokutoItem",
+        "WoodenTyokutoItem",
+        "DiamondTyokutoItem",
+        "NetheriteTyokutoItem"
         // ここに他の直刀アイテムを追加
         // TyokutouSayaItemは鞘なので除外
     );

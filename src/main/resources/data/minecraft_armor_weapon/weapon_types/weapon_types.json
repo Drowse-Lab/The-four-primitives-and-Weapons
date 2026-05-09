@@ -4,9 +4,11 @@
     "katana": {
       "display_name": "刀",
       "items": [
+        "minecraft_armor_weapon:wooden_katana",
         "minecraft_armor_weapon:iron_katana",
         "minecraft_armor_weapon:gold_katana",
         "minecraft_armor_weapon:stone_katana",
+        "minecraft_armor_weapon:diamond_katana",
         "minecraft_armor_weapon:netherite_katana",
         "minecraft_armor_weapon:wither_katana",
         "minecraft_armor_weapon:darkness_katana",
@@ -48,7 +50,10 @@
         "minecraft_armor_weapon:kurikarakensword",
         "minecraft_armor_weapon:kurikaraken",
         "minecraft_armor_weapon:iron_tyokuto",
-        "minecraft_armor_weapon:gold_tyokuto"
+        "minecraft_armor_weapon:gold_tyokuto",
+        "minecraft_armor_weapon:wooden_tyokuto",
+        "minecraft_armor_weapon:diamond_tyokuto",
+        "minecraft_armor_weapon:netherite_tyokuto"
       ],
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
