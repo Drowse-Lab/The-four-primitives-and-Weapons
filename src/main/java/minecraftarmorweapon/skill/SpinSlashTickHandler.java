@@ -65,6 +65,16 @@ public class SpinSlashTickHandler {
         UUID id = player.getUUID();
         if (ACTIVE.containsKey(id)) return;   // 既に回転中なら無視
         int total = computeTotalTicks(player);
+
+        // Attack cooldown スケールを session に焼き込む (tick 中の damage に一律適用)。
+        // MotionExecutor が context にセットした値を読み取る。tick 時には context が消えているので、
+        // ここで読んで damage に乗算しておく。
+        Float ctxScale = minecraftarmorweapon.util.DamageCalculator.getCooldownScaleContext();
+        if (ctxScale != null) {
+            float cd = 0.2f + ctxScale * ctxScale * 0.8f;
+            damage *= cd;
+        }
+
         ACTIVE.put(id, new SpinSession(player.getYRot(), total, damage, range, charged));
     }
 

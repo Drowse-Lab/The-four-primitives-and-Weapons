@@ -39,6 +39,13 @@ public class MotionExecutor {
     public static void executeMotion(String motionId, Player player, float chargePercent) {
         if (motionId == null || motionId.isEmpty()) return;
 
+        // クロスヘア Attack Cooldown ゲージをキャプチャしてスキル全体に適用 (多段ヒットも含む)。
+        // ゲージが満タン (1.0) なら 100%、空 (0.0) なら 20% のダメージ。
+        // キャプチャ後 ticker をリセットしてゲージを 0 から再充填させる (バニラの通常攻撃と同じ挙動)。
+        float cooldownScale = player.getAttackStrengthScale(0.5f);
+        DamageCalculator.setCooldownScaleContext(cooldownScale);
+        player.resetAttackStrengthTicker();
+
         // チャージ技発動時は DamageCalculator に一律ボーナスを適用させる。
         // これで個別にスケールしていない技も、チャージ発動なら攻撃力が上がる。
         boolean chargedContext = chargePercent > 0.0f;
@@ -60,6 +67,9 @@ public class MotionExecutor {
                 dislikedContext = true;
                 DamageCalculator.setDislikedContext();
                 minecraftarmorweapon.events.WeaponSpecialtyHandler.applyPenalty(player);
+            } else {
+                // 通常技 → ボーナス/ペナルティを解除
+                minecraftarmorweapon.events.WeaponSpecialtyHandler.applyNormal(player);
             }
         }
 
@@ -98,6 +108,7 @@ public class MotionExecutor {
             if (chargedContext) DamageCalculator.clearChargeContext();
             if (preferredContext) DamageCalculator.clearPreferredContext();
             if (dislikedContext) DamageCalculator.clearDislikedContext();
+            DamageCalculator.clearCooldownScaleContext();
         }
     }
 
@@ -298,7 +309,10 @@ public class MotionExecutor {
     private static void performSpinSlash(Player player, Level world, Vec3 playerPos, float chargePercent) {
         boolean isCharged = chargePercent > 0.0f;
         float baseDamage = isCharged ? 12.0f * (1.0f + chargePercent * 1.5f) : 10.0f;
-        double range = isCharged ? 4.0 + chargePercent * 2.0 : 3.5;
+        double baseRange = isCharged ? 4.0 + chargePercent * 2.0 : 3.5;
+        // 武器タイプによる範囲倍率 (大剣/槍は広く、短剣は狭く)
+        double rangeScale = WeaponTypeRegistry.getSpinRangeScale(player.getMainHandItem());
+        double range = baseRange * rangeScale;
 
         // 開始時の小さな視覚フラッシュ (足元のリング)
         if (!world.isClientSide) {

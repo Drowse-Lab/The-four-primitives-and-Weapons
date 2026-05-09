@@ -30,7 +30,7 @@
     "rapier":         ["thrust"],            // 細剣: 突き特化
     "straight_sword": ["thrust"],            // 直刀: 突き特化
     "sword":          ["slam_down"],         // 剣: 叩きつける
-    "greatsword":     [],
+    "greatsword":     ["slam_down"],         // 大剣: 叩きつける
     "dagger":         [],
     "trident":        ["thrust"]             // 槍: 突き特化
   },
@@ -50,7 +50,7 @@
       "upper_left_slash",                    // 左上斬り
       "upper_right_slash",                   // 右上斬り
       "horizontal_slash",                    // 横一文字
-      "spin_slash"                        // 回転斬り 
+      "spin_slash"                           // 回転斬り 
     ],
     "sword":          [
       "upper_left_slash",                    // 左上斬り

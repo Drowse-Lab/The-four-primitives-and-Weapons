@@ -119,10 +119,10 @@ public class RecrossPlayerHandler {
         RecrossDebugLogger.logTick("PULL_TICK", sp, hook);
     }
 
-    /** 螺旋刃の回転半径 (block) — player から刃中心までの距離. */
-    private static final double SPIRAL_BLADE_RADIUS = 1.5;
-    /** 刃のヒット判定半径 (block) — 刃中心から検出する球の大きさ. */
-    private static final double SPIRAL_HIT_RADIUS = 0.9;
+    /** 螺旋刃の回転半径 (block) — player から刃中心までの距離 (基準値; 武器タイプで scale). */
+    private static final double SPIRAL_BLADE_RADIUS_BASE = 1.5;
+    /** 刃のヒット判定半径 (block) — 刃中心から検出する球の大きさ (基準値; 武器タイプで scale). */
+    private static final double SPIRAL_HIT_RADIUS_BASE = 0.9;
     /** 刃の縦回転速度 (rad/tick) — 60°/tick = 1 秒で 600° 回る. */
     private static final double SPIRAL_ANGLE_PER_TICK = Math.toRadians(60);
 
@@ -165,10 +165,14 @@ public class RecrossPlayerHandler {
         int phase = SpinPhase.getAndIncrement(sp);
         double theta = phase * SPIRAL_ANGLE_PER_TICK;
 
-        // (3) 刃位置 = player + (-cos θ)·up + (sin θ)·forward, 半径 SPIRAL_BLADE_RADIUS
+        // (3) 刃位置 = player + (-cos θ)·up + (sin θ)·forward, 半径 bladeRadius
+        //     武器タイプにより範囲がスケールする (大剣/槍 = 広い、短剣 = 狭い)
         //     θ=0 で player の足元 (-up), θ=90° で前方 (+forward), θ=180° で頭上 (+up), θ=270° で後方 (-forward)
-        Vec3 bladeOffset = up.scale(-Math.cos(theta) * SPIRAL_BLADE_RADIUS)
-                            .add(forward.scale(Math.sin(theta) * SPIRAL_BLADE_RADIUS));
+        double scale = minecraftarmorweapon.skill.WeaponTypeRegistry.getSpinRangeScale(weapon);
+        double bladeRadius = SPIRAL_BLADE_RADIUS_BASE * scale;
+        double hitRadius = SPIRAL_HIT_RADIUS_BASE * scale;
+        Vec3 bladeOffset = up.scale(-Math.cos(theta) * bladeRadius)
+                            .add(forward.scale(Math.sin(theta) * bladeRadius));
         Vec3 bladePos = sp.position().add(0, 1.0, 0).add(bladeOffset);   // y+1.0 = 体の中心付近
 
         // (4) 刃位置中心の球内の敵にダメージ (1 entity 1 hit)
@@ -178,7 +182,7 @@ public class RecrossPlayerHandler {
         double kbStrength = otherIsSaya ? 1.4 : 0.5;
         double kbLift = otherIsSaya ? 0.55 : 0.3;
 
-        AABB bladeBox = new AABB(bladePos, bladePos).inflate(SPIRAL_HIT_RADIUS);
+        AABB bladeBox = new AABB(bladePos, bladePos).inflate(hitRadius);
         Set<UUID> hits = SpinHits.getOrCreate(sp);
         for (LivingEntity le : sp.level().getEntitiesOfClass(LivingEntity.class, bladeBox)) {
             if (le == sp) continue;
@@ -186,8 +190,8 @@ public class RecrossPlayerHandler {
             if (hits.contains(le.getUUID())) continue;
             // bladePos から target の中心までの距離で球判定
             Vec3 leMid = le.position().add(0, le.getBbHeight() * 0.5, 0);
-            if (leMid.distanceToSqr(bladePos) > (SPIRAL_HIT_RADIUS + le.getBbWidth() * 0.5)
-                    * (SPIRAL_HIT_RADIUS + le.getBbWidth() * 0.5)) continue;
+            if (leMid.distanceToSqr(bladePos) > (hitRadius + le.getBbWidth() * 0.5)
+                    * (hitRadius + le.getBbWidth() * 0.5)) continue;
             DamageCalculator.dealDamage(sp, le, dmg, weapon);
 
             // ノックバック (KB) — 鞘持ち時はダメージ少ないが KB 強で吹き飛ばし重視

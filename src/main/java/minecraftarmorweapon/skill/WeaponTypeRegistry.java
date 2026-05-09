@@ -457,6 +457,25 @@ public class WeaponTypeRegistry extends SimplePreparableReloadListener<Map<Strin
     }
 
     /**
+     * 回転技 (spin_slash / hookshot 縦回転) の範囲倍率を武器タイプから取得。
+     * 1.0 を基準として、リーチが長い武器ほど大きい値を返す。
+     */
+    public static double getSpinRangeScale(ItemStack stack) {
+        WeaponTypeData type = getTypeForItem(stack);
+        if (type == null) return 1.0;
+        switch (type.getId()) {
+            case "dagger":         return 0.7;
+            case "straight_sword": return 0.95;
+            case "katana":         return 1.0;
+            case "sword":          return 1.05;
+            case "rapier":         return 1.2;
+            case "greatsword":     return 1.6;
+            case "trident":        return 1.5; // 槍
+            default:               return 1.0;
+        }
+    }
+
+    /**
      * アイテムの特殊武器定義を取得（未登録ならnull）
      */
     public static SpecialWeaponData getSpecialForItem(ItemStack stack) {

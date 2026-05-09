@@ -40,6 +40,11 @@ public class DamageCalculator {
     // 武器の不得意技: 攻撃力-40%
     private static final ThreadLocal<Boolean> DISLIKED_CONTEXT = new ThreadLocal<>();
 
+    // Attack cooldown (クロスヘアの白いゲージ) によるダメージスケール用スレッドローカル
+    // スキル発動時に MotionExecutor が getAttackStrengthScale でキャプチャしてセット、
+    // 終了時にクリアする。多段ヒットでもセッション中は同じ scale が使われる。
+    private static final ThreadLocal<Float> COOLDOWN_SCALE_CONTEXT = new ThreadLocal<>();
+
     /**
      * チャージ技コンテキストをセット。発動前に MotionExecutor から呼ばれる。
      * @param chargePercent 0.0～1.0
@@ -75,6 +80,26 @@ public class DamageCalculator {
 
     public static void clearDislikedContext() {
         DISLIKED_CONTEXT.remove();
+    }
+
+    /**
+     * Attack cooldown スケールをセット（スキル発動時に呼ばれる）。
+     * @param scale 0.0 (0%) ～ 1.0 (100%)
+     */
+    public static void setCooldownScaleContext(float scale) {
+        COOLDOWN_SCALE_CONTEXT.set(scale);
+    }
+
+    public static void clearCooldownScaleContext() {
+        COOLDOWN_SCALE_CONTEXT.remove();
+    }
+
+    /**
+     * 現在の Attack cooldown スケール context を取得（複数tick skill が damage に焼き込むのに使う）。
+     * @return context 値、未セットなら null
+     */
+    public static Float getCooldownScaleContext() {
+        return COOLDOWN_SCALE_CONTEXT.get();
     }
 
     /**
@@ -150,6 +175,19 @@ public class DamageCalculator {
         // 武器の不得意技ペナルティ（攻撃力 -40%）
         if (Boolean.TRUE.equals(DISLIKED_CONTEXT.get())) {
             damage *= 0.6f;
+        }
+
+        // Attack cooldown (クロスヘアゲージ) によるダメージスケール
+        // バニラ準拠の式: damage * (0.2 + scale^2 * 0.8)
+        //   scale 0.0 →  20% (空ゲージ)
+        //   scale 0.5 →  40%
+        //   scale 1.0 → 100% (満タン)
+        // ※ context がセットされている時のみ適用 (= MotionExecutor 経由のスキル発動時)。
+        //   バニラの通常攻撃は Player.attack() 自体が cooldown を適用するため、ここでは何もしない。
+        //   複数tick skill は session 開始時にscaleを焼き込むので、tick中は context = null で実行される。
+        Float ctxScale = COOLDOWN_SCALE_CONTEXT.get();
+        if (ctxScale != null) {
+            damage *= 0.2f + ctxScale * ctxScale * 0.8f;
         }
 
         // クリティカル判定（攻撃者がプレイヤーで落下中の場合）
