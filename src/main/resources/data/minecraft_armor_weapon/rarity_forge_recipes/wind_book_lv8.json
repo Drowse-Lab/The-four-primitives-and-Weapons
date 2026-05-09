@@ -1,0 +1,9 @@
+{
+  "pattern": ["TTT", "TLT", "TTT"],
+  "key": {
+    "T": "minecraft:feather",
+    "L": "minecraft:blaze_rod"
+  },
+  "result": "minecraft_armor_weapon:wind_book",
+  "element_level": 8
+}

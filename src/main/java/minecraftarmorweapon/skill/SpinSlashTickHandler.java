@@ -94,14 +94,21 @@ public class SpinSlashTickHandler {
             damageInArc(p, s, totalSwept);
         }
 
-        // === 3. パーティクル (現在の "刃先" 位置に) ===
+        // === 3. パーティクル — 直近で掃いた区間 (前 tick 末 → 今 tick 末) に分散配置。
+        //         "掃いた角度 PARTICLE_ANGLE_GAP° ごとに 1 個" という密度基準なので、
+        //         回転速度を上げても下げても 1 周あたりのパーティクル合計数は一定 (≈ 720/22.5 = 32 個)。
         if (p.level() instanceof ServerLevel sw) {
-            double rad = Math.toRadians(newYaw + 90);  // yaw 0 = -Z, +90 = +X 補正
-            for (int ring = 0; ring < 2; ring++) {
-                double r = s.range * (ring + 1) / 2.0;
-                sw.sendParticles(ring == 0 ? ParticleTypes.SWEEP_ATTACK : ParticleTypes.CRIT,
+            final float PARTICLE_ANGLE_GAP = 22.5f;
+            float prevSwept = (s.elapsed - 1) * anglePerTick;
+            int steps = Math.max(1, Math.round(anglePerTick / PARTICLE_ANGLE_GAP));
+            for (int i = 0; i < steps; i++) {
+                float frac = (i + 0.5f) / steps;   // step 中央に 1 つずつ配置
+                float sweptAt = prevSwept + anglePerTick * frac;
+                double rad = Math.toRadians(s.startYaw + sweptAt + 90);
+                double r = s.range * 0.75;          // ring を 1 本に集約
+                sw.sendParticles(ParticleTypes.SWEEP_ATTACK,
                     p.getX() + Math.cos(rad) * r,
-                    p.getY() + 1 + ring * 0.3,
+                    p.getY() + 1.1,
                     p.getZ() + Math.sin(rad) * r,
                     1, 0, 0, 0, 0);
             }
@@ -146,9 +153,10 @@ public class SpinSlashTickHandler {
             if (target.distanceTo(player) > s.range) continue;
 
             Vec3 toTarget = target.position().subtract(playerPos);
-            // Minecraft yaw 規約: 0° = -Z 方向 (北), +90° = +X 方向 (東) — yaw が増えると時計回り。
-            // (0,-1) → 0°, (1,0) → 90°, (0,1) → 180°, (-1,0) → -90° となる atan2(x, -z) を使う。
-            double targetYaw = Math.toDegrees(Math.atan2(toTarget.x, -toTarget.z));
+            // Minecraft yaw 規約: 0° = +Z 方向 (南), 90° = -X (西), 180° = -Z (北), -90°/270° = +X (東)。
+            // 逆変換 (target dir → yaw) = -atan2(x, z):
+            //   (0, 1) → 0°,  (-1, 0) → 90°,  (0, -1) → 180°,  (1, 0) → -90° (≡ 270°)
+            double targetYaw = -Math.toDegrees(Math.atan2(toTarget.x, toTarget.z));
             double relativeAngle = wrap360(targetYaw - s.startYaw);
 
             // 開始角からの相対角が「これまでに掃いたアーク」内なら hit.

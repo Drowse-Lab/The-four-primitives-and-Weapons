@@ -1,0 +1,9 @@
+{
+  "pattern": ["TTT", "TLT", "TTT"],
+  "key": {
+    "T": "minecraft:pufferfish",
+    "L": "minecraft:stone"
+  },
+  "result": "minecraft_armor_weapon:bubbles_book",
+  "element_level": 3
+}

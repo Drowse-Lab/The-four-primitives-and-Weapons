@@ -153,6 +153,9 @@ public class RecrossHookshotItem extends Item {
             SoundEvents.CROSSBOW_LOADING_END, SoundSource.PLAYERS, 0.5f, 1.2f);
     }
 
+    /** 発射後に付与する落下ダメ無効化の duration (tick). 60t = 3 秒。 */
+    private static final int FIRE_FALL_GUARD_TICKS = 60;
+
     private void fireHook(Level level, Player player, InteractionHand hand, ItemStack stack) {
         if (level.isClientSide) return;
 
@@ -163,6 +166,11 @@ public class RecrossHookshotItem extends Item {
         boolean offHand = (hand == InteractionHand.OFF_HAND);
         RecrossHookEntity hook = new RecrossHookEntity(level, player, offHand, flyStep, scaledMaxFlyTicks);
         level.addFreshEntity(hook);
+
+        // ★ 発射後の少しの間は落下ダメ無効化 (低速落下風)
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
+            minecraftarmorweapon.init.CustomMobEffectInit.HOOKSHOT_FALL_GUARD.get(),
+            FIRE_FALL_GUARD_TICKS, 0, false, false, false));
 
         // 発射音
         level.playSound(null, player.getX(), player.getY(), player.getZ(),
@@ -206,8 +214,9 @@ public class RecrossHookshotItem extends Item {
     }
 
     private boolean hasFlyingHook(Level level, Player player) {
+        // rarity 射程が伸びると hook が 160 ブロック超で飛行中になるので、検索半径も十分大きく。
         for (RecrossHookEntity h : level.getEntitiesOfClass(
-                RecrossHookEntity.class, player.getBoundingBox().inflate(160.0))) {
+                RecrossHookEntity.class, player.getBoundingBox().inflate(2000.0))) {
             if (h.getOwnerPlayer() == player && h.getState() == RecrossHookEntity.State.FLYING) {
                 return true;
             }
@@ -217,12 +226,42 @@ public class RecrossHookshotItem extends Item {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return false;
+        // Legendary 以上はキラキラ (foil) で見た目強調
+        var r = minecraftarmorweapon.item.rarity.WeaponRarity.getFromStack(stack);
+        return r != null && r.ordinal() >= minecraftarmorweapon.item.rarity.WeaponRarity.LEGENDARY.ordinal();
+    }
+
+    /** アイテム名にレアリティの色コードを付与。 */
+    @Override
+    public Component getName(ItemStack stack) {
+        Component base = super.getName(stack);
+        var r = minecraftarmorweapon.item.rarity.WeaponRarity.getFromStack(stack);
+        if (r == null) return base;
+        return Component.literal(r.getColorCode() + base.getString());
+    }
+
+    /** vanilla rarity 色 (アイコン名色) も WeaponRarity に合わせる. */
+    @Override
+    public net.minecraft.world.item.Rarity getRarity(ItemStack stack) {
+        var r = minecraftarmorweapon.item.rarity.WeaponRarity.getFromStack(stack);
+        if (r == null) return super.getRarity(stack);
+        switch (r) {
+            case LEGENDARY:
+            case FORBIDDEN:  return net.minecraft.world.item.Rarity.EPIC;
+            case RARE:       return net.minecraft.world.item.Rarity.RARE;
+            case UNCOMMON:   return net.minecraft.world.item.Rarity.UNCOMMON;
+            default:         return net.minecraft.world.item.Rarity.COMMON;
+        }
     }
 
     @Override
     public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
+        // レアリティ表示 (色付き)
+        var r = minecraftarmorweapon.item.rarity.WeaponRarity.getFromStack(stack);
+        if (r != null) {
+            tooltip.add(Component.literal(r.getColoredName()));
+        }
         tooltip.add(Component.literal(" "));
         double effRange = getEffectiveRange(stack);
         int effCooldown = getEffectiveCooldown(stack);

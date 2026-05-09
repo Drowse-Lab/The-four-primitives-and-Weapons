@@ -554,6 +554,11 @@ public class DodgeAndBattouHandler {
     public static boolean canDodgeWithHands(Player player) {
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
+        // フックショットは右クリックで自身の発射動作を行うので、回避と競合させない
+        if (mainHand.getItem() instanceof minecraftarmorweapon.item.RecrossHookshotItem
+                || offHand.getItem() instanceof minecraftarmorweapon.item.RecrossHookshotItem) {
+            return false;
+        }
         if (isWeapon(mainHand)) return true;
         if (isRangedWeapon(mainHand)) return true;
         if (isWeapon(offHand) && mainHand.isEmpty()) return true;

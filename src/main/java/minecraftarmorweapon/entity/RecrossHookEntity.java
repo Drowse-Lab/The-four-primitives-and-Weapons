@@ -61,16 +61,26 @@ public class RecrossHookEntity extends Mob {
 
     private UUID ownerUuid;
     private int flyTicks = 0;
-    /** 状態にかかわらず存在 tick 数. ゾンビフックの保険 (生成から 200t = 10s 経過で強制 discard). */
+    /** 状態にかかわらず存在 tick 数. ゾンビフックの保険. */
     private int totalTicks = 0;
-    /** 安全上限 — pull が完了せず長時間 ANCHORED したまま放置された hook の永続化を防ぐ. */
-    public static final int MAX_TOTAL_TICKS = 200;
 
     /**
      * Heavy エンティティを引っ掛けた場合に追従対象として保持 (transient, NBT 保存しない).
      * tick 中に anchorPos をこの entity の現在位置で更新 → 動く敵を追いかけて player が引っ張られる.
      */
     private Entity heavyAnchor;
+
+    /**
+     * Light エンティティを引っ掛けた場合の継続 pull 対象.
+     * 毎 tick で player 方向に {@link minecraftarmorweapon.event.RecrossPlayerHandler#PULL_SPEED}
+     * で move される (= player 自身の pull 速度と同じ).
+     */
+    private Entity pulledEntity;
+
+    /** 現在 light entity を継続 pull 中か. RecrossPlayerHandler が player 側 pull を抑止するために参照. */
+    public boolean isPullingEntity() {
+        return pulledEntity != null;
+    }
 
     /** 1 tick あたりの前進ブロック数 (per-instance — Long/Short 用に切替可能). */
     private double flyStep = 2.0;
@@ -138,15 +148,22 @@ public class RecrossHookEntity extends Mob {
 
         // 絶対 tick 数で上限超過 → 強制 discard (ゾンビフック保険)
         // pull が完了せず ANCHORED のまま放置 / heavyAnchor の dimension 跨ぎ等の異常系を防ぐ.
+        // 上限は maxFlyTicks に比例して伸ばす (rarity で射程が伸びる場合に pull 完了前に消えないように)。
+        // 飛行 maxFlyTicks + pull マージン (5 倍) ≒ 飛行射程の 6 倍を絶対上限とする。
         totalTicks++;
-        if (totalTicks > MAX_TOTAL_TICKS) {
+        int absoluteCap = Math.max(200, maxFlyTicks * 6);
+        if (totalTicks > absoluteCap) {
             this.discard();
             return;
         }
 
         // owner が居なくなった/距離離れすぎ → discard
+        // 距離上限は maxFlyTicks に比例 (rarity 射程増で discard されないように)。
+        // 飛行射程 (flyStep × maxFlyTicks) の 1.5 倍を上限に。最低 300 block。
         Player owner = getOwnerPlayer();
-        if (owner == null || !owner.isAlive() || owner.distanceToSqr(this) > 200 * 200) {
+        double maxAllowedDist = Math.max(300, flyStep * maxFlyTicks * 1.5);
+        if (owner == null || !owner.isAlive()
+                || owner.distanceToSqr(this) > maxAllowedDist * maxAllowedDist) {
             this.discard();
             return;
         }
@@ -164,9 +181,47 @@ public class RecrossHookEntity extends Mob {
                 anchorPos = heavyAnchor.position().add(0, heavyAnchor.getBbHeight() * 0.5, 0);
                 setPos(anchorPos.x, anchorPos.y, anchorPos.z);
             }
+            // ★ Light entity を引っ掛けた場合は player 方向に PULL_SPEED で継続 pull
+            if (pulledEntity != null) {
+                tickPullEntity(owner);
+                if (this.isRemoved()) return;
+            }
             // 着弾後はロープ替わりの dust 鎖を hook → owner に毎 tick 描画
             spawnChainParticles(owner);
         }
+    }
+
+    /**
+     * Light entity を毎 tick で player 方向に PULL_SPEED で move する。
+     * 距離 1.5 以下になったら hook discard。entity 死亡 / 不在で hook discard。
+     */
+    private void tickPullEntity(Player owner) {
+        if (!pulledEntity.isAlive()) {
+            this.discard();
+            return;
+        }
+        Vec3 from = pulledEntity.position().add(0, pulledEntity.getBbHeight() * 0.5, 0);
+        Vec3 to = owner.position().add(0, owner.getEyeHeight() * 0.5, 0);
+        Vec3 diff = to.subtract(from);
+        double dist = diff.length();
+
+        if (dist <= minecraftarmorweapon.event.RecrossPlayerHandler.ARRIVAL_DIST) {
+            this.discard();
+            return;
+        }
+
+        // player 自身の pull と同じ速度で entity を引き寄せる (上限超過で行き過ぎないよう min を取る)
+        double speed = Math.min(minecraftarmorweapon.event.RecrossPlayerHandler.PULL_SPEED, dist);
+        Vec3 step = diff.normalize().scale(speed);
+        pulledEntity.setDeltaMovement(step);
+        pulledEntity.hurtMarked = true;
+        if (pulledEntity instanceof LivingEntity le) {
+            le.fallDistance = 0f;
+        }
+
+        // hook 位置を target に追従させて、視覚的に "刺さったまま引き寄せ" になるように
+        Vec3 ePos = pulledEntity.position().add(0, pulledEntity.getBbHeight() * 0.5, 0);
+        setPos(ePos.x, ePos.y, ePos.z);
     }
 
     /**
@@ -241,8 +296,12 @@ public class RecrossHookEntity extends Mob {
                     this.heavyAnchor = hit;
                     anchorAt(hit.position().add(0, hit.getBbHeight() * 0.5, 0));
                 } else {
-                    pullEntityToward(hit, owner);
-                    this.discard();
+                    // ★ light entity → 継続 pull (毎 tick で PULL_SPEED 引き寄せ)
+                    this.pulledEntity = hit;
+                    anchorAt(hit.position().add(0, hit.getBbHeight() * 0.5, 0));
+                    level().playSound(null, hit.getX(), hit.getY(), hit.getZ(),
+                        net.minecraft.sounds.SoundEvents.FISHING_BOBBER_RETRIEVE,
+                        net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.0f);
                 }
                 return;
             }
@@ -298,25 +357,6 @@ public class RecrossHookEntity extends Mob {
             }
         }
         return best;
-    }
-
-    /** light entity / ItemEntity を owner 方向に引き寄せる (元データパック ReCr_Pulled 相当). */
-    private void pullEntityToward(Entity target, Player owner) {
-        Vec3 from = target.position().add(0, target.getBbHeight() * 0.5, 0);
-        Vec3 to = owner.position().add(0, owner.getEyeHeight() * 0.5, 0);
-        Vec3 diff = to.subtract(from);
-        double dist = diff.length();
-        if (dist < 0.5) return;
-        // 距離に応じた pull 速度: 近距離は控えめ、遠距離は強めに. 上限 3 b/tick.
-        double speed = Math.min(3.0, 1.0 + dist * 0.2);
-        target.setDeltaMovement(diff.normalize().scale(speed));
-        target.hurtMarked = true;
-        if (target instanceof LivingEntity le) {
-            le.fallDistance = 0f;
-        }
-        target.level().playSound(null, target.getX(), target.getY(), target.getZ(),
-            net.minecraft.sounds.SoundEvents.FISHING_BOBBER_RETRIEVE,
-            net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 1.0f);
     }
 
     /** ヒット効果音 (元データパック準拠の重ね). */

@@ -145,10 +145,10 @@ public class RecrossPlayerHandler {
             return;
         }
 
-        // Riptide アニメを 5 tick だけ走らせ、毎 tick refresh で持続。
-        if (sp.getAutoSpinAttackTicks() < 3) {
-            sp.startAutoSpinAttack(10);
-        }
+        // Riptide アニメを毎 tick refresh で持続させる
+        // (LivingEntity の autoSpinAttackTicks は private、getter は isAutoSpinAttack() しか
+        //  public でないので、tick 数を見ずに毎 tick 上書きで OK)
+        sp.startAutoSpinAttack(10);
 
         // (1) 進行方向 forward と、それに直交する right / up
         Vec3 motion = sp.getDeltaMovement();
@@ -172,6 +172,12 @@ public class RecrossPlayerHandler {
         Vec3 bladePos = sp.position().add(0, 1.0, 0).add(bladeOffset);   // y+1.0 = 体の中心付近
 
         // (4) 刃位置中心の球内の敵にダメージ (1 entity 1 hit)
+        //     もう片方の手が "鞘" (= 抜刀していない状態) の場合は素手相当ダメージ + 強 KB に。
+        boolean otherIsSaya = isOtherHandSaya(sp, weapon);
+        float dmg = otherIsSaya ? 1.0f : 6.0f;
+        double kbStrength = otherIsSaya ? 1.4 : 0.5;
+        double kbLift = otherIsSaya ? 0.55 : 0.3;
+
         AABB bladeBox = new AABB(bladePos, bladePos).inflate(SPIRAL_HIT_RADIUS);
         Set<UUID> hits = SpinHits.getOrCreate(sp);
         for (LivingEntity le : sp.level().getEntitiesOfClass(LivingEntity.class, bladeBox)) {
@@ -182,7 +188,16 @@ public class RecrossPlayerHandler {
             Vec3 leMid = le.position().add(0, le.getBbHeight() * 0.5, 0);
             if (leMid.distanceToSqr(bladePos) > (SPIRAL_HIT_RADIUS + le.getBbWidth() * 0.5)
                     * (SPIRAL_HIT_RADIUS + le.getBbWidth() * 0.5)) continue;
-            DamageCalculator.dealDamage(sp, le, 6.0f, weapon);
+            DamageCalculator.dealDamage(sp, le, dmg, weapon);
+
+            // ノックバック (KB) — 鞘持ち時はダメージ少ないが KB 強で吹き飛ばし重視
+            Vec3 kbDir = le.position().subtract(sp.position());
+            if (kbDir.lengthSqr() > 1.0E-4) {
+                kbDir = kbDir.normalize();
+                le.setDeltaMovement(kbDir.x * kbStrength, kbLift, kbDir.z * kbStrength);
+                le.hurtMarked = true;
+            }
+
             hits.add(le.getUUID());
         }
 
@@ -210,6 +225,12 @@ public class RecrossPlayerHandler {
         if (type == null) return false;
         String id = type.getId();
         return "greatsword".equals(id) || "spear".equals(id);
+    }
+
+    /** 武器の "もう片方の手" が saya (鞘) かどうか。 */
+    private static boolean isOtherHandSaya(ServerPlayer sp, ItemStack weaponSelected) {
+        ItemStack other = (sp.getMainHandItem() == weaponSelected) ? sp.getOffhandItem() : sp.getMainHandItem();
+        return DodgeAndBattouHandler.isSaya(other);
     }
 
     /**
@@ -288,22 +309,30 @@ public class RecrossPlayerHandler {
         if (sp.isShiftKeyDown()) {
             int fuel = FloatFuel.get(sp);
             if (fuel >= fuelMax) {
-                // 燃料切れ — levitation 解除. grace は与える (浮遊→落下の保護)
-                sp.removeEffect(MobEffects.LEVITATION);
-                FallImmunity.set(sp, graceMax);
+                // 燃料切れ — float effect 解除. grace は独自 fall guard effect として付与
+                sp.removeEffect(minecraftarmorweapon.init.CustomMobEffectInit.HOOKSHOT_FLOAT.get());
+                applyFallGuard(sp, graceMax);
                 return;
             }
-            // 浮遊中: levitation 適用 + 落下リセット + 燃料消費 (押し続けの間のみ).
-            // ★ Sneak 離す → 燃料消費停止 (リセットしない).
-            //    再度 Sneak すれば残り燃料で浮遊継続 → 着地までで何回でも分割使用可.
-            sp.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 5, 1, false, false, false));
+            // 浮遊中: 独自 HOOKSHOT_FLOAT effect 適用 + 燃料消費
+            // ★ Sneak 離す → 燃料消費停止 (リセットしない). 再度 Sneak で継続。
+            sp.addEffect(new MobEffectInstance(
+                minecraftarmorweapon.init.CustomMobEffectInit.HOOKSHOT_FLOAT.get(),
+                5, 0, false, false, false));
             sp.fallDistance = 0f;
             FloatFuel.add(sp, 1);
-            FallImmunity.set(sp, graceMax);
+            applyFallGuard(sp, graceMax);
         } else {
-            // Sneak 離した → 燃料は据え置き (リセット無し). grace を消化.
-            tickFallImmunity(sp);
+            // Sneak 離した → 燃料据え置き. fall guard が残っていれば自然減少 (effect 自体が duration で消える)
         }
+    }
+
+    /** 独自 HOOKSHOT_FALL_GUARD effect を {@code ticks} だけ player に付与 (上書き). */
+    private static void applyFallGuard(ServerPlayer sp, int ticks) {
+        if (ticks <= 0) return;
+        sp.addEffect(new MobEffectInstance(
+            minecraftarmorweapon.init.CustomMobEffectInit.HOOKSHOT_FALL_GUARD.get(),
+            ticks, 0, false, false, false));
     }
 
     /** grace 残量 > 0 の間は fallDistance を 0 に保つ. 毎 tick 1 減算. */
@@ -337,11 +366,16 @@ public class RecrossPlayerHandler {
     }
 
     private static RecrossHookEntity findAnchoredHook(ServerPlayer sp) {
+        // 検索半径は十分大きく取る — rarity 射程が 600+ ブロックに伸びる場合、
+        // anchor 完了直後の hook が固定 160 ブロック範囲外に居て見つからず pull が始まらない問題を回避。
         for (RecrossHookEntity h : sp.level().getEntitiesOfClass(
-                RecrossHookEntity.class, sp.getBoundingBox().inflate(160.0))) {
-            if (h.getOwnerPlayer() == sp && h.getState() == RecrossHookEntity.State.ANCHORED) {
-                return h;
-            }
+                RecrossHookEntity.class, sp.getBoundingBox().inflate(2000.0))) {
+            if (h.getOwnerPlayer() != sp) continue;
+            if (h.getState() != RecrossHookEntity.State.ANCHORED) continue;
+            // light entity を継続 pull 中の hook は player 側 pull の対象外
+            // (= 敵をこちらへ引き寄せている最中、player は通常移動できる)
+            if (h.isPullingEntity()) continue;
+            return h;
         }
         return null;
     }

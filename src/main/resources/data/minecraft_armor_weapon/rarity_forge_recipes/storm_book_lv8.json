@@ -1,0 +1,9 @@
+{
+  "pattern": ["TTT", "TLT", "TTT"],
+  "key": {
+    "T": "minecraft:phantom_membrane",
+    "L": "minecraft:blaze_rod"
+  },
+  "result": "minecraft_armor_weapon:storm_book",
+  "element_level": 8
+}

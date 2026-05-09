@@ -50,9 +50,6 @@ public class RMessage {
 
 	public static void pressAction(Player entity, int type, int pressedms) {
 		Level world = VersionHelper.getLevel(entity);
-		double x = entity.getX();
-		double y = entity.getY();
-		double z = entity.getZ();
 		// security measure to prevent arbitrary chunk generation
 		if (!world.hasChunkAt(entity.blockPosition()))
 			return;
@@ -60,36 +57,149 @@ public class RMessage {
 			ItemStack mainHand = entity.getItemInHand(InteractionHand.MAIN_HAND);
 			ItemStack offHand = entity.getItemInHand(InteractionHand.OFF_HAND);
 
-			// Bluepurgeアイテムは納刀せずCoverUp処理へ直行
 			boolean mainIsBluepurge = isBluepurge(mainHand);
 			boolean offIsBluepurge = isBluepurge(offHand);
 
-			// 納刀チェック: 武器+空の鞘を持っていればRキーで納刀（Bluepurgeは納刀しない、満杯鞘はスキップ）
-			if (!mainIsBluepurge && DodgeAndBattouHandler.isWeapon(mainHand) && DodgeAndBattouHandler.isSaya(offHand)
+			boolean mainIsWeapon = !mainIsBluepurge && DodgeAndBattouHandler.isWeapon(mainHand)
+					&& !DodgeAndBattouHandler.isSaya(mainHand);
+			boolean offIsWeapon = !offIsBluepurge && DodgeAndBattouHandler.isWeapon(offHand)
+					&& !DodgeAndBattouHandler.isSaya(offHand);
+
+			// 納刀チェック1: 武器+空の鞘を両手で持っていれば納刀
+			if (mainIsWeapon && DodgeAndBattouHandler.isSaya(offHand)
 					&& !CuriosScabbardHelper.hasStoredWeapon(offHand)) {
 				DodgeAndBattouHandler.performSheathing(entity, mainHand, offHand,
 						InteractionHand.MAIN_HAND, InteractionHand.OFF_HAND);
 				return;
-			} else if (!offIsBluepurge && DodgeAndBattouHandler.isWeapon(offHand) && DodgeAndBattouHandler.isSaya(mainHand)
+			} else if (offIsWeapon && DodgeAndBattouHandler.isSaya(mainHand)
 					&& !CuriosScabbardHelper.hasStoredWeapon(mainHand)) {
 				DodgeAndBattouHandler.performSheathing(entity, offHand, mainHand,
 						InteractionHand.OFF_HAND, InteractionHand.MAIN_HAND);
 				return;
 			}
 
-			// 手に鞘がない場合、Curiosスロットの鞘に納刀を試みる（Bluepurgeは納刀しない）
-			if (!mainIsBluepurge && DodgeAndBattouHandler.isWeapon(mainHand)) {
+			// 納刀チェック2: Curiosスロットの空の鞘
+			if (mainIsWeapon) {
 				if (CuriosScabbardHelper.sheathIntoCurioSlot(entity, mainHand, InteractionHand.MAIN_HAND)) {
 					return;
 				}
-			} else if (!offIsBluepurge && DodgeAndBattouHandler.isWeapon(offHand)) {
+			} else if (offIsWeapon) {
 				if (CuriosScabbardHelper.sheathIntoCurioSlot(entity, offHand, InteractionHand.OFF_HAND)) {
 					return;
 				}
 			}
 
+			// 納刀チェック3: インベントリスロットの空の鞘
+			if (mainIsWeapon) {
+				if (sheathIntoInventory(entity, mainHand, InteractionHand.MAIN_HAND)) {
+					return;
+				}
+			} else if (offIsWeapon) {
+				if (sheathIntoInventory(entity, offHand, InteractionHand.OFF_HAND)) {
+					return;
+				}
+			}
+
+			// 抜刀チェック: 手が空で各所の満杯鞘があれば抜刀
+			if (mainHand.isEmpty()) {
+				// オフハンドの満杯鞘 → メインハンドへ抜刀
+				if (CuriosScabbardHelper.isScabbard(offHand)
+						&& CuriosScabbardHelper.hasStoredWeapon(offHand)) {
+					if (drawFromOffHandSaya(entity, offHand)) return;
+				}
+				if (drawFromCuriosFirst(entity)) return;
+				if (drawFromInventoryFirst(entity)) return;
+			}
+
 			RkigaYasaretatokiProcedure.execute(entity);
 		}
+	}
+
+	/**
+	 * インベントリスロットの空の鞘に納刀を試みる
+	 */
+	private static boolean sheathIntoInventory(Player player, ItemStack weaponStack, InteractionHand weaponHand) {
+		if (!DodgeAndBattouHandler.isWeapon(weaponStack)) return false;
+		int selectedSlot = player.getInventory().selected;
+		for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+			if (i == selectedSlot || i == 40) continue;
+			ItemStack scabbard = player.getInventory().getItem(i);
+			if (!CuriosScabbardHelper.isScabbard(scabbard)) continue;
+			if (CuriosScabbardHelper.hasStoredWeapon(scabbard)) continue;
+			if (!CuriosScabbardHelper.isCompatible(weaponStack, scabbard)) continue;
+
+			// 互換のある最初の空鞘に納刀
+			boolean isTyokutoSaya = scabbard.getItem() instanceof minecraftarmorweapon.item.TyokutoSayaItem;
+			boolean isSwordSaya = scabbard.getItem() instanceof minecraftarmorweapon.item.SwordSayaItem;
+			net.minecraft.nbt.CompoundTag sheathTag = scabbard.getOrCreateTag();
+			String storageKey = (isTyokutoSaya || isSwordSaya) ? "StoredSword" : "StoredKatana";
+			net.minecraft.nbt.CompoundTag weaponData = weaponStack.save(new net.minecraft.nbt.CompoundTag());
+			sheathTag.put(storageKey, weaponData);
+
+			int modelData;
+			if (isTyokutoSaya) {
+				modelData = minecraftarmorweapon.item.TyokutoSayaItem.getSwordModelData(weaponStack);
+			} else if (isSwordSaya) {
+				modelData = minecraftarmorweapon.item.SwordSayaItem.getSwordModelData(weaponStack);
+			} else {
+				modelData = CuriosScabbardHelper.getWeaponModelDataForSaya(weaponStack);
+			}
+			sheathTag.putInt("CustomModelData", modelData);
+			scabbard.setTag(sheathTag);
+
+			player.setItemInHand(weaponHand, ItemStack.EMPTY);
+			player.getInventory().setItem(i, scabbard);
+			player.playSound(net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 0.8F);
+			player.displayClientMessage(net.minecraft.network.chat.Component.literal("§7納刀"), true);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * オフハンドの満杯鞘からメインハンドへ抜刀。空鞘はオフハンドに残す。
+	 */
+	private static boolean drawFromOffHandSaya(Player player, ItemStack scabbard) {
+		ItemStack weapon = CuriosScabbardHelper.extractWeaponFromScabbard(scabbard);
+		if (weapon.isEmpty()) return false;
+
+		CuriosScabbardHelper.clearWeaponFromScabbard(scabbard);
+		player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
+		player.setItemInHand(InteractionHand.OFF_HAND, scabbard);
+		player.playSound(net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F);
+		return true;
+	}
+
+	/**
+	 * Curiosスロットの満杯鞘から抜刀
+	 */
+	private static boolean drawFromCuriosFirst(Player player) {
+		CuriosScabbardHelper.ScabbardSlotInfo info = CuriosScabbardHelper.findLoadedScabbardInCurios(player);
+		if (info == null) return false;
+		return CuriosScabbardHelper.battouFromCurioSlot(player, InteractionHand.MAIN_HAND);
+	}
+
+	/**
+	 * インベントリスロットの満杯鞘から抜刀
+	 */
+	private static boolean drawFromInventoryFirst(Player player) {
+		int selectedSlot = player.getInventory().selected;
+		for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+			if (i == selectedSlot || i == 40) continue;
+			ItemStack scabbard = player.getInventory().getItem(i);
+			if (!CuriosScabbardHelper.isScabbard(scabbard)) continue;
+			if (!CuriosScabbardHelper.hasStoredWeapon(scabbard)) continue;
+
+			ItemStack weapon = CuriosScabbardHelper.extractWeaponFromScabbard(scabbard);
+			if (weapon.isEmpty()) continue;
+
+			player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
+			CuriosScabbardHelper.clearWeaponFromScabbard(scabbard);
+			player.getInventory().setItem(i, scabbard);
+			player.playSound(net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F);
+			return true;
+		}
+		return false;
 	}
 
 	private static boolean isBluepurge(ItemStack stack) {

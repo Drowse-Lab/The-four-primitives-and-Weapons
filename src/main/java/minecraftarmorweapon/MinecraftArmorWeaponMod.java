@@ -77,6 +77,7 @@ public class MinecraftArmorWeaponMod {
 
 		MinecraftArmorWeaponModEnchantments.REGISTRY.register(bus);
 		minecraftarmorweapon.init.CustomEnchantmentInit.REGISTRY.register(bus);
+		minecraftarmorweapon.init.CustomMobEffectInit.REGISTRY.register(bus);
 
 		MinecraftArmorWeaponModMenus.REGISTRY.register(bus);
 

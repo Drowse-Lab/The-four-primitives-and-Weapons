@@ -1,0 +1,9 @@
+{
+  "pattern": ["TTT", "TLT", "TTT"],
+  "key": {
+    "T": "minecraft:lightning_rod",
+    "L": "minecraft:gold_ingot"
+  },
+  "result": "minecraft_armor_weapon:thunder_book",
+  "element_level": 5
+}

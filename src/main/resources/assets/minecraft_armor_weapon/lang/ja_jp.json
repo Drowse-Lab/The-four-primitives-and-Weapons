@@ -414,6 +414,8 @@
   "item.minecraft_armor_weapon.angel_mocker2_spawn_egg": "??? スポーンエッグ",
   "enchantment.minecraft_armor_weapon.reel_in": "強引き寄せ",
   "enchantment.minecraft_armor_weapon.reel_in.desc": "釣り針に掛けた敵を強力に引き寄せる",
+  "effect.minecraft_armor_weapon.hookshot_float": "フックショット浮遊",
+  "effect.minecraft_armor_weapon.hookshot_fall_guard": "フックショット落下軽減",
   "enchantment.minecraft_armor_weapon.kill.desc": "攻撃時に確率で即死を発生させる (Lv 毎 +10%)",
   "enchantment.minecraft_armor_weapon.demonized.desc": "近接攻撃に追加ダメージを与える",
   "enchantment.minecraft_armor_weapon.multi_jump": "ジャンプ回数強化",
