@@ -912,7 +912,7 @@
     }
   ],
   "textures": {
-    "1": "minecraft:block/diamond_block",
-    "particle": "minecraft:block/diamond_block"
+    "1": "minecraft_armor_weapon:block/diamond_tyokuto3d",
+    "particle": "minecraft_armor_weapon:block/diamond_tyokuto3d"
   }
 }

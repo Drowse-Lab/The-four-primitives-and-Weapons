@@ -173,8 +173,7 @@ public class SpinSlashTickHandler {
             // (totalSwept は 720° まで上がるので 360°超でも relativeAngle <= totalSwept で OK)
             if (totalSwept >= relativeAngle) {
                 DamageCalculator.dealDamage(player, target, s.damage, weapon);
-                Vec3 kb = target.position().subtract(playerPos).normalize().scale(s.charged ? 1.0 : 0.6);
-                target.setDeltaMovement(kb.x, 0.4, kb.z);
+                DamageCalculator.applyNormalKnockback(player, target, weapon);
                 s.hitEntities.add(target.getUUID());
 
                 if (world instanceof ServerLevel sw) {

@@ -120,9 +120,9 @@ public class RecrossPlayerHandler {
     }
 
     /** 螺旋刃の回転半径 (block) — player から刃中心までの距離 (基準値; 武器タイプで scale). */
-    private static final double SPIRAL_BLADE_RADIUS_BASE = 1.5;
+    private static final double SPIRAL_BLADE_RADIUS_BASE = 2.5;
     /** 刃のヒット判定半径 (block) — 刃中心から検出する球の大きさ (基準値; 武器タイプで scale). */
-    private static final double SPIRAL_HIT_RADIUS_BASE = 0.9;
+    private static final double SPIRAL_HIT_RADIUS_BASE = 1.6;
     /** 刃の縦回転速度 (rad/tick) — 60°/tick = 1 秒で 600° 回る. */
     private static final double SPIRAL_ANGLE_PER_TICK = Math.toRadians(60);
 
@@ -176,11 +176,10 @@ public class RecrossPlayerHandler {
         Vec3 bladePos = sp.position().add(0, 1.0, 0).add(bladeOffset);   // y+1.0 = 体の中心付近
 
         // (4) 刃位置中心の球内の敵にダメージ (1 entity 1 hit)
-        //     もう片方の手が "鞘" (= 抜刀していない状態) の場合は素手相当ダメージ + 強 KB に。
+        //     もう片方の手が "鞘" (= 抜刀していない状態) の場合は素手相当ダメージ。
+        //     KB は applyNormalKnockback で統一 (saya 武器なら自動で +1.5 強化)。
         boolean otherIsSaya = isOtherHandSaya(sp, weapon);
         float dmg = otherIsSaya ? 1.0f : 6.0f;
-        double kbStrength = otherIsSaya ? 1.4 : 0.5;
-        double kbLift = otherIsSaya ? 0.55 : 0.3;
 
         AABB bladeBox = new AABB(bladePos, bladePos).inflate(hitRadius);
         Set<UUID> hits = SpinHits.getOrCreate(sp);
@@ -193,14 +192,7 @@ public class RecrossPlayerHandler {
             if (leMid.distanceToSqr(bladePos) > (hitRadius + le.getBbWidth() * 0.5)
                     * (hitRadius + le.getBbWidth() * 0.5)) continue;
             DamageCalculator.dealDamage(sp, le, dmg, weapon);
-
-            // ノックバック (KB) — 鞘持ち時はダメージ少ないが KB 強で吹き飛ばし重視
-            Vec3 kbDir = le.position().subtract(sp.position());
-            if (kbDir.lengthSqr() > 1.0E-4) {
-                kbDir = kbDir.normalize();
-                le.setDeltaMovement(kbDir.x * kbStrength, kbLift, kbDir.z * kbStrength);
-                le.hurtMarked = true;
-            }
+            DamageCalculator.applyNormalKnockback(sp, le, weapon);
 
             hits.add(le.getUUID());
         }

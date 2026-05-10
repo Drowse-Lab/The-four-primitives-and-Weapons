@@ -109,12 +109,17 @@ public class TyokutoSayaItem extends Item implements ICurioItem {
 
         // 鞘が空の場合のみ納刀可能
         if (!sheathTag.contains("StoredSword")) {
+            // 直刀鞘に登録されていない武器は納刀不可
+            int modelData = getSwordModelData(swordStack);
+            if (modelData == 0) {
+                player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cこの武器はこの鞘に納刀できません"), true);
+                return;
+            }
             // 武器のNBTデータを保存
             CompoundTag swordData = swordStack.save(new CompoundTag());
             sheathTag.put("StoredSword", swordData);
 
             // 鞘の見た目を更新（納刀状態）
-            int modelData = getSwordModelData(swordStack);
             sheathTag.putInt("CustomModelData", modelData);
 
             // 鞘にタグを適用

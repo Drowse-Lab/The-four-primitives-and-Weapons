@@ -39,12 +39,13 @@ public class MotionExecutor {
     public static void executeMotion(String motionId, Player player, float chargePercent) {
         if (motionId == null || motionId.isEmpty()) return;
 
-        // クロスヘア Attack Cooldown ゲージをキャプチャしてスキル全体に適用 (多段ヒットも含む)。
+        // クロスヘア Attack Cooldown ゲージをキャプチャしてスキル全体に damage scale を適用。
         // ゲージが満タン (1.0) なら 100%、空 (0.0) なら 20% のダメージ。
-        // キャプチャ後 ticker をリセットしてゲージを 0 から再充填させる (バニラの通常攻撃と同じ挙動)。
+        // ※ 短時間で連続発動されるとゲージが 0 のままになるため、以前は resetAttackStrengthTicker
+        //   していたが、これがスピン斬り (connection.teleport) と競合してたまに回転が止まる事象を
+        //   起こすため削除。スキル使用後に通常攻撃のクールダウンが残るのは仕様。
         float cooldownScale = player.getAttackStrengthScale(0.5f);
         DamageCalculator.setCooldownScaleContext(cooldownScale);
-        player.resetAttackStrengthTicker();
 
         // チャージ技発動時は DamageCalculator に一律ボーナスを適用させる。
         // これで個別にスケールしていない技も、チャージ発動なら攻撃力が上がる。
@@ -176,7 +177,7 @@ public class MotionExecutor {
             for (LivingEntity target : targets) {
                 ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
                 DamageCalculator.dealDamage(player, target, baseDamage, weapon);
-                target.setDeltaMovement(lookVec.scale(2.0 * chargePercent).add(0, 0.5, 0));
+                DamageCalculator.applyNormalKnockback(player, target, weapon);
                 if (chargePercent >= 1.0f) {
                     target.setSecondsOnFire(5);
                 }
@@ -193,7 +194,7 @@ public class MotionExecutor {
             for (LivingEntity target : targets) {
                 ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
                 DamageCalculator.dealDamage(player, target, baseDamage, weapon);
-                target.setDeltaMovement(lookVec.scale(0.8).add(0, 0.1, 0));
+                DamageCalculator.applyNormalKnockback(player, target, weapon);
             }
         }
 
@@ -351,6 +352,9 @@ public class MotionExecutor {
         double forwardRange = isCharged ? 4.5 + chargePercent : 3.5;
         double width = isCharged ? 2.5 : 1.8;
 
+        // 視点を上→下にアニメーション (振り下ろしの動き)
+        SlamDownPitchHandler.start(player);
+
         // 竹破壊
         breakBambooInPath(world, playerPos, lookVec, forwardRange);
 
@@ -420,12 +424,7 @@ public class MotionExecutor {
         for (LivingEntity target : targets) {
             ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
             DamageCalculator.dealDamage(player, target, baseDamage, weapon);
-            // 叩き下ろし: 下方向ノックバック + 軽い前方 + 短時間鈍足
-            target.setDeltaMovement(
-                lookVec.x * 0.2,
-                -1.0,
-                lookVec.z * 0.2);
-            target.hurtMarked = true;
+            DamageCalculator.applyNormalKnockback(player, target, weapon);
             target.addEffect(new net.minecraft.world.effect.MobEffectInstance(
                 net.minecraft.world.effect.MobEffects.MOVEMENT_SLOWDOWN,
                 isCharged ? 40 : 20,
@@ -463,9 +462,7 @@ public class MotionExecutor {
         for (LivingEntity target : targets) {
             ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
             DamageCalculator.dealDamage(player, target, baseDamage, weapon);
-
-            Vec3 knockback = target.position().subtract(playerPos).normalize().scale(0.4 + chargePercent * 0.3);
-            target.setDeltaMovement(target.getDeltaMovement().add(knockback.x, 0.1, knockback.z));
+            DamageCalculator.applyNormalKnockback(player, target, weapon);
         }
     }
 

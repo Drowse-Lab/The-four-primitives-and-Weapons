@@ -742,6 +742,11 @@ public class DodgeAndBattouHandler {
                 player.displayClientMessage(Component.literal("§cこの剣は専用の鞘が必要です"), true);
                 return;
             }
+            // 通常鞘に登録されていない武器は納刀不可
+            if (!minecraftarmorweapon.util.CuriosScabbardHelper.isRegisteredForSaya(weaponStack)) {
+                player.displayClientMessage(Component.literal("§cこの武器はこの鞘に納刀できません"), true);
+                return;
+            }
 
             // 武器のNBTデータを保存
             CompoundTag weaponData = weaponStack.save(new CompoundTag());

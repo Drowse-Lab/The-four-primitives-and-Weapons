@@ -1543,7 +1543,7 @@
     }
   ],
   "textures": {
-    "0": "minecraft:block/diamond_block",
-    "particle": "minecraft:block/diamond_block"
+    "0": "minecraft_armor_weapon:block/diamondkatana3d",
+    "particle": "minecraft_armor_weapon:block/diamondkatana3d"
   }
 }

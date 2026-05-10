@@ -95,6 +95,25 @@ public class DamageCalculator {
     }
 
     /**
+     * 通常攻撃と同じノックバックを target に適用。
+     * vanilla Player.attack と同じ強度 (0.4 + Knockback enchantment * 0.5)。
+     * 武器が saya (鞘) の場合は追加 +1.5 で強いノックバック。
+     */
+    public static void applyNormalKnockback(LivingEntity attacker, LivingEntity target, ItemStack weapon) {
+        int kbLevel = (weapon != null && !weapon.isEmpty())
+            ? EnchantmentHelper.getItemEnchantmentLevel(Enchantments.KNOCKBACK, weapon) : 0;
+        double strength = 0.4 + kbLevel * 0.5;
+        if (weapon != null && !weapon.isEmpty()
+                && minecraftarmorweapon.events.DodgeAndBattouHandler.isSaya(weapon)) {
+            strength += 1.5;
+        }
+        float yawRad = attacker.getYRot() * ((float) Math.PI / 180F);
+        target.knockback(strength,
+            (double) net.minecraft.util.Mth.sin(yawRad),
+            (double) (-net.minecraft.util.Mth.cos(yawRad)));
+    }
+
+    /**
      * 現在の Attack cooldown スケール context を取得（複数tick skill が damage に焼き込むのに使う）。
      * @return context 値、未セットなら null
      */

@@ -100,9 +100,12 @@ public class MinecraftArmorWeaponModKeyMappings {
 	public static class KeyEventListener {
 		@SubscribeEvent
 		public static void onClientTick(TickEvent.ClientTickEvent event) {
+			if (event.phase != TickEvent.Phase.END) return;
 			if (Minecraft.getInstance().screen == null) {
 				R.consumeClick();
 			}
+			// ホイール状態を毎 tick 更新 (R 物理状態のチェック・選択更新)
+			WeaponWheelState.tick();
 		}
 	}
 }

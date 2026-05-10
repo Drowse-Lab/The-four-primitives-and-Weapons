@@ -15,9 +15,11 @@ public class CreativeTabPopulator {
 	public static void onBuildTabContents(BuildCreativeModeTabContentsEvent event) {
 		// === TAB_WEAPON ===
 		if (event.getTab() == MinecraftArmorWeaponModTabs.TAB_WEAPON.get()) {
+			event.accept(MinecraftArmorWeaponModItems.WOODEN_KATANA);
 			event.accept(MinecraftArmorWeaponModItems.IRON_KATANA);
 			event.accept(MinecraftArmorWeaponModItems.STONE_KATANA);
 			event.accept(MinecraftArmorWeaponModItems.GOLD_KATANA);
+			event.accept(MinecraftArmorWeaponModItems.DIAMOND_KATANA);
 			event.accept(MinecraftArmorWeaponModItems.NETHERITE_KATANA);
 			event.accept(MinecraftArmorWeaponModItems.WITHER_KATANA);
 			event.accept(MinecraftArmorWeaponModItems.MY_TEST_IRON_KATANA);
@@ -55,12 +57,15 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE_UTIGATANA);
 			event.accept(MinecraftArmorWeaponModItems.BLUEPURGE_TYOKUTOU);
+			event.accept(MinecraftArmorWeaponModItems.WOODEN_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.IRON_TYOKUTO);
+			event.accept(MinecraftArmorWeaponModItems.GOLD_TYOKUTO);
+			event.accept(MinecraftArmorWeaponModItems.DIAMOND_TYOKUTO);
+			event.accept(MinecraftArmorWeaponModItems.NETHERITE_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.GATE);
 			event.accept(MinecraftArmorWeaponModItems.CONVERGENT_GATE);
 			event.accept(MinecraftArmorWeaponModItems.IMMORTAL_CORE);
 			event.accept(MinecraftArmorWeaponModItems.RARITY_CHARM);
-			event.accept(MinecraftArmorWeaponModItems.GOLD_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.OFUDA);
 			event.accept(CustomEntityInit.THROWING_KNIFE);
 			// ナイフ系は通常投げナイフ + ホルダーのみプレイヤーに提供。

@@ -169,13 +169,18 @@ public class SkillRegistry {
 
     /**
      * 指定スロットで使用可能なモーション一覧を取得（武器クラス指定）
-     * UNIVERSAL + その武器クラスに対応したSPECIALを返す
+     * UNIVERSAL + その武器クラスに対応したSPECIALを返す。
+     * bow_* モーションは bow / crossbow を持っている時のみ含む (他modの BowItem 互換も
+     * WeaponTypeRegistry の instanceof フォールバックで bow/crossbow タイプとして
+     * 解決されるので、ここに来るケースは「武器なし or 他種類」のみ)。
      */
     public static List<MotionInfo> getAvailableMotions(AttackSlot slot, String weaponClass) {
         List<MotionInfo> result = new ArrayList<>();
         for (MotionInfo info : BY_ID.values()) {
             if (!info.compatibleSlots.contains(slot)) continue;
             if (info.category == MotionCategory.UNIVERSAL) {
+                // bow_* は弓/クロスボウ専用 — デフォルトロードアウト等では除外
+                if (info.id.startsWith("bow_")) continue;
                 result.add(info);
             } else if (info.category == MotionCategory.SPECIAL
                     && weaponClass != null

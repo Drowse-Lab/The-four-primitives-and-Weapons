@@ -2,6 +2,7 @@ package minecraftarmorweapon.client;
 
 import minecraftarmorweapon.MinecraftArmorWeaponMod;
 import minecraftarmorweapon.network.BattouFromSpecificSlotPacket;
+import minecraftarmorweapon.network.RMessage;
 import minecraftarmorweapon.network.SheathIntoSpecificSlotPacket;
 import minecraftarmorweapon.util.CuriosScabbardHelper;
 import minecraftarmorweapon.util.CuriosScabbardHelper.DrawableWeaponInfo;
@@ -10,9 +11,6 @@ import minecraftarmorweapon.events.DodgeAndBattouHandler;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
@@ -25,7 +23,15 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 武器ホイールのクライアント側ステートマシン（抜刀・納刀デュアルモード）
+ * 武器ホイールのクライアント側ステートマシン（抜刀・納刀デュアルモード）。
+ *
+ * 動作:
+ *   - R 押下 → 即座にホイール表示 (鞘の数に関わらず)
+ *   - マウスを動かして選択 → 離す → 選択された鞘を抜刀/納刀
+ *   - 中央 (デッドゾーン) で離す → RMessage デフォルト動作にフォールバック
+ *
+ * tick() は MinecraftArmorWeaponModKeyMappings.KeyEventListener.onClientTick から
+ * 直接呼び出される (確実に subscribe される場所を経由)。
  */
 @OnlyIn(Dist.CLIENT)
 public class WeaponWheelState {
@@ -33,13 +39,10 @@ public class WeaponWheelState {
     public enum WheelMode { DRAW, SHEATH }
 
     private static boolean rKeyDown = false;
-    private static long rKeyPressStartTick = -1;
     private static boolean wheelVisible = false;
     private static int selectedIndex = -1;
     private static List<DrawableWeaponInfo> drawableWeapons = Collections.emptyList();
     private static WheelMode currentMode = WheelMode.DRAW;
-
-    private static final int HOLD_THRESHOLD_TICKS = 5;
 
     public static boolean isWheelVisible() { return wheelVisible; }
     public static List<DrawableWeaponInfo> getDrawableWeapons() { return drawableWeapons; }
@@ -47,81 +50,55 @@ public class WeaponWheelState {
     public static WheelMode getCurrentMode() { return currentMode; }
 
     /**
-     * Rキー押下時に呼ばれる（手に武器がない場合＝抜刀モード）
-     * @return true = 抜刀モードに入った（RMessageを送るべきでない）
+     * R 押下時 (手に武器なし → 抜刀ホイール).
+     * 鞘の数に関わらずホイールを表示する。
      */
     public static boolean onRKeyPressed() {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null || mc.level == null) return false;
 
-        // 全ての武器入り鞘を列挙（CoverUpも含む）
         List<DrawableWeaponInfo> weapons = CuriosScabbardHelper.findAllLoadedScabbards(player);
 
-        if (weapons.isEmpty()) {
-            return false;
-        }
-
-        if (weapons.size() == 1) {
-            // 1個だけなら即座に抜刀
-            DrawableWeaponInfo info = weapons.get(0);
-            MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
-                new BattouFromSpecificSlotPacket(
-                    info.location,
-                    info.curioSlotId,
-                    info.slotIndex
-                )
-            );
-            return true;
-        }
-
-        // 2個以上: ホイールモード開始
         currentMode = WheelMode.DRAW;
         drawableWeapons = weapons;
         rKeyDown = true;
-        rKeyPressStartTick = mc.level.getGameTime();
         selectedIndex = -1;
+        wheelVisible = true;
+        mc.mouseHandler.releaseMouse();
         return true;
     }
 
     /**
-     * Rキー押下時に呼ばれる（手に武器がある場合＝納刀モード）
-     * @return true = 納刀ホイールモードに入った（RMessageを送るべきでない）
+     * R 押下時 (手に武器あり → 納刀ホイール).
+     * 互換のある空鞘の数に関わらずホイールを表示する。
      */
     public static boolean onRKeyPressedForSheathing(Player player) {
         Minecraft mc = Minecraft.getInstance();
         if (player == null || mc.level == null) return false;
 
-        // 空の鞘を全て列挙
-        List<DrawableWeaponInfo> emptyScabbards = CuriosScabbardHelper.findAllEmptyScabbards(player);
-
-        // 互換性フィルタ: 手に持っている武器と互換の鞘のみ
         ItemStack weaponStack = getWeaponInHand(player);
         if (weaponStack.isEmpty()) return false;
 
+        List<DrawableWeaponInfo> emptyScabbards = CuriosScabbardHelper.findAllEmptyScabbards(player);
         emptyScabbards.removeIf(info -> !CuriosScabbardHelper.isCompatible(weaponStack, info.scabbardStack));
 
-        if (emptyScabbards.size() < 2) {
-            return false; // 0-1個 → RMessageの既存処理に任せる
-        }
-
-        // 2個以上: 納刀ホイールモード開始
         currentMode = WheelMode.SHEATH;
         drawableWeapons = emptyScabbards;
         rKeyDown = true;
-        rKeyPressStartTick = mc.level.getGameTime();
         selectedIndex = -1;
+        wheelVisible = true;
+        mc.mouseHandler.releaseMouse();
         return true;
     }
 
     /**
-     * Rキーリリース時に呼ばれる
+     * R リリース時.
      */
     public static void onRKeyReleased() {
         if (!rKeyDown) return;
 
-        // grabMouse() → KeyMapping.setAll() → setDown(false) → onRKeyReleased() の
-        // 無限再帰を防ぐため、状態を保存してからreset()を先に呼ぶ
+        // grabMouse() の cascade による再帰を防ぐため、状態保存→reset()→処理 の順
         boolean wasWheelVisible = wheelVisible;
         int savedSelectedIndex = selectedIndex;
         List<DrawableWeaponInfo> savedWeapons = drawableWeapons;
@@ -129,16 +106,15 @@ public class WeaponWheelState {
 
         reset();
 
-        if (wasWheelVisible && savedSelectedIndex >= 0 && savedSelectedIndex < savedWeapons.size()) {
+        if (savedSelectedIndex >= 0 && savedSelectedIndex < savedWeapons.size()) {
+            // 選択あり → 該当パケット送信
             DrawableWeaponInfo info = savedWeapons.get(savedSelectedIndex);
             sendPacket(savedMode, info);
-        } else if (!wasWheelVisible && !savedWeapons.isEmpty()) {
-            // ホイールが表示される前にリリースされた（クイックタップ）→ 最初のアイテム
-            DrawableWeaponInfo info = savedWeapons.get(0);
-            sendPacket(savedMode, info);
+        } else {
+            // デッドゾーンで離した or 鞘無し → RMessage デフォルト動作にフォールバック (サーバーのみ)
+            MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(new RMessage(0, 0));
         }
 
-        // ホイールが表示されていたらマウスを再取得（次フレームに遅延）
         if (wasWheelVisible) {
             Minecraft.getInstance().execute(() -> {
                 Minecraft.getInstance().mouseHandler.grabMouse();
@@ -154,7 +130,6 @@ public class WeaponWheelState {
                 )
             );
         } else {
-            // SHEATH: 武器を持っている手を特定
             Minecraft mc = Minecraft.getInstance();
             int weaponHandIndex = determineWeaponHand(mc.player);
             MinecraftArmorWeaponMod.PACKET_HANDLER.sendToServer(
@@ -169,9 +144,9 @@ public class WeaponWheelState {
         if (player == null) return 0;
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         if (DodgeAndBattouHandler.isWeapon(mainHand) && !DodgeAndBattouHandler.isSaya(mainHand)) {
-            return 0; // MAIN_HAND
+            return 0;
         }
-        return 1; // OFF_HAND
+        return 1;
     }
 
     private static ItemStack getWeaponInHand(Player player) {
@@ -187,7 +162,8 @@ public class WeaponWheelState {
     }
 
     /**
-     * 毎クライアントtickで呼ばれる
+     * クライアント tick 毎に呼ばれる。
+     * MinecraftArmorWeaponModKeyMappings.KeyEventListener.onClientTick から直接呼び出される。
      */
     public static void tick() {
         if (!rKeyDown) return;
@@ -198,7 +174,6 @@ public class WeaponWheelState {
             return;
         }
 
-        // GUI画面が開いたらキャンセル
         if (mc.screen != null) {
             boolean wasWheelVisible = wheelVisible;
             reset();
@@ -210,22 +185,12 @@ public class WeaponWheelState {
             return;
         }
 
-        // Rキーがまだ物理的に押されているか確認（GLFW）
+        // R が物理的に押されているか GLFW で確認
         int rKeyValue = minecraftarmorweapon.init.MinecraftArmorWeaponModKeyMappings.R.getKey().getValue();
         boolean stillHeld = InputConstants.isKeyDown(mc.getWindow().getWindow(), rKeyValue);
-
         if (!stillHeld) {
             onRKeyReleased();
             return;
-        }
-
-        // ホールド閾値を超えたらホイール表示
-        long currentTick = mc.level.getGameTime();
-        long ticksHeld = currentTick - rKeyPressStartTick;
-
-        if (ticksHeld >= HOLD_THRESHOLD_TICKS && !wheelVisible && drawableWeapons.size() >= 2) {
-            wheelVisible = true;
-            mc.mouseHandler.releaseMouse();
         }
 
         // ホイール表示中はマウス位置で選択を更新
@@ -248,18 +213,14 @@ public class WeaponWheelState {
         double distance = Math.sqrt(dx * dx + dy * dy);
 
         int itemCount = drawableWeapons.size();
-
-        // 中心のデッドゾーン
         if (distance < 20.0 || itemCount == 0) {
             selectedIndex = -1;
             return;
         }
 
-        // 角度計算: 上が0、時計回り
         double angle = Math.atan2(dx, -dy);
         if (angle < 0) angle += 2 * Math.PI;
 
-        // 半セグメント分オフセットして、選択ゾーンをアイテム位置の中心に合わせる
         double segmentSize = 2.0 * Math.PI / itemCount;
         double shifted = angle + segmentSize / 2.0;
         if (shifted >= 2 * Math.PI) shifted -= 2 * Math.PI;
@@ -270,19 +231,9 @@ public class WeaponWheelState {
 
     private static void reset() {
         rKeyDown = false;
-        rKeyPressStartTick = -1;
         wheelVisible = false;
         selectedIndex = -1;
         drawableWeapons = Collections.emptyList();
         currentMode = WheelMode.DRAW;
-    }
-
-    @Mod.EventBusSubscriber(value = Dist.CLIENT)
-    public static class WheelTicker {
-        @SubscribeEvent
-        public static void onClientTick(TickEvent.ClientTickEvent event) {
-            if (event.phase != TickEvent.Phase.END) return;
-            WeaponWheelState.tick();
-        }
     }
 }

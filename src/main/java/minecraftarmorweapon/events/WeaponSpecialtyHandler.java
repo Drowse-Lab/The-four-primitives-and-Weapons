@@ -13,17 +13,14 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * 武器の得意/不得意技による Attack Cooldown 速度調整。
- * MotionExecutor から applyBonus() / applyPenalty() を呼ぶと、
- * Attributes.ATTACK_SPEED に MULTIPLY_TOTAL モディファイアを付与し、
- * クロスヘアの攻撃ゲージ充填速度が変化する。
+ * 武器の得意/不得意技による Attack Cooldown 速度の一時的な調整。
+ * MotionExecutor から applyBonus() / applyPenalty() を呼ぶと、ATTACK_SPEED に
+ * MULTIPLY_TOTAL モディファイアを付与する。30 tick (1.5 秒) で自動解除されるため、
+ * 同じ技を連続使用するか別の preferred/disliked 技を出さない限り通常速度に戻る。
  *
- *   - 得意技: ×1.5 (50% 速い)
- *   - 通常技: 変更なし
- *   - 不得意技: ×0.5 (50% 遅い)
- *
- * 効果は次の preferred/disliked 技を出すか、武器を持ち変えるまで持続する
- * (TICK_DURATION で自然減衰せずに、別の motion 発動・武器変更まで継続)。
+ *   - 得意技: ×1.5 (50% 速い) - 30 tick 持続
+ *   - 不得意技: ×0.5 (50% 遅い) - 30 tick 持続
+ *   - 通常技 / タイムアウト: モディファイア解除
  */
 @Mod.EventBusSubscriber(modid = "minecraft_armor_weapon")
 public class WeaponSpecialtyHandler {
@@ -31,36 +28,26 @@ public class WeaponSpecialtyHandler {
     private static final UUID BONUS_UUID = UUID.fromString("a8b9c0d1-e2f3-4456-789a-bcdef0123456");
     private static final UUID PENALTY_UUID = UUID.fromString("b9c0d1e2-f3a4-5567-89ab-cdef01234567");
 
-    private static final double BONUS_AMOUNT = 0.5;    // ×1.5
-    private static final double PENALTY_AMOUNT = -0.5; // ×0.5
+    private static final double BONUS_AMOUNT = 0.5;
+    private static final double PENALTY_AMOUNT = -0.5;
+    private static final int DURATION = 30;
 
-    /** 各プレイヤーの現在のステート (BONUS / PENALTY / NONE) を記憶。 */
-    private enum Mode { NONE, BONUS, PENALTY }
-    private static final Map<UUID, Mode> ACTIVE_MODE = new HashMap<>();
+    private static final Map<UUID, Integer> REMAINING_TICKS = new HashMap<>();
 
-    /**
-     * 得意技発動時に呼ばれる - 攻撃速度 ×1.5。
-     */
     public static void applyBonus(Player player) {
-        UUID id = player.getUUID();
-        if (ACTIVE_MODE.get(id) == Mode.BONUS) return; // 既にBONUS適用中
+        if (player == null) return;
         AttributeInstance attr = player.getAttribute(Attributes.ATTACK_SPEED);
         if (attr == null) return;
-        // 既存のモディファイアをクリア (ペナルティ→ボーナス切替対応)
         attr.removeModifier(BONUS_UUID);
         attr.removeModifier(PENALTY_UUID);
         attr.addTransientModifier(new AttributeModifier(
             BONUS_UUID, "weapon_specialty_bonus", BONUS_AMOUNT,
             AttributeModifier.Operation.MULTIPLY_TOTAL));
-        ACTIVE_MODE.put(id, Mode.BONUS);
+        REMAINING_TICKS.put(player.getUUID(), DURATION);
     }
 
-    /**
-     * 不得意技発動時に呼ばれる - 攻撃速度 ×0.5。
-     */
     public static void applyPenalty(Player player) {
-        UUID id = player.getUUID();
-        if (ACTIVE_MODE.get(id) == Mode.PENALTY) return;
+        if (player == null) return;
         AttributeInstance attr = player.getAttribute(Attributes.ATTACK_SPEED);
         if (attr == null) return;
         attr.removeModifier(BONUS_UUID);
@@ -68,34 +55,37 @@ public class WeaponSpecialtyHandler {
         attr.addTransientModifier(new AttributeModifier(
             PENALTY_UUID, "weapon_specialty_penalty", PENALTY_AMOUNT,
             AttributeModifier.Operation.MULTIPLY_TOTAL));
-        ACTIVE_MODE.put(id, Mode.PENALTY);
+        REMAINING_TICKS.put(player.getUUID(), DURATION);
     }
 
-    /**
-     * 通常技発動時 (preferred/disliked 以外) - 既存のボーナス/ペナルティを解除。
-     */
+    /** 通常技発動時 - すぐにモディファイア解除。 */
     public static void applyNormal(Player player) {
-        UUID id = player.getUUID();
-        if (ACTIVE_MODE.get(id) == Mode.NONE || !ACTIVE_MODE.containsKey(id)) return;
+        if (player == null) return;
+        clearModifiers(player);
+        REMAINING_TICKS.remove(player.getUUID());
+    }
+
+    private static void clearModifiers(Player player) {
         AttributeInstance attr = player.getAttribute(Attributes.ATTACK_SPEED);
         if (attr != null) {
             attr.removeModifier(BONUS_UUID);
             attr.removeModifier(PENALTY_UUID);
         }
-        ACTIVE_MODE.put(id, Mode.NONE);
     }
 
-    /**
-     * プレイヤーがログアウトしたら HashMap から除去 (メモリリーク防止)。
-     */
+    /** タイマーを毎 tick デクリメント。0 になったらモディファイアを自動解除。 */
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
-        // 100tick (5秒) おきに、まだプレイヤーが武器を持っていない/Modeがズレていれば自然リセット。
-        if (event.player.tickCount % 100 != 0) return;
-        Player player = event.player;
-        if (player.getMainHandItem().isEmpty()) {
-            applyNormal(player);
+        if (event.player.level().isClientSide()) return;
+        UUID id = event.player.getUUID();
+        Integer remaining = REMAINING_TICKS.get(id);
+        if (remaining == null) return;
+        if (remaining <= 1) {
+            clearModifiers(event.player);
+            REMAINING_TICKS.remove(id);
+        } else {
+            REMAINING_TICKS.put(id, remaining - 1);
         }
     }
 }

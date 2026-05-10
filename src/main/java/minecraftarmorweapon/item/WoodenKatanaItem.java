@@ -19,7 +19,7 @@ public class WoodenKatanaItem extends SwordItem {
 			}
 
 			public float getAttackDamageBonus() {
-				return 0.5f;
+				return 1f;
 			}
 
 			public int getLevel() {

@@ -11,7 +11,7 @@ public class WoodenTyokutoItem extends SwordItem {
         super(new Tier() {
             public int getUses() { return 80; }
             public float getSpeed() { return 4f; }
-            public float getAttackDamageBonus() { return 0.5f; }
+            public float getAttackDamageBonus() { return 1f; }
             public int getLevel() { return 0; }
             public int getEnchantmentValue() { return 15; }
             public Ingredient getRepairIngredient() {

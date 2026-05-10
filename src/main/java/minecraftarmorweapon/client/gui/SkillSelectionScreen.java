@@ -218,16 +218,16 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
 
         int btnX = leftPos + imageWidth - 4;
         int btnY = topPos + RADIO_ROW_Y;
+        final float TYPE_SCALE = 0.7f;
 
         // 右側に縦並びでタイプボタンを配置
         for (WeaponTypeRegistry.WeaponTypeData type : types) {
             final String typeId = type.getId();
             Component labelComp = Component.translatableWithFallback(type.translationKey(), type.getDisplayName());
-            String label = labelComp.getString();
-            int btnW = Math.max(20, font.width(label) + 6);
+            int btnW = Math.max(18, (int)(font.width(labelComp) * TYPE_SCALE) + 6);
             int bx = btnX - btnW;
 
-            addRenderableWidget(new AbstractButton(bx, btnY, btnW, 10, labelComp) {
+            addRenderableWidget(new AbstractButton(bx, btnY, btnW, 9, labelComp) {
                 @Override
                 public void onPress() {
                     selectedLoadoutIndex = -1;
@@ -241,7 +241,15 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                     int bg = sel ? COLOR_BTN_SELECTED : (isHoveredOrFocused() ? COLOR_BTN_HOVER : COLOR_BTN_NORMAL);
                     g.fill(getX(), getY(), getX() + width, getY() + height, bg);
                     if (sel) drawBorder(g, getX(), getY(), width, height, COLOR_BORDER);
-                    g.drawCenteredString(font, getMessage(), getX() + width / 2, getY() + 1, 0xFFFFFF);
+                    int padding = 4;
+                    int rawWidth = font.width(getMessage());
+                    float fitScale = TYPE_SCALE;
+                    if (rawWidth * TYPE_SCALE > width - padding) {
+                        fitScale = (float)(width - padding) / Math.max(1, rawWidth);
+                        if (fitScale < 0.45f) fitScale = 0.45f;
+                    }
+                    drawScaledCenteredString(g, getMessage(),
+                        getX() + width / 2, getY() + height / 2, 0xFFFFFF, fitScale);
                 }
 
                 @Override
@@ -249,7 +257,7 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                     this.defaultButtonNarrationText(n);
                 }
             });
-            btnY += 12;
+            btnY += 11;
         }
     }
 
@@ -308,10 +316,13 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
 
         int rowY = topPos + MOTION_ROW_Y;
         int labelWidth = 46;
-        int btnHeight = 14;
+        int btnHeight = 10;
         int btnGap = 1;
-        int rowGap = 2;
+        int rowGap = 1;
         int btnAreaLeft = leftPos + 3 + labelWidth;
+        // モーションボタン領域の右端 (タイプ列ボタンと衝突しないように左に余白を確保)
+        int motionAreaRight = leftPos + imageWidth - 60;
+        final float TEXT_SCALE = 0.7f;
 
         for (AttackSlot slot : AttackSlot.values()) {
             List<MotionInfo> motions;
@@ -323,9 +334,13 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
             }
 
             int btnX = btnAreaLeft;
+            // 1 行に収まるようボタン幅を均等配分 (折り返しなし、インベントリとの被り防止)
+            int availWidth = motionAreaRight - btnAreaLeft;
+            int totalBtnGap = btnGap * Math.max(0, motions.size() - 1);
+            int evenBtnWidth = motions.isEmpty() ? 0 : Math.max(18, (availWidth - totalBtnGap) / motions.size());
             for (MotionInfo motion : motions) {
                 Component motionLabel = Component.translatableWithFallback(motion.translationKey(), motion.getDisplayName());
-                int btnWidth = Math.max(28, font.width(motionLabel) + 6);
+                int btnWidth = evenBtnWidth;
                 final AttackSlot finalSlot = slot;
                 final MotionInfo finalMotion = motion;
 
@@ -390,9 +405,18 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                             drawBorder(g, this.getX(), this.getY(), this.width, this.height, COLOR_BORDER);
                         }
 
-                        g.drawCenteredString(font, this.getMessage(),
-                            this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2,
-                            isSelected ? 0x7FFF7F : 0xFFFFFF);
+                        // ボタン幅に応じてスケール自動縮小 (ラベルが収まるよう)
+                        int padding = 4;
+                        int rawWidth = font.width(this.getMessage());
+                        float fitScale = TEXT_SCALE;
+                        if (rawWidth * TEXT_SCALE > this.width - padding) {
+                            fitScale = (float)(this.width - padding) / Math.max(1, rawWidth);
+                            // 読めなくならないよう下限を設ける
+                            if (fitScale < 0.45f) fitScale = 0.45f;
+                        }
+                        drawScaledCenteredString(g, this.getMessage(),
+                            this.getX() + this.width / 2, this.getY() + this.height / 2,
+                            isSelected ? 0x7FFF7F : 0xFFFFFF, fitScale);
 
                         if (isHover) {
                             hoveredDescription = Component.translatableWithFallback(
@@ -585,6 +609,27 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         g.fill(x, y + h - 1, x + w, y + h, color);
         g.fill(x, y, x + 1, y + h, color);
         g.fill(x + w - 1, y, x + w, y + h, color);
+    }
+
+    /** スケールを掛けたテキストを中央寄せで描画 (重なり防止用、文字を小さく)。 */
+    private void drawScaledCenteredString(GuiGraphics g, Component text, int cx, int cy, int color, float scale) {
+        com.mojang.blaze3d.vertex.PoseStack pose = g.pose();
+        pose.pushPose();
+        pose.translate(cx, cy, 0);
+        pose.scale(scale, scale, 1.0f);
+        int width = font.width(text);
+        g.drawString(font, text, -width / 2, -font.lineHeight / 2, color, false);
+        pose.popPose();
+    }
+
+    /** スケールを掛けたテキストを左寄せで描画。 */
+    private void drawScaledString(GuiGraphics g, Component text, int x, int y, int color, float scale) {
+        com.mojang.blaze3d.vertex.PoseStack pose = g.pose();
+        pose.pushPose();
+        pose.translate(x, y, 0);
+        pose.scale(scale, scale, 1.0f);
+        g.drawString(font, text, 0, 0, color, false);
+        pose.popPose();
     }
 
     @Override

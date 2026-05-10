@@ -349,7 +349,8 @@ public class CuriosScabbardHelper {
     }
 
     /**
-     * 武器と鞘の互換性をチェック（直刀⇔直刀鞘、通常武器⇔通常鞘）
+     * 武器と鞘の互換性をチェック（直刀⇔直刀鞘、通常武器⇔通常鞘）。
+     * 登録外の武器 (model data 0) は納刀不可。
      */
     public static boolean isCompatible(ItemStack weaponStack, ItemStack scabbardStack) {
         boolean isTyokutoSaya = scabbardStack.getItem() instanceof TyokutoSayaItem;
@@ -357,12 +358,30 @@ public class CuriosScabbardHelper {
         boolean isStraightSword = minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure.isStraightSword(weaponStack);
         boolean isSwordSayaTarget = SwordSayaItem.canSheathe(weaponStack);
         if (isTyokutoSaya) {
-            return isStraightSword;
+            // 直刀鞘: 直刀 AND 登録済み (getSwordModelData != 0)
+            return isStraightSword && TyokutoSayaItem.getSwordModelData(weaponStack) != 0;
         } else if (isSwordSaya) {
+            // 剣鞘: SwordSayaItem.canSheathe で既に登録チェック済み
             return isSwordSayaTarget;
         } else {
-            return !isStraightSword && !isSwordSayaTarget;
+            // 通常鞘: 通常武器 AND 登録済み (getWeaponModelDataForSaya != 0)
+            if (isStraightSword || isSwordSayaTarget) return false;
+            return getWeaponModelDataForSaya(weaponStack) != 0;
         }
+    }
+
+    /**
+     * 通常 saya に登録されているアイテムか (UI フィルタ・デバッグ用)。
+     */
+    public static boolean isRegisteredForSaya(ItemStack weaponStack) {
+        return getWeaponModelDataForSaya(weaponStack) != 0;
+    }
+
+    /**
+     * 直刀 saya に登録されているアイテムか。
+     */
+    public static boolean isRegisteredForTyokutoSaya(ItemStack weaponStack) {
+        return TyokutoSayaItem.getSwordModelData(weaponStack) != 0;
     }
 
     /**
