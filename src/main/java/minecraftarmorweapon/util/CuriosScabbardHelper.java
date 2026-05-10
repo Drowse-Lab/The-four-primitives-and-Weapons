@@ -415,6 +415,7 @@ public class CuriosScabbardHelper {
         if (itemName.equals("RiversOfBloodItem")) return 13;
         if (itemName.equals("KatanaNiguHumerusItem")) return 14;
         if (itemName.equals("LokiTheTricksterItem")) return 15;
+        if (itemName.equals("DiamondKatanaItem")) return 16;
         return 0;
     }
 

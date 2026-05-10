@@ -24,6 +24,18 @@
 				"custom_model_data": 5
 			},
 			"model": "minecraft_armor_weapon:custom/saya_gold_tyokuto"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 8
+			},
+			"model": "minecraft_armor_weapon:custom/saya_netherite_tyokuto"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 7
+			},
+			"model": "minecraft_armor_weapon:custom/saya_diamond_tyokuto"
 		}
 	]
 }

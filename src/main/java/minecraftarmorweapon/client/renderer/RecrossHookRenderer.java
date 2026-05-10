@@ -37,22 +37,7 @@ public class RecrossHookRenderer extends EntityRenderer<RecrossHookEntity> {
     @Override
     public void render(RecrossHookEntity entity, float entityYaw, float partialTicks,
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        ItemStack chain = sharedChainStack;
-        if (chain == null) {
-            chain = new ItemStack(Items.CHAIN);
-            sharedChainStack = chain;
-        }
-        poseStack.pushPose();
-        float yaw = Mth.lerp(partialTicks, entity.yRotO, entity.getYRot());
-        float pitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
-        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
-        poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
-        poseStack.scale(0.45f, 0.45f, 0.45f);
-        Minecraft.getInstance().getItemRenderer().renderStatic(
-            chain, ItemDisplayContext.GROUND, packedLight, OverlayTexture.NO_OVERLAY,
-            poseStack, buffer, entity.level(), entity.getId());
-        poseStack.popPose();
-
+        // チェーン item の描画は撤去 (ユーザー要望)。エンティティは透明で機能する。
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
     }
 

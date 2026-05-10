@@ -18,6 +18,24 @@
 				"custom_model_data": 2
 			},
 			"model": "minecraft_armor_weapon:custom/saya_sword_golden_sword"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 3
+			},
+			"model": "minecraft_armor_weapon:custom/saya_sword_stone_sword"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 4
+			},
+			"model": "minecraft_armor_weapon:custom/saya_sword_diamond_sword"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 5
+			},
+			"model": "minecraft_armor_weapon:custom/saya_sword_netherite_sword"
 		}
 	]
 }

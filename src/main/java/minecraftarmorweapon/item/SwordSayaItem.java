@@ -29,8 +29,12 @@ public class SwordSayaItem extends Item implements ICurioItem {
 	// 0 は空鞘で予約済み。
 	private static final Map<ResourceLocation, Integer> SHEATHABLE_SWORDS = new LinkedHashMap<>();
 	static {
+		// 木剣 (wooden_sword) は意図的に未登録 → 納刀不可。
 		SHEATHABLE_SWORDS.put(new ResourceLocation("minecraft", "iron_sword"), 1);
 		SHEATHABLE_SWORDS.put(new ResourceLocation("minecraft", "golden_sword"), 2);
+		SHEATHABLE_SWORDS.put(new ResourceLocation("minecraft", "stone_sword"), 3);
+		SHEATHABLE_SWORDS.put(new ResourceLocation("minecraft", "diamond_sword"), 4);
+		SHEATHABLE_SWORDS.put(new ResourceLocation("minecraft", "netherite_sword"), 5);
 	}
 
 	public SwordSayaItem() {

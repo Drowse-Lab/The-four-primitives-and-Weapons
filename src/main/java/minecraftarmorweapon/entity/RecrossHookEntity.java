@@ -146,24 +146,18 @@ public class RecrossHookEntity extends Mob {
         super.tick();
         if (level().isClientSide) return;
 
-        // 絶対 tick 数で上限超過 → 強制 discard (ゾンビフック保険)
-        // pull が完了せず ANCHORED のまま放置 / heavyAnchor の dimension 跨ぎ等の異常系を防ぐ.
-        // 上限は maxFlyTicks に比例して伸ばす (rarity で射程が伸びる場合に pull 完了前に消えないように)。
-        // 飛行 maxFlyTicks + pull マージン (5 倍) ≒ 飛行射程の 6 倍を絶対上限とする。
+        // ★ ユーザー要望により距離/時間ベースの自動 despawn は撤去。
+        //    最大射程を効果的に使えるよう、hook の生存条件は owner 存在のみ。
+        //    異常系の保険として totalTicks の上限は非常に大きい値 (5 分) に設定。
         totalTicks++;
-        int absoluteCap = Math.max(200, maxFlyTicks * 6);
-        if (totalTicks > absoluteCap) {
+        if (totalTicks > 6000) {
             this.discard();
             return;
         }
 
-        // owner が居なくなった/距離離れすぎ → discard
-        // 距離上限は maxFlyTicks に比例 (rarity 射程増で discard されないように)。
-        // 飛行射程 (flyStep × maxFlyTicks) の 1.5 倍を上限に。最低 300 block。
+        // owner が居なくなった/死亡 → discard。距離チェックは行わない。
         Player owner = getOwnerPlayer();
-        double maxAllowedDist = Math.max(300, flyStep * maxFlyTicks * 1.5);
-        if (owner == null || !owner.isAlive()
-                || owner.distanceToSqr(this) > maxAllowedDist * maxAllowedDist) {
+        if (owner == null || !owner.isAlive()) {
             this.discard();
             return;
         }
@@ -186,8 +180,7 @@ public class RecrossHookEntity extends Mob {
                 tickPullEntity(owner);
                 if (this.isRemoved()) return;
             }
-            // 着弾後はロープ替わりの dust 鎖を hook → owner に毎 tick 描画
-            spawnChainParticles(owner);
+            // チェーンの dust 粒子描画は撤去 (ユーザー要望)
         }
     }
 

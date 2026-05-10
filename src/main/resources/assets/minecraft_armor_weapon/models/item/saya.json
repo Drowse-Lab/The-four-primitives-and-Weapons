@@ -99,6 +99,12 @@
 		},
 		{
 			"predicate": {
+				"custom_model_data": 16
+			},
+			"model": "minecraft_armor_weapon:custom/saya_diamond_katana"
+		},
+		{
+			"predicate": {
 				"minecraft_armor_weapon:saya_nbt": 1
 			},
 			"model": "minecraft_armor_weapon:custom/saya_reitou_sigiled"
