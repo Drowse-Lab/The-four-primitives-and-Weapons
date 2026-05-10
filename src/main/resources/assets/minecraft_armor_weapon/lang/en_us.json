@@ -34,7 +34,7 @@
   "guidebook.minecraft_armor_weapon.spellbooks_compat.title": "§dMod Compat: Iron's Spellbooks",
   "guidebook.minecraft_armor_weapon.spellbooks_compat.body": "§7When Iron's Spells 'n Spellbooks is installed,\n§7this mod automatically uses its mana system.\n\n§f- MP bar shown only by Iron's HUD\n§f- Stun/Screw knives consume Iron's MP\n§f- Mana regen follows Iron's logic\n\n§7No double bars, no double regen.",
   "guidebook.minecraft_armor_weapon.katana_saya.title": "§eKatana & Sheath",
-  "guidebook.minecraft_armor_weapon.katana_saya.body": "§7Katanas can be stored in a §fSaya (sheath) §7and worn at the hip.\n\n§fBattou (draw): §7Pull katana from sheath and strike instantly\n§fSheath: §7Return the katana to its saya\n\n§7Put the sheath in a §fBOOK §7Curios slot or dedicated slot.",
+  "guidebook.minecraft_armor_weapon.katana_saya.body": "§7Katanas can be stored in a §fSaya (sheath) §7and worn at the hip.\n\n§fBattou (draw): §7Pull katana from sheath and strike instantly\n§fSheath: §7Return the katana to its saya\n\n§fR key controls:\n§7- Short tap (<0.5s): Instant draw/sheath\n§7- Long hold (>=0.5s): Show wheel -> aim with mouse -> release to confirm\n\n§7Put the sheath in a §fBOOK §7Curios slot or dedicated slot.",
   "guidebook.minecraft_armor_weapon.parry_shield.title": "§bParry Shield",
   "guidebook.minecraft_armor_weapon.parry_shield.body": "§7Nigu Shield. Right-click with correct timing\n§fto parry the enemy's attack and gain §bGuard state§f.\n\n§7While guarding: damage reduction + counter chance.\n§cOn miss: acts as a regular shield.",
   "guidebook.minecraft_armor_weapon.magic_books.title": "§5Magic Books",

@@ -26,9 +26,10 @@ import java.util.List;
  * 武器ホイールのクライアント側ステートマシン（抜刀・納刀デュアルモード）。
  *
  * 動作:
- *   - R 押下 → 即座にホイール表示 (鞘の数に関わらず)
+ *   - R 押下 → 内部状態を記録 (ホイールはまだ表示しない)
+ *   - 0.5秒以上長押し → ホイール表示 + マウス解放
  *   - マウスを動かして選択 → 離す → 選択された鞘を抜刀/納刀
- *   - 中央 (デッドゾーン) で離す → RMessage デフォルト動作にフォールバック
+ *   - 0.5秒未満で離す or 中央 (デッドゾーン) で離す → RMessage デフォルト動作にフォールバック
  *
  * tick() は MinecraftArmorWeaponModKeyMappings.KeyEventListener.onClientTick から
  * 直接呼び出される (確実に subscribe される場所を経由)。
@@ -38,11 +39,14 @@ public class WeaponWheelState {
 
     public enum WheelMode { DRAW, SHEATH }
 
+    private static final long WHEEL_DELAY_MS = 500L;
+
     private static boolean rKeyDown = false;
     private static boolean wheelVisible = false;
     private static int selectedIndex = -1;
     private static List<DrawableWeaponInfo> drawableWeapons = Collections.emptyList();
     private static WheelMode currentMode = WheelMode.DRAW;
+    private static long pressStartTime = 0L;
 
     public static boolean isWheelVisible() { return wheelVisible; }
     public static List<DrawableWeaponInfo> getDrawableWeapons() { return drawableWeapons; }
@@ -51,7 +55,7 @@ public class WeaponWheelState {
 
     /**
      * R 押下時 (手に武器なし → 抜刀ホイール).
-     * 鞘の数に関わらずホイールを表示する。
+     * 状態のみ記録し、1秒長押しを待って tick() でホイール表示する。
      */
     public static boolean onRKeyPressed() {
         Minecraft mc = Minecraft.getInstance();
@@ -64,14 +68,14 @@ public class WeaponWheelState {
         drawableWeapons = weapons;
         rKeyDown = true;
         selectedIndex = -1;
-        wheelVisible = true;
-        mc.mouseHandler.releaseMouse();
+        wheelVisible = false;
+        pressStartTime = System.currentTimeMillis();
         return true;
     }
 
     /**
      * R 押下時 (手に武器あり → 納刀ホイール).
-     * 互換のある空鞘の数に関わらずホイールを表示する。
+     * 状態のみ記録し、1秒長押しを待って tick() でホイール表示する。
      */
     public static boolean onRKeyPressedForSheathing(Player player) {
         Minecraft mc = Minecraft.getInstance();
@@ -87,8 +91,8 @@ public class WeaponWheelState {
         drawableWeapons = emptyScabbards;
         rKeyDown = true;
         selectedIndex = -1;
-        wheelVisible = true;
-        mc.mouseHandler.releaseMouse();
+        wheelVisible = false;
+        pressStartTime = System.currentTimeMillis();
         return true;
     }
 
@@ -193,6 +197,12 @@ public class WeaponWheelState {
             return;
         }
 
+        // 0.5秒以上長押しでホイール表示開始 (マウス解放もこのタイミング)
+        if (!wheelVisible && System.currentTimeMillis() - pressStartTime >= WHEEL_DELAY_MS) {
+            wheelVisible = true;
+            mc.mouseHandler.releaseMouse();
+        }
+
         // ホイール表示中はマウス位置で選択を更新
         if (wheelVisible) {
             double mouseX = mc.mouseHandler.xpos() *
@@ -235,5 +245,6 @@ public class WeaponWheelState {
         selectedIndex = -1;
         drawableWeapons = Collections.emptyList();
         currentMode = WheelMode.DRAW;
+        pressStartTime = 0L;
     }
 }

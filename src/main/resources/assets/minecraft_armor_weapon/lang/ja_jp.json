@@ -34,7 +34,7 @@
   "guidebook.minecraft_armor_weapon.spellbooks_compat.title": "§dMod 連携: Iron's Spellbooks",
   "guidebook.minecraft_armor_weapon.spellbooks_compat.body": "§7Iron's Spells 'n Spellbooks を入れている時、\n§7本 MOD は自動的にそちらの MP を使用する。\n\n§f・MP バーは Iron's 側のみ表示\n§f・スタン/スクリュー等は Iron's の MP から消費\n§f・回復も Iron's のロジックに従う\n\n§7二重バー・二重回復は発生しない。",
   "guidebook.minecraft_armor_weapon.katana_saya.title": "§e刀と鞘",
-  "guidebook.minecraft_armor_weapon.katana_saya.body": "§7刀は §f鞘 (Saya/直刀鞘) §7に収めて腰に装備できる。\n\n§f抜刀 (Battou): §7鞘から刀を引き抜いて即攻撃\n§f納刀: §7刀を再び鞘に戻す\n\n§7カーリオ (Curios) スロットの §fBOOK §7や専用スロットに鞘を入れて使う。",
+  "guidebook.minecraft_armor_weapon.katana_saya.body": "§7刀は §f鞘 (Saya/直刀鞘) §7に収めて腰に装備できる。\n\n§f抜刀 (Battou): §7鞘から刀を引き抜いて即攻撃\n§f納刀: §7刀を再び鞘に戻す\n\n§fRキー操作:\n§7・短押し (0.5秒未満): 抜刀/納刀を即実行\n§7・長押し (0.5秒以上): ホイール表示 → マウスで鞘を選択 → 離して確定\n\n§7カーリオ (Curios) スロットの §fBOOK §7や専用スロットに鞘を入れて使う。",
   "guidebook.minecraft_armor_weapon.parry_shield.title": "§bパリィシールド",
   "guidebook.minecraft_armor_weapon.parry_shield.body": "§7Nigu Shield。タイミング良く右クリックすると\n§f敵の攻撃を弾き返して §bガード状態 §fを得る。\n\n§7ガード中はダメージ軽減 + 反撃チャンス。\n§c失敗すると通常の盾扱いで受ける。",
   "guidebook.minecraft_armor_weapon.magic_books.title": "§5魔導書",
