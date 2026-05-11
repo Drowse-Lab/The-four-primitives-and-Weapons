@@ -11,103 +11,103 @@
 			"predicate": {
 				"custom_model_data": 1
 			},
-			"model": "minecraft_armor_weapon:custom/saya_iron_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_iron_katana"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 2
 			},
-			"model": "minecraft_armor_weapon:custom/saya_gold_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_gold_katana"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 3
 			},
-			"model": "minecraft_armor_weapon:custom/saya_stone_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_stone_katana"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 4
 			},
-			"model": "minecraft_armor_weapon:custom/saya_netherite_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_netherite_katana"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 5
 			},
-			"model": "minecraft_armor_weapon:custom/saya_wither_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_wither_katana"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 7
 			},
-			"model": "minecraft_armor_weapon:custom/saya_darkness_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_darkness_katana"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 8
 			},
-			"model": "minecraft_armor_weapon:custom/saya_magical_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_magical_katana"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 9
 			},
-			"model": "minecraft_armor_weapon:custom/saya_magischesfeen_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_magischesfeen_katana"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 10
 			},
-			"model": "minecraft_armor_weapon:custom/saya_prototype_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_prototype_katana"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 11
 			},
-			"model": "minecraft_armor_weapon:custom/saya_old_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_old_katana"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 12
 			},
-			"model": "minecraft_armor_weapon:custom/saya_mytestiron_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_mytestiron_katana"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 13
 			},
-			"model": "minecraft_armor_weapon:custom/saya_riversofblood"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_riversofblood"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 14
 			},
-			"model": "minecraft_armor_weapon:custom/saya_katananiguzyouwankotu3d"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_katananiguzyouwankotu3d"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 15
 			},
-			"model": "minecraft_armor_weapon:custom/saya_loki_the_trick_ster_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_loki_the_trick_ster_katana"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 19
 			},
-			"model": "minecraft_armor_weapon:custom/saya_replica_sword_of_light"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_replica_sword_of_light"
 		},
 		{
 			"predicate": {
 				"custom_model_data": 16
 			},
-			"model": "minecraft_armor_weapon:custom/saya_diamond_katana"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_diamond_katana"
 		},
 		{
 			"predicate": {
 				"minecraft_armor_weapon:saya_nbt": 1
 			},
-			"model": "minecraft_armor_weapon:custom/saya_reitou_sigiled"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_reitou_sigiled"
 		},
 		{
 			"predicate": {
@@ -120,7 +120,7 @@
 				"minecraft_armor_weapon:feyn": 1,
 				"minecraft_armor_weapon:saya_nbt": 1
 			},
-			"model": "minecraft_armor_weapon:custom/saya_reitou_sigiled_empty"
+			"model": "minecraft_armor_weapon:custom/saya/katana/saya_reitou_sigiled_empty"
 		}
 	]
 }

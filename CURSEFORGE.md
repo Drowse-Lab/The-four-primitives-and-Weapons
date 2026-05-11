@@ -53,7 +53,7 @@ Wield **10 different elemental attributes** — Ice, Electric, Corrosion, Holy, 
 
 Open the **Skill Selection** screen to customize which moves trigger on each action slot (1st/2nd/3rd Hit, Charged, Dash, Right Click, Shift+Right Click). Each weapon category — Katana, Rapier, Straight Sword, Sword, Greatsword, Dagger, Shield, Bow, Crossbow, Throwing, Trident — keeps its own loadout.
 
-![Skill Selection 画面 / Skill Selection screen](images/skill_selection.png)
+![Skill Selection 画面 / Skill Selection screen](https://raw.githubusercontent.com/Drowse-Lab/The-four-primitives-and-Weapons/1.20.1/images/skill_selection.png)
 
 ### ✨ Special Technique
 
@@ -61,7 +61,7 @@ Open the **Skill Selection** screen to customize which moves trigger on each act
 
 Set a **Storm Item** (or similar) in the **book slot (magic book slot)**, then perform a **Charged Attack** with a **Magisches Feen Katana** or **Magical Katana** to trigger a powerful **Special Technique**!
 
-![本スロット（magic book）の位置 / The "magic book" slot location](images/magic_book_slot.png)
+![本スロット（magic book）の位置 / The "magic book" slot location](https://raw.githubusercontent.com/Drowse-Lab/The-four-primitives-and-Weapons/1.20.1/images/magic_book_slot.png)
 
 ***
 
@@ -71,9 +71,9 @@ Set a **Storm Item** (or similar) in the **book slot (magic book slot)**, then p
 
 Each weapon has a dedicated **Saya (sheath)** that can be equipped in the Curios **Belt / Back slot**. When a weapon is sheathed, the tooltip shows which weapon is currently stored.
 
-![Straight Sword Saya のツールチップ（Belt/Back スロット・納刀中表示）/ Saya tooltip showing Belt/Back slots and the currently sheathed weapon](images/straight_sword_saya_tooltip.png)
+![Straight Sword Saya のツールチップ（Belt/Back スロット・納刀中表示）/ Saya tooltip showing Belt/Back slots and the currently sheathed weapon](https://raw.githubusercontent.com/Drowse-Lab/The-four-primitives-and-Weapons/1.20.1/images/straight_sword_saya_tooltip.png)
 
-![Curios インベントリ画面 / Curios inventory screen](images/curios_inventory.png)
+![Curios インベントリ画面 / Curios inventory screen](https://raw.githubusercontent.com/Drowse-Lab/The-four-primitives-and-Weapons/1.20.1/images/curios_inventory.png)
 
 ***
 
@@ -205,7 +205,7 @@ In addition to vanilla easy / normal / hard, this mod adds custom difficulties s
 /gamerule difficulty <難易度名>
 ```
 
-![カスタム難易度メニュー / Custom difficulty menu](images/custom_difficulty.png)
+![カスタム難易度メニュー / Custom difficulty menu](https://raw.githubusercontent.com/Drowse-Lab/The-four-primitives-and-Weapons/1.20.1/images/custom_difficulty.png)
 
 ***
 

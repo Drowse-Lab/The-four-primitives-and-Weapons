@@ -18,6 +18,7 @@ import top.theillusivec4.curios.api.SlotContext;
 
 import minecraftarmorweapon.init.MinecraftArmorWeaponModTabs;
 import minecraftarmorweapon.procedures.TyokutouThrustAttackProcedure;
+import minecraftarmorweapon.util.SayaRegistry;
 
 import java.util.List;
 
@@ -115,31 +116,22 @@ public class TyokutoSayaItem extends Item implements ICurioItem {
     }
 
     /**
-     * 直刀ごとのモデルデータを返す（publicにしてCurios納刀から参照可能）
+     * 直刀ごとのモデルデータを返す（publicにしてCurios納刀から参照可能）。
+     * data/&lt;namespace&gt;/maw_saya/*.json の "tyokuto" セクションから読み込まれる。
+     *
+     * BluepurgeItemは特例: CustomModelData==2のときのみ直刀扱い（NBT依存のためJSON不可）。
      */
     public static int getSwordModelData(ItemStack sword) {
-        String itemName = sword.getItem().getClass().getSimpleName();
+        int registered = SayaRegistry.getModelData(SayaRegistry.SayaType.TYOKUTO, sword);
+        if (registered != 0) return registered;
 
-        // 直刀ごとに異なるCustomModelDataを返す
-        if (itemName.equals("LunaItem")) return 1;
-        if (itemName.equals("BluepurgeTyokutouItem")) return 2;
-        if (itemName.equals("KaminariKurikarakenTyokutouItem")) return 3;
-        if (itemName.equals("IronTyokutoItem")) return 4;
-        if (itemName.equals("GoldTyokutoItem")) return 5;
-        if (itemName.equals("StoneTyokutoItem")) return 6;
-        if (itemName.equals("DiamondTyokutoItem")) return 7;
-        if (itemName.equals("NetheriteTyokutoItem")) return 8;
-
-        // BluepurgeItemの場合、custom_model_dataをチェック
-        if (itemName.equals("BluepurgeItem")) {
-            if (sword.hasTag() && sword.getTag().contains("CustomModelData")) {
-                int customModelData = sword.getTag().getInt("CustomModelData");
-                if (customModelData == 2) {
-                    return 2; // 直刀モデル
-                }
+        // BluepurgeItem 特例（NBTの CustomModelData==2 で直刀化）
+        if (sword.getItem().getClass().getSimpleName().equals("BluepurgeItem")) {
+            if (sword.hasTag() && sword.getTag().contains("CustomModelData")
+                    && sword.getTag().getInt("CustomModelData") == 2) {
+                return 2;
             }
         }
-
-        return 0; // デフォルト（空の鞘）
+        return 0;
     }
 }

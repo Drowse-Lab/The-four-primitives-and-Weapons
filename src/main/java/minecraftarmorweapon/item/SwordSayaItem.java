@@ -8,34 +8,18 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-
-import net.minecraftforge.registries.ForgeRegistries;
 
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
 import top.theillusivec4.curios.api.SlotContext;
 
-import java.util.LinkedHashMap;
+import minecraftarmorweapon.util.SayaRegistry;
+
 import java.util.List;
-import java.util.Map;
 
 public class SwordSayaItem extends Item implements ICurioItem {
-
-	// 納刀対象の剣 → CustomModelData の対応表。後で増やすときはここに1行足すだけ。
-	// 0 は空鞘で予約済み。
-	private static final Map<ResourceLocation, Integer> SHEATHABLE_SWORDS = new LinkedHashMap<>();
-	static {
-		// 木剣 (wooden_sword) は意図的に未登録 → 納刀不可。
-		SHEATHABLE_SWORDS.put(new ResourceLocation("minecraft", "iron_sword"), 1);
-		SHEATHABLE_SWORDS.put(new ResourceLocation("minecraft", "golden_sword"), 2);
-		SHEATHABLE_SWORDS.put(new ResourceLocation("minecraft", "stone_sword"), 3);
-		SHEATHABLE_SWORDS.put(new ResourceLocation("minecraft", "diamond_sword"), 4);
-		SHEATHABLE_SWORDS.put(new ResourceLocation("minecraft", "netherite_sword"), 5);
-	}
 
 	public SwordSayaItem() {
 		super(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON));
@@ -71,8 +55,7 @@ public class SwordSayaItem extends Item implements ICurioItem {
 	}
 
 	public static boolean canSheathe(ItemStack swordStack) {
-		ResourceLocation id = ForgeRegistries.ITEMS.getKey(swordStack.getItem());
-		return id != null && SHEATHABLE_SWORDS.containsKey(id);
+		return SayaRegistry.isRegistered(SayaRegistry.SayaType.SWORD, swordStack);
 	}
 
 	public static void sheatheSword(Player player, ItemStack swordStack, ItemStack sheathStack,
@@ -108,9 +91,11 @@ public class SwordSayaItem extends Item implements ICurioItem {
 		return false;
 	}
 
+	/**
+	 * 剣ごとのモデルデータを返す。
+	 * data/&lt;namespace&gt;/maw_saya/*.json の "sword" セクションから読み込まれる。
+	 */
 	public static int getSwordModelData(ItemStack sword) {
-		ResourceLocation id = ForgeRegistries.ITEMS.getKey(sword.getItem());
-		if (id == null) return 0;
-		return SHEATHABLE_SWORDS.getOrDefault(id, 0);
+		return SayaRegistry.getModelData(SayaRegistry.SayaType.SWORD, sword);
 	}
 }

@@ -396,27 +396,11 @@ public class CuriosScabbardHelper {
     }
 
     /**
-     * 通常の鞘(SayaItem)用のCustomModelDataを取得
-     * DodgeAndBattouHandler.getWeaponModelDataと同じマッピング
+     * 通常の鞘(SayaItem)用のCustomModelDataを取得。
+     * data/&lt;namespace&gt;/maw_saya/*.json の "katana" セクションから読み込まれる。
      */
     public static int getWeaponModelDataForSaya(ItemStack weapon) {
-        String itemName = weapon.getItem().getClass().getSimpleName();
-        if (itemName.equals("IronKatanaItem")) return 1;
-        if (itemName.equals("GoldKatanaItem")) return 2;
-        if (itemName.equals("StoneKatanaItem")) return 3;
-        if (itemName.equals("NetheriteKatanaItem")) return 4;
-        if (itemName.equals("WitherKatanaItem")) return 5;
-        if (itemName.equals("DarknessKatanaItem")) return 7;
-        if (itemName.equals("MagicalKatanaItem")) return 8;
-        if (itemName.equals("MagischesFeenKatanaItem")) return 9;
-        if (itemName.equals("PrototypeKatanaItem")) return 10;
-        if (itemName.equals("OldKatanaItem")) return 11;
-        if (itemName.equals("MyTestIronKatanaItem")) return 12;
-        if (itemName.equals("RiversOfBloodItem")) return 13;
-        if (itemName.equals("KatanaNiguHumerusItem")) return 14;
-        if (itemName.equals("LokiTheTricksterItem")) return 15;
-        if (itemName.equals("DiamondKatanaItem")) return 16;
-        return 0;
+        return SayaRegistry.getModelData(SayaRegistry.SayaType.KATANA, weapon);
     }
 
     /**
