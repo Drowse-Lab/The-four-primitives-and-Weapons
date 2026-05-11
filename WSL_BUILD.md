@@ -152,3 +152,8 @@ bash build_mac.sh clean
 rm -rf ~/.gradle/caches/forge_gradle
 # 上記ビルドを再実行
 ```
+
+
+rm "build/libs/The four primitives and Weapons-forge-1.20.1-1-2.jar"
+rm "build/libs/The four primitives and Weapons-forge-1.20.1-3-beta.jar"
+bash build_mac.sh clean
