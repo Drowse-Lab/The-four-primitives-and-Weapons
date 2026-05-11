@@ -43,36 +43,8 @@ public class SwordSayaItem extends Item implements ICurioItem {
 
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
-		ItemStack sayaStack = player.getItemInHand(hand);
-
-		if (sayaStack.hasTag() && sayaStack.getTag().contains("StoredSword")) {
-			CompoundTag tag = sayaStack.getOrCreateTag();
-			ItemStack swordStack = ItemStack.of(tag.getCompound("StoredSword"));
-
-			InteractionHand otherHand = hand == InteractionHand.MAIN_HAND ?
-				InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
-			ItemStack otherItem = player.getItemInHand(otherHand);
-
-			if (otherItem.isEmpty()) {
-				player.setItemInHand(otherHand, swordStack);
-
-				tag.remove("StoredSword");
-				tag.putInt("CustomModelData", 0);
-				sayaStack.setTag(tag);
-
-				world.playSound(null, player.getX(), player.getY(), player.getZ(),
-					SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 0.8f, 1.2f);
-
-				player.displayClientMessage(Component.literal("§e抜刀！"), true);
-
-				return InteractionResultHolder.sidedSuccess(sayaStack, world.isClientSide());
-			} else {
-				player.displayClientMessage(Component.literal("§c反対の手が空いていません"), true);
-				return InteractionResultHolder.fail(sayaStack);
-			}
-		}
-
-		return InteractionResultHolder.pass(sayaStack);
+		// 抜刀は R キーのみで行う (鞘の右クリックでは何もしない)
+		return InteractionResultHolder.pass(player.getItemInHand(hand));
 	}
 
 	@Override

@@ -24,23 +24,25 @@ import java.util.List;
 
 public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelectionMenu> {
 
-    // 色定義
-    private static final int COLOR_BG = 0xCC1A1A2E;
-    private static final int COLOR_HEADER = 0xFF2D6A4F;
-    private static final int COLOR_HEADER_TEXT = 0xFFFFFFFF;
-    private static final int COLOR_BTN_NORMAL = 0xFF2A2A3D;
-    private static final int COLOR_BTN_SELECTED = 0xFF1B5E20;
-    private static final int COLOR_BTN_HOVER = 0xFF3A3A55;
-    private static final int COLOR_BTN_SPECIAL = 0xFF2A2040;
-    private static final int COLOR_BORDER = 0xFF4CAF50;
-    private static final int COLOR_SLOT_LABEL = 0xFFFFD700;
-    private static final int COLOR_FOOTER = 0xFF2D6A4F;
-    private static final int COLOR_FOOTER_TEXT = 0xFFCCCCCC;
-    private static final int COLOR_SLOT_BG = 0xFF1A1A30;
-    private static final int COLOR_SLOT_BORDER = 0xFF333355;
-    private static final int COLOR_SLOT_SELECTED_BORDER = 0xFF4CAF50;
-    private static final int COLOR_RADIO_ON = 0xFF4CAF50;
-    private static final int COLOR_RADIO_OFF = 0xFF555577;
+    // 色定義 (RPG 風: 茶系を基調にしたファンタジー的トーン)
+    private static final int COLOR_BG = 0xF22A1F12;            // 深い茶 (羊皮紙の裏)
+    private static final int COLOR_OUTER_BORDER = 0xFF8B6F3C;  // ゴールド系の外枠
+    private static final int COLOR_INNER_BORDER = 0xFF4A3820;  // 内枠 (影)
+    private static final int COLOR_HEADER = 0xFF5C3A1A;
+    private static final int COLOR_HEADER_TEXT = 0xFFE8C77A;   // 金色
+    private static final int COLOR_BTN_NORMAL = 0xFF3D2E1C;    // 革のパネル風
+    private static final int COLOR_BTN_SELECTED = 0xFF6B4A1F;
+    private static final int COLOR_BTN_HOVER = 0xFF55401D;
+    private static final int COLOR_BTN_SPECIAL = 0xFF4A2B40;
+    private static final int COLOR_BORDER = 0xFFC9A24B;        // 金枠
+    private static final int COLOR_SLOT_LABEL = 0xFFE8C77A;
+    private static final int COLOR_FOOTER = 0xFF5C3A1A;
+    private static final int COLOR_FOOTER_TEXT = 0xFFD8C490;
+    private static final int COLOR_SLOT_BG = 0xFF2A1F12;
+    private static final int COLOR_SLOT_BORDER = 0xFF4A3820;
+    private static final int COLOR_SLOT_SELECTED_BORDER = 0xFFC9A24B;
+    private static final int COLOR_RADIO_ON = 0xFFC9A24B;
+    private static final int COLOR_RADIO_OFF = 0xFF6B5530;
 
     private String hoveredDescription = null;
 
@@ -52,10 +54,11 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
     private final java.util.Map<String, String> localTypeSelections = new java.util.HashMap<>();
 
     // レイアウト定数
-    private static final int HEADER_HEIGHT = 18;
-    private static final int WEAPON_SLOT_SECTION_Y = 20;
-    private static final int RADIO_ROW_Y = 40;
-    private static final int DIVIDER_Y = 52;
+    private static final int HEADER_HEIGHT = 14;
+    // 実際のスロット (WeaponSlot) は y=22 に配置されるので、視覚的背景も同じ位置に揃える
+    private static final int WEAPON_SLOT_SECTION_Y = 22;
+    private static final int RADIO_ROW_Y = 42;
+    private static final int DIVIDER_Y = 54;
     private static final int MOTION_ROW_Y = 58;
 
     public SkillSelectionScreen(SkillSelectionMenu menu, Inventory inv, Component title) {
@@ -274,11 +277,13 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         if (skillData == null) return;
 
         WeaponProficiency current = skillData.getWeaponProficiency();
-        int btnW = 90;
-        int btnH = 13;
-        // タイトルと重ならないよう、パネル左下（インベントリ上部）に配置
-        int btnX = leftPos + 3;
-        int btnY = topPos + SkillSelectionMenu.INV_START_Y - 16;
+        // 右側の type 列の下に配置 (Trident の下の余ったスペース)
+        int btnW = 80;
+        int btnH = 11;
+        int btnX = leftPos + imageWidth - btnW - 4;
+        // type ボタンは RADIO_ROW_Y から 11px ピッチで並ぶ。11 種類で y += 11*11 = 121。
+        int typeCount = WeaponTypeRegistry.getAllTypes().size();
+        int btnY = topPos + RADIO_ROW_Y + typeCount * 11 + 8;
 
         Component currentName = Component.translatable(current.translationKey());
         addRenderableWidget(new AbstractButton(btnX, btnY, btnW, btnH,
@@ -298,7 +303,16 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                 int bg = isHoveredOrFocused() ? COLOR_BTN_HOVER : COLOR_BTN_SPECIAL;
                 g.fill(getX(), getY(), getX() + width, getY() + height, bg);
                 drawBorder(g, getX(), getY(), width, height, COLOR_BORDER);
-                g.drawCenteredString(font, getMessage(), getX() + width / 2, getY() + (height - 8) / 2, COLOR_SLOT_LABEL);
+                // 文字幅がボタンに収まらない時は自動縮小
+                int padding = 4;
+                int rawWidth = font.width(getMessage());
+                float fitScale = 0.7f;
+                if (rawWidth * fitScale > width - padding) {
+                    fitScale = (float)(width - padding) / Math.max(1, rawWidth);
+                    if (fitScale < 0.45f) fitScale = 0.45f;
+                }
+                drawScaledCenteredString(g, getMessage(),
+                    getX() + width / 2, getY() + height / 2, COLOR_SLOT_LABEL, fitScale);
                 if (isHoveredOrFocused()) {
                     hoveredDescription = Component.translatable(
                         "screen.minecraft_armor_weapon.skill_selection.proficiency_hover").getString();
@@ -487,17 +501,22 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
 
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
-        // メインの背景パネル
+        // メインの背景パネル (RPG 風: 茶背景 + 金内枠 + 暗外枠)
         g.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, COLOR_BG);
-        drawBorder(g, leftPos, topPos, imageWidth, imageHeight, 0xFF555577);
+        // 外枠 (暗い影)
+        drawBorder(g, leftPos, topPos, imageWidth, imageHeight, COLOR_INNER_BORDER);
+        // 内側ゴールド枠 (1 ピクセル内側)
+        drawBorder(g, leftPos + 2, topPos + 2, imageWidth - 4, imageHeight - 4, COLOR_OUTER_BORDER);
+        // ヘッダー帯
+        g.fill(leftPos + 3, topPos + 3, leftPos + imageWidth - 3, topPos + 11, COLOR_HEADER);
 
         // ヘッダー（バーなし、テキストのみ）
         g.drawCenteredString(font, Component.translatable("screen.minecraft_armor_weapon.skill_selection.header"),
             leftPos + imageWidth / 2, topPos + 3, COLOR_HEADER_TEXT);
 
-        // 武器スロットセクションラベル
+        // 武器スロットセクションラベル (上に持ち上げ)
         g.drawString(font, Component.translatable("screen.minecraft_armor_weapon.skill_selection.weapon_slots"),
-            leftPos + 4, topPos + 18, COLOR_SLOT_LABEL, false);
+            leftPos + 4, topPos + 13, COLOR_SLOT_LABEL, false);
 
         // 武器スロットの背景と枠線
         renderWeaponSlotBackgrounds(g);

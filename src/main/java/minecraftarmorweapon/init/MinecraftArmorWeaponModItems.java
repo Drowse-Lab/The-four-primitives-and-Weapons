@@ -282,6 +282,7 @@ public class MinecraftArmorWeaponModItems {
 	public static final RegistryObject<Item> RARITY_CHARM = REGISTRY.register("rarity_charm", () -> new minecraftarmorweapon.item.RarityCharmItem());
 	public static final RegistryObject<Item> IRON_TYOKUTO = REGISTRY.register("iron_tyokuto", () -> new minecraftarmorweapon.item.IronTyokutoItem());
 	public static final RegistryObject<Item> GOLD_TYOKUTO = REGISTRY.register("gold_tyokuto", () -> new minecraftarmorweapon.item.GoldTyokutoItem());
+	public static final RegistryObject<Item> STONE_TYOKUTO = REGISTRY.register("stone_tyokuto", () -> new minecraftarmorweapon.item.StoneTyokutoItem());
 	public static final RegistryObject<Item> SAYA = REGISTRY.register("saya", () -> new SayaItem());
 	public static final RegistryObject<Item> TYOKUTO_SAYA = REGISTRY.register("tyokuto_saya", () -> new TyokutoSayaItem());
 	public static final RegistryObject<Item> SWORD_SAYA = REGISTRY.register("sword_saya", () -> new SwordSayaItem());

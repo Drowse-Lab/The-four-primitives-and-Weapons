@@ -202,7 +202,12 @@ public class WeaponRackEntity extends ItemFrame {
 		boolean slotHasItem = !slotItem.isEmpty();
 
 		// 1. 設置: 該当スロットが空 + displayable アイテム
-		if (!slotHasItem && stackInHand.is(DISPLAYABLE)) {
+		//    タグマッチ OR mod 側の武器/鞘判定 (タグが読み込まれない環境への保険)
+		boolean isDisplayable = stackInHand.is(DISPLAYABLE)
+			|| minecraftarmorweapon.events.DodgeAndBattouHandler.isWeapon(stackInHand)
+			|| minecraftarmorweapon.events.DodgeAndBattouHandler.isSaya(stackInHand)
+			|| minecraftarmorweapon.util.CuriosScabbardHelper.isScabbard(stackInHand);
+		if (!slotHasItem && isDisplayable) {
 			if (!this.level().isClientSide()) {
 				ItemStack toPlace = stackInHand.copy();
 				toPlace.setCount(1);
@@ -318,11 +323,9 @@ public class WeaponRackEntity extends ItemFrame {
 
 	@Override
 	public boolean isInvulnerableTo(DamageSource source) {
-		// 両スロットが空のとき + プレイヤーが non-sneak で攻撃 → 無敵 (壊れない)
-		return source.getEntity() instanceof Player p
-			&& this.getItem().isEmpty()
-			&& this.getItem2().isEmpty()
-			&& !p.isShiftKeyDown();
+		// プレイヤーは素手 (sneak 不要) でも常に破壊できる。
+		// 無敵対象は player 以外のソース (entity が player でない非戦闘ダメージ等) のみ。
+		return false;
 	}
 
 	/**

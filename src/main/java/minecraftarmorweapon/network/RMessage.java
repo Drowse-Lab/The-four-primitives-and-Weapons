@@ -100,13 +100,21 @@ public class RMessage {
 				}
 			}
 
-			// 抜刀チェック: 手が空で各所の満杯鞘があれば抜刀
+			// 抜刀チェック A: 利き手 (メインハンド) の満杯鞘 + オフハンド空 → 利き手の鞘から抜刀
+			if (CuriosScabbardHelper.isScabbard(mainHand)
+					&& CuriosScabbardHelper.hasStoredWeapon(mainHand)
+					&& offHand.isEmpty()) {
+				if (drawFromMainHandSaya(entity, mainHand)) return;
+			}
+
+			// 抜刀チェック B: 手が空で各所の満杯鞘があれば抜刀
 			if (mainHand.isEmpty()) {
 				// オフハンドの満杯鞘 → メインハンドへ抜刀
 				if (CuriosScabbardHelper.isScabbard(offHand)
 						&& CuriosScabbardHelper.hasStoredWeapon(offHand)) {
 					if (drawFromOffHandSaya(entity, offHand)) return;
 				}
+				// どっちの手にも納刀済み鞘がない場合: Curios (belt → back) → インベントリ手前の順で抜刀
 				if (drawFromCuriosFirst(entity)) return;
 				if (drawFromInventoryFirst(entity)) return;
 			}
@@ -160,6 +168,21 @@ public class RMessage {
 	 * オフハンドの満杯鞘からメインハンドへ抜刀。空鞘はオフハンドに残す。
 	 */
 	private static boolean drawFromOffHandSaya(Player player, ItemStack scabbard) {
+		ItemStack weapon = CuriosScabbardHelper.extractWeaponFromScabbard(scabbard);
+		if (weapon.isEmpty()) return false;
+
+		CuriosScabbardHelper.clearWeaponFromScabbard(scabbard);
+		player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
+		player.setItemInHand(InteractionHand.OFF_HAND, scabbard);
+		player.playSound(net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F);
+		return true;
+	}
+
+	/**
+	 * メインハンドの満杯鞘から抜刀。武器はメインハンドへ、空鞘はオフハンドへ。
+	 * (利き手の鞘抜刀; 呼び出し側は offHand が空であることを保証する)
+	 */
+	private static boolean drawFromMainHandSaya(Player player, ItemStack scabbard) {
 		ItemStack weapon = CuriosScabbardHelper.extractWeaponFromScabbard(scabbard);
 		if (weapon.isEmpty()) return false;
 

@@ -27,6 +27,12 @@
 		},
 		{
 			"predicate": {
+				"custom_model_data": 6
+			},
+			"model": "minecraft_armor_weapon:custom/saya_stone_tyokuto"
+		},
+		{
+			"predicate": {
 				"custom_model_data": 8
 			},
 			"model": "minecraft_armor_weapon:custom/saya_netherite_tyokuto"

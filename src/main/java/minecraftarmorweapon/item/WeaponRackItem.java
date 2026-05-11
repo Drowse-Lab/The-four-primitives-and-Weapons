@@ -37,17 +37,27 @@ public class WeaponRackItem extends Item {
 
 	@Override
 	public InteractionResult useOn(UseOnContext context) {
+		Level level = context.getLevel();
 		BlockPos clicked = context.getClickedPos();
 		Direction face = context.getClickedFace();
-		BlockPos placePos = clicked.relative(face);
 		Player player = context.getPlayer();
 		ItemStack stack = context.getItemInHand();
+
+		// クリック先のブロックが置換可能 (snow_layer / grass / fern / water 等) なら、
+		// そのブロックを破壊してその位置にラックを置く。それ以外は通常通り隣接位置に。
+		BlockPos placePos;
+		if (level.getBlockState(clicked).canBeReplaced()) {
+			placePos = clicked;
+			if (!level.isClientSide()) {
+				level.destroyBlock(clicked, true);
+			}
+		} else {
+			placePos = clicked.relative(face);
+		}
 
 		if (player != null && !this.canPlace(player, face, stack, placePos)) {
 			return InteractionResult.FAIL;
 		}
-
-		Level level = context.getLevel();
 		WeaponRackEntity rack = new WeaponRackEntity(level, placePos, face);
 		rack.setWoodIndex(this.woodIndex);
 

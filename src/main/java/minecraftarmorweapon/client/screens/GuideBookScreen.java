@@ -45,7 +45,10 @@ public class GuideBookScreen extends Screen {
         this.bx = (this.width - BOOK_W) / 2;
         this.by = (this.height - BOOK_H) / 2;
 
-        if (pages.isEmpty()) buildPages();
+        if (pages.isEmpty()) {
+            buildPages();
+            paginateOverflowingPages();
+        }
 
         prev = Button.builder(Component.literal("◀"),
             b -> { if (pageIndex > 0) pageIndex--; updateButtons(); })
@@ -69,35 +72,82 @@ public class GuideBookScreen extends Screen {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float pt) {
         renderBackground(g);
-        g.fill(bx, by, bx + BOOK_W, by + BOOK_H, 0xF0181818);
-        g.fill(bx, by, bx + BOOK_W, by + 1, 0xFFFFD700);
-        g.fill(bx, by + BOOK_H - 1, bx + BOOK_W, by + BOOK_H, 0xFFFFD700);
-        g.fill(bx, by, bx + 1, by + BOOK_H, 0xFFFFD700);
-        g.fill(bx + BOOK_W - 1, by, bx + BOOK_W, by + BOOK_H, 0xFFFFD700);
+
+        // ===== 本ぽい外観: 革表紙 + 中央綴じ目 + 羊皮紙の本文ページ =====
+        // 革色の外枠 (背表紙)
+        int leather = 0xFF5C3A1A;
+        int leatherDark = 0xFF3D2511;
+        int leatherLight = 0xFF8B5A2A;
+        int parchment = 0xFFE8D9A8;       // 羊皮紙色
+        int parchmentShade = 0xFFCFB87A;  // 影
+        int ink = 0xFF2A1B0A;             // インク文字色
+        int gold = 0xFFC9A24B;
+
+        // 外側の革背景
+        g.fill(bx - 4, by - 4, bx + BOOK_W + 4, by + BOOK_H + 4, leatherDark);
+        g.fill(bx - 3, by - 3, bx + BOOK_W + 3, by + BOOK_H + 3, leather);
+        // 革のハイライト (上)
+        g.fill(bx - 3, by - 3, bx + BOOK_W + 3, by - 2, leatherLight);
+        g.fill(bx - 3, by - 3, bx - 2, by + BOOK_H + 3, leatherLight);
+
+        // 羊皮紙の本文ページ (内側)
+        g.fill(bx, by, bx + BOOK_W, by + BOOK_H, parchment);
+        // ページの影 (上端)
+        g.fill(bx, by, bx + BOOK_W, by + 1, parchmentShade);
+        // 金枠 (装飾)
+        g.fill(bx, by, bx + BOOK_W, by + 1, gold);
+        g.fill(bx, by + BOOK_H - 1, bx + BOOK_W, by + BOOK_H, gold);
+        g.fill(bx, by, bx + 1, by + BOOK_H, gold);
+        g.fill(bx + BOOK_W - 1, by, bx + BOOK_W, by + BOOK_H, gold);
+
+        // 中央綴じ目 (本の真ん中)
+        int spine = bx + BOOK_W / 2;
+        g.fill(spine - 1, by + 4, spine + 1, by + BOOK_H - 4, leatherDark);
 
         Page p = pages.get(pageIndex);
         Minecraft mc = Minecraft.getInstance();
 
+        // タイトル (黒インク) - 分割ページなら "(2/3)" 等を付与
         String titleText = tr(p.titleKey);
-        g.drawString(mc.font, titleText, bx + 16, by + 10, 0xFFFFD700, false);
+        if (p.partNumber != null && p.partTotal != null && p.partTotal > 1) {
+            titleText = titleText + " (" + p.partNumber + "/" + p.partTotal + ")";
+        }
+        g.drawString(mc.font, titleText, bx + 16, by + 8, ink, false);
         String pg = (pageIndex + 1) + "/" + pages.size();
-        g.drawString(mc.font, pg, bx + BOOK_W - mc.font.width(pg) - 12, by + 10, 0xFF808080, false);
-        g.fill(bx + 10, by + 24, bx + BOOK_W - 10, by + 25, 0xFF605020);
+        g.drawString(mc.font, pg, bx + BOOK_W - mc.font.width(pg) - 12, by + 8, 0xFF5C4A2A, false);
+        // 装飾下線
+        g.fill(bx + 10, by + 22, bx + BOOK_W - 10, by + 23, gold);
 
+        // 本文は左ページに収める (中央 spine とイラスト用の右ページを侵さない)
         int tx = bx + 14;
         int ty = by + 32;
-        int textW = 170;
+        int spineX = bx + BOOK_W / 2;
+        // 左ページ右端マージン: spine から 6px 離す
+        int textW = spineX - tx - 6;
+        // ボタン領域 (by + BOOK_H - 28) と被らないように、本文の最大行数を制限
+        int textBottom = by + BOOK_H - 34;  // ボタン上端より少し上
+        int maxLines = Math.max(1, (textBottom - ty) / 10);
         int line = 0;
-        String body = tr(p.bodyKey);
+        // 分割ページなら bodyOverride を優先 (既にラップ済み)、それ以外は bodyKey から取得して再ラップ
+        String body = (p.bodyOverride != null) ? p.bodyOverride : tr(p.bodyKey);
+        outer:
         for (String paragraph : body.split("\n")) {
-            var wrapped = mc.font.getSplitter().splitLines(paragraph, textW, net.minecraft.network.chat.Style.EMPTY);
+            // bodyOverride はもう適切な幅でラップ済みなので分割不要だが、bodyKey から来た場合は再ラップ
+            java.util.List<? extends net.minecraft.util.FormattedCharSequence> wrapped =
+                (p.bodyOverride != null)
+                    ? java.util.List.of(net.minecraft.util.FormattedCharSequence.forward(paragraph, net.minecraft.network.chat.Style.EMPTY))
+                    : mc.font.getSplitter().splitLines(paragraph, textW, net.minecraft.network.chat.Style.EMPTY)
+                        .stream().map(t -> net.minecraft.util.FormattedCharSequence.forward(t.getString(), net.minecraft.network.chat.Style.EMPTY))
+                        .toList();
             for (var s : wrapped) {
-                g.drawString(mc.font, s.getString(), tx, ty + line * 10, 0xFFE8E8E8, false);
+                if (line >= maxLines) break outer;
+                g.drawString(mc.font, s, tx, ty + line * 10, ink, false);
                 line++;
             }
         }
 
-        int ix = bx + BOOK_W - 100;
+        // イラストは右ページに配置
+        int ix = spineX + 14;
         int iy = by + 40;
         if (p.illustration != null) p.illustration.run(g, ix, iy);
 
@@ -209,6 +259,54 @@ public class GuideBookScreen extends Screen {
         g.pose().popPose();
     }
 
+    /**
+     * 各 Page の本文を計測し、ボタンと被るほど長い場合は複数 Page に分割する。
+     * 分割後の Page は bodyOverride に断片を保持し、(part/total) を表示する。
+     */
+    private void paginateOverflowingPages() {
+        Minecraft mc = Minecraft.getInstance();
+        int spineX = BOOK_W / 2;
+        int textW = spineX - 14 - 6;
+        // textBottom = BOOK_H - 34 (ボタンより少し上), ty = 32, 行高 10
+        int maxLines = Math.max(1, (BOOK_H - 34 - 32) / 10);
+
+        java.util.List<Page> result = new java.util.ArrayList<>();
+        for (Page p : pages) {
+            String body = tr(p.bodyKey);
+            // 本文を全行にラップ
+            java.util.List<String> allLines = new java.util.ArrayList<>();
+            for (String para : body.split("\n")) {
+                if (para.isEmpty()) { allLines.add(""); continue; }
+                for (var s : mc.font.getSplitter().splitLines(para, textW, net.minecraft.network.chat.Style.EMPTY)) {
+                    allLines.add(s.getString());
+                }
+            }
+            if (allLines.size() <= maxLines) {
+                result.add(p);
+                continue;
+            }
+            // 分割
+            int total = (allLines.size() + maxLines - 1) / maxLines;
+            for (int part = 0; part < total; part++) {
+                int from = part * maxLines;
+                int to = Math.min(from + maxLines, allLines.size());
+                StringBuilder sb = new StringBuilder();
+                for (int j = from; j < to; j++) {
+                    if (j > from) sb.append('\n');
+                    sb.append(allLines.get(j));
+                }
+                Page np = new Page(p.titleKey, p.bodyKey,
+                    part == 0 ? p.illustration : null);
+                np.bodyOverride = sb.toString();
+                np.partNumber = part + 1;
+                np.partTotal = total;
+                result.add(np);
+            }
+        }
+        pages.clear();
+        pages.addAll(result);
+    }
+
     @FunctionalInterface
     private interface Illustration {
         void run(GuiGraphics g, int x, int y);
@@ -218,6 +316,11 @@ public class GuideBookScreen extends Screen {
         final String titleKey;
         final String bodyKey;
         final Illustration illustration;
+        /** 非 null なら bodyKey の代わりに使用 (auto-paginate で分割した本文を保持)。 */
+        String bodyOverride;
+        /** 同タイトルの何ページ目か (1-based)。null なら表示しない。 */
+        Integer partNumber;
+        Integer partTotal;
         Page(String tk, String bk, Illustration i) { titleKey = tk; bodyKey = bk; illustration = i; }
     }
 }

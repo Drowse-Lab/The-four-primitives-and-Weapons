@@ -35,6 +35,7 @@ public class TyokutouThrustAttackProcedure {
         "KurikarakenItem",
         "IronTyokutoItem",
         "GoldTyokutoItem",
+        "StoneTyokutoItem",
         "WoodenTyokutoItem",
         "DiamondTyokutoItem",
         "NetheriteTyokutoItem"

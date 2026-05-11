@@ -31,43 +31,8 @@ public class TyokutoSayaItem extends Item implements ICurioItem {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
-        ItemStack sayaStack = player.getItemInHand(hand);
-
-        if (sayaStack.hasTag() && sayaStack.getTag().contains("StoredSword")) {
-            // 抜刀処理
-            CompoundTag tag = sayaStack.getOrCreateTag();
-            ItemStack swordStack = ItemStack.of(tag.getCompound("StoredSword"));
-
-            // 反対の手にある武器を確認
-            InteractionHand otherHand = hand == InteractionHand.MAIN_HAND ?
-                                       InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
-            ItemStack otherItem = player.getItemInHand(otherHand);
-
-            // 反対の手が空いている場合のみ抜刀
-            if (otherItem.isEmpty()) {
-                // 刀を反対の手に配置
-                player.setItemInHand(otherHand, swordStack);
-
-                // 鞘から刀を削除
-                tag.remove("StoredSword");
-                tag.putInt("CustomModelData", 0); // 空の鞘のモデル
-                sayaStack.setTag(tag);
-
-                // 抜刀音
-                world.playSound(null, player.getX(), player.getY(), player.getZ(),
-                    SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 0.8f, 1.2f);
-
-                // 抜刀エフェクト（必要に応じて追加）
-                player.displayClientMessage(Component.literal("§e抜刀！"), true);
-
-                return InteractionResultHolder.sidedSuccess(sayaStack, world.isClientSide());
-            } else {
-                player.displayClientMessage(Component.literal("§c反対の手が空いていません"), true);
-                return InteractionResultHolder.fail(sayaStack);
-            }
-        }
-
-        return InteractionResultHolder.pass(sayaStack);
+        // 抜刀は R キーのみで行う (鞘の右クリックでは何もしない)
+        return InteractionResultHolder.pass(player.getItemInHand(hand));
     }
 
     @Override
@@ -161,6 +126,7 @@ public class TyokutoSayaItem extends Item implements ICurioItem {
         if (itemName.equals("KaminariKurikarakenTyokutouItem")) return 3;
         if (itemName.equals("IronTyokutoItem")) return 4;
         if (itemName.equals("GoldTyokutoItem")) return 5;
+        if (itemName.equals("StoneTyokutoItem")) return 6;
         if (itemName.equals("DiamondTyokutoItem")) return 7;
         if (itemName.equals("NetheriteTyokutoItem")) return 8;
 

@@ -201,24 +201,35 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 		} else if (!stack.isEmpty()) {
 			// 天井ラック (DOWN): 1 スロット
 			float zRot = 135f;
-			float scale = 0.85f;
-			if (stack.is(BIG_WEAPONS)) scale = 1.6f;
+			float scale = 1.0f;
+			if (stack.is(BIG_WEAPONS)) scale = 1.2f;
 			if (stack.is(RANGED_WEAPONS)) zRot = 45f;
-			if (stack.is(SHIELDS)) { scale = 1.8f; zRot = 0f; }
+			if (stack.is(SHIELDS)) { scale = 1.3f; zRot = 0f; }
 			if (stack.is(TRIDENTS)) zRot = -45f;
 
-			poseStack.mulPose(Axis.ZP.rotationDegrees(rotation * 360.0F / 8.0F));
-			poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
-			if (invisible) {
-				poseStack.translate(zFightOffset, zFightOffset, 0.4375F + zFightOffset);
+			// Blockbench で編集可能なスロットマーカーから位置を読み取る
+			WeaponRackSlotLoader.SlotPos slotPos = WeaponRackSlotLoader.get("weapon_rack", "slot1");
+			float ox, oy, oz;
+			if (slotPos != null) {
+				ox = slotPos.x - 0.5f;
+				oy = slotPos.y - 0.5f;
+				oz = slotPos.z - 0.5f;
 			} else {
-				poseStack.translate(zFightOffset, zFightOffset, 0.3F + zFightOffset);
+				ox = 0.0f;
+				oy = 0.125f;
+				oz = 0.0625f;
 			}
 
-			poseStack.scale(scale, scale, scale);
+			poseStack.translate(ox, oy, oz);
+			poseStack.mulPose(Axis.ZP.rotationDegrees(rotation * 360.0F / 8.0F));
+			poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
+			poseStack.translate(zFightOffset, zFightOffset, zFightOffset);
+
+			// XYZ 1:1.5:1 (少し縦長)
+			poseStack.scale(scale, scale * 1.2f, scale);
 
 			this.itemRenderer.renderStatic(
-				stack, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY,
+				stack, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, packedLight, OverlayTexture.NO_OVERLAY,
 				poseStack, buffer, entity.level(), entity.getId()
 			);
 		}
@@ -230,19 +241,33 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 	private void renderItemForFloor(WeaponRackEntity entity, ItemStack stack, boolean isSlot1,
 									int rotation, float zFightOffset,
 									PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-		float scale = 0.85f;
-		if (stack.is(BIG_WEAPONS)) scale = 1.6f;
-		if (stack.is(SHIELDS)) scale = 1.8f;
+		float scale = 1.0f;
+		if (stack.is(BIG_WEAPONS)) scale = 1.2f;
+		if (stack.is(SHIELDS)) scale = 1.3f;
 
-		// pk_racks 風の左右オフセット (pose stack +X = world -X なので slot1 = +0.155 で world 西側に表示)
-		float xOffset = isSlot1 ? +0.155f : -0.155f;
-		poseStack.translate(xOffset + zFightOffset, 0.168f + zFightOffset, zFightOffset);
+		// Blockbench で編集可能なスロットマーカーから位置を読み取る (デフォルトフォールバック付き)
+		WeaponRackSlotLoader.SlotPos slotPos = WeaponRackSlotLoader.get(
+			"weapon_rack_stand", isSlot1 ? "slot1" : "slot2");
+		float ox, oy, oz;
+		if (slotPos != null) {
+			ox = slotPos.x - 0.5f;
+			oy = slotPos.y - 0.5f;
+			oz = slotPos.z - 0.5f;
+		} else {
+			ox = isSlot1 ? -0.155f : +0.155f;
+			oy = 0.062f;
+			oz = 0.0f;
+		}
+		// 回転軸をブロック中心 (pose origin = 真ん中) に。
+		// 順序: 回転 → 移動 (= 中心で回ってから marker 位置にずらす)
 		poseStack.mulPose(FLOOR_POSES[rotation % FLOOR_POSES.length]);
+		poseStack.translate(ox + zFightOffset, oy + zFightOffset, oz + zFightOffset);
 
-		poseStack.scale(scale, scale, scale);
+		// XYZ 1:1.5:1 (少し縦長)
+		poseStack.scale(scale, scale * 1.5f, scale);
 
 		this.itemRenderer.renderStatic(
-			stack, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY,
+			stack, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, packedLight, OverlayTexture.NO_OVERLAY,
 			poseStack, buffer, entity.level(), entity.getId()
 		);
 	}
@@ -252,31 +277,38 @@ public class WeaponRackRenderer extends EntityRenderer<WeaponRackEntity> {
 	private void renderItemForWall(WeaponRackEntity entity, ItemStack stack, boolean isSlot1,
 								   int rotation, boolean invisible, float zFightOffset,
 								   PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-		float scale = 0.85f;
-		if (stack.is(BIG_WEAPONS)) scale = 1.6f;
-		if (stack.is(SHIELDS)) scale = 1.8f;
+		float scale = 1.0f;
+		if (stack.is(BIG_WEAPONS)) scale = 1.2f;
+		if (stack.is(SHIELDS)) scale = 1.3f;
 
-		// ★ 壁掛け剣の向き: rotation スロットで 45° 刻み 8 段階切替。
-		//   index 0 = -90° (水平 blade 外向き右) を slot1 デフォルト、slot2 はミラー (符号反転)。
-		//   filled rack に空手で右クリックすると rotation++ で次のポーズに切り替わる。
-		//   WALL_POSE_Z_ROT = { 90, 45, 0, -45, -90, -135, 180, 135 } を index ベースで使用。
 		float baseRot = WALL_POSE_Z_ROT[Math.floorMod(rotation, WALL_POSE_Z_ROT.length)];
 		float zRot = isSlot1 ? -baseRot : baseRot;
 
-		// pose stack +X = world -X (YP(180) 後)。
-		// slot1 を pose +0.25 (= 左 post 位置)、slot2 を pose -0.25 (= 右 post 位置) に配置。
-		// 模型の post 中心 (model x=4 と x=12) と一致するので、剣がブラケット上にきれいに乗る。
-		float xOffset = isSlot1 ? +0.25f : -0.25f;
-		// vanilla ItemFrame と同じ Z translate (0.4375) で剣を壁面ピッタリに置く。
-		// → 剣の plane が wall plane と並行で flush 表示 (額縁にアイテム入れた時と同じ)。
-		poseStack.translate(xOffset, 0.0F, 0F);
-		poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
-		poseStack.translate(zFightOffset, zFightOffset, 0.4375F + zFightOffset);
+		// Blockbench で編集可能なスロットマーカーから位置を読み取る (見つからなければデフォルト)
+		// block model と weapon は同じ pose に描画されるので、marker (model x,y,z in 1/16単位)
+		// → pose offset = ((x - 8)/16, (y - 8)/16, (z - 8)/16) で同じ視覚位置になる。
+		WeaponRackSlotLoader.SlotPos slotPos = WeaponRackSlotLoader.get(
+			"weapon_rack_hook", isSlot1 ? "slot1" : "slot2");
+		float ox, oy, oz;
+		if (slotPos != null) {
+			ox = slotPos.x - 0.5f;
+			oy = slotPos.y - 0.5f;
+			oz = slotPos.z - 0.5f;
+		} else {
+			ox = isSlot1 ? -0.25f : +0.25f;
+			oy = 0.0f;
+			oz = 0.1875f;
+		}
 
-		poseStack.scale(scale, scale, scale);
+		poseStack.translate(ox, oy, oz);
+		poseStack.mulPose(Axis.ZP.rotationDegrees(zRot));
+		poseStack.translate(zFightOffset, zFightOffset, zFightOffset);
+
+		// XYZ 1:1.5:1 (少し縦長)
+		poseStack.scale(scale, scale * 1.5f, scale);
 
 		this.itemRenderer.renderStatic(
-			stack, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY,
+			stack, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, packedLight, OverlayTexture.NO_OVERLAY,
 			poseStack, buffer, entity.level(), entity.getId()
 		);
 	}

@@ -60,6 +60,7 @@ public class CreativeTabPopulator {
 			event.accept(MinecraftArmorWeaponModItems.WOODEN_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.IRON_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.GOLD_TYOKUTO);
+			event.accept(MinecraftArmorWeaponModItems.STONE_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.DIAMOND_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.NETHERITE_TYOKUTO);
 			event.accept(MinecraftArmorWeaponModItems.GATE);
