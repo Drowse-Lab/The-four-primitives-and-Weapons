@@ -279,9 +279,25 @@ You are free to redistribute and modify, but please credit the original userID w
 
 ***
 
+## 🧩 アドオン開発 / Addon Development
+
+本Modはアドオンによる拡張に対応しています。外部Modから武器タイプ・鞘(納刀)対象アイテム・属性連携などを安全に追加できます。
+This mod supports addon extensions. External mods can safely register weapon types, sheathable items, elemental hooks, and more.
+
+サンプルアドオン（テンプレート兼参考実装）を GitHub で公開しています。`weapon_types/weapons.json` や `maw_saya/saya.json` といったデータ駆動のフックを使った最小構成のサンプル付きです。
+A sample addon — usable as both a template and reference implementation — is available on GitHub. It demonstrates data-driven hooks such as `weapon_types/weapons.json` and `maw_saya/saya.json`.
+
+* Sample Addon: [hrmcngs/The-four-primitives-and-Weapons-addons-Sample](https://github.com/hrmcngs/The-four-primitives-and-Weapons-addons-Sample)
+
+アドオンの作り方とAPIの詳細はサンプルリポジトリの README を参照してください。
+See the sample repository's README for how-to guides and API details.
+
+***
+
 ## 🔗 リンク / Links
 
-* GitHub: [hrmcngs/The-four-primitives-and-Weapons](https://github.com/hrmcngs/The-four-primitives-and-Weapons)
+* GitHub (本体 / Main): [hrmcngs/The-four-primitives-and-Weapons](https://github.com/hrmcngs/The-four-primitives-and-Weapons)
+* GitHub (アドオンサンプル / Addon Sample): [hrmcngs/The-four-primitives-and-Weapons-addons-Sample](https://github.com/hrmcngs/The-four-primitives-and-Weapons-addons-Sample)
 * Twitter: [@hrmcngs](https://twitter.com/hrmcngs)
 * Website: [hrmc.ngs.computer](https://hrmc.ngs.computer/)
 
