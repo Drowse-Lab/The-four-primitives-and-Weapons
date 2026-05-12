@@ -59,7 +59,12 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
     private static final int WEAPON_SLOT_SECTION_Y = 22;
     private static final int RADIO_ROW_Y = 42;
     private static final int DIVIDER_Y = 54;
-    private static final int MOTION_ROW_Y = 58;
+    // editingLabel ("[ 武器名 ]") と最初のモーション行が縦に被らないよう余白を確保
+    private static final int MOTION_ROW_Y = 68;
+
+    // モーション行のメトリクス（ラベル描画とボタン構築で共通化、ズレ防止）
+    private static final int MOTION_BTN_HEIGHT = 10;
+    private static final int MOTION_ROW_GAP = 1;
 
     public SkillSelectionScreen(SkillSelectionMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -330,9 +335,9 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
 
         int rowY = topPos + MOTION_ROW_Y;
         int labelWidth = 46;
-        int btnHeight = 10;
+        int btnHeight = MOTION_BTN_HEIGHT;
         int btnGap = 1;
-        int rowGap = 1;
+        int rowGap = MOTION_ROW_GAP;
         int btnAreaLeft = leftPos + 3 + labelWidth;
         // モーションボタン領域の右端 (タイプ列ボタンと衝突しないように左に余白を確保)
         int motionAreaRight = leftPos + imageWidth - 60;
@@ -525,31 +530,41 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         int divY = topPos + DIVIDER_Y;
         g.fill(leftPos + 4, divY, leftPos + imageWidth - 4, divY + 1, 0xFF444466);
 
-        // 選択中ロードアウトの表示
-        String editingLabel;
+        // 選択中ロードアウトの表示（武器名が長い場合は省略記号で切り詰める）
+        String rawName;
         if (selectedTypeId != null) {
             WeaponTypeRegistry.WeaponTypeData typeData = WeaponTypeRegistry.getType(selectedTypeId);
-            String typeName = typeData != null
+            rawName = typeData != null
                 ? Component.translatableWithFallback(typeData.translationKey(), typeData.getDisplayName()).getString()
                 : selectedTypeId;
-            editingLabel = "[ " + typeName + " ]";
         } else if (selectedLoadoutIndex >= 0) {
             ItemStack weapon = menu.getSlot(selectedLoadoutIndex).getItem();
-            editingLabel = !weapon.isEmpty() ? "[ " + weapon.getHoverName().getString() + " ]" : "";
+            rawName = !weapon.isEmpty() ? weapon.getHoverName().getString() : null;
         } else {
-            editingLabel = "";
+            rawName = null;
+        }
+        String editingLabel = "";
+        if (rawName != null) {
+            // 左右のタイプボタン列(右側)/左マージンを避けるため、中央寄せで両側に
+            // それぞれ ~70px の余白を確保する。"[ ... ]" の囲み込み分も差し引く。
+            int maxNameWidth = imageWidth - 2 * 70 - font.width("[  ]");
+            if (font.width(rawName) > maxNameWidth) {
+                String ellipsis = "…";
+                rawName = font.plainSubstrByWidth(rawName, maxNameWidth - font.width(ellipsis)) + ellipsis;
+            }
+            editingLabel = "[ " + rawName + " ]";
         }
         g.drawCenteredString(font, Component.literal(editingLabel),
             leftPos + imageWidth / 2, divY + 2, 0xFFAACCFF);
 
         // スロットラベル（各行：一撃目、二撃目、...）
+        // buildMotionRows と同じピッチ(MOTION_BTN_HEIGHT + MOTION_ROW_GAP)で並べる。
+        // 以前は label=16px/btn=11px ピッチでズレて他のUIと被っていたバグを修正。
         int rowY = topPos + MOTION_ROW_Y;
-        int btnHeight = 14;
-        int rowGap = 2;
         for (AttackSlot slot : AttackSlot.values()) {
             g.drawString(font, Component.translatable(slot.translationKey()),
-                leftPos + 3, rowY + (btnHeight - 8) / 2, COLOR_SLOT_LABEL, false);
-            rowY += btnHeight + rowGap;
+                leftPos + 3, rowY + (MOTION_BTN_HEIGHT - 8) / 2, COLOR_SLOT_LABEL, false);
+            rowY += MOTION_BTN_HEIGHT + MOTION_ROW_GAP;
         }
 
         // プレイヤーインベントリ背景（バニラ風の不透明パネル）

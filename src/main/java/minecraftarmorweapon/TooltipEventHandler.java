@@ -25,6 +25,13 @@ public class TooltipEventHandler {
     public static void onTooltip(ItemTooltipEvent event) {
         ItemStack stack = event.getItemStack();
 
+        // スキル選択画面を開いている時はツールチップに登録IDを表示しない
+        // (武器スロットの下に「minecraft_armor_weapon_sample:dagger」のような
+        // ID文字列が大量に出るのを抑制するため)
+        if (Minecraft.getInstance().screen instanceof minecraftarmorweapon.client.gui.SkillSelectionScreen) {
+            return;
+        }
+
         // Shiftを押しているときだけ表示
         if (Minecraft.getInstance().player != null && Screen.hasShiftDown()) {
             // F3+Hが有効な場合
