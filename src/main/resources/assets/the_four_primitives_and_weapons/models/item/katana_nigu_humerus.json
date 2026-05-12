@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/katananiguzyouwankotu3d",
+  "textures": {
+    "1": "the_four_primitives_and_weapons:block/katananiguzyouwannkotu3d",
+    "particle": "the_four_primitives_and_weapons:item/katananiguzyouwankotu3d"
+  }
+}

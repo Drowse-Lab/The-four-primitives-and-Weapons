@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "minecraft:book" },
+    { "item": "minecraft:paper" }
+  ],
+  "result": {
+    "item": "the_four_primitives_and_weapons:guide_book",
+    "count": 1
+  }
+}

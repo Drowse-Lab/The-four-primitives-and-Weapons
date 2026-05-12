@@ -1,0 +1,10 @@
+{
+  "pattern": ["DBD", "BCB", "DRD"],
+  "key": {
+    "D": "minecraft:diamond",
+    "B": "minecraft:blaze_rod",
+    "C": "minecraft:crossbow",
+    "R": "minecraft:repeater"
+  },
+  "result": "the_four_primitives_and_weapons:recross_hookshot_long"
+}

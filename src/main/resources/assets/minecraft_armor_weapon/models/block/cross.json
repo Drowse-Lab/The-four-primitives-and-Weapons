@@ -1,9 +1,0 @@
-{
-  "parent": "minecraft_armor_weapon:custom/zyuzika",
-  "textures": {
-    "all": "minecraft_armor_weapon:block/zyuuzika",
-    "particle": "minecraft_armor_weapon:block/aa",
-    "0": "minecraft_armor_weapon:block/zyuuzika"
-  },
-  "render_type": "cutout"
-}

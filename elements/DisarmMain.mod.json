@@ -2,7 +2,7 @@
   "_fv": 43,
   "_type": "function",
   "definition": {
-    "code": "# Enter the function code here\n#武装解除ショット\nexecute as @e[tag=Loki_Disarm] at @s run function minecraft_armor_weapon:disarm_wimd\n\n#戻ってこい\nexecute as @a at @e[tag=Loki_Disarm_Return] if score @s PlayerID = @e[tag=Loki_Disarm,limit=1,sort=nearest] ScoreID2 facing entity @s feet run teleport @e[tag=Loki_Disarm,limit=1,sort=nearest] ^ ^ ^1.5 facing entity @s\n",
+    "code": "# Enter the function code here\n#武装解除ショット\nexecute as @e[tag=Loki_Disarm] at @s run function the_four_primitives_and_weapons:disarm_wimd\n\n#戻ってこい\nexecute as @a at @e[tag=Loki_Disarm_Return] if score @s PlayerID = @e[tag=Loki_Disarm,limit=1,sort=nearest] ScoreID2 facing entity @s feet run teleport @e[tag=Loki_Disarm,limit=1,sort=nearest] ^ ^ ^1.5 facing entity @s\n",
     "name": "disarm_main",
     "namespace": "mod"
   }

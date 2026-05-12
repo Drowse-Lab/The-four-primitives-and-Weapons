@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/netherite_katana",
+  "textures": {
+    "2": "the_four_primitives_and_weapons:block/netherite_katana",
+    "particle": "the_four_primitives_and_weapons:item/aa"
+  }
+}

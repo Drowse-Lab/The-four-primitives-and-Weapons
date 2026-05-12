@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/ninzyatou",
+  "textures": {
+    "0": "the_four_primitives_and_weapons:block/ninzyatou",
+    "particle": "the_four_primitives_and_weapons:item/katanairon3dfeen"
+  }
+}

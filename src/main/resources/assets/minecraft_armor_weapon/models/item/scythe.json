@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft_armor_weapon:custom/oogamab",
-  "textures": {
-    "1": "minecraft_armor_weapon:block/oogamab",
-    "particle": "minecraft_armor_weapon:item/oogamab"
-  }
-}

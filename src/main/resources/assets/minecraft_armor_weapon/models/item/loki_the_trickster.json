@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft_armor_weapon:custom/lokithetricksterkatana3",
-  "textures": {
-    "1": "minecraft_armor_weapon:block/lokithetricksterkatana3",
-    "particle": "minecraft_armor_weapon:item/aaaaa"
-  }
-}

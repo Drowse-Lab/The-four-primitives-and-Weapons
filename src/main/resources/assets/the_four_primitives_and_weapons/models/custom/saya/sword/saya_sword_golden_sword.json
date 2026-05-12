@@ -1,0 +1,6 @@
+{
+	"parent": "the_four_primitives_and_weapons:custom/saya/sword/saya_sword_iron_sword",
+	"textures": {
+		"4": "minecraft:item/golden_sword"
+	}
+}

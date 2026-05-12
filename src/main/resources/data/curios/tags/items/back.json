@@ -1,8 +1,8 @@
 {
   "replace": false,
   "values": [
-    "minecraft_armor_weapon:saya",
-    "minecraft_armor_weapon:tyokuto_saya",
-    "minecraft_armor_weapon:sword_saya"
+    "the_four_primitives_and_weapons:saya",
+    "the_four_primitives_and_weapons:tyokuto_saya",
+    "the_four_primitives_and_weapons:sword_saya"
   ]
 }

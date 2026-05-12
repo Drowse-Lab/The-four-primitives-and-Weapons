@@ -10,7 +10,7 @@ Common Soldierエンティティは、複数のスキンバリエーションを
 ## スキンフォルダ構造
 
 ```
-src/main/resources/assets/minecraft_armor_weapon/textures/entity/
+src/main/resources/assets/the_four_primitives_and_weapons/textures/entity/
 ├── wide/               # 通常モデル（Steve型）用スキン
 │   ├── README.md
 │   ├── soldier_1.png
@@ -27,14 +27,14 @@ src/main/resources/assets/minecraft_armor_weapon/textures/entity/
 
 ### Wide Model (通常モデル) - 70%の確率
 - `textures/entity/steve.png` (デフォルト)
-- `minecraft_armor_weapon:textures/entity/wide/soldier_1.png`
-- `minecraft_armor_weapon:textures/entity/wide/soldier_2.png`
+- `the_four_primitives_and_weapons:textures/entity/wide/soldier_1.png`
+- `the_four_primitives_and_weapons:textures/entity/wide/soldier_2.png`
 - ... (最大20個のカスタムスキン)
 
 ### Slim Model (スリムモデル) - 30%の確率
 - `textures/entity/alex.png` (デフォルト)
-- `minecraft_armor_weapon:textures/entity/slim/soldier_1.png`
-- `minecraft_armor_weapon:textures/entity/slim/soldier_2.png`
+- `the_four_primitives_and_weapons:textures/entity/slim/soldier_1.png`
+- `the_four_primitives_and_weapons:textures/entity/slim/soldier_2.png`
 - ... (最大20個のカスタムスキン)
 
 ## ランダムスポーン
@@ -42,7 +42,7 @@ src/main/resources/assets/minecraft_armor_weapon/textures/entity/
 通常の召喚コマンドを使用すると、ランダムでスキンが選択されます：
 
 ```mcfunction
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~
 ```
 
 - スリムモデル: 30%の確率
@@ -57,39 +57,39 @@ src/main/resources/assets/minecraft_armor_weapon/textures/entity/
 
 ```mcfunction
 # スリムモデル、スキン0 (デフォルトAlex)
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~ {IsSlim:1,SkinIndex:0}
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~ {IsSlim:1,SkinIndex:0}
 
 # スリムモデル、スキン1 (カスタムスリム1)
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~ {IsSlim:1,SkinIndex:1}
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~ {IsSlim:1,SkinIndex:1}
 
 # スリムモデル、スキン2 (カスタムスリム2)
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~ {IsSlim:1,SkinIndex:2}
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~ {IsSlim:1,SkinIndex:2}
 ```
 
 ### 通常モデルを指定
 
 ```mcfunction
 # 通常モデル、スキン0 (デフォルトSteve)
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~ {IsSlim:0,SkinIndex:0}
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~ {IsSlim:0,SkinIndex:0}
 
 # 通常モデル、スキン1 (カスタム1)
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~ {IsSlim:0,SkinIndex:1}
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~ {IsSlim:0,SkinIndex:1}
 
 # 通常モデル、スキン2 (カスタム2)
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~ {IsSlim:0,SkinIndex:2}
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~ {IsSlim:0,SkinIndex:2}
 
 # 通常モデル、スキン3 (カスタム3)
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~ {IsSlim:0,SkinIndex:3}
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~ {IsSlim:0,SkinIndex:3}
 ```
 
 ### ランダムスキンで通常/スリムのみ指定
 
 ```mcfunction
 # 通常モデル、ランダムスキン
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~ {IsSlim:0,SkinIndex:-1}
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~ {IsSlim:0,SkinIndex:-1}
 
 # スリムモデル、ランダムスキン
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~ {IsSlim:1,SkinIndex:-1}
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~ {IsSlim:1,SkinIndex:-1}
 ```
 
 ## カスタムスキンファイルの作成
@@ -110,7 +110,7 @@ Minecraftプレイヤースキン形式（64x64 PNG）で作成します。
 
 #### Wide Model (通常モデル)用
 ```
-src/main/resources/assets/minecraft_armor_weapon/textures/entity/wide/
+src/main/resources/assets/the_four_primitives_and_weapons/textures/entity/wide/
 ├── soldier_1.png
 ├── soldier_2.png
 ├── soldier_3.png
@@ -119,7 +119,7 @@ src/main/resources/assets/minecraft_armor_weapon/textures/entity/wide/
 
 #### Slim Model (スリムモデル)用
 ```
-src/main/resources/assets/minecraft_armor_weapon/textures/entity/slim/
+src/main/resources/assets/the_four_primitives_and_weapons/textures/entity/slim/
 ├── soldier_1.png
 ├── soldier_2.png
 ├── soldier_3.png
@@ -171,21 +171,21 @@ src/main/resources/assets/minecraft_armor_weapon/textures/entity/slim/
 
 ```mcfunction
 # ランダムな見た目の部隊 (5体)
-/summon minecraft_armor_weapon:common_soldier ~1 ~ ~
-/summon minecraft_armor_weapon:common_soldier ~-1 ~ ~
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~1
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~-1
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~
+/summon the_four_primitives_and_weapons:common_soldier ~1 ~ ~
+/summon the_four_primitives_and_weapons:common_soldier ~-1 ~ ~
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~1
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~-1
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~
 
 # 特定のスキンで統一された部隊
-/summon minecraft_armor_weapon:common_soldier ~2 ~ ~ {IsSlim:0,SkinIndex:1}
-/summon minecraft_armor_weapon:common_soldier ~4 ~ ~ {IsSlim:0,SkinIndex:1}
-/summon minecraft_armor_weapon:common_soldier ~6 ~ ~ {IsSlim:0,SkinIndex:1}
+/summon the_four_primitives_and_weapons:common_soldier ~2 ~ ~ {IsSlim:0,SkinIndex:1}
+/summon the_four_primitives_and_weapons:common_soldier ~4 ~ ~ {IsSlim:0,SkinIndex:1}
+/summon the_four_primitives_and_weapons:common_soldier ~6 ~ ~ {IsSlim:0,SkinIndex:1}
 
 # 斥候部隊（全員スリムモデル）
-/summon minecraft_armor_weapon:common_soldier ~-2 ~ ~ {IsSlim:1}
-/summon minecraft_armor_weapon:common_soldier ~-4 ~ ~ {IsSlim:1}
-/summon minecraft_armor_weapon:common_soldier ~-6 ~ ~ {IsSlim:1}
+/summon the_four_primitives_and_weapons:common_soldier ~-2 ~ ~ {IsSlim:1}
+/summon the_four_primitives_and_weapons:common_soldier ~-4 ~ ~ {IsSlim:1}
+/summon the_four_primitives_and_weapons:common_soldier ~-6 ~ ~ {IsSlim:1}
 ```
 
 ## トラブルシューティング

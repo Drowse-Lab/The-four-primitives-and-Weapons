@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "the_four_primitives_and_weapons:block/test",
+    "up": "the_four_primitives_and_weapons:block/test",
+    "north": "the_four_primitives_and_weapons:block/test",
+    "east": "the_four_primitives_and_weapons:block/test",
+    "south": "the_four_primitives_and_weapons:block/test",
+    "west": "the_four_primitives_and_weapons:block/test",
+    "particle": "the_four_primitives_and_weapons:block/aa"
+  },
+  "render_type": "solid"
+}

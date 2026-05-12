@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/shiel2dconverted",
+  "textures": {
+    "0": "the_four_primitives_and_weapons:block/shieldb",
+    "particle": "the_four_primitives_and_weapons:item/shieldb"
+  }
+}

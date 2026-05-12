@@ -1,8 +1,0 @@
-{
-  "pattern": [" I", "I ", "S "],
-  "key": {
-    "I": "minecraft:iron_ingot",
-    "S": "minecraft:stick"
-  },
-  "result": "minecraft_armor_weapon:throwing_knife"
-}

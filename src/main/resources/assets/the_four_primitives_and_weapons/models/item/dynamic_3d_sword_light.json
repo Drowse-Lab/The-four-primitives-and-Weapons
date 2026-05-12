@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/katanairon3d",
+  "textures": {
+    "0": "the_four_primitives_and_weapons:block/katanairon3d",
+    "particle": "the_four_primitives_and_weapons:block/katanairon3d"
+  }
+}

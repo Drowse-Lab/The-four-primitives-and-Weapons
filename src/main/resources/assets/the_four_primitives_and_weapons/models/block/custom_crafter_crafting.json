@@ -1,0 +1,9 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/crafttingblock",
+  "textures": {
+    "all": "the_four_primitives_and_weapons:block/aa",
+    "particle": "the_four_primitives_and_weapons:block/aa",
+    "1": "the_four_primitives_and_weapons:block/crafttingblock"
+  },
+  "render_type": "solid"
+}

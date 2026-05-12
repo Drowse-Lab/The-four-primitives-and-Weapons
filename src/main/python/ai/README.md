@@ -97,7 +97,7 @@ src/main/python/ai/
 ├── AngelTier.py               # ティア6: 天使級（準備中）
 └── DivineTier.py              # ティア7: 神聖級（準備中）
 
-src/main/java/minecraftarmorweapon/ai/
+src/main/java/the_four_primitives_and_weapons/ai/
 └── ALifeAIBridge.java         # Java連携ブリッジ ✅
 ```
 
@@ -317,7 +317,7 @@ BaseALifeAI (基本クラス)
 
 ## 作成者
 
-minecraft_armor_weapon mod team
+the_four_primitives_and_weapons mod team
 
 ## 更新履歴
 

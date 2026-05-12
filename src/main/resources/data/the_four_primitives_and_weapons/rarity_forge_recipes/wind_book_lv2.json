@@ -1,0 +1,9 @@
+{
+  "pattern": ["TTT", "TLT", "TTT"],
+  "key": {
+    "T": "minecraft:feather",
+    "L": "minecraft:oak_planks"
+  },
+  "result": "the_four_primitives_and_weapons:wind_book",
+  "element_level": 2
+}

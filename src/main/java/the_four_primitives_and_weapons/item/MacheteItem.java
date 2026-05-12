@@ -1,0 +1,39 @@
+
+package the_four_primitives_and_weapons.item;
+
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.AxeItem;
+
+import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModTabs;
+
+public class MacheteItem extends AxeItem {
+	public MacheteItem() {
+		super(new Tier() {
+			public int getUses() {
+				return 250;
+			}
+
+			public float getSpeed() {
+				return 5f;
+			}
+
+			public float getAttackDamageBonus() {
+				return 8f;
+			}
+
+			public int getLevel() {
+				return 4;
+			}
+
+			public int getEnchantmentValue() {
+				return 14;
+			}
+
+			public Ingredient getRepairIngredient() {
+				return Ingredient.of();
+			}
+		}, 1, -2.4f, new Item.Properties());
+	}
+}

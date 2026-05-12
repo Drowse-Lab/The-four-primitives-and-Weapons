@@ -1,9 +1,0 @@
-{
-  "pattern": ["TTT", "TLT", "TTT"],
-  "key": {
-    "T": "minecraft:obsidian",
-    "L": "minecraft:diamond"
-  },
-  "result": "minecraft_armor_weapon:darkness_book",
-  "element_level": 6
-}

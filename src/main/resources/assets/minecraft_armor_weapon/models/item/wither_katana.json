@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft_armor_weapon:custom/witherkatana3d",
-  "textures": {
-    "1": "minecraft_armor_weapon:block/witherkatana3d",
-    "particle": "minecraft_armor_weapon:item/aaaaa"
-  }
-}

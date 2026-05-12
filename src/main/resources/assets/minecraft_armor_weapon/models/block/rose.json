@@ -1,8 +1,0 @@
-{
-  "parent": "block/cross",
-  "textures": {
-    "cross": "minecraft_armor_weapon:block/bara",
-    "particle": "minecraft_armor_weapon:block/bara"
-  },
-  "render_type": "cutout"
-}

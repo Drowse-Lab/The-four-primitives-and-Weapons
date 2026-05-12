@@ -2,7 +2,7 @@
   "_fv": 43,
   "_type": "potioneffect",
   "definition": {
-    "effectName": "minecraft_armor_weapon:test_bow_tameteru",
+    "effectName": "the_four_primitives_and_weapons:test_bow_tameteru",
     "icon": "cool_down_1.png",
     "color": {
       "value": -1,

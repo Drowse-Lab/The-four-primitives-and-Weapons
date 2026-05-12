@@ -1,0 +1,8 @@
+{
+  "parent": "block/cross",
+  "textures": {
+    "cross": "the_four_primitives_and_weapons:block/bara",
+    "particle": "the_four_primitives_and_weapons:block/bara"
+  },
+  "render_type": "cutout"
+}

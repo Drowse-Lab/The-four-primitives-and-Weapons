@@ -1,7 +1,7 @@
 # /test コマンド一覧
 
 MOD のテスト/デバッグ用コマンド集。権限レベル 2 以上が必要 (OP)。
-実装: [TestCommand.java](../src/main/java/minecraftarmorweapon/command/TestCommand.java)
+実装: [TestCommand.java](../src/main/java/the_four_primitives_and_weapons/command/TestCommand.java)
 
 ## 概要
 
@@ -29,7 +29,7 @@ MOD のテスト/デバッグ用コマンド集。権限レベル 2 以上が必
 
 ### `/test debugmob`
 デバッグMob(サンドバッグ) を足元にスポーン。
-- カスタムエンティティ `minecraft_armor_weapon:debug_mob`
+- カスタムエンティティ `the_four_primitives_and_weapons:debug_mob`
 
 ---
 
@@ -118,7 +118,7 @@ JSONL 形式の戦闘イベントログを制御/閲覧。
 有効/無効・今日のファイル名・サイズ・イベント数を表示。
 
 ### `/test log on` / `/test log off`
-戦闘ログの出力を有効化/無効化 ([CombatLogger.java](../src/main/java/minecraftarmorweapon/ai/lisp/CombatLogger.java))。
+戦闘ログの出力を有効化/無効化 ([CombatLogger.java](../src/main/java/the_four_primitives_and_weapons/ai/lisp/CombatLogger.java))。
 
 ### `/test log tail [n]`
 今日のログから最新 n 件を表示。
@@ -131,7 +131,7 @@ JSONL 形式の戦闘イベントログを制御/閲覧。
 今日のログファイルを削除。
 
 ### `/test log analyze [topN]`
-集計統計を表示 ([CombatLogAnalyzer.java](../src/main/java/minecraftarmorweapon/ai/lisp/CombatLogAnalyzer.java))。
+集計統計を表示 ([CombatLogAnalyzer.java](../src/main/java/the_four_primitives_and_weapons/ai/lisp/CombatLogAnalyzer.java))。
 Mobタイプ別・プレイヤー別の攻撃回数・平均ダメ・勝率・平均距離を出力。
 - `[topN]` — 上位N件 1〜20 (既定: 5)
 
@@ -142,7 +142,7 @@ Mobタイプ別・プレイヤー別の攻撃回数・平均ダメ・勝率・�
 
 ## Lisp AI への注入
 
-`CombatLogAnalyzer` は S式AI ([MobAIBrain.java](../src/main/java/minecraftarmorweapon/ai/lisp/MobAIBrain.java)) に以下の変数を注入する。
+`CombatLogAnalyzer` は S式AI ([MobAIBrain.java](../src/main/java/the_four_primitives_and_weapons/ai/lisp/MobAIBrain.java)) に以下の変数を注入する。
 
 | 変数 | 意味 |
 |---|---|

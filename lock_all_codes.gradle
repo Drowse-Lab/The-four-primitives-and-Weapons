@@ -6,34 +6,34 @@
 // 保護対象のカスタムファイル一覧
 def protectedCustomFiles = [
     // --- Rarity Forge システム ---
-    'src/main/java/minecraftarmorweapon/init/RarityForgeRegistration.java',
-    'src/main/java/minecraftarmorweapon/block/RarityForgeBlock.java',
-    'src/main/java/minecraftarmorweapon/block/entity/RarityForgeBlockEntity.java',
-    'src/main/java/minecraftarmorweapon/world/inventory/RarityForgeMenu.java',
-    'src/main/java/minecraftarmorweapon/client/gui/RarityForgeScreen.java',
-    'src/main/java/minecraftarmorweapon/item/rarity/WeaponRarity.java',
-    'src/main/java/minecraftarmorweapon/item/rarity/RarityCraftingLogic.java',
-    'src/main/java/minecraftarmorweapon/item/rarity/RarityForgeRecipe.java',
-    'src/main/java/minecraftarmorweapon/item/rarity/RarityForgeRecipes.java',
-    'src/main/java/minecraftarmorweapon/network/RarityForgeButtonMessage.java',
-    'src/main/java/minecraftarmorweapon/events/WeaponRarityEventHandler.java',
+    'src/main/java/the_four_primitives_and_weapons/init/RarityForgeRegistration.java',
+    'src/main/java/the_four_primitives_and_weapons/block/RarityForgeBlock.java',
+    'src/main/java/the_four_primitives_and_weapons/block/entity/RarityForgeBlockEntity.java',
+    'src/main/java/the_four_primitives_and_weapons/world/inventory/RarityForgeMenu.java',
+    'src/main/java/the_four_primitives_and_weapons/client/gui/RarityForgeScreen.java',
+    'src/main/java/the_four_primitives_and_weapons/item/rarity/WeaponRarity.java',
+    'src/main/java/the_four_primitives_and_weapons/item/rarity/RarityCraftingLogic.java',
+    'src/main/java/the_four_primitives_and_weapons/item/rarity/RarityForgeRecipe.java',
+    'src/main/java/the_four_primitives_and_weapons/item/rarity/RarityForgeRecipes.java',
+    'src/main/java/the_four_primitives_and_weapons/network/RarityForgeButtonMessage.java',
+    'src/main/java/the_four_primitives_and_weapons/events/WeaponRarityEventHandler.java',
     // --- カスタムエンティティ ---
-    'src/main/java/minecraftarmorweapon/init/CustomEntityInit.java',
-    'src/main/java/minecraftarmorweapon/client/init/CustomEntityRenderers.java',
-    'src/main/java/minecraftarmorweapon/entity/DarkProjectileEntity.java',
-    'src/main/java/minecraftarmorweapon/client/renderer/DarkProjectileRenderer.java',
+    'src/main/java/the_four_primitives_and_weapons/init/CustomEntityInit.java',
+    'src/main/java/the_four_primitives_and_weapons/client/init/CustomEntityRenderers.java',
+    'src/main/java/the_four_primitives_and_weapons/entity/DarkProjectileEntity.java',
+    'src/main/java/the_four_primitives_and_weapons/client/renderer/DarkProjectileRenderer.java',
     // --- ユーティリティ・イベント ---
-    'src/main/java/minecraftarmorweapon/util/DamageCalculator.java',
-    'src/main/java/minecraftarmorweapon/network/AttackPacket.java',
-    'src/main/java/minecraftarmorweapon/events/ChargedAttackHandler.java',
+    'src/main/java/the_four_primitives_and_weapons/util/DamageCalculator.java',
+    'src/main/java/the_four_primitives_and_weapons/network/AttackPacket.java',
+    'src/main/java/the_four_primitives_and_weapons/events/ChargedAttackHandler.java',
     // --- スキルシステム ---
-    'src/main/java/minecraftarmorweapon/skill/ElectricDischargeBurstSkill.java',
-    'src/main/java/minecraftarmorweapon/block/ElectricConductBlock.java',
+    'src/main/java/the_four_primitives_and_weapons/skill/ElectricDischargeBurstSkill.java',
+    'src/main/java/the_four_primitives_and_weapons/block/ElectricConductBlock.java',
     // --- JEI連携 ---
-    'src/main/java/minecraftarmorweapon/integration/RarityForgeRecipeCategory.java',
-    'src/main/java/minecraftarmorweapon/integration/RarityForgeJEIPlugin.java',
+    'src/main/java/the_four_primitives_and_weapons/integration/RarityForgeRecipeCategory.java',
+    'src/main/java/the_four_primitives_and_weapons/integration/RarityForgeJEIPlugin.java',
     // --- メインModファイル (lockBaseModFilesで保護されるが念のため) ---
-    'src/main/java/minecraftarmorweapon/MinecraftArmorWeaponMod.java',
+    'src/main/java/the_four_primitives_and_weapons/TheFourPrimitivesAndWeaponsMod.java',
 ]
 
 // === タスク1: MCreator要素コードを全てロック ===
@@ -41,9 +41,9 @@ task lockAllCodes {
     group = 'mcreator protection'
     description = 'MCreatorの全要素のlocked_codeをtrueに設定'
     doLast {
-        def mcreatorFile = file('minecraft_armor_weapon.mcreator')
+        def mcreatorFile = file('the_four_primitives_and_weapons.mcreator')
         if (!mcreatorFile.exists()) {
-            println "⚠ minecraft_armor_weapon.mcreator が見つかりません"
+            println "⚠ the_four_primitives_and_weapons.mcreator が見つかりません"
             return
         }
         def content = mcreatorFile.text
@@ -77,7 +77,7 @@ task backupCustomFiles {
             def src = file(path)
             if (src.exists()) {
                 // サブディレクトリ構造を維持してバックアップ
-                def relativePath = path.replace('src/main/java/minecraftarmorweapon/', '')
+                def relativePath = path.replace('src/main/java/the_four_primitives_and_weapons/', '')
                 def dst = new File(backupDir, relativePath)
                 dst.parentFile.mkdirs()
                 dst.text = src.text
@@ -103,7 +103,7 @@ task verifyCustomFiles {
         int intact = 0
         protectedCustomFiles.each { path ->
             def src = file(path)
-            def relativePath = path.replace('src/main/java/minecraftarmorweapon/', '')
+            def relativePath = path.replace('src/main/java/the_four_primitives_and_weapons/', '')
             def bak = new File(backupDir, relativePath)
 
             if (bak.exists()) {
@@ -142,7 +142,7 @@ task protectionStatus {
         println "=" * 50
 
         // .mcreator ファイルのロック状態
-        def mcreatorFile = file('minecraft_armor_weapon.mcreator')
+        def mcreatorFile = file('the_four_primitives_and_weapons.mcreator')
         if (mcreatorFile.exists()) {
             def content = mcreatorFile.text
             def unlocked = (content =~ /"locked_code"\s*:\s*false/).count

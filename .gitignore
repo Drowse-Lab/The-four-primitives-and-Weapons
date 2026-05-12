@@ -71,4 +71,4 @@ logs/function
 *.backup_*
 
 # Prevent MCreator regeneration
-minecraft_armor_weapon.mcreator.lock
+the_four_primitives_and_weapons.mcreator.lock

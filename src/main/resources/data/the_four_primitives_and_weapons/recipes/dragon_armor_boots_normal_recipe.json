@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "0 2",
+    "3 5"
+  ],
+  "key": {
+    "0": {
+      "item": "the_four_primitives_and_weapons:skin_of_dragon"
+    },
+    "2": {
+      "item": "the_four_primitives_and_weapons:skin_of_dragon"
+    },
+    "3": {
+      "item": "the_four_primitives_and_weapons:skin_of_dragon"
+    },
+    "5": {
+      "item": "the_four_primitives_and_weapons:skin_of_dragon"
+    }
+  },
+  "result": {
+    "item": "the_four_primitives_and_weapons:dragon_armor_boots",
+    "count": 1
+  }
+}

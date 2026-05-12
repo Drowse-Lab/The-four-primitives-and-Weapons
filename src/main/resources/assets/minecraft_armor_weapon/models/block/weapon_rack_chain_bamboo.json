@@ -1,7 +1,0 @@
-{
-	"parent": "minecraft_armor_weapon:block/weapon_rack",
-	"textures": {
-		"wood":     "minecraft:block/bamboo_planks",
-		"particle": "minecraft:block/bamboo_planks"
-	}
-}

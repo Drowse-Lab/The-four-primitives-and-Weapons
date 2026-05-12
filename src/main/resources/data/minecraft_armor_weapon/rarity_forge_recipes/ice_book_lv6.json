@@ -1,9 +1,0 @@
-{
-  "pattern": ["TTT", "TLT", "TTT"],
-  "key": {
-    "T": "minecraft:packed_ice",
-    "L": "minecraft:emerald"
-  },
-  "result": "minecraft_armor_weapon:ice_book",
-  "element_level": 6
-}

@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "the_four_primitives_and_weapons:block/item_stan"
+    },
+    "facing=east": {
+      "model": "the_four_primitives_and_weapons:block/item_stan",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "the_four_primitives_and_weapons:block/item_stan",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "the_four_primitives_and_weapons:block/item_stan",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "the_four_primitives_and_weapons:block/item_stan",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "the_four_primitives_and_weapons:block/item_stan",
+      "x": 90
+    }
+  }
+}

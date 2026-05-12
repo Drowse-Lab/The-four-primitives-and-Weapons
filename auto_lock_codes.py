@@ -8,7 +8,7 @@ import json
 import sys
 import os
 
-def lock_all_codes(filepath="minecraft_armor_weapon.mcreator"):
+def lock_all_codes(filepath="the_four_primitives_and_weapons.mcreator"):
     """すべてのmod要素のlocked_codeをtrueに設定"""
     
     if not os.path.exists(filepath):
@@ -51,7 +51,7 @@ def lock_all_codes(filepath="minecraft_armor_weapon.mcreator"):
 
 if __name__ == "__main__":
     # コマンドライン引数でファイルパスを指定可能
-    filepath = sys.argv[1] if len(sys.argv) > 1 else "minecraft_armor_weapon.mcreator"
+    filepath = sys.argv[1] if len(sys.argv) > 1 else "the_four_primitives_and_weapons.mcreator"
     
     success = lock_all_codes(filepath)
     sys.exit(0 if success else 1)

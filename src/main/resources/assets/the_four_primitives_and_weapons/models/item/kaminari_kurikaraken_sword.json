@@ -1,0 +1,8 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/swordb2kaminari",
+  "textures": {
+    "0": "the_four_primitives_and_weapons:block/swordb",
+    "3": "the_four_primitives_and_weapons:block/kurikarakaminari",
+    "particle": "the_four_primitives_and_weapons:item/aaaaa"
+  }
+}

@@ -1,0 +1,47 @@
+{
+	"parent": "the_four_primitives_and_weapons:custom/tyokutoutousinnuki",
+	"overrides": [
+		{
+			"predicate": {
+				"custom_model_data": 0
+			},
+			"model": "the_four_primitives_and_weapons:custom/tyokutoutousinnuki"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 1
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_luna"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 4
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_iron_tyokuto"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 5
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_gold_tyokuto"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 6
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_stone_tyokuto"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 8
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_netherite_tyokuto"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 7
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_diamond_tyokuto"
+		}
+	]
+}

@@ -4,7 +4,7 @@
 	"ambientocclusion": false,
 	"textures": {
 		"2": "minecraft-dirt-texture",
-		"3": "minecraft_armor_weapon:blocks/bara",
+		"3": "the_four_primitives_and_weapons:blocks/bara",
 		"particle": "block/flower_pot",
 		"flowerpot": "block/flower_pot"
 	},

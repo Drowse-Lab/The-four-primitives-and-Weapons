@@ -1,7 +1,0 @@
-{
-	"parent": "minecraft_armor_weapon:block/weapon_rack_stand",
-	"textures": {
-		"wood":     "minecraft:block/spruce_planks",
-		"particle": "minecraft:block/spruce_planks"
-	}
-}

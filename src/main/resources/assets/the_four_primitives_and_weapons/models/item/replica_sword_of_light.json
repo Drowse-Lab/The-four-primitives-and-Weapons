@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/goldenkatana3d",
+  "textures": {
+    "0": "the_four_primitives_and_weapons:block/goldenkatana3d",
+    "particle": "the_four_primitives_and_weapons:item/aa"
+  }
+}

@@ -1,0 +1,30 @@
+{
+	"parent": "minecraft:block/block",
+	"credit": "pk_racks dark_oak rack visual by KawaMood",
+	"textures": {
+		"skin":     "the_four_primitives_and_weapons:block/rack_dark_oak",
+		"particle": "the_four_primitives_and_weapons:block/rack_dark_oak"
+	},
+	"display": {
+		"gui": {
+			"rotation": [30, 45, 0],
+			"translation": [0, 0, 0],
+			"scale": [1, 1, 1]
+		}
+	},
+	"elements": [
+		{
+			"name": "rack_head",
+			"from": [4, 4, 4],
+			"to":   [12, 12, 12],
+			"faces": {
+				"north": {"uv": [2, 2, 4, 4],  "texture": "#skin"},
+				"south": {"uv": [6, 2, 8, 4],  "texture": "#skin"},
+				"east":  {"uv": [0, 2, 2, 4],  "texture": "#skin"},
+				"west":  {"uv": [4, 2, 6, 4],  "texture": "#skin"},
+				"up":    {"uv": [2, 0, 4, 2],  "texture": "#skin"},
+				"down":  {"uv": [4, 0, 6, 2],  "texture": "#skin"}
+			}
+		}
+	]
+}

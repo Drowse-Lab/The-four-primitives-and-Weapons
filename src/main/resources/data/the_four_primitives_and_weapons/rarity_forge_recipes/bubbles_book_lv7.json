@@ -1,0 +1,9 @@
+{
+  "pattern": ["TTT", "TLT", "TTT"],
+  "key": {
+    "T": "minecraft:pufferfish",
+    "L": "minecraft:emerald"
+  },
+  "result": "the_four_primitives_and_weapons:bubbles_book",
+  "element_level": 7
+}

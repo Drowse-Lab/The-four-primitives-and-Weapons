@@ -2,7 +2,7 @@
   "_fv": 43,
   "_type": "potioneffect",
   "definition": {
-    "effectName": "minecraft_armor_weapon:custom_smithing_table_crafting",
+    "effectName": "the_four_primitives_and_weapons:custom_smithing_table_crafting",
     "icon": "attack_in_guard.png",
     "color": {
       "value": -1,

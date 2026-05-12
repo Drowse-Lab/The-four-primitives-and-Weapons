@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": { "item": "minecraft:warped_planks" },
+    "S": { "item": "minecraft:stick" }
+  },
+  "pattern": [
+    "PPP",
+    "S S"
+  ],
+  "result": {
+    "item": "the_four_primitives_and_weapons:weapon_rack",
+    "count": 1
+  }
+}

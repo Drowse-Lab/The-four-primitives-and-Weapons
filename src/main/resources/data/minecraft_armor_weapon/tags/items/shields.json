@@ -1,9 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    "minecraft:shield",
-    "minecraft_armor_weapon:achromatic_shield",
-    "minecraft_armor_weapon:nigu_shield",
-    "minecraft_armor_weapon:parry_shield"
-  ]
-}

@@ -1,0 +1,7 @@
+{
+	"parent": "the_four_primitives_and_weapons:block/weapon_rack",
+	"textures": {
+		"wood":     "minecraft:block/bamboo_planks",
+		"particle": "minecraft:block/bamboo_planks"
+	}
+}

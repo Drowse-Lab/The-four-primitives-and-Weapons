@@ -225,7 +225,7 @@ A hostile mob with player-like combat AI — it dodges, charges, and guards just
 召喚コマンド / Summon command:
 
 ```
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~
 ```
 
 ***

@@ -1,7 +1,7 @@
 {
   "replace": false,
   "values": [
-    "minecraft_armor_weapon:stone_bricks_trap_door",
-    "minecraft_armor_weapon:rose_flower_pot"
+    "the_four_primitives_and_weapons:stone_bricks_trap_door",
+    "the_four_primitives_and_weapons:rose_flower_pot"
   ]
 }

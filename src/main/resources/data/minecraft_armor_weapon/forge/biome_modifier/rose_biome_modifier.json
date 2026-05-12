@@ -1,6 +1,0 @@
-{
-  "type": "forge:add_features",
-  "biomes": "plains",
-  "features": "minecraft_armor_weapon:rose",
-  "step": "vegetal_decoration"
-}

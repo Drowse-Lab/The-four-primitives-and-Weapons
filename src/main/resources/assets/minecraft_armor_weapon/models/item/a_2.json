@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft_armor_weapon:custom/stonekatanablock",
-  "textures": {
-    "0": "minecraft_armor_weapon:block/katana3dstoneblock",
-    "particle": "minecraft_armor_weapon:item/hi"
-  }
-}

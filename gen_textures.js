@@ -1,6 +1,6 @@
 const fs = require('fs');
 const PNG = require('pngjs').PNG;
-const dir = 'c:/Users/hrmcn/MCreatorWorkspaces/minecraft_armor_weapon/src/main/resources/assets/minecraft_armor_weapon/textures/item/';
+const dir = 'c:/Users/hrmcn/MCreatorWorkspaces/the_four_primitives_and_weapons/src/main/resources/assets/the_four_primitives_and_weapons/textures/item/';
 
 function hex(h) {
   return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16), 255];

@@ -1,9 +1,0 @@
-{
-  "pattern": ["TTT", "TLT", "TTT"],
-  "key": {
-    "T": "minecraft:feather",
-    "L": "minecraft:iron_ingot"
-  },
-  "result": "minecraft_armor_weapon:wind_book",
-  "element_level": 4
-}

@@ -50,17 +50,17 @@
 ### 2. コマンドで召喚
 
 ```
-/summon minecraft_armor_weapon:common_soldier ~ ~ ~
+/summon the_four_primitives_and_weapons:common_soldier ~ ~ ~
 ```
 
 ### 3. コードで召喚
 
 ```java
-import minecraftarmorweapon.entity.CommonSoldierEntity;
-import minecraftarmorweapon.init.MinecraftArmorWeaponModEntities;
+import the_four_primitives_and_weapons.entity.CommonSoldierEntity;
+import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModEntities;
 
 // エンティティタイプから作成
-CommonSoldierEntity soldier = MinecraftArmorWeaponModEntities.COMMON_SOLDIER.get().create(level);
+CommonSoldierEntity soldier = TheFourPrimitivesAndWeaponsModEntities.COMMON_SOLDIER.get().create(level);
 soldier.moveTo(x, y, z, 0, 0);
 level.addFreshEntity(soldier);
 ```
@@ -80,7 +80,7 @@ level.addFreshEntity(soldier);
 
 ### ファイル構成
 ```
-src/main/java/minecraftarmorweapon/
+src/main/java/the_four_primitives_and_weapons/
 ├── entity/
 │   └── CommonSoldierEntity.java         # エンティティ本体
 ├── client/renderer/
@@ -89,9 +89,9 @@ src/main/java/minecraftarmorweapon/
 │   ├── PlayerLikeAIGoal.java           # AI動作
 │   └── ALifeAIBridge.java              # AI判断
 └── init/
-    ├── MinecraftArmorWeaponModEntities.java    # エンティティ登録
-    ├── MinecraftArmorWeaponModEntityRenderers.java  # レンダラー登録
-    └── MinecraftArmorWeaponModItems.java       # スポーンエッグ登録
+    ├── TheFourPrimitivesAndWeaponsModEntities.java    # エンティティ登録
+    ├── TheFourPrimitivesAndWeaponsModEntityRenderers.java  # レンダラー登録
+    └── TheFourPrimitivesAndWeaponsModItems.java       # スポーンエッグ登録
 ```
 
 ### カスタマイズ

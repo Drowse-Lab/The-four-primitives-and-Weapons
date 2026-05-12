@@ -1,0 +1,9 @@
+{
+  "pattern": ["TTT", "TLT", "TTT"],
+  "key": {
+    "T": "minecraft:magma_cream",
+    "L": "minecraft:gold_ingot"
+  },
+  "result": "the_four_primitives_and_weapons:fire_book",
+  "element_level": 5
+}

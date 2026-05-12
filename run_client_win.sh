@@ -9,7 +9,7 @@
 # 環境変数で上書き: WITH_SPELLBOOKS=1 強制 / SKIP_SPELLBOOKS_PROMPT=1 対話なし。
 
 # Windows 側プロジェクトパス (必要に応じて編集)
-PROJECT_WIN_PATH='C:\Users\hrmcn\MCreatorWorkspaces\minecraft_armor_weapon'
+PROJECT_WIN_PATH='C:\Users\hrmcn\MCreatorWorkspaces\the_four_primitives_and_weapons'
 
 GRADLE_ARGS="runClient"
 if [ "$1" = "offline" ]; then

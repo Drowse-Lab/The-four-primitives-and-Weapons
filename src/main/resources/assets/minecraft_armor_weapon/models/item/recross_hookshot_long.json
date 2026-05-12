@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft_armor_weapon:item/3dmodel/weapon/recross_hookshot/true",
-  "overrides": [
-    { "predicate": { "pulling": 1 },              "model": "minecraft_armor_weapon:item/3dmodel/weapon/recross_hookshot/true_charged_pull" },
-    { "predicate": { "charged": 1 },              "model": "minecraft_armor_weapon:item/3dmodel/weapon/recross_hookshot/true_charged" }
-  ]
-}

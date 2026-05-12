@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "count": 1,
+  "ingredient": {
+    "item": "the_four_primitives_and_weapons:kurikarakenutigatana"
+  },
+  "result": "the_four_primitives_and_weapons:kurikarakensword"
+}

@@ -1,0 +1,25 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "the_four_primitives_and_weapons:font/noise.ttf",
+      "shift": [0, 1],
+      "size": 11,
+      "oversample": 1.0
+    },
+    {
+      "type": "ttf",
+      "file": "the_four_primitives_and_weapons:font/.ttf",
+      "shift": [0, 1],
+      "size": 11,
+      "oversample": 1.0
+    },
+    {
+      "type": "ttf",
+      "file": "the_four_primitives_and_weapons:font/cottoncandy.ttf",
+      "shift": [0, 1],
+      "size": 11,
+      "oversample": 1.0
+    }
+  ]
+}

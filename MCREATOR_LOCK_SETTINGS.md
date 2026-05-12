@@ -10,9 +10,9 @@
 4. 「**OK**」をクリック
 
 これにより、以下のファイルが自動再生成から保護されます：
-- `MinecraftArmorWeaponMod.java`（メインクラス）
-- `MinecraftArmorWeaponModEntities.java`
-- `MinecraftArmorWeaponModEntityRenderers.java`
+- `TheFourPrimitivesAndWeaponsMod.java`（メインクラス）
+- `TheFourPrimitivesAndWeaponsModEntities.java`
+- `TheFourPrimitivesAndWeaponsModEntityRenderers.java`
 - その他の基本的なModファイル
 
 ### 2. 個別要素のロック（実装済み）
@@ -22,21 +22,21 @@
 ### 3. カスタムエンティティの安全な実装（実装済み）
 
 MCreatorによって上書きされないカスタムファイル：
-- `/src/main/java/minecraftarmorweapon/init/CustomEntityInit.java`
-- `/src/main/java/minecraftarmorweapon/client/init/CustomEntityRenderers.java`
-- `/src/main/java/minecraftarmorweapon/entity/DarkProjectileEntity.java`
-- `/src/main/java/minecraftarmorweapon/client/renderer/DarkProjectileRenderer.java`
+- `/src/main/java/the_four_primitives_and_weapons/init/CustomEntityInit.java`
+- `/src/main/java/the_four_primitives_and_weapons/client/init/CustomEntityRenderers.java`
+- `/src/main/java/the_four_primitives_and_weapons/entity/DarkProjectileEntity.java`
+- `/src/main/java/the_four_primitives_and_weapons/client/renderer/DarkProjectileRenderer.java`
 
 これらのファイルは独立しているため、MCreatorの自動生成システムの影響を受けません。
 
 ## 重要な注意点
 
 ⚠️ **必ず「Lock base mod element files」を有効にしてください**
-これをしないと、ビルドのたびに`MinecraftArmorWeaponMod.java`が上書きされ、カスタムエンティティの登録が消えてしまいます。
+これをしないと、ビルドのたびに`TheFourPrimitivesAndWeaponsMod.java`が上書きされ、カスタムエンティティの登録が消えてしまいます。
 
 ## 確認方法
 
-ロックが成功している場合、`MinecraftArmorWeaponMod.java`の最初のコメントが以下のように表示されます：
+ロックが成功している場合、`TheFourPrimitivesAndWeaponsMod.java`の最初のコメントが以下のように表示されます：
 
 ```
 /*

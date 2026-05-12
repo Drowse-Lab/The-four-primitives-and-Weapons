@@ -1,0 +1,8 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/kurikarakatana3dkaminari",
+  "textures": {
+    "1": "the_four_primitives_and_weapons:block/kurikaraken_utigatana_kaminari",
+    "particle": "the_four_primitives_and_weapons:item/aaaaa"
+  }
+
+}

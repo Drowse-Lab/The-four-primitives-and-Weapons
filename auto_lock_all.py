@@ -10,7 +10,7 @@ import os
 import shutil
 from datetime import datetime
 
-def lock_all_elements(filepath="minecraft_armor_weapon.mcreator"):
+def lock_all_elements(filepath="the_four_primitives_and_weapons.mcreator"):
     """すべてのmod要素のlocked_codeをtrueに設定"""
 
     if not os.path.exists(filepath):
@@ -63,11 +63,11 @@ def create_lock_marker_files():
     """ロックマーカーファイルを作成してMCreatorに通知"""
 
     lock_files = [
-        "src/main/java/minecraftarmorweapon/.mcreator_lock",
-        "src/main/java/minecraftarmorweapon/init/.mcreator_lock",
-        "src/main/java/minecraftarmorweapon/entity/.mcreator_lock",
-        "src/main/java/minecraftarmorweapon/client/init/.mcreator_lock",
-        "src/main/java/minecraftarmorweapon/client/renderer/.mcreator_lock"
+        "src/main/java/the_four_primitives_and_weapons/.mcreator_lock",
+        "src/main/java/the_four_primitives_and_weapons/init/.mcreator_lock",
+        "src/main/java/the_four_primitives_and_weapons/entity/.mcreator_lock",
+        "src/main/java/the_four_primitives_and_weapons/client/init/.mcreator_lock",
+        "src/main/java/the_four_primitives_and_weapons/client/renderer/.mcreator_lock"
     ]
 
     for lock_file in lock_files:
@@ -83,44 +83,44 @@ def protect_custom_files():
 
     custom_files = [
         # --- Rarity Forge システム ---
-        "src/main/java/minecraftarmorweapon/init/RarityForgeRegistration.java",
-        "src/main/java/minecraftarmorweapon/block/RarityForgeBlock.java",
-        "src/main/java/minecraftarmorweapon/block/entity/RarityForgeBlockEntity.java",
-        "src/main/java/minecraftarmorweapon/world/inventory/RarityForgeMenu.java",
-        "src/main/java/minecraftarmorweapon/client/gui/RarityForgeScreen.java",
-        "src/main/java/minecraftarmorweapon/item/rarity/WeaponRarity.java",
-        "src/main/java/minecraftarmorweapon/item/rarity/RarityCraftingLogic.java",
-        "src/main/java/minecraftarmorweapon/item/rarity/RarityForgeRecipe.java",
-        "src/main/java/minecraftarmorweapon/item/rarity/RarityForgeRecipes.java",
-        "src/main/java/minecraftarmorweapon/network/RarityForgeButtonMessage.java",
-        "src/main/java/minecraftarmorweapon/events/WeaponRarityEventHandler.java",
-        "src/main/java/minecraftarmorweapon/integration/RarityForgeRecipeCategory.java",
-        "src/main/java/minecraftarmorweapon/integration/RarityForgeJEIPlugin.java",
+        "src/main/java/the_four_primitives_and_weapons/init/RarityForgeRegistration.java",
+        "src/main/java/the_four_primitives_and_weapons/block/RarityForgeBlock.java",
+        "src/main/java/the_four_primitives_and_weapons/block/entity/RarityForgeBlockEntity.java",
+        "src/main/java/the_four_primitives_and_weapons/world/inventory/RarityForgeMenu.java",
+        "src/main/java/the_four_primitives_and_weapons/client/gui/RarityForgeScreen.java",
+        "src/main/java/the_four_primitives_and_weapons/item/rarity/WeaponRarity.java",
+        "src/main/java/the_four_primitives_and_weapons/item/rarity/RarityCraftingLogic.java",
+        "src/main/java/the_four_primitives_and_weapons/item/rarity/RarityForgeRecipe.java",
+        "src/main/java/the_four_primitives_and_weapons/item/rarity/RarityForgeRecipes.java",
+        "src/main/java/the_four_primitives_and_weapons/network/RarityForgeButtonMessage.java",
+        "src/main/java/the_four_primitives_and_weapons/events/WeaponRarityEventHandler.java",
+        "src/main/java/the_four_primitives_and_weapons/integration/RarityForgeRecipeCategory.java",
+        "src/main/java/the_four_primitives_and_weapons/integration/RarityForgeJEIPlugin.java",
         # --- カスタムエンティティ ---
-        "src/main/java/minecraftarmorweapon/init/CustomEntityInit.java",
-        "src/main/java/minecraftarmorweapon/init/MinecraftArmorWeaponModCustomEntities.java",
-        "src/main/java/minecraftarmorweapon/init/MinecraftArmorWeaponModModels.java",
-        "src/main/java/minecraftarmorweapon/entity/DarkProjectileEntity.java",
-        "src/main/java/minecraftarmorweapon/entity/TornadoEntity.java",
-        "src/main/java/minecraftarmorweapon/entity/ai/CustomMeleeAttackGoal.java",
-        "src/main/java/minecraftarmorweapon/client/init/CustomEntityRenderers.java",
-        "src/main/java/minecraftarmorweapon/client/renderer/DarkProjectileRenderer.java",
-        "src/main/java/minecraftarmorweapon/client/model/Modelplayer_slim.java",
+        "src/main/java/the_four_primitives_and_weapons/init/CustomEntityInit.java",
+        "src/main/java/the_four_primitives_and_weapons/init/TheFourPrimitivesAndWeaponsModCustomEntities.java",
+        "src/main/java/the_four_primitives_and_weapons/init/TheFourPrimitivesAndWeaponsModModels.java",
+        "src/main/java/the_four_primitives_and_weapons/entity/DarkProjectileEntity.java",
+        "src/main/java/the_four_primitives_and_weapons/entity/TornadoEntity.java",
+        "src/main/java/the_four_primitives_and_weapons/entity/ai/CustomMeleeAttackGoal.java",
+        "src/main/java/the_four_primitives_and_weapons/client/init/CustomEntityRenderers.java",
+        "src/main/java/the_four_primitives_and_weapons/client/renderer/DarkProjectileRenderer.java",
+        "src/main/java/the_four_primitives_and_weapons/client/model/Modelplayer_slim.java",
         # --- ユーティリティ・ネットワーク ---
-        "src/main/java/minecraftarmorweapon/util/DamageCalculator.java",
-        "src/main/java/minecraftarmorweapon/network/AttackPacket.java",
-        "src/main/java/minecraftarmorweapon/events/ChargedAttackHandler.java",
+        "src/main/java/the_four_primitives_and_weapons/util/DamageCalculator.java",
+        "src/main/java/the_four_primitives_and_weapons/network/AttackPacket.java",
+        "src/main/java/the_four_primitives_and_weapons/events/ChargedAttackHandler.java",
         # --- スキルシステム ---
-        "src/main/java/minecraftarmorweapon/skill/ElectricDischargeBurstSkill.java",
-        "src/main/java/minecraftarmorweapon/block/ElectricConductBlock.java",
+        "src/main/java/the_four_primitives_and_weapons/skill/ElectricDischargeBurstSkill.java",
+        "src/main/java/the_four_primitives_and_weapons/block/ElectricConductBlock.java",
         # --- その他カスタムコード ---
-        "src/main/java/minecraftarmorweapon/procedures/MagicKatanaSpecialChargeProcedure.java",
-        "src/main/java/minecraftarmorweapon/procedures/TyokutouThrustAttackProcedure.java",
-        "src/main/java/minecraftarmorweapon/procedures/SummonTriggerEffectEffectExpiresProcedure.java",
-        "src/main/java/minecraftarmorweapon/item/MagicalKatanaItem.java",
-        "src/main/java/minecraftarmorweapon/item/MagischesFeenKatanaItem.java",
+        "src/main/java/the_four_primitives_and_weapons/procedures/MagicKatanaSpecialChargeProcedure.java",
+        "src/main/java/the_four_primitives_and_weapons/procedures/TyokutouThrustAttackProcedure.java",
+        "src/main/java/the_four_primitives_and_weapons/procedures/SummonTriggerEffectEffectExpiresProcedure.java",
+        "src/main/java/the_four_primitives_and_weapons/item/MagicalKatanaItem.java",
+        "src/main/java/the_four_primitives_and_weapons/item/MagischesFeenKatanaItem.java",
         # --- メインModファイル ---
-        "src/main/java/minecraftarmorweapon/MinecraftArmorWeaponMod.java",
+        "src/main/java/the_four_primitives_and_weapons/TheFourPrimitivesAndWeaponsMod.java",
     ]
 
     protected_dir = ".protected_custom_files"
@@ -141,7 +141,7 @@ def add_to_gitignore():
         ".protected_custom_files/",
         "*.backup_*",
         "\n# Prevent MCreator regeneration",
-        "minecraft_armor_weapon.mcreator.lock"
+        "the_four_primitives_and_weapons.mcreator.lock"
     ]
 
     gitignore_path = ".gitignore"

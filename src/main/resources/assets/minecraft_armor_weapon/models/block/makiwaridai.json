@@ -1,9 +1,0 @@
-{
-  "parent": "minecraft_armor_weapon:custom/makiwaridai",
-  "textures": {
-    "all": "minecraft_armor_weapon:block/makiwaridai",
-    "particle": "minecraft_armor_weapon:block/makiwaridai",
-    "0": "minecraft_armor_weapon:block/makiwaridai"
-  },
-  "render_type": "solid"
-}

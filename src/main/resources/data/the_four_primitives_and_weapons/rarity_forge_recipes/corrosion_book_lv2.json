@@ -1,0 +1,9 @@
+{
+  "pattern": ["TTT", "TLT", "TTT"],
+  "key": {
+    "T": "minecraft:wither_rose",
+    "L": "minecraft:stone"
+  },
+  "result": "the_four_primitives_and_weapons:corrosion_book",
+  "element_level": 2
+}

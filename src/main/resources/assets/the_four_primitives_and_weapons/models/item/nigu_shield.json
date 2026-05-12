@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/nigushield",
+  "textures": {
+    "0": "the_four_primitives_and_weapons:block/nigushield",
+    "particle": "the_four_primitives_and_weapons:item/shieldb"
+  }
+}

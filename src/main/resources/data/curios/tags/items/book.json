@@ -1,17 +1,17 @@
 {
   "replace": false,
   "values": [
-    "minecraft_armor_weapon:storm_book",
-    "minecraft_armor_weapon:wind_book",
-    "minecraft_armor_weapon:bubbles_book",
-    "minecraft_armor_weapon:thunder_book",
-    "minecraft_armor_weapon:fire_book",
-    "minecraft_armor_weapon:darkness_book",
-    "minecraft_armor_weapon:ice_book",
-    "minecraft_armor_weapon:electric_book",
-    "minecraft_armor_weapon:corrosion_book",
-    "minecraft_armor_weapon:holy_book",
-    "minecraft_armor_weapon:error_book",
-    "minecraft_armor_weapon:miasma_book"
+    "the_four_primitives_and_weapons:storm_book",
+    "the_four_primitives_and_weapons:wind_book",
+    "the_four_primitives_and_weapons:bubbles_book",
+    "the_four_primitives_and_weapons:thunder_book",
+    "the_four_primitives_and_weapons:fire_book",
+    "the_four_primitives_and_weapons:darkness_book",
+    "the_four_primitives_and_weapons:ice_book",
+    "the_four_primitives_and_weapons:electric_book",
+    "the_four_primitives_and_weapons:corrosion_book",
+    "the_four_primitives_and_weapons:holy_book",
+    "the_four_primitives_and_weapons:error_book",
+    "the_four_primitives_and_weapons:miasma_book"
   ]
 }

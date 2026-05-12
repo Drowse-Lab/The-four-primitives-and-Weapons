@@ -18,12 +18,12 @@ if not exist "%PROTECTED_DIR%" (
 echo Restoring protected files...
 echo.
 
-REM MinecraftArmorWeaponModModels.javaを復元
-if exist "%PROTECTED_DIR%\MinecraftArmorWeaponModModels.java" (
-    copy /Y "%PROTECTED_DIR%\MinecraftArmorWeaponModModels.java" "src\main\java\minecraftarmorweapon\init\MinecraftArmorWeaponModModels.java"
-    echo [OK] MinecraftArmorWeaponModModels.java restored
+REM TheFourPrimitivesAndWeaponsModModels.javaを復元
+if exist "%PROTECTED_DIR%\TheFourPrimitivesAndWeaponsModModels.java" (
+    copy /Y "%PROTECTED_DIR%\TheFourPrimitivesAndWeaponsModModels.java" "src\main\java\the_four_primitives_and_weapons\init\TheFourPrimitivesAndWeaponsModModels.java"
+    echo [OK] TheFourPrimitivesAndWeaponsModModels.java restored
 ) else (
-    echo [SKIP] MinecraftArmorWeaponModModels.java not in protected files
+    echo [SKIP] TheFourPrimitivesAndWeaponsModModels.java not in protected files
 )
 
 REM その他のファイルも復元

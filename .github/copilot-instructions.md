@@ -6,7 +6,7 @@
 
 ## 概要（大局観）
 - このプロジェクトは Minecraft Forge 用のモッドで、MCreator から生成された要素群（`elements/` の多くの `*.mod.json`）とカスタムコード（`src/`、`models/`、`resources/`）で構成されています。
-- Mod ID / アーカイブ名: `minecraft_armor_weapon`（`build.gradle` の `archivesBaseName` を参照）。パッケージ群は `com.hrmcngs.minecraft_armor_weapon` です。
+- Mod ID / アーカイブ名: `the_four_primitives_and_weapons`（`build.gradle` の `archivesBaseName` を参照）。パッケージ群は `com.hrmcngs.the_four_primitives_and_weapons` です。
 - ビルドは ForgeGradle を使用した Gradle ベース（`build.gradle` と `mcreator.gradle` を参照）。Java 17 をターゲットにしています。
 
 ## 重要ファイル／ディレクトリ（すぐ見る場所）
@@ -43,7 +43,7 @@
 
 ## 依存と外部連携
 - Forge: `net.minecraftforge:forge:1.20.1-47.1.0`（`build.gradle` の dependencies を参照）。
-- MCreator: プロジェクトは MCreator ベースで、`minecraft_armor_weapon.mcreator` 等のメタファイルを含みます。MCreator を使う場合はエクスポートや同期の仕組みに注意。
+- MCreator: プロジェクトは MCreator ベースで、`the_four_primitives_and_weapons.mcreator` 等のメタファイルを含みます。MCreator を使う場合はエクスポートや同期の仕組みに注意。
 
 ## 変更を行う際のチェックリスト（簡潔）
  - ビルド: `./gradlew build` が通ること

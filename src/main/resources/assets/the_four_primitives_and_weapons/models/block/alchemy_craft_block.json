@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "the_four_primitives_and_weapons:block/stone_bricks_talap_dor",
+    "up": "the_four_primitives_and_weapons:block/dai",
+    "north": "the_four_primitives_and_weapons:block/stone_bricks_talap_dor",
+    "east": "the_four_primitives_and_weapons:block/stone_bricks_talap_dor",
+    "south": "the_four_primitives_and_weapons:block/stone_bricks_talap_dor",
+    "west": "the_four_primitives_and_weapons:block/stone_bricks_talap_dor",
+    "particle": "the_four_primitives_and_weapons:block/stone_bricks_talap_dor"
+  },
+  "render_type": "solid"
+}

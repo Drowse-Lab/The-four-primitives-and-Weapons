@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/cutomkatanairon3d",
+  "textures": {
+    "3": "the_four_primitives_and_weapons:block/customkatana3d",
+    "particle": "the_four_primitives_and_weapons:item/luna"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/chuzume_head_-_converted",
+  "textures": {
+    "1": "the_four_primitives_and_weapons:block/1cf4e48b9fb19c16",
+    "particle": "the_four_primitives_and_weapons:item/chuzume_husk_leather_helmet"
+  }
+}

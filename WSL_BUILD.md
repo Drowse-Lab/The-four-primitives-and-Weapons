@@ -72,7 +72,7 @@ bash build_mac.sh clean offline     # クリーン＋オフライン
 
 ```bash
 # WSL:
-cd /mnt/c/Users/hrmcn/MCreatorWorkspaces/minecraft_armor_weapon
+cd /mnt/c/Users/hrmcn/MCreatorWorkspaces/the_four_primitives_and_weapons
 # mac: ローカルにcloneしたパスへ
 ./gradlew build
 ```

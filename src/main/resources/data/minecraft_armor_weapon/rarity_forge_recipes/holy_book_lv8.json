@@ -1,9 +1,0 @@
-{
-  "pattern": ["TTT", "TLT", "TTT"],
-  "key": {
-    "T": "minecraft:glowstone_dust",
-    "L": "minecraft:netherite_scrap"
-  },
-  "result": "minecraft_armor_weapon:holy_book",
-  "element_level": 8
-}

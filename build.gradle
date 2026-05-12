@@ -16,7 +16,7 @@ apply plugin: 'eclipse'
 def withSpellbooks = project.findProperty('withSpellbooks') == 'true'
 
 version = '1.0'
-group = 'com.hrmcngs.minecraft_armor_weapon'
+group = 'com.hrmcngs.the_four_primitives_and_weapons'
 archivesBaseName = 'The four primitives and Weapons-forge-1.20.1-'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -43,7 +43,7 @@ minecraft {
             property 'mixin.env.remapRefMap', 'true'
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             mods {
-                minecraft_armor_weapon {
+                the_four_primitives_and_weapons {
                     source sourceSets.main
                 }
             }
@@ -57,7 +57,7 @@ minecraft {
             property 'mixin.env.remapRefMap', 'true'
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             mods {
-                minecraft_armor_weapon {
+                the_four_primitives_and_weapons {
                     source sourceSets.main
                 }
             }

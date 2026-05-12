@@ -1,0 +1,9 @@
+{
+  "pattern": ["TTT", "TLT", "TTT"],
+  "key": {
+    "T": "minecraft:obsidian",
+    "L": "minecraft:blaze_rod"
+  },
+  "result": "the_four_primitives_and_weapons:darkness_book",
+  "element_level": 8
+}

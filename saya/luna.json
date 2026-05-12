@@ -5,7 +5,7 @@
 	"parent": "tyokutoutousiniri",
 	"textures": {
 		"2": "luna",
-		"3": "MCreatorWorkspaces/minecraft_armor_weapon/saya/saya_tyokuto",
+		"3": "MCreatorWorkspaces/the_four_primitives_and_weapons/saya/saya_tyokuto",
 		"particle": "luna"
 	},
 	"elements": [

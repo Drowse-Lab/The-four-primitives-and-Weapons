@@ -1,9 +1,0 @@
-{
-  "pattern": ["TTT", "TLT", "TTT"],
-  "key": {
-    "T": "minecraft:wither_rose",
-    "L": "minecraft:gold_ingot"
-  },
-  "result": "minecraft_armor_weapon:corrosion_book",
-  "element_level": 4
-}

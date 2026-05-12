@@ -1,0 +1,9 @@
+{
+  "pattern": ["TTT", "TLT", "TTT"],
+  "key": {
+    "T": "minecraft:copper_ingot",
+    "L": "minecraft:oak_planks"
+  },
+  "result": "the_four_primitives_and_weapons:electric_book",
+  "element_level": 1
+}

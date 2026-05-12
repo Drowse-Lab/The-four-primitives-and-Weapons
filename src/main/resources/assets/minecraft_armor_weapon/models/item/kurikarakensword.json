@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft_armor_weapon:custom/swordb2",
-  "textures": {
-    "0": "minecraft_armor_weapon:block/swordb",
-    "particle": "minecraft_armor_weapon:item/aaaaa"
-  }
-}

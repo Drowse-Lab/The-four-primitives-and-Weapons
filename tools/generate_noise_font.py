@@ -4,7 +4,7 @@ Minecraft bitmap noise font generator.
 Generates a 256x96 PNG sprite sheet with ASCII printable characters
 rendered with static noise / glitch effects.
 
-Output: src/main/resources/assets/minecraft_armor_weapon/textures/font/static_noise.png
+Output: src/main/resources/assets/the_four_primitives_and_weapons/textures/font/static_noise.png
 """
 
 import random
@@ -106,7 +106,7 @@ def apply_scanlines(pixels, cy):
 def main():
     out_path = os.path.join(
         os.path.dirname(__file__),
-        "../src/main/resources/assets/minecraft_armor_weapon/textures/font/static_noise.png"
+        "../src/main/resources/assets/the_four_primitives_and_weapons/textures/font/static_noise.png"
     )
     out_path = os.path.normpath(out_path)
 

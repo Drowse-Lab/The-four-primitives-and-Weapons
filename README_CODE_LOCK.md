@@ -5,8 +5,8 @@
 ## 実装済みの対策
 
 ### 1. 既存コードのロック (完了)
-- `minecraft_armor_weapon.mcreator`内のすべての`locked_code`フラグを`true`に設定
-- バックアップファイル: `minecraft_armor_weapon.mcreator.backup`
+- `the_four_primitives_and_weapons.mcreator`内のすべての`locked_code`フラグを`true`に設定
+- バックアップファイル: `the_four_primitives_and_weapons.mcreator.backup`
 
 ### 2. 自動ロックシステム
 
@@ -53,7 +53,7 @@ Gradleビルドを実行すると、自動的にコードロックが適用さ�
 コードロックを解除したい場合：
 ```bash
 # バックアップから復元
-cp minecraft_armor_weapon.mcreator.backup minecraft_armor_weapon.mcreator
+cp the_four_primitives_and_weapons.mcreator.backup the_four_primitives_and_weapons.mcreator
 ```
 
 ## 注意事項

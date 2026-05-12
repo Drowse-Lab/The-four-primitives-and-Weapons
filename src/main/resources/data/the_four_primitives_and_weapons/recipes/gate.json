@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "EWE",
+    "WDW",
+    "EWE"
+  ],
+  "key": {
+    "E": {"item": "minecraft:ender_eye"},
+    "W": {"item": "minecraft:wither_skeleton_skull"},
+    "D": {"item": "the_four_primitives_and_weapons:gold_tyokuto"}
+  },
+  "result": {
+    "item": "the_four_primitives_and_weapons:gate",
+    "count": 1
+  }
+}

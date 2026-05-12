@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/throwingknife",
+  "textures": {
+    "0": "the_four_primitives_and_weapons:block/throwingknife",
+    "particle": "the_four_primitives_and_weapons:item/throwingknife"
+  }
+}

@@ -4,8 +4,8 @@
 	"parent": "block/block",
 	"texture_size": [32, 32],
 	"textures": {
-		"2": "minecraft_armor_weapon:iron_tyokuto",
-		"particle": "minecraft_armor_weapon:iron_tyokuto"
+		"2": "the_four_primitives_and_weapons:iron_tyokuto",
+		"particle": "the_four_primitives_and_weapons:iron_tyokuto"
 	},
 	"elements": [
 		{

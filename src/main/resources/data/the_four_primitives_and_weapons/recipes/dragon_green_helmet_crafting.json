@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": { "item": "minecraft:netherite_upgrade_smithing_template" },
+  "base": {
+    "item": "the_four_primitives_and_weapons:dragon_armor_helmet"
+  },
+  "addition": {
+    "item": "minecraft:green_dye"
+  },
+  "result": {
+    "item": "the_four_primitives_and_weapons:dragon_green_armor_helmet"
+  }
+}

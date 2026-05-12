@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/bluepurgestyokutou",
+  "textures": {
+    "2": "the_four_primitives_and_weapons:block/bluepurgetyokutou",
+    "particle": "the_four_primitives_and_weapons:item/bluepurgestyokutouimage"
+  }
+}

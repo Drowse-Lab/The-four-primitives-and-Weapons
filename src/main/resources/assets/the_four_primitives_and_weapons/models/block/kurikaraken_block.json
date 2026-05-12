@@ -1,0 +1,9 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/swordbblock",
+  "textures": {
+    "all": "the_four_primitives_and_weapons:block/katanab",
+    "particle": "the_four_primitives_and_weapons:block/katanab",
+    "0": "the_four_primitives_and_weapons:block/katanab"
+  },
+  "render_type": "cutout_mipped"
+}

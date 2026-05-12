@@ -1,7 +1,0 @@
-{
-	"parent": "minecraft_armor_weapon:block/weapon_rack_hook",
-	"textures": {
-		"wood":     "minecraft:block/crimson_planks",
-		"particle": "minecraft:block/crimson_planks"
-	}
-}

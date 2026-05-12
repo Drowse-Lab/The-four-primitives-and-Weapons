@@ -1,6 +1,0 @@
-{
-	"parent": "minecraft_armor_weapon:custom/saya/sword/saya_sword_iron_sword",
-	"textures": {
-		"4": "minecraft:item/golden_sword"
-	}
-}

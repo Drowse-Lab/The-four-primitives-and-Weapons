@@ -1,9 +1,0 @@
-{
-  "pattern": ["TTT", "TLT", "TTT"],
-  "key": {
-    "T": "minecraft:pufferfish",
-    "L": "minecraft:gold_ingot"
-  },
-  "result": "minecraft_armor_weapon:bubbles_book",
-  "element_level": 5
-}

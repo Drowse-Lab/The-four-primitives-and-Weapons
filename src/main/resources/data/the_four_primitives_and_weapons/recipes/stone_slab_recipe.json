@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "count": 1,
+  "ingredient": {
+    "item": "minecraft:stone"
+  },
+  "result": "the_four_primitives_and_weapons:stone_slab"
+}

@@ -2,7 +2,7 @@
   "_fv": 43,
   "_type": "function",
   "definition": {
-    "code": "#########################################################\nexecute as @a[scores={AS2_R=1..}] at @s run function minecraft_armor_weapon:test_bow_start\nscoreboard players set @a[scores={AS2_R=1..}] AS2_R 0\n#########################################################\n\n#########################################################\nscoreboard players remove @e[scores={AS2_D=1..}] AS2_D 1\nkill @e[scores={AS2_D=0}]\n#########################################################\n\n#########################################################\nexecute as @e[tag=AS2] at @s run function minecraft_armor_weapon:test_bow_main\n#########################################################\n\n",
+    "code": "#########################################################\nexecute as @a[scores={AS2_R=1..}] at @s run function the_four_primitives_and_weapons:test_bow_start\nscoreboard players set @a[scores={AS2_R=1..}] AS2_R 0\n#########################################################\n\n#########################################################\nscoreboard players remove @e[scores={AS2_D=1..}] AS2_D 1\nkill @e[scores={AS2_D=0}]\n#########################################################\n\n#########################################################\nexecute as @e[tag=AS2] at @s run function the_four_primitives_and_weapons:test_bow_main\n#########################################################\n\n",
     "name": "test_bow_kill_tick",
     "namespace": "mod"
   }

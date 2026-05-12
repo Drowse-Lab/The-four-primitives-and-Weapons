@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/natatekina",
+  "textures": {
+    "0": "the_four_primitives_and_weapons:block/natatekina",
+    "particle": "the_four_primitives_and_weapons:item/natatekinaitem"
+  }
+}

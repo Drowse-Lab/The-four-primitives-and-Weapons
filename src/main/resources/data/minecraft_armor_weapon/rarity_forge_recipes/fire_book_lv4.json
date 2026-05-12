@@ -1,9 +1,0 @@
-{
-  "pattern": ["TTT", "TLT", "TTT"],
-  "key": {
-    "T": "minecraft:magma_cream",
-    "L": "minecraft:iron_ingot"
-  },
-  "result": "minecraft_armor_weapon:fire_book",
-  "element_level": 4
-}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " L ",
+    "LBL",
+    " N "
+  ],
+  "key": {
+    "L": { "item": "minecraft:lapis_lazuli" },
+    "B": { "item": "minecraft:glass_bottle" },
+    "N": { "item": "minecraft:nether_wart" }
+  },
+  "result": {
+    "item": "the_four_primitives_and_weapons:mana_potion",
+    "count": 1
+  }
+}

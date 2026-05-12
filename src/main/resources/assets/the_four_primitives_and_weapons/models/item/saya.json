@@ -1,0 +1,126 @@
+{
+	"parent": "the_four_primitives_and_weapons:custom/tousinnukisaya",
+	"overrides": [
+		{
+			"predicate": {
+				"custom_model_data": 0
+			},
+			"model": "the_four_primitives_and_weapons:custom/tousinnukisaya"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 1
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_iron_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 2
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_gold_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 3
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_stone_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 4
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_netherite_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 5
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_wither_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 7
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_darkness_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 8
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_magical_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 9
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_magischesfeen_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 10
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_prototype_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 11
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_old_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 12
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_mytestiron_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 13
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_riversofblood"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 14
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_katananiguzyouwankotu3d"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 15
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_loki_the_trick_ster_katana"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 19
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_replica_sword_of_light"
+		},
+		{
+			"predicate": {
+				"custom_model_data": 16
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_diamond_katana"
+		},
+		{
+			"predicate": {
+				"the_four_primitives_and_weapons:saya_nbt": 1
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_reitou_sigiled"
+		},
+		{
+			"predicate": {
+				"the_four_primitives_and_weapons:feyn": 1
+			},
+			"model": "the_four_primitives_and_weapons:custom/tousinnukisaya"
+		},
+		{
+			"predicate": {
+				"the_four_primitives_and_weapons:feyn": 1,
+				"the_four_primitives_and_weapons:saya_nbt": 1
+			},
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_reitou_sigiled_empty"
+		}
+	]
+}

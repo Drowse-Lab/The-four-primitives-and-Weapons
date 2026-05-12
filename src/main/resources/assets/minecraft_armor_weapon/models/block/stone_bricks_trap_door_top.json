@@ -1,8 +1,0 @@
-{
-  "parent": "block/template_orientable_trapdoor_top",
-  "textures": {
-    "texture": "minecraft_armor_weapon:block/stone_bricks_talap_dor",
-    "particle": "minecraft_armor_weapon:block/stone_bricks_talap_dor"
-  },
-  "render_type": "solid"
-}

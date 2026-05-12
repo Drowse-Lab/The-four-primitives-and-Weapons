@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft_armor_weapon:custom/swordb2kaminari",
-  "textures": {
-    "0": "minecraft_armor_weapon:block/swordb",
-    "3": "minecraft_armor_weapon:block/kurikarakaminari",
-    "particle": "minecraft_armor_weapon:item/aaaaa"
-  }
-}

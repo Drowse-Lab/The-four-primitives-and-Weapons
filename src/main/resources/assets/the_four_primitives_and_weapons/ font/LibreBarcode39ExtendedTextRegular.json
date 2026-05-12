@@ -1,0 +1,9 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "the_four_primitives_and_weapons:font:LibreBarcode39ExtendedTextRegular.ttf",
+
+    }
+  ]
+}

@@ -22,7 +22,7 @@ Minecraft 1.20.1 Forgeモッド用の属性ダメージシステムです。**NB
 
 ### コアファイル
 ```
-src/main/java/minecraftarmorweapon/damage/
+src/main/java/the_four_primitives_and_weapons/damage/
 ├── ElementType.java                    # 属性列挙型
 ├── IElementalDamageSource.java         # DamageSourceインターフェース
 ├── ElementalDamageUtils.java           # NBTタグユーティリティ
@@ -31,19 +31,19 @@ src/main/java/minecraftarmorweapon/damage/
 ├── CorrosionElementDamageHandler.java  # 侵食属性ハンドラー
 └── HolyElementDamageHandler.java       # 聖属性ハンドラー
 
-src/main/java/minecraftarmorweapon/mixin/
+src/main/java/the_four_primitives_and_weapons/mixin/
 ├── DamageSourceMixin.java              # DamageSourceへの属性データ追加
 ├── LivingEntityDamageMixin.java        # ダメージ計算時の属性適用
 └── ItemStackTooltipMixin.java          # ツールチップへの属性表示
 
 src/main/resources/
-├── minecraft_armor_weapon.mixins.json  # Mixin設定
+├── the_four_primitives_and_weapons.mixins.json  # Mixin設定
 └── META-INF/mods.toml                  # Mixin読み込み設定
 ```
 
 ### テストアイテム
 ```
-src/main/java/minecraftarmorweapon/item/
+src/main/java/the_four_primitives_and_weapons/item/
 ├── IceTestKatanaItem.java              # 氷属性テスト刀
 ├── ElectricTestKatanaItem.java         # 電気属性テスト刀
 ├── CorrosionTestKatanaItem.java        # 侵食属性テスト刀
@@ -181,7 +181,7 @@ if (ElementalDamageUtils.hasElement(weapon)) {
 giveコマンドでNBT指定:
 ```
 /give @p minecraft:diamond_sword{ElementType:"HOLY",ElementLevel:10}
-/give @p minecraft_armor_weapon:old_katana{ElementType:"ICE",ElementLevel:5}
+/give @p the_four_primitives_and_weapons:old_katana{ElementType:"ICE",ElementLevel:5}
 ```
 
 #### 属性ダメージの確認方法

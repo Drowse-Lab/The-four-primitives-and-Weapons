@@ -1,0 +1,69 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/katanairon3d",
+  "textures": {
+    "0": "the_four_primitives_and_weapons:block/katanairon3d",
+    "particle": "the_four_primitives_and_weapons:block/katanairon3d"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "the_four_primitives_and_weapons:texture_variant": 1.0
+      },
+      "model": "the_four_primitives_and_weapons:item/dynamic_3d_sword_fire"
+    },
+    {
+      "predicate": {
+        "the_four_primitives_and_weapons:texture_variant": 2.0
+      },
+      "model": "the_four_primitives_and_weapons:item/dynamic_3d_sword_ice"
+    },
+    {
+      "predicate": {
+        "the_four_primitives_and_weapons:texture_variant": 3.0
+      },
+      "model": "the_four_primitives_and_weapons:item/dynamic_3d_sword_thunder"
+    },
+    {
+      "predicate": {
+        "the_four_primitives_and_weapons:texture_variant": 4.0
+      },
+      "model": "the_four_primitives_and_weapons:item/dynamic_3d_sword_dark"
+    },
+    {
+      "predicate": {
+        "the_four_primitives_and_weapons:texture_variant": 5.0
+      },
+      "model": "the_four_primitives_and_weapons:item/dynamic_3d_sword_light"
+    },
+    {
+      "predicate": {
+        "the_four_primitives_and_weapons:texture_variant": 6.0
+      },
+      "model": "the_four_primitives_and_weapons:item/dynamic_3d_sword_blood"
+    },
+    {
+      "predicate": {
+        "the_four_primitives_and_weapons:texture_variant": 7.0
+      },
+      "model": "the_four_primitives_and_weapons:item/dynamic_3d_sword_magic"
+    },
+    {
+      "predicate": {
+        "the_four_primitives_and_weapons:texture_variant": 8.0
+      },
+      "model": "the_four_primitives_and_weapons:item/dynamic_3d_sword_gold"
+    },
+    {
+      "predicate": {
+        "the_four_primitives_and_weapons:texture_variant": 9.0
+      },
+      "model": "the_four_primitives_and_weapons:item/dynamic_3d_sword_emerald"
+    },
+    {
+      "predicate": {
+        "the_four_primitives_and_weapons:texture_variant": 10.0
+      },
+      "model": "the_four_primitives_and_weapons:item/dynamic_3d_sword_diamond"
+    }
+  ]
+}

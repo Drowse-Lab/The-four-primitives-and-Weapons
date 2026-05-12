@@ -1,0 +1,1473 @@
+package the_four_primitives_and_weapons.ai;
+
+import the_four_primitives_and_weapons.util.VersionHelper;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.*;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.monster.*;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.DyeableLeatherItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.SwordItem;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.ArmorMaterials;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import java.util.Iterator;
+import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import the_four_primitives_and_weapons.command.CustomDifficultyCommand;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import the_four_primitives_and_weapons.command.CustomDifficultyCommand.CustomDifficulty;
+
+/**
+ * 安全なTrue Crafter Mode実装
+ * AIゴールの変更を安全に行い、ConcurrentModificationExceptionを防ぐ
+ *
+ * 難易度別の段階的強化:
+ *   aiLevel 0: 強化なし
+ *   aiLevel 1: 基本装備のみ（革/木、盾低確率）
+ *   aiLevel 2: 中装備、武器切替、盾あり、回避行動
+ *   aiLevel 3: 高装備、ブロック設置/破壊、壁越し感知、飛びかかり
+ *   aiLevel 4: 最高装備、高速行動、バフ効果、ベッド睡眠無効
+ *   aiLevel 5: 全機能最大、ネザライト/MOD装備、超高速行動
+ */
+@Mod.EventBusSubscriber
+public class SafeTrueCrafterAI {
+
+    // エンティティごとの強化状態を管理
+    private static final Set<UUID> enhancedEntities = ConcurrentHashMap.newKeySet();
+    private static final Map<UUID, MobEnhancementData> enhancementData = new ConcurrentHashMap<>();
+
+    // 一時ブロックの管理
+    private static final Map<BlockPos, Long> temporaryBlocks = new ConcurrentHashMap<>();
+    private static final long BLOCK_DECAY_TIME = 15000; // 15秒
+
+    private static class MobEnhancementData {
+        boolean isEnhanced = false;
+        int weaponSwitchCooldown = 0;
+        int dodgeCooldown = 0;
+        int blockPlaceCooldown = 0;
+        int blockBreakCooldown = 0;
+        int blockBreakProgress = 0;
+        BlockPos breakingBlockPos = null;
+        ItemStack meleeWeapon = ItemStack.EMPTY;
+        ItemStack rangedWeapon = ItemStack.EMPTY;
+        long lastUpdateTick = 0;
+        int mobTier = 0; // このMobの個別ティア（0-2）
+
+        // ブロック設置/破壊用の停滞追跡
+        int standstillTicks = 0;     // 停滞しているtick数
+        double lastX = 0, lastZ = 0; // 前回座標
+        boolean bridgeMode = false;   // 橋建設モード中か
+        int bridgeEndTimer = 0;       // 橋終了カウンタ
+        int digProgress = 0;          // 掘削進行度（0-40）
+
+        // スプリント/リープ (AtomicStryker MM_Sprint方式)
+        int sprintCooldown = 0;      // スプリントクールダウン
+        int leapCooldownAll = 0;     // 全モンスター共通リープCD
+        boolean isSprinting = false;  // スプリント中か
+        int sprintDuration = 0;       // スプリント残り時間
+
+        // ターゲット記憶（最大難易度で一度敵対したらずっと追跡）
+        UUID lastTargetUUID = null;
+    }
+    
+    // 革防具に色を付けるヘルパーメソッド
+    private static ItemStack createColoredLeatherArmor(ItemStack armorItem, int color) {
+        if (armorItem.getItem() instanceof DyeableLeatherItem) {
+            ((DyeableLeatherItem) armorItem.getItem()).setColor(armorItem, color);
+        }
+        return armorItem;
+    }
+    
+    // ランダムな防具を取得（MOD装備含む）
+    private static ItemStack getRandomArmor(RandomSource random, EquipmentSlot slot, int tier) {
+        List<Item> availableArmors = new ArrayList<>();
+        
+        // バニラ防具を追加
+        if (slot == EquipmentSlot.HEAD) {
+            availableArmors.addAll(Arrays.asList(
+                Items.LEATHER_HELMET, Items.GOLDEN_HELMET, 
+                Items.CHAINMAIL_HELMET, Items.IRON_HELMET,
+                Items.DIAMOND_HELMET, Items.NETHERITE_HELMET,
+                Items.TURTLE_HELMET
+            ));
+        } else if (slot == EquipmentSlot.CHEST) {
+            availableArmors.addAll(Arrays.asList(
+                Items.LEATHER_CHESTPLATE, Items.GOLDEN_CHESTPLATE,
+                Items.CHAINMAIL_CHESTPLATE, Items.IRON_CHESTPLATE,
+                Items.DIAMOND_CHESTPLATE, Items.NETHERITE_CHESTPLATE
+            ));
+        } else if (slot == EquipmentSlot.LEGS) {
+            availableArmors.addAll(Arrays.asList(
+                Items.LEATHER_LEGGINGS, Items.GOLDEN_LEGGINGS,
+                Items.CHAINMAIL_LEGGINGS, Items.IRON_LEGGINGS,
+                Items.DIAMOND_LEGGINGS, Items.NETHERITE_LEGGINGS
+            ));
+        } else if (slot == EquipmentSlot.FEET) {
+            availableArmors.addAll(Arrays.asList(
+                Items.LEATHER_BOOTS, Items.GOLDEN_BOOTS,
+                Items.CHAINMAIL_BOOTS, Items.IRON_BOOTS,
+                Items.DIAMOND_BOOTS, Items.NETHERITE_BOOTS
+            ));
+        }
+        
+        // MOD防具を検索して追加
+        for (Item item : ForgeRegistries.ITEMS) {
+            if (item instanceof ArmorItem) {
+                ArmorItem armor = (ArmorItem) item;
+                if (armor.getEquipmentSlot() == slot) {
+                    // the_four_primitives_and_weapons MODの装備を優先的に追加
+                    var registryName = ForgeRegistries.ITEMS.getKey(item);
+                    if (registryName != null && 
+                        registryName.getNamespace().equals("the_four_primitives_and_weapons")) {
+                        availableArmors.add(item);
+                    }
+                    // 他のMODの装備も低確率で追加
+                    else if (registryName != null && 
+                             !registryName.getNamespace().equals("minecraft") && 
+                             random.nextFloat() < 0.3f) {
+                        availableArmors.add(item);
+                    }
+                }
+            }
+        }
+        
+        // ティアに応じてフィルタリング
+        List<Item> filteredArmors = new ArrayList<>();
+        for (Item item : availableArmors) {
+            if (item instanceof ArmorItem) {
+                ArmorItem armor = (ArmorItem) item;
+                // ティア0: 革、金、チェインメイル
+                if (tier == 0) {
+                    if (armor.getMaterial() == ArmorMaterials.LEATHER ||
+                        armor.getMaterial() == ArmorMaterials.GOLD ||
+                        armor.getMaterial() == ArmorMaterials.CHAIN ||
+                        (random.nextFloat() < 0.1f)) { // 10%で他の素材も
+                        filteredArmors.add(item);
+                    }
+                }
+                // ティア1: チェインメイル、鉄、金
+                else if (tier == 1) {
+                    if (armor.getMaterial() == ArmorMaterials.CHAIN ||
+                        armor.getMaterial() == ArmorMaterials.IRON ||
+                        armor.getMaterial() == ArmorMaterials.GOLD ||
+                        (random.nextFloat() < 0.2f)) { // 20%で他の素材も
+                        filteredArmors.add(item);
+                    }
+                }
+                // ティア2: 鉄、ダイヤ、ネザライト、MOD装備
+                else {
+                    if (armor.getMaterial() == ArmorMaterials.IRON ||
+                        armor.getMaterial() == ArmorMaterials.DIAMOND ||
+                        armor.getMaterial() == ArmorMaterials.NETHERITE) {
+                        filteredArmors.add(item);
+                    } else {
+                        // MOD装備もティア2に追加
+                        var registryName = ForgeRegistries.ITEMS.getKey(item);
+                        if (registryName != null && !registryName.getNamespace().equals("minecraft")) {
+                            filteredArmors.add(item);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // ランダムに選択
+        if (!filteredArmors.isEmpty()) {
+            Item selectedArmor = filteredArmors.get(random.nextInt(filteredArmors.size()));
+            return new ItemStack(selectedArmor);
+        }
+        
+        // デフォルト
+        return ItemStack.EMPTY;
+    }
+    
+    // ランダムな武器を取得（MOD武器含む）
+    private static ItemStack getRandomWeapon(RandomSource random, int tier, boolean preferAxe) {
+        List<Item> availableWeapons = new ArrayList<>();
+        
+        // バニラ武器を追加
+        availableWeapons.addAll(Arrays.asList(
+            Items.WOODEN_SWORD, Items.STONE_SWORD, Items.GOLDEN_SWORD,
+            Items.IRON_SWORD, Items.DIAMOND_SWORD, Items.NETHERITE_SWORD,
+            Items.WOODEN_AXE, Items.STONE_AXE, Items.GOLDEN_AXE,
+            Items.IRON_AXE, Items.DIAMOND_AXE, Items.NETHERITE_AXE,
+            Items.TRIDENT
+        ));
+        
+        // MOD武器を検索して追加
+        for (Item item : ForgeRegistries.ITEMS) {
+            if (item instanceof SwordItem || item instanceof AxeItem) {
+                // the_four_primitives_and_weapons MODの武器を優先的に追加
+                var registryName = ForgeRegistries.ITEMS.getKey(item);
+                if (registryName != null && 
+                    registryName.getNamespace().equals("the_four_primitives_and_weapons")) {
+                    availableWeapons.add(item);
+                }
+                // 他のMODの武器も低確率で追加
+                else if (registryName != null && 
+                         !registryName.getNamespace().equals("minecraft") && 
+                         random.nextFloat() < 0.2f) {
+                    availableWeapons.add(item);
+                }
+            }
+        }
+        
+        // ティアに応じてフィルタリング
+        List<Item> filteredWeapons = new ArrayList<>();
+        for (Item item : availableWeapons) {
+            boolean shouldAdd = false;
+            
+            // ティア0: 木、石、金
+            if (tier == 0) {
+                if (item == Items.WOODEN_SWORD || item == Items.WOODEN_AXE ||
+                    item == Items.STONE_SWORD || item == Items.STONE_AXE ||
+                    item == Items.GOLDEN_SWORD || item == Items.GOLDEN_AXE) {
+                    shouldAdd = true;
+                }
+            }
+            // ティア1: 石、鉄、金
+            else if (tier == 1) {
+                if (item == Items.STONE_SWORD || item == Items.STONE_AXE ||
+                    item == Items.IRON_SWORD || item == Items.IRON_AXE ||
+                    item == Items.GOLDEN_SWORD || item == Items.GOLDEN_AXE) {
+                    shouldAdd = true;
+                }
+            }
+            // ティア2: 鉄、ダイヤ、ネザライト、MOD武器
+            else {
+                if (item == Items.IRON_SWORD || item == Items.IRON_AXE ||
+                    item == Items.DIAMOND_SWORD || item == Items.DIAMOND_AXE ||
+                    item == Items.NETHERITE_SWORD || item == Items.NETHERITE_AXE ||
+                    item == Items.TRIDENT) {
+                    shouldAdd = true;
+                } else {
+                    // MOD武器もティア2に追加
+                    var registryName = ForgeRegistries.ITEMS.getKey(item);
+                    if (registryName != null && !registryName.getNamespace().equals("minecraft")) {
+                        shouldAdd = true;
+                    }
+                }
+            }
+            
+            // 斧優先の場合
+            if (shouldAdd) {
+                if (preferAxe && item instanceof AxeItem) {
+                    filteredWeapons.add(item);
+                } else if (!preferAxe && item instanceof SwordItem) {
+                    filteredWeapons.add(item);
+                } else if (random.nextFloat() < 0.3f) {
+                    filteredWeapons.add(item);
+                }
+            }
+        }
+        
+        // ランダムに選択
+        if (!filteredWeapons.isEmpty()) {
+            Item selectedWeapon = filteredWeapons.get(random.nextInt(filteredWeapons.size()));
+            return new ItemStack(selectedWeapon);
+        }
+        
+        // デフォルト
+        return new ItemStack(tier == 0 ? Items.WOODEN_SWORD : (tier == 1 ? Items.IRON_SWORD : Items.DIAMOND_SWORD));
+    }
+    
+    // ランダムな色を生成（ティアに応じた色の傾向）
+    private static int getRandomArmorColor(RandomSource random, int tier) {
+        if (tier == 0) {
+            // 通常: 茶色・グレー系
+            int[] colors = {
+                0x8B4513, // サドルブラウン
+                0x696969, // ディムグレー
+                0x654321, // ダークブラウン
+                0x808080, // グレー
+                0x5C4033, // ダークチョコレート
+                0x704214  // セピア
+            };
+            return colors[random.nextInt(colors.length)];
+        } else if (tier == 1) {
+            // 精鋭: 赤・青系
+            int[] colors = {
+                0x8B0000, // ダークレッド
+                0x4B0082, // インディゴ
+                0x191970, // ミッドナイトブルー
+                0x800020, // バーガンディ
+                0x483D8B, // ダークスレートブルー
+                0x2F4F4F  // ダークスレートグレー
+            };
+            return colors[random.nextInt(colors.length)];
+        } else {
+            // チャンピオン: 黒・紫・金系
+            int[] colors = {
+                0x1C1C1C, // 濃い黒
+                0x4B0082, // インディゴ
+                0x6A0DAD, // パープル
+                0x301934, // ダークパープル
+                0xB8860B, // ダークゴールデンロッド
+                0x8B008B  // ダークマゼンタ
+            };
+            return colors[random.nextInt(colors.length)];
+        }
+    }
+    
+    @SubscribeEvent
+    public static void onEntityJoinWorld(EntityJoinLevelEvent event) {
+        if (!CustomDifficultyCommand.isTrueCrafterEnabled()) {
+            return;
+        }
+        
+        if (!(event.getEntity() instanceof Monster monster)) {
+            return;
+        }
+        
+        if (VersionHelper.getLevel(monster) == null || monster.level().isClientSide) {
+            return;
+        }
+        
+        UUID entityId = monster.getUUID();
+        
+        // すでに強化済みならスキップ
+        if (enhancedEntities.contains(entityId)) {
+            return;
+        }
+        
+        // サーバーの次のティックで処理（エンティティが完全に初期化された後）
+        if (VersionHelper.getLevel(monster) instanceof ServerLevel serverLevel) {
+            serverLevel.getServer().execute(() -> {
+                try {
+                    enhanceMonster(monster);
+                    enhancedEntities.add(entityId);
+
+                    // ゾンビにBreakDoorGoalを追加（ドア破壊AI）
+                    if (monster instanceof Zombie zombie) {
+                        zombie.goalSelector.addGoal(1, new BreakDoorGoal(zombie, e -> true));
+                    }
+                } catch (Exception e) {
+                    // エラーをログに記録するが、クラッシュは防ぐ
+                    System.err.println("Failed to enhance monster: " + e.getMessage());
+                }
+            });
+        }
+    }
+    
+    private static void enhanceMonster(Monster monster) {
+        if (monster instanceof Skeleton skeleton) {
+            enhanceSkeleton(skeleton);
+        } else if (monster instanceof Zombie zombie) {
+            enhanceZombie(zombie);
+        } else if (monster instanceof Spider spider) {
+            enhanceSpider(spider);
+        } else if (monster instanceof Creeper creeper) {
+            enhanceCreeper(creeper);
+        } else if (monster instanceof Witch witch) {
+            enhanceWitch(witch);
+        }
+    }
+    
+    private static void enhanceSkeleton(Skeleton skeleton) {
+        RandomSource random = skeleton.getRandom();
+        CustomDifficulty diff = CustomDifficultyCommand.getCurrentDifficulty();
+
+        // ティアシステム — 難易度のeliteSpawnChanceで精鋭/チャンピオン出現率が変化
+        int tier;
+        float roll = random.nextFloat();
+        if (roll < diff.getEliteSpawnChance()) {
+            tier = 2; // チャンピオン
+        } else if (roll < diff.getEliteSpawnChance() + 0.15f + diff.getAiLevel() * 0.05f) {
+            tier = 1; // 精鋭
+        } else {
+            tier = 0; // 通常
+        }
+        
+        // 弓の設定（ティアに応じて強化）
+        ItemStack bow = new ItemStack(Items.BOW);
+        if (tier == 0) {
+            // 通常スケルトン
+            bow.enchant(Enchantments.POWER_ARROWS, 1);
+            if (random.nextBoolean()) {
+                bow.enchant(Enchantments.PUNCH_ARROWS, 1);
+            }
+        } else if (tier == 1) {
+            // 精鋭スケルトン
+            bow.enchant(Enchantments.POWER_ARROWS, 2 + random.nextInt(2));
+            bow.enchant(Enchantments.PUNCH_ARROWS, 1);
+            if (random.nextFloat() < 0.3f) {
+                bow.enchant(Enchantments.FLAMING_ARROWS, 1);
+            }
+        } else {
+            // チャンピオンスケルトン
+            bow.enchant(Enchantments.POWER_ARROWS, 3 + random.nextInt(2));
+            bow.enchant(Enchantments.PUNCH_ARROWS, 2);
+            bow.enchant(Enchantments.FLAMING_ARROWS, 1);
+            if (random.nextFloat() < 0.5f) {
+                bow.enchant(Enchantments.INFINITY_ARROWS, 1);
+            }
+        }
+        skeleton.setItemSlot(EquipmentSlot.MAINHAND, bow);
+        
+        // 防具の設定（ランダム）
+        int armorColor = getRandomArmorColor(random, tier);
+        if (tier == 0) {
+            // 通常: 軽装
+            if (random.nextFloat() < 0.6f) {
+                if (random.nextBoolean()) {
+                    ItemStack helmet = createColoredLeatherArmor(new ItemStack(Items.LEATHER_HELMET), armorColor);
+                    skeleton.setItemSlot(EquipmentSlot.HEAD, helmet);
+                } else {
+                    skeleton.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.CHAINMAIL_HELMET));
+                }
+            }
+            if (random.nextFloat() < 0.3f) {
+                ItemStack chestplate = createColoredLeatherArmor(new ItemStack(Items.LEATHER_CHESTPLATE), armorColor);
+                skeleton.setItemSlot(EquipmentSlot.CHEST, chestplate);
+            }
+        } else if (tier == 1) {
+            // 精鋭: 中装
+            skeleton.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.CHAINMAIL_HELMET));
+            if (random.nextFloat() < 0.7f) {
+                skeleton.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.CHAINMAIL_CHESTPLATE));
+            }
+            if (random.nextFloat() < 0.5f) {
+                skeleton.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.CHAINMAIL_LEGGINGS));
+            }
+        } else {
+            // チャンピオン: 重装
+            ItemStack helmet = new ItemStack(Items.IRON_HELMET);
+            helmet.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + random.nextInt(3));
+            skeleton.setItemSlot(EquipmentSlot.HEAD, helmet);
+            
+            ItemStack chestplate = new ItemStack(Items.IRON_CHESTPLATE);
+            if (random.nextFloat() < 0.5f) {
+                chestplate.enchant(Enchantments.PROJECTILE_PROTECTION, 2);
+            }
+            skeleton.setItemSlot(EquipmentSlot.CHEST, chestplate);
+            
+            if (random.nextFloat() < 0.7f) {
+                skeleton.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.IRON_LEGGINGS));
+            }
+            if (random.nextFloat() < 0.5f) {
+                skeleton.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.IRON_BOOTS));
+            }
+        }
+        
+        // 盾の設定（ティアが高いほど確率が上がる）
+        float shieldChance = tier == 0 ? 0.2f : (tier == 1 ? 0.5f : 0.8f);
+        if (random.nextFloat() < shieldChance) {
+            skeleton.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.SHIELD));
+        }
+        
+        // 近接武器を準備（ティアに応じて）
+        ItemStack sword;
+        if (tier == 0) {
+            sword = new ItemStack(random.nextBoolean() ? Items.STONE_SWORD : Items.IRON_SWORD);
+        } else if (tier == 1) {
+            sword = new ItemStack(Items.IRON_SWORD);
+            sword.enchant(Enchantments.SHARPNESS, 1 + random.nextInt(2));
+        } else {
+            sword = new ItemStack(random.nextFloat() < 0.3f ? Items.DIAMOND_SWORD : Items.IRON_SWORD);
+            sword.enchant(Enchantments.SHARPNESS, 2 + random.nextInt(2));
+            if (random.nextFloat() < 0.3f) {
+                sword.enchant(Enchantments.FIRE_ASPECT, 1);
+            }
+        }
+        
+        MobEnhancementData data = enhancementData.computeIfAbsent(skeleton.getUUID(), k -> new MobEnhancementData());
+        data.meleeWeapon = sword;
+        data.rangedWeapon = bow;
+        data.isEnhanced = true;
+        
+        // ドロップ率を0に
+        skeleton.setDropChance(EquipmentSlot.MAINHAND, 0.0f);
+        skeleton.setDropChance(EquipmentSlot.HEAD, 0.0f);
+        skeleton.setDropChance(EquipmentSlot.CHEST, 0.0f);
+        skeleton.setDropChance(EquipmentSlot.LEGS, 0.0f);
+        skeleton.setDropChance(EquipmentSlot.FEET, 0.0f);
+        skeleton.setDropChance(EquipmentSlot.OFFHAND, 0.0f);
+        
+        // ステータス強化（ティアに応じて）
+        if (skeleton.getAttribute(Attributes.MAX_HEALTH) != null) {
+            double health = tier == 0 ? 20.0 + random.nextInt(10) : (tier == 1 ? 30.0 + random.nextInt(10) : 40.0 + random.nextInt(20));
+            skeleton.getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
+            skeleton.setHealth((float)health);
+        }
+        if (skeleton.getAttribute(Attributes.MOVEMENT_SPEED) != null) {
+            double speed = 0.25 + (tier * 0.03) + (random.nextFloat() * 0.05);
+            skeleton.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(speed);
+        }
+        if (skeleton.getAttribute(Attributes.FOLLOW_RANGE) != null) {
+            skeleton.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(16.0 + tier * 4.0);
+        }
+        
+        // AIゴールの追加は避ける（ConcurrentModificationExceptionを防ぐため）
+        // 代わりにデータを保存して、LivingTickEventで処理する
+    }
+    
+    private static void enhanceZombie(Zombie zombie) {
+        RandomSource random = zombie.getRandom();
+        CustomDifficulty diff = CustomDifficultyCommand.getCurrentDifficulty();
+
+        // ティアシステム — 難易度のeliteSpawnChanceで戦士/バーサーカー出現率が変化
+        int tier;
+        float roll = random.nextFloat();
+        if (roll < diff.getEliteSpawnChance()) {
+            tier = 2; // バーサーカー
+        } else if (roll < diff.getEliteSpawnChance() + 0.15f + diff.getAiLevel() * 0.05f) {
+            tier = 1; // 戦士
+        } else {
+            tier = 0; // 通常
+        }
+        
+        // 防具の設定（ティアとランダム性）
+        int armorColor = getRandomArmorColor(random, tier);
+        if (tier == 0) {
+            // 通常ゾンビ: 部分的な装備
+            if (random.nextFloat() < 0.7f) {
+                if (random.nextBoolean()) {
+                    ItemStack helmet = createColoredLeatherArmor(new ItemStack(Items.LEATHER_HELMET), armorColor);
+                    zombie.setItemSlot(EquipmentSlot.HEAD, helmet);
+                } else {
+                    zombie.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.CHAINMAIL_HELMET));
+                }
+            }
+            if (random.nextFloat() < 0.5f) {
+                ItemStack chestplate = createColoredLeatherArmor(new ItemStack(Items.LEATHER_CHESTPLATE), armorColor);
+                zombie.setItemSlot(EquipmentSlot.CHEST, chestplate);
+            }
+            if (random.nextFloat() < 0.3f) {
+                ItemStack leggings = createColoredLeatherArmor(new ItemStack(Items.LEATHER_LEGGINGS), armorColor);
+                zombie.setItemSlot(EquipmentSlot.LEGS, leggings);
+            }
+            if (random.nextFloat() < 0.4f) {
+                ItemStack boots = createColoredLeatherArmor(new ItemStack(Items.LEATHER_BOOTS), armorColor);
+                zombie.setItemSlot(EquipmentSlot.FEET, boots);
+            }
+        } else if (tier == 1) {
+            // 戦士ゾンビ: チェインメイル主体（一部染色革）
+            zombie.setItemSlot(EquipmentSlot.HEAD, new ItemStack(
+                random.nextFloat() < 0.3f ? Items.IRON_HELMET : Items.CHAINMAIL_HELMET
+            ));
+            // 胸部は革とチェインメイルの混合
+            if (random.nextFloat() < 0.8f) {
+                if (random.nextFloat() < 0.2f) {
+                    // 20%の確率で染色革
+                    ItemStack chestplate = createColoredLeatherArmor(new ItemStack(Items.LEATHER_CHESTPLATE), armorColor);
+                    chestplate.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1);
+                    zombie.setItemSlot(EquipmentSlot.CHEST, chestplate);
+                } else {
+                    zombie.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.CHAINMAIL_CHESTPLATE));
+                }
+            }
+            if (random.nextFloat() < 0.7f) {
+                zombie.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.CHAINMAIL_LEGGINGS));
+            }
+            if (random.nextFloat() < 0.6f) {
+                if (random.nextFloat() < 0.15f) {
+                    // 15%の確率で染色革ブーツ
+                    ItemStack boots = createColoredLeatherArmor(new ItemStack(Items.LEATHER_BOOTS), armorColor);
+                    boots.enchant(Enchantments.FALL_PROTECTION, 2);
+                    zombie.setItemSlot(EquipmentSlot.FEET, boots);
+                } else {
+                    zombie.setItemSlot(EquipmentSlot.FEET, new ItemStack(
+                        random.nextBoolean() ? Items.CHAINMAIL_BOOTS : Items.IRON_BOOTS
+                    ));
+                }
+            }
+        } else {
+            // バーサーカーゾンビ: フル鉄装備
+            ItemStack helmet = new ItemStack(random.nextFloat() < 0.2f ? Items.DIAMOND_HELMET : Items.IRON_HELMET);
+            if (random.nextFloat() < 0.5f) {
+                helmet.enchant(Enchantments.ALL_DAMAGE_PROTECTION, 1 + random.nextInt(2));
+            }
+            zombie.setItemSlot(EquipmentSlot.HEAD, helmet);
+            
+            ItemStack chestplate = new ItemStack(Items.IRON_CHESTPLATE);
+            if (random.nextFloat() < 0.4f) {
+                chestplate.enchant(Enchantments.THORNS, 1 + random.nextInt(2));
+            }
+            zombie.setItemSlot(EquipmentSlot.CHEST, chestplate);
+            
+            zombie.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.IRON_LEGGINGS));
+            zombie.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.IRON_BOOTS));
+        }
+        
+        // 武器の設定
+        ItemStack weapon;
+        if (tier == 0) {
+            // 通常: 木〜鉄の武器
+            if (random.nextFloat() < 0.3f) {
+                weapon = ItemStack.EMPTY; // 素手
+            } else if (random.nextFloat() < 0.5f) {
+                weapon = new ItemStack(Items.WOODEN_SWORD);
+            } else {
+                weapon = new ItemStack(random.nextBoolean() ? Items.STONE_SWORD : Items.IRON_SWORD);
+            }
+        } else if (tier == 1) {
+            // 戦士: 鉄武器中心
+            if (random.nextFloat() < 0.3f) {
+                // 斧使い
+                weapon = new ItemStack(Items.IRON_AXE);
+                weapon.enchant(Enchantments.SHARPNESS, 1);
+            } else {
+                weapon = new ItemStack(Items.IRON_SWORD);
+                weapon.enchant(Enchantments.SHARPNESS, 1 + random.nextInt(2));
+            }
+        } else {
+            // バーサーカー: 強力な武器
+            if (random.nextFloat() < 0.2f) {
+                // ダイヤ武器
+                weapon = new ItemStack(random.nextBoolean() ? Items.DIAMOND_SWORD : Items.DIAMOND_AXE);
+                weapon.enchant(Enchantments.SHARPNESS, 2 + random.nextInt(2));
+            } else {
+                // エンチャント付き鉄武器
+                weapon = new ItemStack(random.nextFloat() < 0.4f ? Items.IRON_AXE : Items.IRON_SWORD);
+                weapon.enchant(Enchantments.SHARPNESS, 2 + random.nextInt(2));
+                if (random.nextFloat() < 0.3f) {
+                    weapon.enchant(Enchantments.KNOCKBACK, 1);
+                }
+            }
+        }
+        
+        if (!weapon.isEmpty()) {
+            zombie.setItemSlot(EquipmentSlot.MAINHAND, weapon);
+        }
+        
+        // 盾の設定（ティアが高いほど確率上昇）
+        float shieldChance = tier == 0 ? 0.1f : (tier == 1 ? 0.4f : 0.7f);
+        if (random.nextFloat() < shieldChance && !weapon.isEmpty()) {
+            zombie.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.SHIELD));
+        } else if (tier == 2 && random.nextFloat() < 0.2f) {
+            // バーサーカーの一部は両手武器
+            zombie.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.IRON_SWORD));
+        }
+        
+        // ドロップ率を0に
+        zombie.setDropChance(EquipmentSlot.HEAD, 0.0f);
+        zombie.setDropChance(EquipmentSlot.CHEST, 0.0f);
+        zombie.setDropChance(EquipmentSlot.LEGS, 0.0f);
+        zombie.setDropChance(EquipmentSlot.FEET, 0.0f);
+        zombie.setDropChance(EquipmentSlot.MAINHAND, 0.0f);
+        zombie.setDropChance(EquipmentSlot.OFFHAND, 0.0f);
+        
+        // ステータス強化（ティアに応じて）
+        if (zombie.getAttribute(Attributes.MAX_HEALTH) != null) {
+            double health = tier == 0 ? 25.0 + random.nextInt(10) : (tier == 1 ? 35.0 + random.nextInt(15) : 50.0 + random.nextInt(20));
+            zombie.getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
+            zombie.setHealth((float)health);
+        }
+        if (zombie.getAttribute(Attributes.MOVEMENT_SPEED) != null) {
+            double speed = tier == 0 ? 0.23 : (tier == 1 ? 0.25 : 0.28);
+            speed += random.nextFloat() * 0.03;
+            zombie.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(speed);
+        }
+        if (zombie.getAttribute(Attributes.KNOCKBACK_RESISTANCE) != null) {
+            zombie.getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(0.2 + tier * 0.2);
+        }
+        if (zombie.getAttribute(Attributes.ARMOR) != null) {
+            zombie.getAttribute(Attributes.ARMOR).setBaseValue(tier * 2.0);
+        }
+        if (zombie.getAttribute(Attributes.ATTACK_DAMAGE) != null) {
+            zombie.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(3.0 + tier * 2.0);
+        }
+        
+        // ドア破壊能力（ティアが高いほど確率上昇）
+        zombie.setCanBreakDoors(tier > 0 || random.nextFloat() < 0.3f);
+
+        // 強化データを作成（ブロック設置/破壊で必要）
+        MobEnhancementData data = enhancementData.computeIfAbsent(zombie.getUUID(), k -> new MobEnhancementData());
+        data.isEnhanced = true;
+        data.mobTier = tier;
+    }
+    
+    private static void enhanceSpider(Spider spider) {
+        // ステータス強化
+        if (spider.getAttribute(Attributes.MAX_HEALTH) != null) {
+            spider.getAttribute(Attributes.MAX_HEALTH).setBaseValue(24.0);
+            spider.setHealth(24.0f);
+        }
+        if (spider.getAttribute(Attributes.MOVEMENT_SPEED) != null) {
+            spider.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.35);
+        }
+        if (spider.getAttribute(Attributes.ATTACK_DAMAGE) != null) {
+            spider.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(5.0);
+        }
+        
+        // 強化データを作成
+        enhancementData.computeIfAbsent(spider.getUUID(), k -> new MobEnhancementData()).isEnhanced = true;
+    }
+
+    private static void enhanceCreeper(Creeper creeper) {
+        // ステータス強化
+        if (creeper.getAttribute(Attributes.MAX_HEALTH) != null) {
+            creeper.getAttribute(Attributes.MAX_HEALTH).setBaseValue(30.0);
+            creeper.setHealth(30.0f);
+        }
+        if (creeper.getAttribute(Attributes.MOVEMENT_SPEED) != null) {
+            creeper.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.3);
+        }
+        if (creeper.getAttribute(Attributes.FOLLOW_RANGE) != null) {
+            creeper.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(20.0);
+        }
+        // 強化データを作成
+        enhancementData.computeIfAbsent(creeper.getUUID(), k -> new MobEnhancementData()).isEnhanced = true;
+    }
+
+    private static void enhanceWitch(Witch witch) {
+        // ステータス強化
+        if (witch.getAttribute(Attributes.MAX_HEALTH) != null) {
+            witch.getAttribute(Attributes.MAX_HEALTH).setBaseValue(35.0);
+            witch.setHealth(35.0f);
+        }
+        if (witch.getAttribute(Attributes.MOVEMENT_SPEED) != null) {
+            witch.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.3);
+        }
+        // 強化データを作成
+        enhancementData.computeIfAbsent(witch.getUUID(), k -> new MobEnhancementData()).isEnhanced = true;
+    }
+
+    // 毎ティック更新処理
+    @SubscribeEvent
+    public static void onLivingUpdate(LivingEvent.LivingTickEvent event) {
+        if (!CustomDifficultyCommand.isTrueCrafterEnabled()) {
+            return;
+        }
+        
+        if (!(event.getEntity() instanceof Monster monster)) {
+            return;
+        }
+        
+        if (VersionHelper.getLevel(monster) == null || monster.level().isClientSide) {
+            return;
+        }
+        
+        UUID entityId = monster.getUUID();
+        if (!enhancedEntities.contains(entityId)) {
+            return;
+        }
+        
+        MobEnhancementData data = enhancementData.get(entityId);
+        if (data == null) {
+            return;
+        }
+        
+        // クールダウンを減らす
+        if (data.weaponSwitchCooldown > 0) {
+            data.weaponSwitchCooldown--;
+        }
+        if (data.dodgeCooldown > 0) {
+            data.dodgeCooldown--;
+        }
+        if (data.blockPlaceCooldown > 0) {
+            data.blockPlaceCooldown--;
+        }
+        
+        // スケルトンの武器切り替え処理（AIゴールを追加せずに直接処理）
+        if (monster instanceof Skeleton skeleton) {
+            // 武器データが初期化されていない場合は初期化
+            if (data.meleeWeapon.isEmpty() || data.rangedWeapon.isEmpty()) {
+                // デフォルト武器を設定
+                if (data.rangedWeapon.isEmpty()) {
+                    data.rangedWeapon = skeleton.getMainHandItem().copy();
+                    if (data.rangedWeapon.isEmpty()) {
+                        data.rangedWeapon = new ItemStack(Items.BOW);
+                    }
+                }
+                if (data.meleeWeapon.isEmpty()) {
+                    data.meleeWeapon = new ItemStack(Items.IRON_SWORD);
+                }
+            }
+            
+            // 武器切り替え処理
+            if (data.weaponSwitchCooldown == 0) {
+                LivingEntity target = skeleton.getTarget();
+                if (target != null) {
+                    double distance = skeleton.distanceToSqr(target);
+                    ItemStack currentWeapon = skeleton.getMainHandItem();
+                    
+                    // 近距離（4ブロック以内）なら剣に切り替え
+                    if (distance < 16.0) {
+                        if (!currentWeapon.is(data.meleeWeapon.getItem())) {
+                            skeleton.setItemSlot(EquipmentSlot.MAINHAND, data.meleeWeapon.copy());
+                            data.weaponSwitchCooldown = 40; // 2秒のクールダウン
+                            skeleton.setAggressive(true);
+                        }
+                    }
+                    // 遠距離（4ブロック以上）なら弓に切り替え
+                    else if (distance >= 25.0) { // 5ブロック以上
+                        if (!currentWeapon.is(data.rangedWeapon.getItem())) {
+                            skeleton.setItemSlot(EquipmentSlot.MAINHAND, data.rangedWeapon.copy());
+                            data.weaponSwitchCooldown = 40;
+                            skeleton.setAggressive(false);
+                        }
+                    }
+                }
+            }
+            
+            // 盾防御処理（AIゴールを使わずに直接処理）
+            if (!skeleton.getOffhandItem().isEmpty() && skeleton.getOffhandItem().is(Items.SHIELD)) {
+                LivingEntity target = skeleton.getTarget();
+                if (target != null && skeleton.distanceToSqr(target) < 16.0) {
+                    // 近距離で20%の確率で盾を構える
+                    if (skeleton.getRandom().nextFloat() < 0.2f && !skeleton.isUsingItem()) {
+                        skeleton.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
+                    }
+                }
+            }
+        }
+        
+        // ============================
+        // 全モンスター共通: スプリント・リープ・ブロック設置/破壊
+        // NESM + AtomicStryker MM_Sprint + EnhancedAI 統合
+        // ============================
+        CustomDifficulty diff = CustomDifficultyCommand.getCurrentDifficulty();
+        LivingEntity commonTarget = monster.getTarget();
+
+        // 最大難易度(aiLevel 5): 一度敵対したら絶対に忘れない
+        if (diff.getAiLevel() >= 5 && commonTarget == null && data.lastTargetUUID != null) {
+            // 前回のターゲットを再取得
+            if (monster.level() instanceof ServerLevel serverLevel) {
+                var entity = serverLevel.getEntity(data.lastTargetUUID);
+                if (entity instanceof LivingEntity lastTarget && lastTarget.isAlive()) {
+                    monster.setTarget(lastTarget);
+                    commonTarget = lastTarget;
+                }
+            }
+        }
+        // ターゲットを記憶
+        if (commonTarget != null) {
+            data.lastTargetUUID = commonTarget.getUUID();
+        }
+
+        // aiLevel 4以上: ターゲットを見失いにくい（追跡範囲外でも維持）
+        if (diff.getAiLevel() >= 4 && commonTarget != null && commonTarget.isAlive()) {
+            // FOLLOW_RANGEを超えてもターゲットを維持（128ブロックまで）
+            if (monster.distanceToSqr(commonTarget) < 128.0 * 128.0) {
+                monster.setTarget(commonTarget);
+            }
+        }
+
+        // スプリント/リープのクールダウン減少
+        if (data.sprintCooldown > 0) data.sprintCooldown--;
+        if (data.leapCooldownAll > 0) data.leapCooldownAll--;
+        if (data.sprintDuration > 0) data.sprintDuration--;
+
+        if (commonTarget != null) {
+            double toTargetX = commonTarget.getX() - monster.getX();
+            double toTargetZ = commonTarget.getZ() - monster.getZ();
+            double horizontalDist = Math.sqrt(toTargetX * toTargetX + toTargetZ * toTargetZ);
+            double yDiff = commonTarget.getY() - monster.getY();
+            double distSq = monster.distanceToSqr(commonTarget);
+
+            // === 最短距離追跡: 10tickごとにパスを強制更新 ===
+            if (monster.tickCount % 10 == 0 && horizontalDist > 1.5) {
+                monster.getNavigation().moveTo(commonTarget, 1.0);
+            }
+
+            // === スプリント (AtomicStryker MM_Sprint方式: 1.5x速度バースト) ===
+            if (data.sprintCooldown == 0 && horizontalDist > 5.0 && horizontalDist < 32.0
+                && !(monster instanceof Creeper)) {
+                // スプリント開始: 移動方向に1.5倍の速度を適用
+                Vec3 motion = monster.getDeltaMovement();
+                double motionX = motion.x * 1.5;
+                double motionZ = motion.z * 1.5;
+                monster.setDeltaMovement(motionX, motion.y, motionZ);
+                monster.setSprinting(true);
+                data.isSprinting = true;
+                data.sprintDuration = 40; // 2秒間スプリント
+                data.sprintCooldown = 100; // 5秒クールダウン
+            }
+
+            // スプリント中: 毎tick速度ブースト維持
+            if (data.isSprinting && data.sprintDuration > 0) {
+                Vec3 motion = monster.getDeltaMovement();
+                if (Math.abs(motion.x) > 0.01 || Math.abs(motion.z) > 0.01) {
+                    monster.setDeltaMovement(motion.x * 1.2, motion.y, motion.z * 1.2);
+                }
+            } else if (data.isSprinting) {
+                data.isSprinting = false;
+                monster.setSprinting(false);
+            }
+
+            // === リープ/飛びつき (aiLevel 3以上の近接モンスター) ===
+            if (diff.getAiLevel() >= 3 && data.leapCooldownAll == 0 && monster.onGround()
+                && distSq > 9.0 && distSq < 49.0 // 3-7ブロック
+                && !(monster instanceof Creeper)
+                && !(monster instanceof Skeleton)) {
+                Vec3 leapDir = commonTarget.position().subtract(monster.position()).normalize();
+                monster.setDeltaMovement(leapDir.x * 0.9, 0.42, leapDir.z * 0.9);
+                monster.hasImpulse = true;
+                data.leapCooldownAll = 60; // 3秒クールダウン
+            }
+
+            // === ブロック処理の方向計算 ===
+            int dirX = 0, dirZ = 0;
+            if (horizontalDist > 0.5) {
+                dirX = (int) Math.round(toTargetX / horizontalDist);
+                dirZ = (int) Math.round(toTargetZ / horizontalDist);
+                if (dirX == 0 && dirZ == 0) dirX = toTargetX >= 0 ? 1 : -1;
+            } else {
+                dirX = monster.getDirection().getStepX();
+                dirZ = monster.getDirection().getStepZ();
+            }
+
+            // === NESM式ブロック検出: 前方にソリッドブロックがあるかを直接チェック ===
+            BlockPos mobPos = monster.blockPosition();
+            BlockPos frontFeet = mobPos.offset(dirX, 0, dirZ);
+            BlockPos frontBody = mobPos.offset(dirX, 1, dirZ);
+            boolean frontBlocked = monster.level().getBlockState(frontFeet).isSolid()
+                                && monster.level().getBlockState(frontBody).isSolid();
+            boolean footBlocked = monster.level().getBlockState(frontFeet).isSolid();
+
+            // 位置追跡（スタック検出補助）
+            double dx = monster.getX() - data.lastX;
+            double dz = monster.getZ() - data.lastZ;
+            double moveSq = dx * dx + dz * dz;
+            data.lastX = monster.getX();
+            data.lastZ = monster.getZ();
+            if (moveSq < 0.01) {
+                data.standstillTicks++;
+            } else if (!data.bridgeMode) {
+                data.standstillTicks = Math.max(0, data.standstillTicks - 2);
+            }
+
+            // NESM方式: canReach()チェック — ブロック操作の主要トリガー
+            boolean pathUnreachable = false;
+            try {
+                var path = monster.getNavigation().getPath();
+                if (path != null && !path.canReach()) pathUnreachable = true;
+                if (path == null && monster.getNavigation().isDone() && distSq > 4.0) pathUnreachable = true;
+            } catch (Exception ignored) {}
+
+            // ブロック操作条件 (NESM方式: canReachが主、補助で前方ブロック・スタック)
+            boolean shouldDig = pathUnreachable || footBlocked || frontBlocked || data.standstillTicks >= 3;
+
+            // --- ブロック破壊処理 (NESM MobDamageBlock方式: 前方検出で即開始) ---
+            if (data.blockBreakCooldown == 0 && diff.isBlockBreakEnabled() && shouldDig) {
+                BlockPos above1 = mobPos.above(1);
+                BlockPos above2 = mobPos.above(2);
+                BlockPos belowFeet = mobPos.below();
+
+                BlockPos[] targets;
+                if (yDiff > 1.5) {
+                    targets = new BlockPos[]{frontFeet, frontBody, above2, above1};
+                } else if (yDiff < -1.5) {
+                    targets = new BlockPos[]{frontFeet, frontBody, belowFeet};
+                } else {
+                    targets = new BlockPos[]{frontFeet, frontBody};
+                }
+
+                for (BlockPos checkPos : targets) {
+                    BlockState state = monster.level().getBlockState(checkPos);
+                    if (!state.isAir() && !state.liquid() &&
+                        state.getDestroySpeed(monster.level(), checkPos) >= 0 &&
+                        state.getDestroySpeed(monster.level(), checkPos) < 50.0f) {
+
+                        if (checkPos.equals(data.breakingBlockPos)) {
+                            data.blockBreakProgress++;
+                            int stage = Math.min(data.blockBreakProgress / 3, 9);
+                            if (monster.level() instanceof ServerLevel serverLevel) {
+                                serverLevel.destroyBlockProgress(monster.getId(), checkPos, stage);
+                            }
+                            if (data.blockBreakProgress % 6 == 0) {
+                                monster.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                            }
+                            float hardness = state.getDestroySpeed(monster.level(), checkPos);
+                            int breakTime = (int)(hardness * 5) + 10;
+                            if (data.blockBreakProgress >= breakTime) {
+                                monster.level().destroyBlock(checkPos, false);
+                                if (monster.level() instanceof ServerLevel serverLevel) {
+                                    serverLevel.destroyBlockProgress(monster.getId(), checkPos, -1);
+                                }
+                                data.blockBreakProgress = 0;
+                                data.breakingBlockPos = null;
+                                data.blockBreakCooldown = 5; // NESM: EntityDigDelay=5
+                                data.standstillTicks = 0;
+                            }
+                        } else {
+                            data.breakingBlockPos = checkPos.immutable();
+                            data.blockBreakProgress = 0;
+                        }
+                        break;
+                    }
+                }
+            } else if (data.blockBreakCooldown > 0) {
+                data.blockBreakCooldown--;
+            }
+
+            // --- ブロック設置処理 (NESM方式: canReach主体、スタック時間不要) ---
+            if (diff.isBlockPlaceEnabled() && data.blockPlaceCooldown == 0 && shouldDig) {
+                // ピラーアップ (NESM MobBuildUp方式)
+                if (!data.bridgeMode && yDiff > 1.5 && horizontalDist < 8.0) {
+                    if (canPlaceAt(monster, mobPos) &&
+                        monster.level().getBlockState(mobPos.below()).isSolid()) {
+                        placeTempBlock(monster, mobPos);
+                        double cx = Math.floor(monster.getX()) + 0.5;
+                        double cz = Math.floor(monster.getZ()) + 0.5;
+                        monster.teleportTo(cx, monster.getY() + 1.0, cz);
+                        data.blockPlaceCooldown = 5;
+                    }
+                    if (Math.abs(yDiff) <= 1.5) {
+                        data.bridgeMode = true;
+                        data.bridgeEndTimer = 0;
+                        data.standstillTicks = 0;
+                    }
+                }
+                // 橋建設 (NESM MobBuildBridge方式)
+                if (data.blockPlaceCooldown == 0 && (data.bridgeMode || horizontalDist > 2.0)) {
+                    BlockPos belowFront = frontFeet.below();
+                    BlockState belowState = monster.level().getBlockState(belowFront);
+                    if ((belowState.isAir() || belowState.liquid()) && canPlaceAt(monster, belowFront)) {
+                        placeTempBlock(monster, belowFront);
+                        data.blockPlaceCooldown = 5;
+                        data.bridgeMode = true;
+                        BlockPos belowFront2 = frontFeet.offset(dirX, -1, dirZ);
+                        if (canPlaceAt(monster, belowFront2)) placeTempBlock(monster, belowFront2);
+                    }
+                }
+                // 橋モード管理
+                if (data.bridgeMode) {
+                    BlockPos below = mobPos.below();
+                    if (!monster.level().getBlockState(below).isSolid()) data.bridgeEndTimer++;
+                    else data.bridgeEndTimer = 0;
+                    if (data.bridgeEndTimer >= 30) { data.bridgeMode = false; data.bridgeEndTimer = 0; }
+                    if (yDiff < -2.0) {
+                        BlockPos feetBelow = mobPos.below();
+                        if (!monster.level().getBlockState(feetBelow).isAir()) {
+                            monster.level().destroyBlock(feetBelow, false);
+                        }
+                        data.bridgeMode = false;
+                    }
+                }
+            }
+        } else {
+            // ターゲットがいない場合リセット
+            if (data.breakingBlockPos != null) {
+                if (monster.level() instanceof ServerLevel serverLevel) {
+                    serverLevel.destroyBlockProgress(monster.getId(), data.breakingBlockPos, -1);
+                }
+                data.breakingBlockPos = null;
+                data.blockBreakProgress = 0;
+            }
+            data.bridgeMode = false;
+            data.standstillTicks = 0;
+            if (data.isSprinting) { data.isSprinting = false; monster.setSprinting(false); }
+        }
+
+        // ゾンビ固有: 盾防御
+        if (monster instanceof Zombie zombie) {
+            if (!zombie.getOffhandItem().isEmpty() && zombie.getOffhandItem().is(Items.SHIELD)) {
+                LivingEntity target = zombie.getTarget();
+                if (target != null && zombie.distanceToSqr(target) < 16.0) {
+                    if (zombie.getRandom().nextFloat() < 0.3f && !zombie.isUsingItem()) {
+                        zombie.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
+                    }
+                }
+            }
+        }
+        
+        // クモのクモの巣設置処理
+        if (monster instanceof Spider spider) {
+            LivingEntity target = spider.getTarget();
+            if (target != null && data.blockPlaceCooldown == 0) {
+                double distance = spider.distanceToSqr(target);
+                if (distance < 16.0 && spider.getRandom().nextFloat() < 0.1f) {
+                    BlockPos targetPos = target.blockPosition();
+                    // 最近破壊された位置 or 空気でない位置には再設置しない
+                    if (spider.level().getBlockState(targetPos).isAir()
+                        && !the_four_primitives_and_weapons.trait.MobTraitHandler.isWebRecentlyBroken(targetPos)) {
+                        spider.level().setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
+                        data.blockPlaceCooldown = 400; // 20秒のクールダウンに延長
+                        temporaryBlocks.put(targetPos, System.currentTimeMillis());
+                    }
+                }
+            }
+        }
+        
+        // 回避行動（全モンスター共通）
+        if (data.dodgeCooldown == 0 && monster.getTarget() != null) {
+            // 矢を検知して回避
+            List<AbstractArrow> arrows = monster.level().getEntitiesOfClass(
+                AbstractArrow.class, 
+                monster.getBoundingBox().inflate(3.0),
+                arrow -> arrow.getOwner() != monster && !arrow.isNoGravity()
+            );
+            
+            if (!arrows.isEmpty()) {
+                // 横に回避
+                Vec3 dodgeVec = new Vec3(
+                    monster.getRandom().nextGaussian() * 0.5,
+                    0.2,
+                    monster.getRandom().nextGaussian() * 0.5
+                );
+                monster.setDeltaMovement(monster.getDeltaMovement().add(dodgeVec));
+                data.dodgeCooldown = 20; // 1秒のクールダウン
+            }
+        }
+    }
+    
+    // ============================
+    // ブロック設置ヘルパー
+    // ============================
+
+    /** 指定位置にブロックを設置できるか（空気・草・水など、かつプレイヤー埋没を防止） */
+    private static boolean canPlaceAt(Monster monster, BlockPos pos) {
+        BlockState state = monster.level().getBlockState(pos);
+        boolean replaceable = state.isAir() || state.liquid() ||
+               state.is(Blocks.GRASS) || state.is(Blocks.TALL_GRASS) ||
+               state.is(Blocks.SNOW) || state.is(Blocks.VINE);
+        if (!replaceable) return false;
+        // プレイヤー埋没防止: 対象位置・直上にプレイヤーのAABBが重なるなら不可
+        return !isEntityBlocking(monster, pos);
+    }
+
+    /** 設置位置にプレイヤー/MobのAABBが重なっているかチェック（埋没・窒息防止） */
+    private static boolean isEntityBlocking(Monster monster, BlockPos pos) {
+        net.minecraft.world.phys.AABB blockBox = new net.minecraft.world.phys.AABB(
+            pos.getX(), pos.getY(), pos.getZ(),
+            pos.getX() + 1.0, pos.getY() + 1.0, pos.getZ() + 1.0
+        );
+        // プレイヤーが重なっていたら置かない
+        List<Player> players = monster.level().getEntitiesOfClass(Player.class, blockBox.inflate(0.05));
+        if (!players.isEmpty()) return true;
+        // 自分以外の生物でも埋没を避ける
+        List<LivingEntity> livings = monster.level().getEntitiesOfClass(LivingEntity.class, blockBox.inflate(0.05),
+            e -> e != monster);
+        return !livings.isEmpty();
+    }
+
+    /** 一時ブロック（mossy_cobblestone）を設置してマップに登録。プレイヤー埋没を防止 */
+    private static void placeTempBlock(Monster monster, BlockPos pos) {
+        // 二重チェック: 設置直前にエンティティが重なっていないか確認
+        if (isEntityBlocking(monster, pos)) return;
+        monster.level().setBlock(pos, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 3);
+        temporaryBlocks.put(pos, System.currentTimeMillis());
+    }
+
+    // カスタムAIゴール - スケルトンの盾防御（攻撃を妨げないように改良）
+    private static class SkeletonShieldGoal extends Goal {
+        private final Skeleton skeleton;
+        private int blockingTime = 0;
+        private int blockCooldown = 0;
+        private boolean wasHurt = false;
+        
+        public SkeletonShieldGoal(Skeleton skeleton) {
+            this.skeleton = skeleton;
+            // 攻撃AIと競合しないようにフラグを設定しない
+            this.setFlags(EnumSet.noneOf(Goal.Flag.class));
+        }
+        
+        @Override
+        public boolean canUse() {
+            // 盾を持っていて、ターゲットがいて、弓を使用中でない場合のみ
+            return !this.skeleton.getOffhandItem().isEmpty() 
+                && this.skeleton.getOffhandItem().getItem() == Items.SHIELD 
+                && this.skeleton.getTarget() != null
+                && !this.skeleton.isUsingItem(); // 弓を使用中は盾を使わない
+        }
+        
+        @Override
+        public void start() {
+            blockingTime = 0;
+            wasHurt = false;
+        }
+        
+        @Override
+        public void tick() {
+            // 弓を使用中なら盾は使わない
+            if (this.skeleton.getMainHandItem().getItem() == Items.BOW && this.skeleton.isUsingItem()) {
+                return;
+            }
+            
+            if (blockCooldown > 0) {
+                blockCooldown--;
+                return;
+            }
+            
+            LivingEntity target = this.skeleton.getTarget();
+            if (target == null) {
+                return;
+            }
+            
+            // ダメージを受けたかチェック
+            if (this.skeleton.getLastHurtByMob() != null && this.skeleton.getLastHurtByMobTimestamp() + 20 > this.skeleton.level().getGameTime()) {
+                wasHurt = true;
+            }
+            
+            double distance = this.skeleton.distanceToSqr(target);
+            
+            // 非常に近距離（3ブロック以内）またはダメージを受けた後のみ防御
+            if ((distance < 9.0 || wasHurt) && distance < 25.0) {
+                // ターゲットがこちらを向いている場合
+                Vec3 targetLook = target.getLookAngle();
+                Vec3 toSkeleton = this.skeleton.position().subtract(target.position()).normalize();
+                double dot = targetLook.dot(toSkeleton);
+                
+                // 非常に近いか、ダメージを受けた後で相手がこちらを向いている
+                if (distance < 4.0 || (wasHurt && dot > 0.3)) {
+                    // 盾を構える（オフハンドのみ）
+                    this.skeleton.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
+                    blockingTime++;
+                    
+                    // 0.5秒（10tick）防御したら一旦解除
+                    if (blockingTime > 10) {
+                        this.skeleton.stopUsingItem();
+                        blockCooldown = 60; // 3秒のクールダウン
+                        blockingTime = 0;
+                        wasHurt = false;
+                    }
+                } else {
+                    // 条件を満たさない場合は盾を下げる
+                    this.skeleton.stopUsingItem();
+                    blockingTime = 0;
+                }
+            } else {
+                // 遠距離では盾を使わない
+                blockingTime = 0;
+            }
+        }
+        
+        @Override
+        public void stop() {
+            this.skeleton.stopUsingItem();
+            blockingTime = 0;
+            wasHurt = false;
+        }
+        
+        @Override
+        public boolean canContinueToUse() {
+            // 弓を使用中なら継続しない
+            if (this.skeleton.getMainHandItem().getItem() == Items.BOW && this.skeleton.isUsingItem()) {
+                return false;
+            }
+            return this.skeleton.getTarget() != null;
+        }
+    }
+    
+    // カスタムAIゴール - ゾンビ用
+    private static class EnhancedZombieGoal extends Goal {
+        private final Zombie zombie;
+        private int leapCooldown = 0;
+        
+        public EnhancedZombieGoal(Zombie zombie) {
+            this.zombie = zombie;
+            this.setFlags(EnumSet.of(Goal.Flag.JUMP));
+        }
+        
+        @Override
+        public boolean canUse() {
+            return this.zombie.getTarget() != null;
+        }
+        
+        @Override
+        public void tick() {
+            if (leapCooldown > 0) {
+                leapCooldown--;
+                return;
+            }
+            
+            LivingEntity target = this.zombie.getTarget();
+            if (target == null) {
+                return;
+            }
+            
+            double distance = this.zombie.distanceToSqr(target);
+            
+            // リープアタック（距離が離れている時）
+            if (distance > 9.0 && distance < 36.0 && this.zombie.onGround()) {
+                Vec3 leapVec = target.position().subtract(this.zombie.position()).normalize();
+                this.zombie.setDeltaMovement(
+                    leapVec.x * 0.8, 
+                    0.4, 
+                    leapVec.z * 0.8
+                );
+                leapCooldown = 60; // 3秒のクールダウン
+            }
+        }
+    }
+    
+    // カスタムAIゴール - ゾンビの盾防御
+    private static class ZombieShieldGoal extends Goal {
+        private final Zombie zombie;
+        private int blockingTime = 0;
+        private int blockCooldown = 0;
+        
+        public ZombieShieldGoal(Zombie zombie) {
+            this.zombie = zombie;
+            this.setFlags(EnumSet.noneOf(Goal.Flag.class));
+        }
+        
+        @Override
+        public boolean canUse() {
+            return !this.zombie.getOffhandItem().isEmpty() 
+                && this.zombie.getOffhandItem().getItem() == Items.SHIELD 
+                && this.zombie.getTarget() != null;
+        }
+        
+        @Override
+        public void tick() {
+            if (blockCooldown > 0) {
+                blockCooldown--;
+                this.zombie.stopUsingItem();
+                return;
+            }
+            
+            LivingEntity target = this.zombie.getTarget();
+            if (target == null) {
+                this.zombie.stopUsingItem();
+                return;
+            }
+            
+            double distance = this.zombie.distanceToSqr(target);
+            
+            // 近距離で防御
+            if (distance < 16.0) {
+                Vec3 targetLook = target.getLookAngle();
+                Vec3 toZombie = this.zombie.position().subtract(target.position()).normalize();
+                double dot = targetLook.dot(toZombie);
+                
+                if (dot > 0.3 || distance < 4.0) {
+                    this.zombie.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
+                    blockingTime++;
+                    
+                    if (blockingTime > 30) {
+                        this.zombie.stopUsingItem();
+                        blockCooldown = 30;
+                        blockingTime = 0;
+                    }
+                } else {
+                    this.zombie.stopUsingItem();
+                    blockingTime = 0;
+                }
+            } else {
+                this.zombie.stopUsingItem();
+                blockingTime = 0;
+            }
+        }
+        
+        @Override
+        public void stop() {
+            this.zombie.stopUsingItem();
+            blockingTime = 0;
+        }
+    }
+    
+    // カスタムAIゴール - クモ用
+    private static class EnhancedSpiderGoal extends Goal {
+        private final Spider spider;
+        private int webCooldown = 0;
+        
+        public EnhancedSpiderGoal(Spider spider) {
+            this.spider = spider;
+        }
+        
+        @Override
+        public boolean canUse() {
+            return this.spider.getTarget() != null;
+        }
+        
+        @Override
+        public void tick() {
+            if (webCooldown > 0) {
+                webCooldown--;
+                return;
+            }
+            
+            LivingEntity target = this.spider.getTarget();
+            if (target == null) {
+                return;
+            }
+            
+            double distance = this.spider.distanceToSqr(target);
+            
+            // ウェブ設置（プレイヤーの足元）
+            if (distance < 64.0 && this.spider.getRandom().nextInt(100) == 0) {
+                BlockPos targetPos = target.blockPosition();
+                if (this.spider.level().getBlockState(targetPos).isAir()) {
+                    this.spider.level().setBlock(targetPos, Blocks.COBWEB.defaultBlockState(), 3);
+                    webCooldown = 100; // 5秒のクールダウン
+                }
+            }
+        }
+    }
+    
+    // エンティティが死亡した時のクリーンアップ
+    @SubscribeEvent
+    public static void onEntityDeath(net.minecraftforge.event.entity.living.LivingDeathEvent event) {
+        if (event.getEntity() instanceof Monster) {
+            UUID entityId = event.getEntity().getUUID();
+            enhancedEntities.remove(entityId);
+            enhancementData.remove(entityId);
+        }
+    }
+    
+    // 一時ブロックの削除処理
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
+        
+        // 20ティックごとに処理（1秒ごと）
+        if (event.getServer().getTickCount() % 20 == 0) {
+            long currentTime = System.currentTimeMillis();
+            Iterator<Map.Entry<BlockPos, Long>> iterator = temporaryBlocks.entrySet().iterator();
+            
+            while (iterator.hasNext()) {
+                Map.Entry<BlockPos, Long> entry = iterator.next();
+                BlockPos pos = entry.getKey();
+                Long placeTime = entry.getValue();
+                
+                // 時間経過でブロックを削除
+                if (currentTime - placeTime > BLOCK_DECAY_TIME) {
+                    // すべてのワールドで削除を試みる（destroyBlockが効かない場合はAIRに上書き）
+                    event.getServer().getAllLevels().forEach(level -> {
+                        BlockState state = level.getBlockState(pos);
+                        if (state.is(Blocks.COBBLESTONE) || state.is(Blocks.MOSSY_COBBLESTONE) || state.is(Blocks.COBWEB)) {
+                            boolean destroyed = level.destroyBlock(pos, false);
+                            // フォールバック: destroyBlockが失敗(protected areaなど)ならsetBlockで強制AIR
+                            if (!destroyed && !level.getBlockState(pos).isAir()) {
+                                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                            }
+                        }
+                    });
+                    iterator.remove();
+                }
+            }
+        }
+        
+        // メモリクリーンアップ（5分ごと）
+        if (event.getServer().getTickCount() % 6000 == 0) {
+            // 古いエンティティデータを削除
+            if (enhancedEntities.size() > 100) {
+                enhancedEntities.clear();
+            }
+            if (enhancementData.size() > 100) {
+                enhancementData.clear();
+            }
+        }
+    }
+}

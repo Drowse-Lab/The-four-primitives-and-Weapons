@@ -45,7 +45,7 @@
 
 **コマンド例:**
 ```
-/effect give @e[type=minecraft_armor_weapon:common_soldier] minecraft:weakness 30 0
+/effect give @e[type=the_four_primitives_and_weapons:common_soldier] minecraft:weakness 30 0
 ```
 
 ### 4. 暗闇（Darkness）
@@ -77,7 +77,7 @@
 ### ファイル構成
 
 ```
-src/main/java/minecraftarmorweapon/
+src/main/java/the_four_primitives_and_weapons/
 ├── events/
 │   └── MobEffectEventHandler.java     # ステータス効果イベントハンドラー
 └── ai/
@@ -142,7 +142,7 @@ movementSpeed.removeModifier(BLINDNESS_SPEED_UUID);
 /effect give @e[type=minecraft:skeleton,limit=1] minecraft:nausea 20 0
 
 # 一般兵に弱体化を付与（60秒）
-/effect give @e[type=minecraft_armor_weapon:common_soldier] minecraft:weakness 60 0
+/effect give @e[type=the_four_primitives_and_weapons:common_soldier] minecraft:weakness 60 0
 ```
 
 ### 2. 範囲内の全てのMobに効果を付与
@@ -171,12 +171,12 @@ movementSpeed.removeModifier(BLINDNESS_SPEED_UUID);
 
 1. **一般兵を召喚**
    ```
-   /summon minecraft_armor_weapon:common_soldier ~ ~ ~
+   /summon the_four_primitives_and_weapons:common_soldier ~ ~ ~
    ```
 
 2. **盲目を付与**
    ```
-   /effect give @e[type=minecraft_armor_weapon:common_soldier,limit=1] minecraft:blindness 30 0
+   /effect give @e[type=the_four_primitives_and_weapons:common_soldier,limit=1] minecraft:blindness 30 0
    ```
 
 3. **動作確認**
@@ -187,7 +187,7 @@ movementSpeed.removeModifier(BLINDNESS_SPEED_UUID);
 
 4. **混乱を付与**
    ```
-   /effect give @e[type=minecraft_armor_weapon:common_soldier,limit=1] minecraft:nausea 30 0
+   /effect give @e[type=the_four_primitives_and_weapons:common_soldier,limit=1] minecraft:nausea 30 0
    ```
 
 5. **動作確認**

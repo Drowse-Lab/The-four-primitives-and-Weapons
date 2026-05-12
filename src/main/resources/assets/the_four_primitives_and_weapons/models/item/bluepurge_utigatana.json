@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/bluepurgeutigatana",
+  "textures": {
+    "1": "the_four_primitives_and_weapons:block/bluepurgeutigatana",
+    "particle": "the_four_primitives_and_weapons:item/bluepurgeutigatanaimage"
+  }
+}

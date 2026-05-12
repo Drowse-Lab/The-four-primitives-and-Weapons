@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/pumpkin_head_player_converted_converted",
+  "textures": {
+    "1": "the_four_primitives_and_weapons:block/pumpkin",
+    "particle": "the_four_primitives_and_weapons:item/halloween"
+  }
+}

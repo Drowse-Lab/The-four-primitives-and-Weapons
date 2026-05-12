@@ -1,0 +1,7 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/gold_tyokuto3d",
+  "textures": {
+    "0": "the_four_primitives_and_weapons:block/gold_tyokuto3d",
+    "particle": "the_four_primitives_and_weapons:item/aa"
+  }
+}

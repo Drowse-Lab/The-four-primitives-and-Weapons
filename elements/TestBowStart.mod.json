@@ -2,7 +2,7 @@
   "_fv": 43,
   "_type": "function",
   "definition": {
-    "code": "# say [start]\n#########################################################\n# ①の処理\n########################################################\nsummon minecraft:armor_stand ~ ~1 ~ {Tags:[AS2,AS2_INI],Small:1b,Invisible:1b,Invulnerable:1b,NoBasePlate:1b}\n#summon minecraft:arrow ~ ~1 ~ {Tags:[AS2,AS2_INI],life:1200s}\nexecute anchored eyes as @e[tag=AS2_INI,limit=1,sort=nearest] run tp @s ^ ^ ^ ~ ~\nexecute anchored eyes as @e[tag=AS2_INI,limit=1,sort=nearest] run effect give @s minecraft_armor_weapon:test_bow_effect 2 1 true\n#########################################################\nscoreboard players set @e[tag=AS2_INI,limit=1,sort=nearest] AS2_D 80\ntag @e[tag=AS2_INI,limit=1,sort=nearest] remove AS2_INI\n#########################################################\n",
+    "code": "# say [start]\n#########################################################\n# ①の処理\n########################################################\nsummon minecraft:armor_stand ~ ~1 ~ {Tags:[AS2,AS2_INI],Small:1b,Invisible:1b,Invulnerable:1b,NoBasePlate:1b}\n#summon minecraft:arrow ~ ~1 ~ {Tags:[AS2,AS2_INI],life:1200s}\nexecute anchored eyes as @e[tag=AS2_INI,limit=1,sort=nearest] run tp @s ^ ^ ^ ~ ~\nexecute anchored eyes as @e[tag=AS2_INI,limit=1,sort=nearest] run effect give @s the_four_primitives_and_weapons:test_bow_effect 2 1 true\n#########################################################\nscoreboard players set @e[tag=AS2_INI,limit=1,sort=nearest] AS2_D 80\ntag @e[tag=AS2_INI,limit=1,sort=nearest] remove AS2_INI\n#########################################################\n",
     "name": "test_bow_start",
     "namespace": "mod"
   }
