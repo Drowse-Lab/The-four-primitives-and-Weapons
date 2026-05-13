@@ -56,21 +56,61 @@ public class RecrossPlayerHandler {
         if (!(event.player instanceof ServerPlayer sp)) return;
         if (!(sp.level() instanceof ServerLevel)) return;
 
+        UUID uuid = sp.getUUID();
+        RecrossHookEntity anchored = anchoredHookByOwner.get(uuid);
+        boolean holdingHookshot = isHoldingHookshot(sp);
+        int fallGuardLeft = FallImmunity.get(sp);
+
+        // === 早期 return: 何もすることがなければ完全スキップ (大半のプレイヤーがこの分岐) ===
+        if (anchored == null && !holdingHookshot && fallGuardLeft <= 0 && !sp.isNoGravity()) {
+            return;
+        }
+
         // === 1. Pull 処理 ===
-        RecrossHookEntity anchored = findAnchoredHook(sp);
-        if (anchored != null && anchored.getAnchorPos() != null) {
-            tickPull(sp, anchored);
-        } else {
-            // pull 終了 (フック消失等)
-            if (sp.isNoGravity() && !isHoldingHookshot(sp)) {
-                sp.setNoGravity(false);
+        if (anchored != null) {
+            if (!anchored.isAlive() || anchored.getAnchorPos() == null
+                || anchored.getState() != RecrossHookEntity.State.ANCHORED
+                || anchored.isPullingEntity()) {
+                anchoredHookByOwner.remove(uuid);
+                anchored = null;
             }
-            RecrossDebugLogger.endIfActive(sp, "no_anchor");
+        }
+        if (anchored != null) {
+            tickPull(sp, anchored);
+        } else if (sp.isNoGravity() && !holdingHookshot) {
+            sp.setNoGravity(false);
         }
 
         // === 2. スニーク浮遊 ===
-        tickFloat(sp);
+        if (holdingHookshot) tickFloat(sp);
+
+        // === 3. 落下ダメ無効カウンタを毎 tick 1 減算 ===
+        if (fallGuardLeft > 0) tickFallImmunity(sp);
     }
+
+    /**
+     * Anchor 完了した hook を player の現在の anchor として登録 (O(1) lookup 用).
+     * {@link RecrossHookEntity#anchorAt} から呼ばれる。
+     */
+    public static void registerAnchoredHook(Player owner, RecrossHookEntity hook) {
+        if (owner instanceof ServerPlayer) {
+            anchoredHookByOwner.put(owner.getUUID(), hook);
+        }
+    }
+
+    /** hook が discard / 状態変更で anchor 終了したときに呼ぶ. */
+    public static void unregisterAnchoredHook(Player owner) {
+        if (owner != null) anchoredHookByOwner.remove(owner.getUUID());
+    }
+
+    /** Player UUID → 現在 ANCHORED な hook の O(1) lookup map. */
+    private static final java.util.Map<UUID, RecrossHookEntity> anchoredHookByOwner =
+        new ConcurrentHashMap<>();
+
+    /** anchor から減速を始める距離 (block). */
+    private static final double BRAKING_DIST = PULL_SPEED * 2.0;
+    /** 減速時の最低速度 (block/tick) — 0 にすると停止して anchor に着けなくなる. */
+    private static final double MIN_PULL_SPEED = 0.4;
 
     private static void tickPull(ServerPlayer sp, RecrossHookEntity hook) {
         // ★ Sneak で pull キャンセル (元データパック準拠 — 緊急停止用)
@@ -90,7 +130,15 @@ public class RecrossPlayerHandler {
             return;
         }
 
-        Vec3 step = toAnchor.normalize().scale(Math.min(PULL_SPEED, dist));
+        // === 速度カーブ ===
+        // 距離に応じて pull 速度を変える:
+        //   - 遠距離 (BRAKING_DIST 以上): PULL_SPEED 上限の最高速
+        //   - 近距離 (BRAKING_DIST 以下): 距離に比例して線形減速 (下限 MIN_PULL_SPEED)
+        // 着弾時の急停止オーバーシュート (client prediction の慣性で anchor を通過する問題) を防ぐ。
+        double speed = (dist >= BRAKING_DIST)
+            ? PULL_SPEED
+            : Math.max(MIN_PULL_SPEED, PULL_SPEED * (dist / BRAKING_DIST));
+        Vec3 step = toAnchor.normalize().scale(Math.min(speed, dist));
         Vec3 next = cur.add(step);
 
         // === 壁衝突チェック ===
@@ -198,7 +246,8 @@ public class RecrossPlayerHandler {
         }
 
         // (5) 刃の軌跡パーティクル (見た目の螺旋表現)
-        if (sp.level() instanceof ServerLevel sw) {
+        //     2 tick に 1 回だけ送信 (60°×2 = 120° の刃軌跡が点描されるが、見た目はほぼ変わらない)
+        if (sp.level() instanceof ServerLevel sw && (phase & 1) == 0) {
             sw.sendParticles(net.minecraft.core.particles.ParticleTypes.SWEEP_ATTACK,
                 bladePos.x, bladePos.y, bladePos.z, 1, 0.05, 0.05, 0.05, 0);
             sw.sendParticles(net.minecraft.core.particles.ParticleTypes.CRIT,
@@ -257,21 +306,33 @@ public class RecrossPlayerHandler {
     /** 壁衝突や中断時 — 暴れずに止める. arrival ジャンプ無し. */
     private static void cancelPull(ServerPlayer sp, RecrossHookEntity hook, String reason) {
         sp.setNoGravity(false);
+        // 現在位置にスナップ — client prediction の慣性 (= shift キャンセルしても飛び続ける問題) を打ち切る。
+        Vec3 here = sp.position();
+        sp.connection.teleport(here.x, here.y, here.z, sp.getYRot(), sp.getXRot());
         sp.setDeltaMovement(Vec3.ZERO);
         sp.hurtMarked = true;
         sp.fallDistance = 0f;
         SpinHits.reset(sp);
         SpinPhase.reset(sp);
+        anchoredHookByOwner.remove(sp.getUUID());
         RecrossDebugLogger.endIfActive(sp, reason);
         hook.discard();
     }
 
     private static void arrivePull(ServerPlayer sp, RecrossHookEntity hook) {
         sp.setNoGravity(false);
-        sp.setDeltaMovement(0, 0.4, 0);   // 元データパック: 軽い jump (zombie.infect + dust effect)
+        // 1. 慣性を完全にゼロにする (vertical jump を入れると着弾後の浮き上がりで「動き続ける」感が残る)
+        sp.setDeltaMovement(Vec3.ZERO);
+        sp.fallDistance = 0f;
+        // 2. anchor 位置にスナップ — client prediction で蓄積された慣性も位置同期で打ち切る
+        Vec3 anchor = hook.getAnchorPos();
+        if (anchor != null) {
+            sp.connection.teleport(anchor.x, anchor.y, anchor.z, sp.getYRot(), sp.getXRot());
+        }
         sp.hurtMarked = true;
         SpinHits.reset(sp);
         SpinPhase.reset(sp);
+        anchoredHookByOwner.remove(sp.getUUID());
         sp.level().playSound(null, sp.getX(), sp.getY(), sp.getZ(),
             net.minecraft.sounds.SoundEvents.ZOMBIE_INFECT,
             net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 2.0f);
@@ -281,8 +342,7 @@ public class RecrossPlayerHandler {
 
     private static void tickFloat(ServerPlayer sp) {
         if (!isHoldingHookshot(sp)) {
-            // hookshot を手放した → grace は維持しつつ消化 (落下中の場合の保険)
-            tickFallImmunity(sp);
+            // hookshot を手放した → fall guard カウンタは onPlayerTick の tickFallImmunity が消化する
             return;
         }
         if (sp.onGround()) {
@@ -305,7 +365,7 @@ public class RecrossPlayerHandler {
         if (sp.isShiftKeyDown()) {
             int fuel = FloatFuel.get(sp);
             if (fuel >= fuelMax) {
-                // 燃料切れ — float effect 解除. grace は独自 fall guard effect として付与
+                // 燃料切れ — float effect 解除. grace はカウンタとして付与
                 sp.removeEffect(the_four_primitives_and_weapons.init.CustomMobEffectInit.HOOKSHOT_FLOAT.get());
                 applyFallGuard(sp, graceMax);
                 return;
@@ -319,16 +379,23 @@ public class RecrossPlayerHandler {
             FloatFuel.add(sp, 1);
             applyFallGuard(sp, graceMax);
         } else {
-            // Sneak 離した → 燃料据え置き. fall guard が残っていれば自然減少 (effect 自体が duration で消える)
+            // Sneak 離した → 燃料据え置き. fall guard が残っていれば自然減少 (カウンタが tick ごとに減る)
         }
     }
 
-    /** 独自 HOOKSHOT_FALL_GUARD effect を {@code ticks} だけ player に付与 (上書き). */
-    private static void applyFallGuard(ServerPlayer sp, int ticks) {
+    /**
+     * 落下ダメ無効 grace を {@code ticks} だけ player に付与 (より長ければ更新).
+     * MobEffect ではなくサーバー内のカウンタで管理し、client への effect 同期を避ける。
+     */
+    public static void applyFallGuard(ServerPlayer sp, int ticks) {
         if (ticks <= 0) return;
-        sp.addEffect(new MobEffectInstance(
-            the_four_primitives_and_weapons.init.CustomMobEffectInit.HOOKSHOT_FALL_GUARD.get(),
-            ticks, 0, false, false, false));
+        int current = FallImmunity.get(sp);
+        if (ticks > current) FallImmunity.set(sp, ticks);
+    }
+
+    /** Player が fall guard 中か (落下ダメージ無効 grace 残量 > 0). */
+    public static boolean hasFallGuard(LivingEntity entity) {
+        return entity instanceof ServerPlayer sp && FallImmunity.get(sp) > 0;
     }
 
     /** grace 残量 > 0 の間は fallDistance を 0 に保つ. 毎 tick 1 減算. */
@@ -357,21 +424,6 @@ public class RecrossPlayerHandler {
         var off = sp.getOffhandItem();
         if (off.getItem() instanceof the_four_primitives_and_weapons.item.RecrossHookshotItem) {
             return the_four_primitives_and_weapons.item.rarity.WeaponRarity.getFromStack(off);
-        }
-        return null;
-    }
-
-    private static RecrossHookEntity findAnchoredHook(ServerPlayer sp) {
-        // 検索半径は十分大きく取る — rarity 射程が 600+ ブロックに伸びる場合、
-        // anchor 完了直後の hook が固定 160 ブロック範囲外に居て見つからず pull が始まらない問題を回避。
-        for (RecrossHookEntity h : sp.level().getEntitiesOfClass(
-                RecrossHookEntity.class, sp.getBoundingBox().inflate(2000.0))) {
-            if (h.getOwnerPlayer() != sp) continue;
-            if (h.getState() != RecrossHookEntity.State.ANCHORED) continue;
-            // light entity を継続 pull 中の hook は player 側 pull の対象外
-            // (= 敵をこちらへ引き寄せている最中、player は通常移動できる)
-            if (h.isPullingEntity()) continue;
-            return h;
         }
         return null;
     }

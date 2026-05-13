@@ -16,7 +16,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.BlockItem;
 
-import the_four_primitives_and_weapons.item.RapierItem;
+import the_four_primitives_and_weapons.item.WoodenRapierItem;
+import the_four_primitives_and_weapons.item.RapierSayaItem;
+import the_four_primitives_and_weapons.item.StoneRapierItem;
+import the_four_primitives_and_weapons.item.IronRapierItem;
+import the_four_primitives_and_weapons.item.GoldRapierItem;
+import the_four_primitives_and_weapons.item.DiamondRapierItem;
+import the_four_primitives_and_weapons.item.NetheriteRapierItem;
 import the_four_primitives_and_weapons.item.ParryShieldItem;
 import the_four_primitives_and_weapons.item.OfudaItem;
 import the_four_primitives_and_weapons.item.WitherKatanaItem;
@@ -294,7 +300,13 @@ public class TheFourPrimitivesAndWeaponsModItems {
 	public static final RegistryObject<Item> MIASMA_BOOK = REGISTRY.register("miasma_book", () -> new MiasmaBookItem());
 	public static final RegistryObject<Item> REITOU = REGISTRY.register("reitou", () -> new ReitouItem());
 	public static final RegistryObject<Item> OFUDA = REGISTRY.register("ofuda", () -> new OfudaItem());
-	public static final RegistryObject<Item> RAPIER = REGISTRY.register("rapier", () -> new RapierItem());
+	public static final RegistryObject<Item> WOODEN_RAPIER = REGISTRY.register("wooden_rapier", () -> new WoodenRapierItem());
+	public static final RegistryObject<Item> STONE_RAPIER = REGISTRY.register("stone_rapier", () -> new StoneRapierItem());
+	public static final RegistryObject<Item> IRON_RAPIER = REGISTRY.register("iron_rapier", () -> new IronRapierItem());
+	public static final RegistryObject<Item> GOLD_RAPIER = REGISTRY.register("gold_rapier", () -> new GoldRapierItem());
+	public static final RegistryObject<Item> DIAMOND_RAPIER = REGISTRY.register("diamond_rapier", () -> new DiamondRapierItem());
+	public static final RegistryObject<Item> NETHERITE_RAPIER = REGISTRY.register("netherite_rapier", () -> new NetheriteRapierItem());
+	public static final RegistryObject<Item> RAPIER_SAYA = REGISTRY.register("rapier_saya", () -> new RapierSayaItem());
 	public static final RegistryObject<Item> PARRY_SHIELD = REGISTRY.register("parry_shield", () -> new ParryShieldItem());
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block, Object tab) {

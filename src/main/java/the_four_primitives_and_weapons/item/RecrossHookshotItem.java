@@ -168,9 +168,12 @@ public class RecrossHookshotItem extends Item {
         level.addFreshEntity(hook);
 
         // ★ 発射後の少しの間は落下ダメ無効化 (低速落下風)
-        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
-            the_four_primitives_and_weapons.init.CustomMobEffectInit.HOOKSHOT_FALL_GUARD.get(),
-            FIRE_FALL_GUARD_TICKS, 0, false, false, false));
+        //   MobEffect ではなくサーバー側カウンタで管理 — client への effect 同期と
+        //   他システムとの effect 干渉を避けるため。
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            the_four_primitives_and_weapons.event.RecrossPlayerHandler.applyFallGuard(
+                serverPlayer, FIRE_FALL_GUARD_TICKS);
+        }
 
         // 発射音
         level.playSound(null, player.getX(), player.getY(), player.getZ(),

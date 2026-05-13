@@ -45,7 +45,7 @@ public final class SayaDynamicModelEvents {
 
     private SayaDynamicModelEvents() {}
 
-    private static final String[] SAYA_SUBDIRS = { "katana", "sword", "tyokuto" };
+    private static final String[] SAYA_SUBDIRS = { "katana", "sword", "tyokuto", "rapier" };
     private static final String MODELS_PREFIX = "models/custom/saya/";
 
     /** スキャンで見つかった全カスタム鞘モデルの ResourceLocation 集合。 */
@@ -58,6 +58,8 @@ public final class SayaDynamicModelEvents {
             new ModelResourceLocation(new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "sword_saya"), "inventory");
     private static final ModelResourceLocation MRL_TYOKUTO_SAYA =
             new ModelResourceLocation(new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "tyokuto_saya"), "inventory");
+    private static final ModelResourceLocation MRL_RAPIER_SAYA =
+            new ModelResourceLocation(new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "rapier_saya"), "inventory");
 
     @SubscribeEvent
     public static void onRegisterAdditional(ModelEvent.RegisterAdditional event) {
@@ -103,10 +105,11 @@ public final class SayaDynamicModelEvents {
             }
         }
 
-        // ----- (2) 本体3種の saya アイテムモデルを SayaModelWrapper で包む -----
+        // ----- (2) 本体4種の saya アイテムモデルを SayaModelWrapper で包む -----
         wrapSaya(event, MRL_SAYA, SayaRegistry.SayaType.KATANA);
         wrapSaya(event, MRL_SWORD_SAYA, SayaRegistry.SayaType.SWORD);
         wrapSaya(event, MRL_TYOKUTO_SAYA, SayaRegistry.SayaType.TYOKUTO);
+        wrapSaya(event, MRL_RAPIER_SAYA, SayaRegistry.SayaType.RAPIER);
     }
 
     private static void wrapSaya(ModelEvent.ModifyBakingResult event,

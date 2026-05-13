@@ -30,7 +30,6 @@
     "the_four_primitives_and_weapons:machete":              { "durability": 250, "enchantability": 14, "damage_bonus": 1, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:scythe":               { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:warabitetou":          { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:rapier":               { "durability": 250, "enchantability": 14, "damage_bonus": 2, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:halloween_2023_10_31_sickle": { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:replica_sword_of_light":      { "durability": 250, "enchantability": 14, "damage_bonus": 0, "attack_speed": -2.4 },
 

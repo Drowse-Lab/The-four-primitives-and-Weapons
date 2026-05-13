@@ -66,8 +66,8 @@ public class SayaModelWrapper implements BakedModel {
         @Override
         public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level,
                                   @Nullable LivingEntity entity, int seed) {
-            // 納刀中の刀を取り出して SayaRegistry から Entry を引く
-            ItemStack stored = getStoredSword(stack);
+            // 納刀中の武器を取り出して SayaRegistry から Entry を引く
+            ItemStack stored = getStoredWeapon(stack, outer.sayaType);
             if (!stored.isEmpty()) {
                 SayaRegistry.Entry e = SayaRegistry.getEntry(outer.sayaType, stored);
                 if (e != null && e.hasCustomModel()) {
@@ -94,15 +94,38 @@ public class SayaModelWrapper implements BakedModel {
         }
     }
 
-    /** saya item の NBT から納刀中の刀の ItemStack を再構築 (空なら ItemStack.EMPTY)。 */
-    private static ItemStack getStoredSword(ItemStack sayaStack) {
+    /**
+     * 鞘 NBT から納刀中の武器 ItemStack を再構築する。
+     * 鞘の種類によって参照する NBT キーが異なる:
+     *   KATANA  → "StoredKatana"
+     *   TYOKUTO → "StoredSword"
+     *   SWORD   → "StoredSword"
+     *   RAPIER  → "StoredRapier"
+     * いずれが入っていても拾えるようフォールバックで全キーを試す。
+     */
+    private static ItemStack getStoredWeapon(ItemStack sayaStack, SayaRegistry.SayaType type) {
         if (sayaStack.isEmpty()) return ItemStack.EMPTY;
         CompoundTag tag = sayaStack.getTag();
         if (tag == null) return ItemStack.EMPTY;
-        if (tag.contains("StoredSword")) {
-            return ItemStack.of(tag.getCompound("StoredSword"));
+        String primary = primaryKeyFor(type);
+        if (primary != null && tag.contains(primary)) {
+            return ItemStack.of(tag.getCompound(primary));
+        }
+        // フォールバック (旧データや手動編集タグ救済)
+        for (String key : new String[] { "StoredKatana", "StoredSword", "StoredRapier" }) {
+            if (tag.contains(key)) return ItemStack.of(tag.getCompound(key));
         }
         return ItemStack.EMPTY;
+    }
+
+    private static String primaryKeyFor(SayaRegistry.SayaType type) {
+        switch (type) {
+            case KATANA:  return "StoredKatana";
+            case TYOKUTO: return "StoredSword";
+            case SWORD:   return "StoredSword";
+            case RAPIER:  return "StoredRapier";
+            default:      return null;
+        }
     }
 
     // ====== BakedModel 委譲 ======

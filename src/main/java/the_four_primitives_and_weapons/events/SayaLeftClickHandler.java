@@ -84,59 +84,50 @@ public class SayaLeftClickHandler {
     private static boolean performBattou(Player player, ItemStack sheathStack, InteractionHand sheathHand, InteractionHand otherHand) {
         CompoundTag tag = sheathStack.getOrCreateTag();
 
-        // 鞘に刀が入っている場合、抜刀する（StoredKatanaまたはStoredSwordをチェック）
-        String storedKey = tag.contains("StoredKatana") ? "StoredKatana" :
-                          tag.contains("StoredSword") ? "StoredSword" : null;
+        // 鞘に武器が入っているか (StoredKatana / StoredSword / StoredRapier)
+        String storedKey = the_four_primitives_and_weapons.util.CuriosScabbardHelper.findStoredKey(sheathStack);
+        if (storedKey == null) return false;
 
-        if (storedKey != null) {
-            ItemStack otherHandItem = player.getItemInHand(otherHand);
+        ItemStack otherHandItem = player.getItemInHand(otherHand);
+        // 反対の手が空の場合のみ抜刀
+        if (!otherHandItem.isEmpty()) return false;
 
-            // 反対の手が空の場合のみ抜刀
-            if (otherHandItem.isEmpty()) {
-                // 保存された刀の情報から刀を生成
-                ItemStack weaponStack = ItemStack.of(tag.getCompound(storedKey));
+        // 保存された武器の情報から武器を生成
+        ItemStack weaponStack = ItemStack.of(tag.getCompound(storedKey));
+        if (weaponStack.isEmpty()) return false;
 
-                // 反対の手に刀を配置
-                player.setItemInHand(otherHand, weaponStack);
+        // 鞘から武器の情報を削除 (空の鞘にする)
+        tag.remove(storedKey);
 
-                // 鞘から刀の情報を削除（空の鞘にする）
-                tag.remove(storedKey);
-                // 封印鞘なら封印モデル、霊刀スタイルならそのモデル、それ以外は空
-                if ("sigiled".equals(tag.getString("Feyn"))) {
-                    tag.putInt("CustomModelData", 18); // 封印鞘（空）
-                } else if ("reitou".equals(tag.getString("SayaStyle"))) {
-                    tag.putInt("CustomModelData", 16); // 霊刀スタイル鞘（空）
-                } else {
-                    tag.putInt("CustomModelData", 0); // 通常の空の鞘
-                }
+        // 封印鞘 / 霊刀スタイル等の特殊 NBT に応じた predicate 値を維持
+        // (見た目本体は SayaModelWrapper が NBT を読み解いて差し替えるので
+        //  ここで余分な CustomModelData は書かない)
 
-                // タグをItemStackに適用
-                sheathStack.setTag(tag);
+        // タグをItemStackに適用
+        sheathStack.setTag(tag);
 
-                // 鞘のアイテムスタックを強制的に更新（見た目の更新を確実にする）
-                player.setItemInHand(sheathHand, sheathStack);
+        // まず鞘を片付ける (sheathHand に空鞘を再配置) — 次の setItemInHand と順番が逆だと
+        // sheathHand と otherHand が同じだった場合に武器が消える事故が起きるので注意
+        player.setItemInHand(sheathHand, sheathStack);
 
-                // 抜刀音を再生
-                player.playSound(SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F);
+        // 反対の手に武器を配置
+        player.setItemInHand(otherHand, weaponStack);
 
-                // オフハンドに鞘を持っていて、かつLoki the Tricksterを抜刀した場合、モード切り替え
-                if (sheathHand == InteractionHand.OFF_HAND && weaponStack.getItem() instanceof LokiTheTricksterItem) {
-                    LokiTheTricksterItem.toggleMode(weaponStack);
-                    String newMode = LokiTheTricksterItem.getMode(weaponStack);
-                    String modeName = newMode.equals("disarm") ? "Disarm" : "Decoy";
-                    player.displayClientMessage(Component.literal("§b[抜刀] Loki Mode: " + modeName), true);
-                }
+        // 抜刀音を再生
+        player.playSound(SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F);
 
-                return true; // 抜刀成功
-            }
+        // オフハンドに鞘を持っていて、かつ Loki the Trickster を抜刀した場合、モード切り替え
+        if (sheathHand == InteractionHand.OFF_HAND && weaponStack.getItem() instanceof LokiTheTricksterItem) {
+            LokiTheTricksterItem.toggleMode(weaponStack);
+            String newMode = LokiTheTricksterItem.getMode(weaponStack);
+            String modeName = newMode.equals("disarm") ? "Disarm" : "Decoy";
+            player.displayClientMessage(Component.literal("§b[抜刀] Loki Mode: " + modeName), true);
         }
-        return false; // 抜刀失敗（刀が入っていない、または反対の手が空でない）
+
+        return true;
     }
-    
+
     private static boolean isSaya(ItemStack stack) {
-        if (stack.isEmpty()) return false;
-        String itemName = stack.getItem().getClass().getSimpleName();
-        return itemName.equals("SayaItem") || itemName.equals("TyokutoSayaItem")
-            || itemName.equals("SwordSayaItem");
+        return the_four_primitives_and_weapons.util.CuriosScabbardHelper.isScabbard(stack);
     }
 }

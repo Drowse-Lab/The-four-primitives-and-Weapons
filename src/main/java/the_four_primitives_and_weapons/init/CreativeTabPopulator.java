@@ -63,6 +63,13 @@ public class CreativeTabPopulator {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.STONE_TYOKUTO);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.DIAMOND_TYOKUTO);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.NETHERITE_TYOKUTO);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.WOODEN_RAPIER);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.STONE_RAPIER);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.IRON_RAPIER);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.GOLD_RAPIER);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.DIAMOND_RAPIER);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.NETHERITE_RAPIER);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.RAPIER_SAYA);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.GATE);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.CONVERGENT_GATE);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.IMMORTAL_CORE);

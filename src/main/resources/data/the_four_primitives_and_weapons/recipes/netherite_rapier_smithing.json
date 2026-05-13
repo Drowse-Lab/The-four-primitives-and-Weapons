@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": { "item": "minecraft:netherite_upgrade_smithing_template" },
+  "base": { "item": "the_four_primitives_and_weapons:diamond_rapier" },
+  "addition": { "item": "minecraft:netherite_ingot" },
+  "result": {
+    "item": "the_four_primitives_and_weapons:netherite_rapier"
+  }
+}

@@ -1,0 +1,87 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "saya_rapier_nouto",
+	"textures": {
+		"0": "saya_rapier",
+		"particle": "saya_rapier"
+	},
+	"elements": [
+		{
+			"from": [8.175, 8, 7.4],
+			"to": [8.625, 18.5, 8.1],
+			"rotation": {"angle": 0, "axis": "y", "origin": [11.125, 7.6, 1.77997]},
+			"faces": {
+				"north": {"uv": [2, 0, 2.5, 10.5], "texture": "#0"},
+				"east": {"uv": [0, 0, 0.75, 10.5], "texture": "#0"},
+				"south": {"uv": [3, 0, 3.5, 10.5], "texture": "#0"},
+				"west": {"uv": [1, 0, 1.75, 10.5], "texture": "#0"},
+				"up": {"uv": [4.5, 0.75, 4, 0], "texture": "#0"},
+				"down": {"uv": [4.5, 1, 4, 1.75], "texture": "#0"}
+			}
+		},
+		{
+			"from": [8.175, 25.69683, 1.76538],
+			"to": [8.625, 26.19683, 2.25538],
+			"rotation": {"angle": 45, "axis": "x", "origin": [11.125, 15.29683, -4.10465]},
+			"faces": {
+				"north": {"uv": [4, 2, 4.5, 2.5], "texture": "#0"},
+				"east": {"uv": [4, 3, 4.5, 3.5], "texture": "#0"},
+				"south": {"uv": [4, 4, 4.5, 4.5], "texture": "#0"},
+				"west": {"uv": [5, 0, 5.5, 0.5], "texture": "#0"},
+				"up": {"uv": [5.5, 1.5, 5, 1], "texture": "#0"},
+				"down": {"uv": [5.5, 2, 5, 2.5], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [-180, -180, 0],
+			"translation": [0.25, 0.75, 1.25],
+			"scale": [1, 1.5, 1]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [-180, -180, 0],
+			"translation": [-0.75, 0.75, 1.25],
+			"scale": [1, 1.5, 1]
+		},
+		"firstperson_righthand": {
+			"translation": [3.25, 4.5, -2.25],
+			"scale": [1, 1.2, 1]
+		},
+		"firstperson_lefthand": {
+			"translation": [-12.5, 4.75, -2],
+			"scale": [1, 1.2, 1]
+		},
+		"ground": {
+			"rotation": [-180, 0, 0],
+			"translation": [0, 12.75, 0.75],
+			"scale": [1, 1.5, 1]
+		},
+		"gui": {
+			"rotation": [-90, -45, 90],
+			"translation": [2.75, 2.75, 1.75],
+			"scale": [0.9, 1.2, 0.9]
+		},
+		"head": {
+			"rotation": [-90, 40, -90],
+			"translation": [-10.25, -2.75, 14.5],
+			"scale": [1, 1.5, 1]
+		},
+		"fixed": {
+			"rotation": [-90, -135, 90],
+			"translation": [-2.5, 2.25, 0.25],
+			"scale": [1.1, 1.5, 1.1]
+		}
+	},
+	"groups": [
+		{
+			"name": "saya",
+			"origin": [8, 8, 8],
+			"scope": 0,
+			"color": 0,
+			"children": [0, 1]
+		}
+	],
+	"made": "hrmcngs"
+}

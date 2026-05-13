@@ -665,6 +665,11 @@ public class DodgeAndBattouHandler {
             return stack.hasTag() && stack.getTag().contains("StoredSword");
         }
 
+        // RapierSayaItem も鞘そのもの
+        if (itemName.equals("RapierSayaItem")) {
+            return stack.hasTag() && stack.getTag().contains("StoredRapier");
+        }
+
         // 直刀の判定
         if (the_four_primitives_and_weapons.procedures.TyokutouThrustAttackProcedure.isStraightSword(stack)) {
             return true;
@@ -680,7 +685,12 @@ public class DodgeAndBattouHandler {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
         return itemName.equals("SayaItem") || itemName.equals("TyokutoSayaItem")
-            || itemName.equals("SwordSayaItem");
+            || itemName.equals("SwordSayaItem") || itemName.equals("RapierSayaItem");
+    }
+
+    private static boolean isRapierSaya(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        return stack.getItem().getClass().getSimpleName().equals("RapierSayaItem");
     }
 
     private static boolean isTyokutouSaya(ItemStack stack) {
@@ -699,6 +709,7 @@ public class DodgeAndBattouHandler {
     public static void performSheathing(Player player, ItemStack weaponStack, ItemStack sheathStack,
                                         InteractionHand weaponHand, InteractionHand sheathHand) {
         if (!isWeapon(weaponStack) || !isSaya(sheathStack)) return;
+        if (weaponHand == sheathHand) return; // 同じ手は不可 (武器消失防止)
 
         // 直刀鞘の場合
         if (isTyokutouSaya(sheathStack)) {
@@ -727,19 +738,34 @@ public class DodgeAndBattouHandler {
             return;
         }
 
-        // 通常の鞘の処理
+        // レイピア鞘の場合
+        if (isRapierSaya(sheathStack)) {
+            if (the_four_primitives_and_weapons.item.RapierSayaItem.canSheathe(weaponStack)) {
+                the_four_primitives_and_weapons.item.RapierSayaItem.sheatheRapier(
+                    player, weaponStack, sheathStack, weaponHand, sheathHand
+                );
+            } else {
+                player.displayClientMessage(Component.literal("§cこの鞘にはこのレイピアを納刀できません"), true);
+            }
+            return;
+        }
+
+        // 通常の鞘 (katana saya) の処理
         CompoundTag sheathTag = sheathStack.getOrCreateTag();
 
         // 鞘が空の場合のみ納刀可能
         if (!sheathTag.contains("StoredKatana")) {
-            // 直刀は通常の鞘には納刀不可
+            // 直刀 / 剣鞘対象 / レイピアは通常の鞘には納刀不可
             if (the_four_primitives_and_weapons.procedures.TyokutouThrustAttackProcedure.isStraightSword(weaponStack)) {
                 player.displayClientMessage(Component.literal("§c直刀は専用の鞘が必要です"), true);
                 return;
             }
-            // 剣の鞘対象アイテムは専用鞘が必要
             if (the_four_primitives_and_weapons.item.SwordSayaItem.canSheathe(weaponStack)) {
                 player.displayClientMessage(Component.literal("§cこの剣は専用の鞘が必要です"), true);
+                return;
+            }
+            if (the_four_primitives_and_weapons.item.RapierSayaItem.canSheathe(weaponStack)) {
+                player.displayClientMessage(Component.literal("§cこのレイピアは専用の鞘が必要です"), true);
                 return;
             }
             // 通常鞘に登録されていない武器は納刀不可
@@ -752,22 +778,17 @@ public class DodgeAndBattouHandler {
             CompoundTag weaponData = weaponStack.save(new CompoundTag());
             sheathTag.put("StoredKatana", weaponData);
 
-            // SayaNBTタグを更新（霊刀スタイル判定用）
+            // SayaNBTタグを更新 (霊刀スタイル判定用)
             String weaponItemName = weaponStack.getItem().getClass().getSimpleName();
             if (weaponItemName.equals("ReitouItem")) {
                 sheathTag.putInt("SayaNBT", 1);
             }
 
-            // 鞘の見た目を更新（CustomModelDataで刀が入っている状態を示す）
-            sheathTag.putInt("CustomModelData", getWeaponModelData(weaponStack, sheathTag));
-
-            // 鞘にタグを適用
+            // 鞘の見た目は SayaModelWrapper が NBT から動的に解決する (CustomModelData は書かない)。
             sheathStack.setTag(sheathTag);
 
-            // 武器を削除
+            // 武器を削除してから鞘を再配置 (順序重要: 同じ手指定でも事故らないように)
             player.setItemInHand(weaponHand, ItemStack.EMPTY);
-
-            // 鞘を更新
             player.setItemInHand(sheathHand, sheathStack);
 
             // 納刀音を再生

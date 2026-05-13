@@ -31,7 +31,12 @@
     "rapier": {
       "display_name": "細剣",
       "items": [
-        "the_four_primitives_and_weapons:rapier"
+        "the_four_primitives_and_weapons:wooden_rapier",
+        "the_four_primitives_and_weapons:stone_rapier",
+        "the_four_primitives_and_weapons:iron_rapier",
+        "the_four_primitives_and_weapons:gold_rapier",
+        "the_four_primitives_and_weapons:diamond_rapier",
+        "the_four_primitives_and_weapons:netherite_rapier"
       ],
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash"],

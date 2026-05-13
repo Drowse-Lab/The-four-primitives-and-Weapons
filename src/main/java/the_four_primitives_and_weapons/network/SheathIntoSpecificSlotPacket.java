@@ -137,23 +137,13 @@ public class SheathIntoSpecificSlotPacket {
 
     private static void performSheathing(Player player, ItemStack weaponStack,
                                           ItemStack scabbard, InteractionHand weaponHand) {
-        boolean isTyokutoSaya = scabbard.getItem() instanceof TyokutoSayaItem;
-        boolean isSwordSaya = scabbard.getItem() instanceof SwordSayaItem;
         CompoundTag sheathTag = scabbard.getOrCreateTag();
-        String storageKey = (isTyokutoSaya || isSwordSaya) ? "StoredSword" : "StoredKatana";
+        String storageKey = CuriosScabbardHelper.storageKeyFor(scabbard);
 
         CompoundTag weaponData = weaponStack.save(new CompoundTag());
         sheathTag.put(storageKey, weaponData);
 
-        int modelData;
-        if (isTyokutoSaya) {
-            modelData = TyokutoSayaItem.getSwordModelData(weaponStack);
-        } else if (isSwordSaya) {
-            modelData = SwordSayaItem.getSwordModelData(weaponStack);
-        } else {
-            modelData = CuriosScabbardHelper.getWeaponModelDataForSaya(weaponStack);
-        }
-        sheathTag.putInt("CustomModelData", modelData);
+        // 鞘の見た目は SayaModelWrapper が NBT (storageKey) を読んで動的に解決する。
         scabbard.setTag(sheathTag);
 
         player.setItemInHand(weaponHand, ItemStack.EMPTY);

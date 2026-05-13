@@ -126,29 +126,30 @@ public class BattouFromSpecificSlotPacket {
         ItemStack scabbard = player.getItemInHand(hand);
         if (!CuriosScabbardHelper.isScabbard(scabbard) || !CuriosScabbardHelper.hasStoredWeapon(scabbard)) return;
 
+        // メインハンド鞘抜刀の場合、オフハンドが空でないと空鞘の置き場がない
+        // (オフハンド鞘抜刀の場合、メインハンドが空でないと武器の置き場がない)
+        if (hand == InteractionHand.MAIN_HAND) {
+            if (!player.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) return;
+        } else {
+            if (!player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) return;
+        }
+
         ItemStack weapon = CuriosScabbardHelper.extractWeaponFromScabbard(scabbard);
         if (weapon.isEmpty()) return;
 
-        // オフハンドの鞘から抜刀する場合、メインハンドが埋まっていたら何もしない
-        // （鞘をクリアする前に確認することで、保存されていた武器の消失を防ぐ）
-        if (hand == InteractionHand.OFF_HAND) {
-            ItemStack mainHandItem = player.getItemInHand(InteractionHand.MAIN_HAND);
-            if (!mainHandItem.isEmpty()) return;
-        }
-
-        // ここまで来たら必ず抜刀するので、鞘を空にする
+        // 鞘を空にする
         CuriosScabbardHelper.clearWeaponFromScabbard(scabbard);
 
-        player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
-
-        if (hand == InteractionHand.OFF_HAND) {
-            // オフハンドの場合: 空の鞘はオフハンドに残す
+        if (hand == InteractionHand.MAIN_HAND) {
+            // メインハンドの鞘 → 空鞘はオフハンドに置く (drop ロス防止)。
+            // ItemStack 参照の取り違えを防ぐため、先に source slot を EMPTY にしてから書き込む。
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             player.setItemInHand(InteractionHand.OFF_HAND, scabbard);
+            player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
         } else {
-            // メインハンドの場合: 空の鞘をインベントリに移す
-            if (!player.getInventory().add(scabbard)) {
-                player.drop(scabbard, false);
-            }
+            // オフハンドの鞘 → 武器をメインハンドへ、空鞘はオフハンドに残す
+            player.setItemInHand(InteractionHand.OFF_HAND, scabbard);
+            player.setItemInHand(InteractionHand.MAIN_HAND, weapon);
         }
         player.playSound(SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F);
     }

@@ -61,7 +61,8 @@ public class SayaRegistry extends SimplePreparableReloadListener<Map<SayaRegistr
     public enum SayaType {
         KATANA("katana"),
         TYOKUTO("tyokuto"),
-        SWORD("sword");
+        SWORD("sword"),
+        RAPIER("rapier");
 
         private final String key;
 

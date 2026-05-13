@@ -60,15 +60,14 @@ public class SwordSayaItem extends Item implements ICurioItem {
 
 	public static void sheatheSword(Player player, ItemStack swordStack, ItemStack sheathStack,
 									InteractionHand swordHand, InteractionHand sheathHand) {
+		if (swordHand == sheathHand) return; // 同じ手は不可 (武器消失防止)
 		CompoundTag sheathTag = sheathStack.getOrCreateTag();
 
 		if (!sheathTag.contains("StoredSword")) {
 			CompoundTag swordData = swordStack.save(new CompoundTag());
 			sheathTag.put("StoredSword", swordData);
 
-			int modelData = getSwordModelData(swordStack);
-			sheathTag.putInt("CustomModelData", modelData);
-
+			// 見た目は SayaModelWrapper が StoredSword NBT を読んで動的に解決する。
 			sheathStack.setTag(sheathTag);
 
 			player.setItemInHand(swordHand, ItemStack.EMPTY);

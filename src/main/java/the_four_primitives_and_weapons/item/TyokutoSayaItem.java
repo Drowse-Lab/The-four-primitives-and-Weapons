@@ -71,13 +71,13 @@ public class TyokutoSayaItem extends Item implements ICurioItem {
      */
     public static void sheatheSword(Player player, ItemStack swordStack, ItemStack sheathStack,
                                     InteractionHand swordHand, InteractionHand sheathHand) {
+        if (swordHand == sheathHand) return; // 同じ手は不可
         CompoundTag sheathTag = sheathStack.getOrCreateTag();
 
         // 鞘が空の場合のみ納刀可能
         if (!sheathTag.contains("StoredSword")) {
-            // 直刀鞘に登録されていない武器は納刀不可
-            int modelData = getSwordModelData(swordStack);
-            if (modelData == 0) {
+            // 直刀鞘に登録されていない武器は納刀不可 (slot/model どちらでも登録扱い)
+            if (!SayaRegistry.isRegistered(SayaRegistry.SayaType.TYOKUTO, swordStack)) {
                 player.displayClientMessage(net.minecraft.network.chat.Component.literal("§cこの武器はこの鞘に納刀できません"), true);
                 return;
             }
@@ -85,10 +85,7 @@ public class TyokutoSayaItem extends Item implements ICurioItem {
             CompoundTag swordData = swordStack.save(new CompoundTag());
             sheathTag.put("StoredSword", swordData);
 
-            // 鞘の見た目を更新（納刀状態）
-            sheathTag.putInt("CustomModelData", modelData);
-
-            // 鞘にタグを適用
+            // 見た目は SayaModelWrapper が StoredSword NBT を読んで動的に解決する。
             sheathStack.setTag(sheathTag);
 
             // 武器を削除

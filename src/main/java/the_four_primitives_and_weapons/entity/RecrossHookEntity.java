@@ -163,7 +163,8 @@ public class RecrossHookEntity extends Mob {
         }
 
         if (state == State.FLYING) {
-            spawnFlightParticles();
+            // 2 tick に 1 回だけパーティクル発生 (見た目はほぼ同じで、サーバー送信負荷を半減)
+            if ((totalTicks & 1) == 0) spawnFlightParticles();
             tickFlying(owner);
         } else if (state == State.ANCHORED) {
             // ★ Heavy entity を引っ掛けてた場合、anchor をその entity の現在位置に更新 (追従)
@@ -316,6 +317,25 @@ public class RecrossHookEntity extends Mob {
         this.state = State.ANCHORED;
         setPos(pos.x, pos.y, pos.z);
         playHitSound();
+        // ★ Player 側 pull のための O(1) lookup map に登録 (毎 tick の getEntitiesOfClass を回避).
+        //   light entity を継続 pull 中の hook は player の pull 対象外なので登録しない。
+        if (pulledEntity == null) {
+            Player owner = getOwnerPlayer();
+            if (owner != null) {
+                the_four_primitives_and_weapons.event.RecrossPlayerHandler.registerAnchoredHook(owner, this);
+            }
+        }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        if (!level().isClientSide && ownerUuid != null && level() instanceof ServerLevel sl) {
+            Entity e = sl.getEntity(ownerUuid);
+            if (e instanceof Player p) {
+                the_four_primitives_and_weapons.event.RecrossPlayerHandler.unregisterAnchoredHook(p);
+            }
+        }
+        super.remove(reason);
     }
 
     /** 発射時に格納した自身の yaw/pitch から進行方向を計算 (元データパック準拠). */

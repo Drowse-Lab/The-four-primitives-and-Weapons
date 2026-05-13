@@ -6,27 +6,40 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.InteractionHand;
 
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
-import the_four_primitives_and_weapons.util.CuriosScabbardHelper;
 import top.theillusivec4.curios.api.CuriosApi;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * 鞘 (saya/tyokuto_saya/sword_saya/rapier_saya) の NBT 整備ハンドラ。
+ *
+ * <p>見た目自体は {@link the_four_primitives_and_weapons.client.SayaModelWrapper}
+ * が NBT (StoredKatana / StoredSword / StoredRapier) を読み取って動的に解決するため、
+ * このハンドラは <b>CustomModelData の同期は一切行わない</b>。</p>
+ *
+ * <p>残っている責務:</p>
+ * <ul>
+ *   <li>霊刀 (reitou) 用の {@code SayaNBT} predicate 値の更新</li>
+ *   <li>壊れた / 空の Stored* NBT エントリのクリーンアップ</li>
+ * </ul>
+ */
 @Mod.EventBusSubscriber(modid = "the_four_primitives_and_weapons")
 public class SayaVisualUpdateHandler {
-    
+
+    private static final String[] STORED_KEYS = { "StoredKatana", "StoredSword", "StoredRapier" };
+
     // プレイヤーごとの前回のインベントリ状態を記録
     private static final Map<UUID, InventorySnapshot> lastInventoryState = new HashMap<>();
-    
+
     private static class InventorySnapshot {
         ItemStack mainHand;
         ItemStack offHand;
         Map<Integer, ItemStack> inventory = new HashMap<>();
-        
+
         InventorySnapshot(Player player) {
             this.mainHand = player.getMainHandItem().copy();
             this.offHand = player.getOffhandItem().copy();
@@ -37,199 +50,113 @@ public class SayaVisualUpdateHandler {
                 }
             }
         }
-        
+
         boolean hasChanged(Player player) {
-            // メインハンドの変化をチェック
-            if (!ItemStack.matches(mainHand, player.getMainHandItem())) {
-                return true;
-            }
-            // オフハンドの変化をチェック
-            if (!ItemStack.matches(offHand, player.getOffhandItem())) {
-                return true;
-            }
-            // インベントリの変化をチェック
+            if (!ItemStack.matches(mainHand, player.getMainHandItem())) return true;
+            if (!ItemStack.matches(offHand, player.getOffhandItem())) return true;
             for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
                 ItemStack currentStack = player.getInventory().getItem(i);
                 ItemStack lastStack = inventory.get(i);
-                
-                if (lastStack == null && !currentStack.isEmpty()) {
-                    return true;
-                }
-                if (lastStack != null && !ItemStack.matches(lastStack, currentStack)) {
-                    return true;
-                }
+                if (lastStack == null && !currentStack.isEmpty()) return true;
+                if (lastStack != null && !ItemStack.matches(lastStack, currentStack)) return true;
             }
             return false;
         }
     }
-    
+
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
-        
+
         Player player = event.player;
         if (player.level().isClientSide) return;
-        
+
         UUID playerId = player.getUUID();
         InventorySnapshot lastSnapshot = lastInventoryState.get(playerId);
-        
-        // インベントリが変化したかチェック
         boolean inventoryChanged = lastSnapshot == null || lastSnapshot.hasChanged(player);
-        
+
         if (inventoryChanged) {
-            // 全ての鞘をチェックして必要に応じて更新
             checkAndUpdateAllSayas(player);
-            
-            // 現在の状態を保存
             lastInventoryState.put(playerId, new InventorySnapshot(player));
         }
-        
-        // 定期的に鞘の状態を検証（5秒ごと）
+
+        // 5秒ごとに念のため全鞘を再検証
         if (player.tickCount % 100 == 0) {
             validateAllSayas(player);
         }
     }
-    
+
     private static void checkAndUpdateAllSayas(Player player) {
-        // メインハンドの鞘をチェック
         ItemStack mainHand = player.getMainHandItem();
-        if (isSaya(mainHand)) {
-            validateAndUpdateSaya(mainHand);
-        }
-        
-        // オフハンドの鞘をチェック
+        if (isSaya(mainHand)) validateAndUpdateSaya(mainHand);
+
         ItemStack offHand = player.getOffhandItem();
-        if (isSaya(offHand)) {
-            validateAndUpdateSaya(offHand);
-        }
-        
-        // インベントリ内の全ての鞘をチェック
+        if (isSaya(offHand)) validateAndUpdateSaya(offHand);
+
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack stack = player.getInventory().getItem(i);
-            if (isSaya(stack)) {
-                validateAndUpdateSaya(stack);
-            }
+            if (isSaya(stack)) validateAndUpdateSaya(stack);
         }
 
-        // Curiosスロット内の鞘もチェック
         CuriosApi.getCuriosHelper().getCuriosHandler(player).ifPresent(handler -> {
             for (String slotId : new String[]{"belt", "back"}) {
                 handler.getStacksHandler(slotId).ifPresent(stacksHandler -> {
                     for (int i = 0; i < stacksHandler.getStacks().getSlots(); i++) {
                         ItemStack stack = stacksHandler.getStacks().getStackInSlot(i);
-                        if (isSaya(stack)) {
-                            validateAndUpdateSaya(stack);
-                        }
+                        if (isSaya(stack)) validateAndUpdateSaya(stack);
                     }
                 });
             }
         });
     }
-    
+
     private static void validateAllSayas(Player player) {
-        // 全ての鞘の状態を検証
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack stack = player.getInventory().getItem(i);
-            if (isSaya(stack)) {
-                CompoundTag tag = stack.getTag();
-                if (tag != null) {
-                    updateSayaNBT(tag);
-                    if (tag.contains("StoredKatana")) {
-                        CompoundTag katanaTag = tag.getCompound("StoredKatana");
-                        ItemStack katanaStack = ItemStack.of(katanaTag);
-                        int expectedModelData = getModelDataForKatana(katanaStack, tag);
-                        if (tag.getInt("CustomModelData") != expectedModelData) {
-                            tag.putInt("CustomModelData", expectedModelData);
-                        }
-                    } else if (tag.contains("StoredSword")) {
-                        // 直刀鞘
-                        CompoundTag swordTag = tag.getCompound("StoredSword");
-                        ItemStack swordStack = ItemStack.of(swordTag);
-                        int expectedModelData = the_four_primitives_and_weapons.item.TyokutoSayaItem.getSwordModelData(swordStack);
-                        if (tag.getInt("CustomModelData") != expectedModelData) {
-                            tag.putInt("CustomModelData", expectedModelData);
-                        }
-                    } else {
-                        // 空の鞘
-                        if (tag.getInt("CustomModelData") != 0) {
-                            tag.putInt("CustomModelData", 0);
-                        }
-                    }
-                    stack.setTag(tag);
-                }
-            }
+            if (isSaya(stack)) validateAndUpdateSaya(stack);
         }
     }
-    
+
     private static void validateAndUpdateSaya(ItemStack sayaStack) {
         if (!isSaya(sayaStack)) return;
-        
+
         CompoundTag tag = sayaStack.getTag();
         if (tag == null) {
-            // タグがない場合は空の鞘として初期化
-            tag = new CompoundTag();
-            tag.putInt("CustomModelData", 0);
-            sayaStack.setTag(tag);
+            sayaStack.setTag(new CompoundTag());
             return;
         }
-        
-        // SayaNBTタグを更新（霊刀スタイル判定用、クライアントのitem propertyで使用）
+
+        // 霊刀 (reitou) 判定用の SayaNBT predicate を更新
         updateSayaNBT(tag);
 
-        // StoredKatanaまたはStoredSwordの有無でCustomModelDataを更新
-        String storedKey = tag.contains("StoredKatana") ? "StoredKatana" :
-                           tag.contains("StoredSword") ? "StoredSword" : null;
-        if (storedKey != null) {
-            CompoundTag weaponTag = tag.getCompound(storedKey);
-            ItemStack weaponStack = ItemStack.of(weaponTag);
-
-            // 刀が有効かチェック
-            if (weaponStack.isEmpty()) {
-                // 無効なデータの場合、削除
-                tag.remove(storedKey);
-                tag.putInt("CustomModelData", getEmptyModelData(tag));
-            } else {
-                // 正しいモデルデータを設定
-                int modelData;
-                if (storedKey.equals("StoredSword")) {
-                    modelData = the_four_primitives_and_weapons.item.TyokutoSayaItem.getSwordModelData(weaponStack);
-                } else {
-                    modelData = getModelDataForKatana(weaponStack, tag);
-                }
-                if (tag.getInt("CustomModelData") != modelData) {
-                    tag.putInt("CustomModelData", modelData);
-                }
-            }
-        } else {
-            // 武器がない場合、鞘のスタイルに応じたモデルを設定
-            int emptyModelData = getEmptyModelData(tag);
-            if (tag.getInt("CustomModelData") != emptyModelData) {
-                tag.putInt("CustomModelData", emptyModelData);
+        // 壊れた Stored* エントリのクリーンアップ
+        for (String key : STORED_KEYS) {
+            if (tag.contains(key)) {
+                ItemStack stored = ItemStack.of(tag.getCompound(key));
+                if (stored.isEmpty()) tag.remove(key);
             }
         }
 
         sayaStack.setTag(tag);
     }
-    
+
     private static boolean isSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;
         return stack.getItem() == TheFourPrimitivesAndWeaponsModItems.SAYA.get()
             || stack.getItem() == TheFourPrimitivesAndWeaponsModItems.TYOKUTO_SAYA.get();
     }
-    
+
     /**
-     * SayaNBTタグを更新（霊刀スタイル判定用）
-     * クライアント側のitem propertyで saya_nbt として使用される
+     * SayaNBTタグを更新（霊刀スタイル判定用）。
+     * クライアント側の item property で saya_nbt として使用される。
      */
     private static void updateSayaNBT(CompoundTag tag) {
         boolean isReitouStyle = false;
 
-        // SayaStyle="reitou" の場合
         if ("reitou".equals(tag.getString("SayaStyle"))) {
             isReitouStyle = true;
         }
 
-        // StoredKatana が ReitouItem の場合
         if (!isReitouStyle && tag.contains("StoredKatana")) {
             CompoundTag katanaTag = tag.getCompound("StoredKatana");
             String id = katanaTag.getString("id");
@@ -243,41 +170,5 @@ public class SayaVisualUpdateHandler {
         if (current != target) {
             tag.putInt("SayaNBT", target);
         }
-    }
-
-    private static int getEmptyModelData(CompoundTag tag) {
-        // feyn/saya_nbt はクライアントのpredicateで処理するのでCustomModelDataは0
-        return 0;
-    }
-
-    private static int getModelDataForKatana(ItemStack katanaStack, CompoundTag sayaTag) {
-        if (katanaStack.isEmpty()) return 0;
-
-        String itemName = katanaStack.getItem().getClass().getSimpleName();
-
-        // 霊刀はSayaNBT + feyn predicateで処理するのでCustomModelDataは0
-        if (itemName.equals("ReitouItem")) return 0;
-
-        // 各刀タイプに対応するカスタムモデルデータ
-        if (itemName.equals("IronKatanaItem")) return 1;
-        if (itemName.equals("GoldKatanaItem")) return 2;
-        if (itemName.equals("StoneKatanaItem")) return 3;
-        if (itemName.equals("NetheriteKatanaItem")) return 4;
-        if (itemName.equals("WitherKatanaItem")) return 5;
-        if (itemName.equals("DarknessKatanaItem")) return 7;
-        if (itemName.equals("MagicalKatanaItem")) return 8;
-        if (itemName.equals("MagischesFeenKatanaItem")) return 9;
-        if (itemName.equals("PrototypeKatanaItem")) return 10;
-        if (itemName.equals("OldKatanaItem")) return 11;
-        if (itemName.equals("MyTestIronKatanaItem")) return 12;
-        if (itemName.equals("RiversOfBloodItem")) return 13;
-        if (itemName.equals("KatanaNiguHumerusItem")) return 14;
-        if (itemName.equals("LokiTheTricksterItem")) return 15;
-        if (itemName.equals("ReplicaSwordOfLightItem")) return 19;
-
-        // リストにない武器でもSwordItemなら鉄刀の鞘モデルをフォールバック
-        if (katanaStack.getItem() instanceof net.minecraft.world.item.SwordItem) return 1;
-
-        return 0;
     }
 }

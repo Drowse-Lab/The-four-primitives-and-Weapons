@@ -106,6 +106,12 @@ public class MotionExecutor {
                 default -> performThrust(player, world, lookVec, playerPos, chargePercent);
             }
         } finally {
+            // 得意な突き技は後硬直を解除して即連発可能にする（レイピア・直刀・槍など）。
+            // spin_slash 等の長尺モーションでリセットすると連結処理と競合するため、
+            // 短時間で完結する thrust に限定する。
+            if (preferredContext && "thrust".equals(motionId)) {
+                player.resetAttackStrengthTicker();
+            }
             if (chargedContext) DamageCalculator.clearChargeContext();
             if (preferredContext) DamageCalculator.clearPreferredContext();
             if (dislikedContext) DamageCalculator.clearDislikedContext();

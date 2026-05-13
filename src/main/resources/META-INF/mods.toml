@@ -6,11 +6,11 @@ license="Academic Free License v3.0"
 modId="the_four_primitives_and_weapons"
 version="1.0.0"
 displayName="The-four-primitives-and-Weapons"
-credits="nemui"
+credits="hiromichi-ngs"
 displayURL="https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons"
 updateJSONURL="https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons/files/all?page=1&pageSize=20"
 logoFile="logo.png"
-authors="reisame"
+authors="hiromichi-ngs"
 
 [[dependencies.the_four_primitives_and_weapons]]
     modId="minecraft"

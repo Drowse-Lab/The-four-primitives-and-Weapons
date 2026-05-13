@@ -137,22 +137,12 @@ public class RMessage {
 			if (!CuriosScabbardHelper.isCompatible(weaponStack, scabbard)) continue;
 
 			// 互換のある最初の空鞘に納刀
-			boolean isTyokutoSaya = scabbard.getItem() instanceof the_four_primitives_and_weapons.item.TyokutoSayaItem;
-			boolean isSwordSaya = scabbard.getItem() instanceof the_four_primitives_and_weapons.item.SwordSayaItem;
 			net.minecraft.nbt.CompoundTag sheathTag = scabbard.getOrCreateTag();
-			String storageKey = (isTyokutoSaya || isSwordSaya) ? "StoredSword" : "StoredKatana";
+			String storageKey = CuriosScabbardHelper.storageKeyFor(scabbard);
 			net.minecraft.nbt.CompoundTag weaponData = weaponStack.save(new net.minecraft.nbt.CompoundTag());
 			sheathTag.put(storageKey, weaponData);
 
-			int modelData;
-			if (isTyokutoSaya) {
-				modelData = the_four_primitives_and_weapons.item.TyokutoSayaItem.getSwordModelData(weaponStack);
-			} else if (isSwordSaya) {
-				modelData = the_four_primitives_and_weapons.item.SwordSayaItem.getSwordModelData(weaponStack);
-			} else {
-				modelData = CuriosScabbardHelper.getWeaponModelDataForSaya(weaponStack);
-			}
-			sheathTag.putInt("CustomModelData", modelData);
+			// 鞘の見た目は SayaModelWrapper が NBT (storageKey) を読んで動的に解決する。
 			scabbard.setTag(sheathTag);
 
 			player.setItemInHand(weaponHand, ItemStack.EMPTY);

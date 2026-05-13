@@ -12,16 +12,16 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * フックショット用の独自 MobEffect の挙動を毎 tick で適用するハンドラ。
+ * フックショット用の挙動ハンドラ。
  *
- *   - {@link CustomMobEffectInit#HOOKSHOT_FLOAT}      : 浮遊
+ *   - {@link CustomMobEffectInit#HOOKSHOT_FLOAT} : 浮遊 (MobEffect)
  *       - vertical 速度を 0.05 に固定 (ゆっくり上昇)
  *       - fallDistance を毎 tick リセット
- *   - {@link CustomMobEffectInit#HOOKSHOT_FALL_GUARD} : 落下ダメージ無効化
- *       - fallDistance を毎 tick リセット
+ *   - 落下ダメージ無効 grace : {@link RecrossPlayerHandler} 内の FallImmunity カウンタ
+ *       (MobEffect で管理しない — client への effect 同期や他システム干渉を避けるため)
  *       - {@link LivingFallEvent} で setCanceled(true) → 落下ダメージそのものを完全に消す
  *
- * vanilla LEVITATION / SLOW_FALLING を使わず独自 effect にすることで、他システムとの
+ * vanilla LEVITATION / SLOW_FALLING を使わず独自 effect / カウンタにすることで、他システムとの
  * effect 衝突 (Loki Decoy 等が SLOW_FALLING を使用) を避けている。
  */
 @Mod.EventBusSubscriber(modid = TheFourPrimitivesAndWeaponsMod.MODID)
@@ -45,17 +45,13 @@ public class HookshotEffectHandler {
             }
             sp.fallDistance = 0f;
         }
-
-        // === 落下ダメージ無効化 ===
-        if (sp.hasEffect(CustomMobEffectInit.HOOKSHOT_FALL_GUARD.get())) {
-            sp.fallDistance = 0f;
-        }
+        // 落下ダメ無効 grace の tick 処理は RecrossPlayerHandler.onPlayerTick が担当
     }
 
     /** 落下ダメージ判定そのものをキャンセル。fallDistance リセットの取りこぼし保険。 */
     @SubscribeEvent
     public static void onLivingFall(LivingFallEvent event) {
-        if (event.getEntity().hasEffect(CustomMobEffectInit.HOOKSHOT_FALL_GUARD.get())
+        if (RecrossPlayerHandler.hasFallGuard(event.getEntity())
             || event.getEntity().hasEffect(CustomMobEffectInit.HOOKSHOT_FLOAT.get())) {
             event.setCanceled(true);
         }

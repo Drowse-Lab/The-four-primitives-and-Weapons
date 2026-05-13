@@ -1,0 +1,8 @@
+{
+  "pattern": ["X", "X", "|"],
+  "key": {
+    "X": "minecraft:diamond",
+    "|": "minecraft:stick"
+  },
+  "result": "the_four_primitives_and_weapons:diamond_rapier"
+}
