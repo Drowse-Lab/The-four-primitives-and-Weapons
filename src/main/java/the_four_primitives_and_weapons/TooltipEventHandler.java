@@ -17,9 +17,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 @Mod.EventBusSubscriber(modid = "the_four_primitives_and_weapons")
 public class TooltipEventHandler {
 
-    public TooltipEventHandler() {
-        System.out.println("TooltipEventHandler Registered!");
-    }
+    public TooltipEventHandler() {    }
 
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {

@@ -135,9 +135,7 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 					spawnedList.add(mob.getUUID());
 				} else if (isProjectileItem(mainHandItem)) {
 					// 矢や発射体アイテムの場合
-					// デバッグ用ログ
-					System.out.println("Projectile item detected: " + mainHandItem.getItem());
-					
+					// デバッグ用ログ					
 					// 矢を放つFlyingAttackerを召喚（矢射撃モード）
 					FlyingAttackerEntity arrowShooter = new FlyingAttackerEntity(
 						TheFourPrimitivesAndWeaponsModEntities.FLYING_ATTACKER.get(), world
@@ -177,11 +175,7 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 					LivingEntity target = findTarget(entity, livingEntity);
 					
 					// デバッグ用ログ
-					if (target == null) {
-						System.out.println("No target found for projectile - will wait for target");
-					} else {
-						System.out.println("Target found: " + target.getClass().getSimpleName() + " at " + target.position());
-						// ターゲットを設定
+					if (target == null) {					} else {						// ターゲットを設定
 						arrowShooter.setTargetUUID(target.getUUID());
 					}
 					
@@ -201,38 +195,25 @@ public class SummonTriggerEffectEffectStartedappliedProcedure {
 	
 	// アイテムが発射体かどうかチェック
 	private static boolean isProjectileItem(ItemStack stack) {
-		// デバッグ：アイテム名を表示
-		System.out.println("Checking if item is projectile: " + stack.getItem());
-		
+		// デバッグ：アイテム名を表示		
 		// トライデント
-		if (stack.getItem() instanceof TridentItem) {
-			System.out.println("Item is a trident");
-			return true;
+		if (stack.getItem() instanceof TridentItem) {			return true;
 		}
 		
 		// バニラの矢
 		if (stack.getItem() == Items.ARROW || 
 			stack.getItem() == Items.SPECTRAL_ARROW || 
-			stack.getItem() == Items.TIPPED_ARROW) {
-			System.out.println("Item is a vanilla arrow");
-			return true;
+			stack.getItem() == Items.TIPPED_ARROW) {			return true;
 		}
 		
 		// カスタム矢アイテムのチェック（アイテム名に"arrow"が含まれるもの）
 		String itemName = stack.getItem().toString().toLowerCase();
-		if (itemName.contains("arrow") || itemName.contains("bolt")) {
-			System.out.println("Item name contains 'arrow' or 'bolt': " + itemName);
-			return true;
+		if (itemName.contains("arrow") || itemName.contains("bolt")) {			return true;
 		}
 		
 		// 発射体タグのチェック
-		if (stack.is(ItemTags.ARROWS)) {
-			System.out.println("Item has ARROWS tag");
-			return true;
-		}
-		
-		System.out.println("Item is NOT a projectile");
-		return false;
+		if (stack.is(ItemTags.ARROWS)) {			return true;
+		}		return false;
 	}
 	
 	// ターゲット検索ロジックを共通化

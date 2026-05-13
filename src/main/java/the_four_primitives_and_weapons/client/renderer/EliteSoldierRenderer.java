@@ -71,9 +71,7 @@ public class EliteSoldierRenderer extends HumanoidMobRenderer<EliteSoldierEntity
             slimSkins.add(new ResourceLocation("the_four_primitives_and_weapons", "textures/entity/slim/c87054d6c91e47c2.png"));
             slimSkins.add(new ResourceLocation("the_four_primitives_and_weapons", "textures/entity/slim/cb8323d05e90afdf.png"));
 
-            skinsInitialized = true;
-            System.out.println("[EliteSoldier] Initialized skins: " + wideSkins.size() + " wide, " + slimSkins.size() + " slim");
-        } catch (Exception e) {
+            skinsInitialized = true;        } catch (Exception e) {
             System.err.println("[EliteSoldier] Error initializing skins: " + e.getMessage());
         }
     }

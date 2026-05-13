@@ -61,18 +61,19 @@ public class TheFourPrimitivesAndWeaponsModKeyMappings {
 					boolean hasWeaponInHand = mainIsRealWeapon || offIsRealWeapon;
 
 					if (hasWeaponInHand) {
-						// 納刀ホイールを試みる（2個以上の空鞘があればホイール表示）
+						// 納刀ホイールを試みる (2個以上の空鞘があればホイール表示)
 						if (!WeaponWheelState.onRKeyPressedForSheathing(player)) {
-							// 0-1個の空鞘 → 従来の納刀処理
+							// 0-1個の空鞘 → 従来の納刀処理 (サーバーのみで実行。
+							// 旧コードはクライアントでも pressAction を叩いていたが、
+							// 連打時に client/server の inventory が交錯して鞘が両手に
+                            // 残る複製バグの原因になっていたため除去)
 							TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new RMessage(0, 0));
-							RMessage.pressAction(player, 0, 0);
 						}
 					} else {
 						// 手が空/鞘/Bluepurge → 抜刀/ホイールモード
 						if (!WeaponWheelState.onRKeyPressed()) {
-							// WeaponWheelStateが処理しなかった場合（CoverUp等）→ 従来処理
+							// WeaponWheelState が処理しなかった場合 (CoverUp 等) → サーバーのみで実行
 							TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new RMessage(0, 0));
-							RMessage.pressAction(player, 0, 0);
 						}
 					}
 				} else {

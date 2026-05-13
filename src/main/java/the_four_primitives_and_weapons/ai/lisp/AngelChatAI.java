@@ -212,19 +212,13 @@ public class AngelChatAI {
     public static void handlePlayerMessageWithCallback(ServerPlayer player, String message,
                                                         java.util.function.BiConsumer<String, String> callback) {
         ChatSession session = activeSessions.get(player.getUUID());
-        if (session == null) {
-            System.out.println("[AngelChat] セッションなし: " + player.getName().getString());
-            return;
+        if (session == null) {            return;
         }
 
         executor.submit(() -> {
             try {
-                String response = callLLM(player, session.personality, message);
-                System.out.println("[AngelChat] 応答: " + response);
-                player.getServer().execute(() -> callback.accept(response, session.entityName));
-            } catch (Exception e) {
-                System.out.println("[AngelChat] APIエラー: " + e.getMessage());
-                e.printStackTrace();
+                String response = callLLM(player, session.personality, message);                player.getServer().execute(() -> callback.accept(response, session.entityName));
+            } catch (Exception e) {                e.printStackTrace();
                 player.getServer().execute(() -> {
                     String fallback = getFallbackResponse(session.personality, message);
                     callback.accept(fallback + " §8(APIなし)", session.entityName);
@@ -379,12 +373,8 @@ public class AngelChatAI {
             if (is != null) {
                 String json = new String(is.readAllBytes(), StandardCharsets.UTF_8);
                 patternsData = JsonParser.parseString(json).getAsJsonObject();
-                patternList = patternsData.getAsJsonArray("patterns");
-                System.out.println("[AngelChat] Loaded " + patternList.size() + " conversation patterns");
-            }
-        } catch (Exception e) {
-            System.out.println("[AngelChat] Failed to load patterns: " + e.getMessage());
-        }
+                patternList = patternsData.getAsJsonArray("patterns");            }
+        } catch (Exception e) {        }
     }
 
     private static String getFallbackResponse(int personality, String userMessage) {

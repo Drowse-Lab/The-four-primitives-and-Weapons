@@ -73,11 +73,6 @@ public class MobWeaponAIHandler {
 
         // 処理済みとしてマーク
         processedMobs.add(mobId);
-
-        // デバッグログ
-        System.out.println("[MobWeaponAI] " + mob.getName().getString() +
-                          " にティア" + tier + "のAIを追加しました（武器: " +
-                          mainHandItem.getDisplayName().getString() + "）");
     }
 
     /**
@@ -182,7 +177,6 @@ public class MobWeaponAIHandler {
     public static void cleanupProcessedMobs() {
         if (processedMobs.size() > 1000) {
             processedMobs.clear();
-            System.out.println("[MobWeaponAI] 処理済みMobリストをクリアしました");
         }
     }
 }

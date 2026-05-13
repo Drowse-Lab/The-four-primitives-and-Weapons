@@ -4,11 +4,14 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 
-import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
 import top.theillusivec4.curios.api.CuriosApi;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +33,7 @@ import java.util.UUID;
 @Mod.EventBusSubscriber(modid = "the_four_primitives_and_weapons")
 public class SayaVisualUpdateHandler {
 
+    private static final Logger LOGGER = LogManager.getLogger("maw/saya");
     private static final String[] STORED_KEYS = { "StoredKatana", "StoredSword", "StoredRapier" };
 
     // プレイヤーごとの前回のインベントリ状態を記録
@@ -77,13 +81,81 @@ public class SayaVisualUpdateHandler {
 
         if (inventoryChanged) {
             checkAndUpdateAllSayas(player);
+            detectAndHealDuplicateScabbards(player);
             lastInventoryState.put(playerId, new InventorySnapshot(player));
         }
 
         // 5秒ごとに念のため全鞘を再検証
         if (player.tickCount % 100 == 0) {
             validateAllSayas(player);
+            detectAndHealDuplicateScabbards(player);
         }
+    }
+
+    /**
+     * 両手 + Curios + インベントリを横断し、複製された鞘 (同一 ItemStack 参照、
+     * または同一 Stored* NBT を持つ別 ItemStack) を検出する。
+     *
+     * <p>検出条件:</p>
+     * <ol>
+     *   <li><b>参照の重複</b>: メインハンドとオフハンドの {@link ItemStack} が同じ
+     *       Java オブジェクト → vanilla swap/プログラムの参照リークによる完全複製。
+     *       オフハンド側を {@link ItemStack#EMPTY} にする。</li>
+     *   <li><b>NBT の重複</b>: メインハンドとオフハンドが別オブジェクトだが、同じアイテムで
+     *       同じ Stored* NBT を持つ → 武器複製の兆候。オフハンド側を EMPTY にして
+     *       (どちらか一方を残す形で) 救済。WARN ログを出して再現追跡できるようにする。</li>
+     * </ol>
+     */
+    private static void detectAndHealDuplicateScabbards(Player player) {
+        ItemStack main = player.getMainHandItem();
+        ItemStack off = player.getOffhandItem();
+        if (!isSaya(main) || !isSaya(off)) return;
+        if (!hasAnyStoredKey(main) || !hasAnyStoredKey(off)) return;
+
+        // (1) 同一参照 — 確実な複製
+        if (main == off) {
+            LOGGER.warn("[saya] 同一 ItemStack 参照が両手に存在 — オフハンド側をクリア (player={}, item={})",
+                player.getName().getString(), main.getItem());
+            player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+            return;
+        }
+
+        // (2) NBT 一致 — 別オブジェクトだが内容が同じ
+        if (main.getItem() == off.getItem()
+                && sameStoredFingerprint(main, off)) {
+            LOGGER.warn("[saya] 両手に同一内身入り鞘が出現 — オフハンド側をクリア (player={}, item={}, stored={})",
+                player.getName().getString(),
+                main.getItem(),
+                fingerprintOf(main));
+            player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+        }
+    }
+
+    private static boolean hasAnyStoredKey(ItemStack stack) {
+        if (!stack.hasTag()) return false;
+        CompoundTag tag = stack.getTag();
+        for (String key : STORED_KEYS) {
+            if (tag.contains(key)) return true;
+        }
+        return false;
+    }
+
+    /** 両鞘の Stored* 内容が一致するか (アイテム種別 + NBT 完全一致)。 */
+    private static boolean sameStoredFingerprint(ItemStack a, ItemStack b) {
+        String fa = fingerprintOf(a);
+        String fb = fingerprintOf(b);
+        return fa != null && fa.equals(fb);
+    }
+
+    private static String fingerprintOf(ItemStack saya) {
+        if (!saya.hasTag()) return null;
+        CompoundTag tag = saya.getTag();
+        for (String key : STORED_KEYS) {
+            if (tag.contains(key)) {
+                return key + ":" + tag.getCompound(key).toString();
+            }
+        }
+        return null;
     }
 
     private static void checkAndUpdateAllSayas(Player player) {
@@ -141,9 +213,7 @@ public class SayaVisualUpdateHandler {
     }
 
     private static boolean isSaya(ItemStack stack) {
-        if (stack.isEmpty()) return false;
-        return stack.getItem() == TheFourPrimitivesAndWeaponsModItems.SAYA.get()
-            || stack.getItem() == TheFourPrimitivesAndWeaponsModItems.TYOKUTO_SAYA.get();
+        return the_four_primitives_and_weapons.util.CuriosScabbardHelper.isScabbard(stack);
     }
 
     /**

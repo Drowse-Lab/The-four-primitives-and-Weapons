@@ -115,6 +115,12 @@ public class RecrossHookEntity extends Mob {
         this.setPos(eye.x, eye.y, eye.z);
         this.setYRot(owner.getYRot());
         this.setXRot(owner.getXRot());
+        // ★ vanilla Mob の AI / 重力 / 自律移動を完全に切る — hook は手動 setPos で動かすので
+        //   travel(input) や aiStep() に余計な変更を加えられると飛行方向が乱れる。
+        this.setNoAi(true);
+        this.setNoGravity(true);
+        this.setInvulnerable(true);
+        this.setSilent(true);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -167,21 +173,22 @@ public class RecrossHookEntity extends Mob {
             if ((totalTicks & 1) == 0) spawnFlightParticles();
             tickFlying(owner);
         } else if (state == State.ANCHORED) {
-            // ★ Heavy entity を引っ掛けてた場合、anchor をその entity の現在位置に更新 (追従)
+            // ★ anchorPos は着弾時に確定した固定点で、その後は更新しない (player の引き寄せ先を安定させる).
+            //    Heavy entity に当たった場合は hook の "視覚位置" だけ entity に追従させ、
+            //    anchor 自体 (= player の目的地) は impact 地点のまま固定する。
             if (heavyAnchor != null) {
                 if (!heavyAnchor.isAlive()) {
                     this.discard();
                     return;
                 }
-                anchorPos = heavyAnchor.position().add(0, heavyAnchor.getBbHeight() * 0.5, 0);
-                setPos(anchorPos.x, anchorPos.y, anchorPos.z);
+                Vec3 visualPos = heavyAnchor.position().add(0, heavyAnchor.getBbHeight() * 0.5, 0);
+                setPos(visualPos.x, visualPos.y, visualPos.z);
             }
             // ★ Light entity を引っ掛けた場合は player 方向に PULL_SPEED で継続 pull
             if (pulledEntity != null) {
                 tickPullEntity(owner);
                 if (this.isRemoved()) return;
             }
-            // チェーンの dust 粒子描画は撤去 (ユーザー要望)
         }
     }
 

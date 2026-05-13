@@ -496,9 +496,7 @@ public class FlyingAttackerEntity extends Monster {
                 double distanceSq = this.distanceToSqr(target);
                 
                 // 近接攻撃範囲内（4ブロック以内に拡大）
-                if (distanceSq < 16.0D) {
-                    System.out.println("DEBUG: Attempting melee attack on " + target.getClass().getSimpleName());
-                    // 攻撃前にターゲットの方を向く
+                if (distanceSq < 16.0D) {                    // 攻撃前にターゲットの方を向く
                     this.lookAt(EntityAnchorArgument.Anchor.EYES, target.getEyePosition());
                     this.doHurtTarget(target);  // performMeleeAttackの代わりにdoHurtTargetを使用
                     attackCooldown = 15; // 0.75秒のクールダウンに短縮
@@ -662,9 +660,7 @@ public class FlyingAttackerEntity extends Monster {
             
             // 具体的な発射体タイプを先にチェック
             if (entity instanceof ThrownPotion) {
-                isProjectile = true;
-                System.out.println("DEBUG: Found ThrownPotion at " + entity.position());
-            }
+                isProjectile = true;            }
             // トライデント
             else if (entity instanceof ThrownTrident) {
                 isProjectile = true;
@@ -704,9 +700,7 @@ public class FlyingAttackerEntity extends Monster {
                 // TaCZ MODの銃弾チェック（クラス名にtaczやbulletが含まれる）
                 else if (fullClassName.contains("tacz") && 
                         (fullClassName.contains("bullet") || fullClassName.contains("projectile"))) {
-                    isProjectile = true;
-                    System.out.println("DEBUG: Found TaCZ projectile: " + entity.getClass().getName());
-                }
+                    isProjectile = true;                }
                 // 他の銃MODの汎用チェック
                 else if (fullClassName.contains("gun") && 
                         (fullClassName.contains("bullet") || fullClassName.contains("projectile"))) {
@@ -717,14 +711,10 @@ public class FlyingAttackerEntity extends Monster {
             if (isProjectile) {
                 // 所有者に向かっている飛び道具かチェック
                 boolean threatening = isProjectileThreateningOwner(entity);
-                if (entity instanceof ThrownPotion) {
-                    System.out.println("DEBUG: Checking if ThrownPotion is threatening: " + threatening);
-                }
+                if (entity instanceof ThrownPotion) {                }
                 if (threatening) {
                     // スプラッシュポーションは斬って破壊、それ以外は弾く
-                    if (entity instanceof ThrownPotion) {
-                        System.out.println("DEBUG: Destroying ThrownPotion!");
-                        destroyPotion((ThrownPotion) entity);
+                    if (entity instanceof ThrownPotion) {                        destroyPotion((ThrownPotion) entity);
                     } else {
                         deflectProjectile(entity);
                     }
@@ -743,9 +733,7 @@ public class FlyingAttackerEntity extends Monster {
         Entity shooter = null;
         // スプラッシュポーション
         if (projectile instanceof ThrownPotion) {
-            shooter = ((ThrownPotion) projectile).getOwner();
-            System.out.println("DEBUG: ThrownPotion shooter: " + (shooter != null ? shooter.getName().getString() : "null"));
-        }
+            shooter = ((ThrownPotion) projectile).getOwner();        }
         // トライデント
         else if (projectile instanceof ThrownTrident) {
             shooter = ((ThrownTrident) projectile).getOwner();
@@ -789,9 +777,7 @@ public class FlyingAttackerEntity extends Monster {
         // スプラッシュポーションは速度が遅いので閾値を下げる
         double motionThreshold = projectile instanceof ThrownPotion ? 0.001D : 0.01D;
         if (projectileMotion.lengthSqr() < motionThreshold) {
-            if (projectile instanceof ThrownPotion) {
-                System.out.println("DEBUG: ThrownPotion motion too small: " + projectileMotion.lengthSqr());
-            }
+            if (projectile instanceof ThrownPotion) {            }
             return false;
         }
         
@@ -825,9 +811,7 @@ public class FlyingAttackerEntity extends Monster {
             angleThreshold = distanceToOwner < 8.0D ? -0.1 : 0.2; // 矢も近距離では緩い判定
         }
         
-        if (projectile instanceof ThrownPotion) {
-            System.out.println("DEBUG: ThrownPotion dot product: " + dot + ", threshold: " + angleThreshold + ", distance: " + distanceToOwner);
-        }
+        if (projectile instanceof ThrownPotion) {        }
         
         return dot > angleThreshold;
     }
@@ -1220,9 +1204,7 @@ public class FlyingAttackerEntity extends Monster {
             }
         }
 
-        // DamageCalculatorを使用してダメージを与える（Killエンチャント等も自動適用）
-        System.out.println("DEBUG: Attempting to deal " + baseDamage + " damage");
-        boolean hit = false;
+        // DamageCalculatorを使用してダメージを与える（Killエンチャント等も自動適用）        boolean hit = false;
         if (this.owner != null) {
             // 召喚者の攻撃として扱う
             float actualDamage = the_four_primitives_and_weapons.util.DamageCalculator.dealDamage(this.owner, target, baseDamage, displayItem);
@@ -1231,9 +1213,7 @@ public class FlyingAttackerEntity extends Monster {
             // 召喚者がいない場合は通常のダメージ
             DamageSource damageSource = this.damageSources().mobAttack(this);
             hit = target.hurt(damageSource, baseDamage);
-        }
-        System.out.println("DEBUG: Hit successful? " + hit);
-        
+        }        
         if (hit) {
             // DamageCalculatorが既にエンチャント効果を適用しているが、
             // ノックバックとスイープ攻撃は別途適用する

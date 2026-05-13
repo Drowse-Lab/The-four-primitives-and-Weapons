@@ -78,9 +78,7 @@ public class PythonAIProcess {
             if (readyMessage != null) {
                 JsonObject response = JsonParser.parseString(readyMessage).getAsJsonObject();
                 if ("ready".equals(response.get("status").getAsString())) {
-                    isRunning.set(true);
-                    System.out.println("Python AI process started successfully");
-                    return true;
+                    isRunning.set(true);                    return true;
                 }
             }
 
@@ -233,9 +231,6 @@ public class PythonAIProcess {
             }
 
             executor.shutdown();
-
-            System.out.println("Python AI process shut down");
-
         } catch (Exception e) {
             System.err.println("Error shutting down Python process: " + e.getMessage());
         }

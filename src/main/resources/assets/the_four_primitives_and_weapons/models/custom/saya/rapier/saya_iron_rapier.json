@@ -6,7 +6,7 @@
 		"2": "the_four_primitives_and_weapons:item/saya/saya_rapier",
 		"particle": "the_four_primitives_and_weapons:item/saya/saya_rapier"
 	},
-	"elements": [
+"elements": [
 		{
 			"from": [8, 4.3, 7.65],
 			"to": [8.8, 5.05, 8.4],
@@ -189,11 +189,13 @@
 			"scale": [1, 1.5, 1]
 		},
 		"firstperson_righthand": {
-			"translation": [3.25, 4.5, -2.25],
+			"rotation": [125, 0, 0],
+			"translation": [-2.25, 4.75, 5.5],
 			"scale": [1, 1.2, 1]
 		},
 		"firstperson_lefthand": {
-			"translation": [-12.5, 4.75, -2],
+			"rotation": [125, 0, 0],
+			"translation": [-3.5, 5, 6],
 			"scale": [1, 1.2, 1]
 		},
 		"ground": {

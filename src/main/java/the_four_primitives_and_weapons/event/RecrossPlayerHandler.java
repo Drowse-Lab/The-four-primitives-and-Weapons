@@ -13,9 +13,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Set;
@@ -107,59 +105,37 @@ public class RecrossPlayerHandler {
     private static final java.util.Map<UUID, RecrossHookEntity> anchoredHookByOwner =
         new ConcurrentHashMap<>();
 
-    /** anchor から減速を始める距離 (block). */
-    private static final double BRAKING_DIST = PULL_SPEED * 2.0;
-    /** 減速時の最低速度 (block/tick) — 0 にすると停止して anchor に着けなくなる. */
-    private static final double MIN_PULL_SPEED = 0.4;
-
     private static void tickPull(ServerPlayer sp, RecrossHookEntity hook) {
-        // ★ Sneak で pull キャンセル (元データパック準拠 — 緊急停止用)
+        // ★ Sneak で pull キャンセル (緊急停止)
         if (sp.isShiftKeyDown()) {
             cancelPull(sp, hook, "user_sneak");
             return;
         }
 
-        Vec3 anchor = hook.getAnchorPos();
+        Vec3 anchor = hook.getAnchorPos();  // ← anchorPos は着弾時に固定された記録済み座標
         Vec3 cur = sp.position();
         Vec3 toAnchor = anchor.subtract(cur);
         double dist = toAnchor.length();
 
-        // 到達 → fan-out 解除 + 軽い levitation jump
+        // 到達 → arrivePull で anchor 位置にスナップ + 停止
         if (dist <= ARRIVAL_DIST) {
             arrivePull(sp, hook);
             return;
         }
 
-        // === 速度カーブ ===
-        // 距離に応じて pull 速度を変える:
-        //   - 遠距離 (BRAKING_DIST 以上): PULL_SPEED 上限の最高速
-        //   - 近距離 (BRAKING_DIST 以下): 距離に比例して線形減速 (下限 MIN_PULL_SPEED)
-        // 着弾時の急停止オーバーシュート (client prediction の慣性で anchor を通過する問題) を防ぐ。
-        double speed = (dist >= BRAKING_DIST)
-            ? PULL_SPEED
-            : Math.max(MIN_PULL_SPEED, PULL_SPEED * (dist / BRAKING_DIST));
-        Vec3 step = toAnchor.normalize().scale(Math.min(speed, dist));
-        Vec3 next = cur.add(step);
-
-        // === 壁衝突チェック ===
-        // 引き寄せ中にブロックに詰まると、サーバーが送る velocity と
-        // クライアントの衝突解決の綱引きで player が暴れる (= "荒ぶる").
-        // 先回りで ray-cast して進路上にブロックがあれば pull を中断.
-        if (isPathBlockedForPlayer(sp, cur, next)) {
+        // 進路上に壁があれば中断 (詰まると velocity と衝突解決で player が荒ぶる)
+        Vec3 step = toAnchor.normalize().scale(Math.min(PULL_SPEED, dist));
+        if (isPathBlockedForPlayer(sp, cur, cur.add(step))) {
             cancelPull(sp, hook, "wall_hit");
             return;
         }
 
-        // === 滑らか pull の鍵 ===
-        // 旧版は毎 tick connection.teleport(absolute) → クライアントが 50ms ごとに瞬間移動 = カクカク.
-        // 新版は setDeltaMovement + hurtMarked=true で **velocity packet** を送信:
-        //   - サーバー: 速度をセットするだけ
-        //   - クライアント: 受信した速度をローカルで毎フレーム適用 → 60fps で滑らかに移動
-        //   - サーバーは引き続き player の位置報告を信頼する (vanilla の通常 movement 同じ)
+        // anchor は固定座標なので、毎 tick の velocity 計算は単純な "目的地への直線速度" だけで済む。
+        // setDeltaMovement + hurtMarked=true → tick 末に velocity packet が client へ送信され滑らかに移動。
         if (!sp.isNoGravity()) sp.setNoGravity(true);
         sp.setDeltaMovement(step);
-        sp.hurtMarked = true;        // ← この flag が立つと tick 末に ClientboundSetEntityMotionPacket が送信される
-        sp.fallDistance = 0f;        // 着弾時の落下ダメージ防止
+        sp.hurtMarked = true;
+        sp.fallDistance = 0f;
 
         // pull 中の縦回転斬り — 小型武器を持っていれば Riptide アニメ + 衝突ダメージ
         tickSpinSlash(sp);
@@ -279,28 +255,20 @@ public class RecrossPlayerHandler {
     }
 
     /**
-     * 進路上に壁があるかチェック (水平方向のみ).
+     * 進路上にブロックがあるかチェック — player の bounding box 全体を swept-AABB で検査.
      *
-     * 旧版の足元/頭の高さの ray-cast は、地面に向けて hook を撃った場合に進路が地中を通過し、
-     * 「飛ばない」バグの原因になっていた. 上下移動の衝突解決はバニラ物理に任せ、
-     * ここでは XZ 平面の壁衝突だけ検出する.
+     * 旧版は胸の高さの XZ 平面 ray-cast のみで、player の頭/足や垂直方向の障害物を見逃していた。
+     * その場合 vanilla の衝突解決が velocity を反射 → player が変な方向にぶっ飛ぶ原因になる。
      *
-     * - 胸の高さ (cur.y + 1.0) で XZ 平面の path を見る
-     * - 真下/真上に引っ張られる場合は XZ 距離 0 → ray 長 0 → 検出されない (= 続行)
-     * - 水平に壁へ突っ込む場合 → ray が壁を貫通 → 中断
+     * 新版は player の bounding box を delta 方向に expandTowards で伸ばし、その swept 領域が
+     * ブロックと衝突するかを {@link net.minecraft.world.level.Level#noCollision} で判定する。
      */
     private static boolean isPathBlockedForPlayer(ServerPlayer sp, Vec3 cur, Vec3 next) {
-        double chestY = cur.y + 1.0;
-        Vec3 chestCur = new Vec3(cur.x, chestY, cur.z);
-        Vec3 chestNextXZ = new Vec3(next.x, chestY, next.z);
-        if (chestCur.distanceToSqr(chestNextXZ) < 1.0E-6) return false;
-        return clipBlocked(sp, chestCur, chestNextXZ);
-    }
-
-    private static boolean clipBlocked(ServerPlayer sp, Vec3 from, Vec3 to) {
-        return sp.level().clip(new ClipContext(
-            from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, sp))
-            .getType() != HitResult.Type.MISS;
+        Vec3 delta = next.subtract(cur);
+        if (delta.lengthSqr() < 1.0E-6) return false;
+        // player の bbox を delta 方向に拡張した swept 領域 = 移動中に通過する全容積
+        net.minecraft.world.phys.AABB sweptBox = sp.getBoundingBox().expandTowards(delta);
+        return !sp.level().noCollision(sp, sweptBox);
     }
 
     /** 壁衝突や中断時 — 暴れずに止める. arrival ジャンプ無し. */

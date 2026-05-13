@@ -163,9 +163,6 @@ public class MobEffectEventHandler {
             attackDamage.removeModifier(BLINDNESS_ATTACK_UUID);
             attackDamage.addTransientModifier(attackModifier);
         }
-
-        System.out.println("[MobEffect] " + mob.getName().getString() +
-                          " に盲目効果を適用しました（視界-70%, 速度-30%, 攻撃-2）");
     }
 
     /**
@@ -192,9 +189,6 @@ public class MobEffectEventHandler {
 
         // 記録を削除
         originalFollowRanges.remove(mob.getUUID());
-
-        System.out.println("[MobEffect] " + mob.getName().getString() +
-                          " の盲目効果を解除しました");
     }
 
     /**
@@ -215,9 +209,6 @@ public class MobEffectEventHandler {
             movementSpeed.removeModifier(NAUSEA_SPEED_UUID);
             movementSpeed.addTransientModifier(speedModifier);
         }
-
-        System.out.println("[MobEffect] " + mob.getName().getString() +
-                          " に混乱効果を適用しました（速度-20%）");
     }
 
     /**
@@ -228,9 +219,6 @@ public class MobEffectEventHandler {
         if (movementSpeed != null) {
             movementSpeed.removeModifier(NAUSEA_SPEED_UUID);
         }
-
-        System.out.println("[MobEffect] " + mob.getName().getString() +
-                          " の混乱効果を解除しました");
     }
 
     /**
@@ -250,9 +238,6 @@ public class MobEffectEventHandler {
             attackDamage.removeModifier(WEAKNESS_ATTACK_UUID);
             attackDamage.addTransientModifier(attackModifier);
         }
-
-        System.out.println("[MobEffect] " + mob.getName().getString() +
-                          " に弱体化効果を適用しました（攻撃-4）");
     }
 
     /**
@@ -263,9 +248,6 @@ public class MobEffectEventHandler {
         if (attackDamage != null) {
             attackDamage.removeModifier(WEAKNESS_ATTACK_UUID);
         }
-
-        System.out.println("[MobEffect] " + mob.getName().getString() +
-                          " の弱体化効果を解除しました");
     }
 
     /**
@@ -306,9 +288,6 @@ public class MobEffectEventHandler {
             movementSpeed.removeModifier(DARKNESS_SPEED_UUID);
             movementSpeed.addTransientModifier(speedModifier);
         }
-
-        System.out.println("[MobEffect] " + mob.getName().getString() +
-                          " に暗闇効果を適用しました（視界-50%, 速度-15%）");
     }
 
     /**
@@ -329,9 +308,6 @@ public class MobEffectEventHandler {
 
         // 記録を削除
         originalFollowRanges.remove(mob.getUUID());
-
-        System.out.println("[MobEffect] " + mob.getName().getString() +
-                          " の暗闇効果を解除しました");
     }
 
     /**
@@ -339,8 +315,6 @@ public class MobEffectEventHandler {
      * - 敵に発見されやすくなる（視界範囲を記録するのみ）
      */
     private static void applyGlowingEffect(Mob mob, MobEffectInstance effect) {
-        System.out.println("[MobEffect] " + mob.getName().getString() +
-                          " に発光効果を適用しました（敵に発見されやすい）");
     }
 
     /**
@@ -349,7 +323,6 @@ public class MobEffectEventHandler {
     public static void cleanupRecords() {
         if (originalFollowRanges.size() > 1000) {
             originalFollowRanges.clear();
-            System.out.println("[MobEffect] 視界範囲の記録をクリアしました");
         }
     }
 }

@@ -81,9 +81,7 @@ public class CommonSoldierRenderer extends HumanoidMobRenderer<CommonSoldierEnti
             // wideフォルダは現在空なのでデフォルトのみ
             // 今後追加する場合はここに追加
 
-            skinsInitialized = true;
-            System.out.println("[CommonSoldier] Initialized skins: " + wideSkins.size() + " wide, " + slimSkins.size() + " slim");
-        } catch (Exception e) {
+            skinsInitialized = true;        } catch (Exception e) {
             System.err.println("[CommonSoldier] Error initializing skins: " + e.getMessage());
             e.printStackTrace();
             // デフォルトスキンは最低限追加されている

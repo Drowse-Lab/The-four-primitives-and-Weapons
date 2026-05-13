@@ -236,9 +236,7 @@ public class PlayerLikeAIGoal extends Goal {
 
         // 盲目効果時：回避が70%の確率で失敗
         if (entity.hasEffect(MobEffects.BLINDNESS)) {
-            if (random.nextDouble() < 0.7) {
-                System.out.println("[PlayerLikeAI] " + entity.getName().getString() + " は盲目のため回避に失敗しました");
-                return;
+            if (random.nextDouble() < 0.7) {                return;
             }
         }
 
@@ -246,9 +244,7 @@ public class PlayerLikeAIGoal extends Goal {
         Vec3 dodgeDirection = action.direction;
         if (entity.hasEffect(MobEffects.CONFUSION)) {
             double angle = random.nextDouble() * Math.PI * 2;
-            dodgeDirection = new Vec3(Math.cos(angle), 0, Math.sin(angle)).normalize();
-            System.out.println("[PlayerLikeAI] " + entity.getName().getString() + " は混乱のため回避方向がずれました");
-        }
+            dodgeDirection = new Vec3(Math.cos(angle), 0, Math.sin(angle)).normalize();        }
 
         Vec3 dodgeVec = dodgeDirection.scale(action.speed);
 
@@ -290,9 +286,7 @@ public class PlayerLikeAIGoal extends Goal {
     private void executeChargeAttack(ALifeAIBridge.AIAction action) {
         // 盲目効果時：チャージ攻撃が80%の確率で失敗
         if (entity.hasEffect(MobEffects.BLINDNESS)) {
-            if (random.nextDouble() < 0.8) {
-                System.out.println("[PlayerLikeAI] " + entity.getName().getString() + " は盲目のためチャージ攻撃に失敗しました");
-                return;
+            if (random.nextDouble() < 0.8) {                return;
             }
         }
 
@@ -492,17 +486,13 @@ public class PlayerLikeAIGoal extends Goal {
     private void executeWeaponSkill(ALifeAIBridge.AIAction action) {
         // 盲目効果時：スキルが60%の確率で失敗
         if (entity.hasEffect(MobEffects.BLINDNESS)) {
-            if (random.nextDouble() < 0.6) {
-                System.out.println("[PlayerLikeAI] " + entity.getName().getString() + " は盲目のためスキル使用に失敗しました");
-                return;
+            if (random.nextDouble() < 0.6) {                return;
             }
         }
 
         // 混乱効果時：スキルが40%の確率で失敗
         if (entity.hasEffect(MobEffects.CONFUSION)) {
-            if (random.nextDouble() < 0.4) {
-                System.out.println("[PlayerLikeAI] " + entity.getName().getString() + " は混乱のためスキル使用に失敗しました");
-                return;
+            if (random.nextDouble() < 0.4) {                return;
             }
         }
 

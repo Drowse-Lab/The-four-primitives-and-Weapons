@@ -75,8 +75,6 @@ public class PythonALifeAIBridge {
                 usePython = false;
                 pythonProcess = null;
             } else {
-                System.out.println("Python AI process started successfully");
-
                 // シャットダウンフックを登録
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     if (pythonProcess != null) {
@@ -102,9 +100,7 @@ public class PythonALifeAIBridge {
 
             JsonObject response = pythonProcess.sendCommand(command);
 
-            if ("success".equals(response.get("status").getAsString())) {
-                System.out.println("Python AI initialized for entity: " + aiId);
-                return true;
+            if ("success".equals(response.get("status").getAsString())) {                return true;
             } else {
                 System.err.println("Failed to initialize Python AI: " + response.get("error_message").getAsString());
                 return false;

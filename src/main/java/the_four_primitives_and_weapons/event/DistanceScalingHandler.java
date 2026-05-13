@@ -101,9 +101,7 @@ public class DistanceScalingHandler {
     public static void onServerStarted(net.minecraftforge.event.server.ServerStartedEvent event) {
         net.minecraft.nbt.CompoundTag customData = event.getServer().getWorldData().getCustomBossEvents();
         if (customData != null && customData.contains(NBT_KEY)) {
-            enabled = customData.getBoolean(NBT_KEY);
-            System.out.println("距離スケーリング復元: " + (enabled ? "有効" : "無効"));
-        }
+            enabled = customData.getBoolean(NBT_KEY);        }
     }
 
     // ============================

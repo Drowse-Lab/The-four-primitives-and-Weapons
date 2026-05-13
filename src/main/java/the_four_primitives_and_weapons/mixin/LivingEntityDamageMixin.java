@@ -33,10 +33,6 @@ public class LivingEntityDamageMixin {
             // 攻撃者が持っているメインハンドのアイテムを取得
             ItemStack weapon = attacker.getMainHandItem();
 
-            // デバッグログ
-            System.out.println("[ElementalDamage] Checking weapon: " + weapon.getDisplayName().getString());
-            System.out.println("[ElementalDamage] Has element: " + ElementalDamageUtils.hasElement(weapon));
-
             // アイテムに属性が設定されているかチェック
             if (ElementalDamageUtils.hasElement(weapon)) {
                 ElementType elementType = ElementalDamageUtils.getElementType(weapon);
@@ -67,7 +63,6 @@ public class LivingEntityDamageMixin {
                         break;
                 }
 
-                System.out.println("[ElementalDamage] Modified damage: " + modifiedDamage);
                 return modifiedDamage;
             }
         }

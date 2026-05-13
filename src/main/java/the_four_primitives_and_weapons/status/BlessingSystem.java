@@ -68,10 +68,17 @@ public class BlessingSystem {
     // TickHandler — 毎tick周囲エンティティに発光を適用
     // ────────────────────────────────────────────────────────────────
 
+    /** 発光適用の間隔 (tick). 毎 tick だと 32 ブロック範囲スキャンが重いので間引く. */
+    private static final int GLOW_REFRESH_INTERVAL = 10;
+
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (event.getServer() == null) return;
+        // blessing 持ちがゼロなら何もしない (最も多い分岐)
+        if (blessingMap.isEmpty()) return;
+        // 10 tick (= 0.5秒) ごとにスキャン. 発光の見た目には影響しないペース.
+        if (event.getServer().getTickCount() % GLOW_REFRESH_INTERVAL != 0) return;
 
         for (ServerLevel level : event.getServer().getAllLevels()) {
             for (UUID uuid : blessingMap.keySet()) {

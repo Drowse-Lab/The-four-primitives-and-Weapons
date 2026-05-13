@@ -49,16 +49,12 @@ public class WeaponRackSlotLoader {
             "models/block/" + rackType + ".json");
         try {
             Optional<Resource> resOpt = Minecraft.getInstance().getResourceManager().getResource(rl);
-            if (resOpt.isEmpty()) {
-                System.out.println("[WeaponRackSlotLoader] resource not found: " + rl);
-                return result;
+            if (resOpt.isEmpty()) {                return result;
             }
             try (InputStream is = resOpt.get().open();
                  InputStreamReader r = new InputStreamReader(is)) {
                 JsonObject root = JsonParser.parseReader(r).getAsJsonObject();
-                if (!root.has("elements")) {
-                    System.out.println("[WeaponRackSlotLoader] no elements in " + rl);
-                    return result;
+                if (!root.has("elements")) {                    return result;
                 }
                 JsonArray elements = root.getAsJsonArray("elements");
                 for (JsonElement el : elements) {
@@ -74,22 +70,15 @@ public class WeaponRackSlotLoader {
                     float cx = (from.get(0).getAsFloat() + to.get(0).getAsFloat()) / 2.0f / 16.0f;
                     float cy = (from.get(1).getAsFloat() + to.get(1).getAsFloat()) / 2.0f / 16.0f;
                     float cz = (from.get(2).getAsFloat() + to.get(2).getAsFloat()) / 2.0f / 16.0f;
-                    result.put(name, new SlotPos(cx, cy, cz));
-                    System.out.println("[WeaponRackSlotLoader] " + rackType + "." + name
-                        + " = (" + cx + ", " + cy + ", " + cz + ")");
-                }
+                    result.put(name, new SlotPos(cx, cy, cz));                }
             }
-        } catch (Throwable t) {
-            System.out.println("[WeaponRackSlotLoader] error loading " + rl + ": " + t);
-        }
+        } catch (Throwable t) {        }
         return result;
     }
 
     /** /reload 等でマーカーを再読込したい時に呼ぶ。 */
     public static void clearCache() {
-        CACHE.clear();
-        System.out.println("[WeaponRackSlotLoader] cache cleared");
-    }
+        CACHE.clear();    }
 
     /** リソース再読込で自動的にキャッシュクリア。 */
     @net.minecraftforge.fml.common.Mod.EventBusSubscriber(

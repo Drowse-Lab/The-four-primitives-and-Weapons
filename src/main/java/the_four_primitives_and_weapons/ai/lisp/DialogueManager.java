@@ -52,9 +52,7 @@ public class DialogueManager {
         try {
             InputStream is = DialogueManager.class.getResourceAsStream(
                 "/data/the_four_primitives_and_weapons/ai_chat/" + filename);
-            if (is == null) {
-                System.out.println("[DialogueManager] File not found: " + filename);
-                return tree;
+            if (is == null) {                return tree;
             }
             String json = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             JsonObject root = JsonParser.parseString(json).getAsJsonObject();
@@ -80,11 +78,7 @@ public class DialogueManager {
                 }
 
                 tree.put(key, new Node(text, choices, isEnd));
-            }
-            System.out.println("[DialogueManager] Loaded " + tree.size() + " nodes from " + filename);
-        } catch (Exception e) {
-            System.out.println("[DialogueManager] Failed to load " + filename + ": " + e.getMessage());
-            e.printStackTrace();
+            }        } catch (Exception e) {            e.printStackTrace();
         }
         return tree;
     }

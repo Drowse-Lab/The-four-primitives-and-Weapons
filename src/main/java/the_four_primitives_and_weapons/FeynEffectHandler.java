@@ -27,25 +27,31 @@ public class FeynEffectHandler {
 
         boolean hasCursedItem = hasCursedFeyn(player.getMainHandItem()) || hasCursedFeyn(player.getOffhandItem());
 
+        // 修飾子の現在状態に応じて add / remove。状態が変化した時だけ true.
+        boolean changed = false;
         if (hasCursedItem) {
             // 最大体力：-30%
             if (!hasModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID)) {
                 double maxHealth = player.getAttributeBaseValue(Attributes.MAX_HEALTH);
                 applyModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID, "Cursed Health Down", -maxHealth * 0.2);
+                changed = true;
             }
             // 攻撃力：+14%
             if (!hasModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID)) {
                 double attackDamage = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
                 applyModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID, "Cursed Attack Up", attackDamage * 0.14);
+                changed = true;
             }
-        } else {
-            // 持ってなければ解除
+        } else if (hasModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID)
+                || hasModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID)) {
+            // 持ってない & 修飾子が残っている → 解除
             removeModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID);
             removeModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID);
+            changed = true;
         }
 
-        // クライアント同期
-        if (player instanceof ServerPlayer serverPlayer) {
+        // クライアント同期 — 変化があった時だけ送信 (毎 tick 全プレイヤーへ送ると network が重い)
+        if (changed && player instanceof ServerPlayer serverPlayer) {
             serverPlayer.connection.send(new ClientboundUpdateAttributesPacket(
                     player.getId(), player.getAttributes().getSyncableAttributes()
             ));

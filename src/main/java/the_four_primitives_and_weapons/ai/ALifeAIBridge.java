@@ -63,18 +63,13 @@ public class ALifeAIBridge {
         // 状態遷移を評価
         AIState newState = evaluateStateTransition(worldData);
         if (newState != currentState) {
-            changeState(newState);
-            System.out.println("[ALifeAI] " + entity.getName().getString() + " 状態変更: " + currentState + " (距離: " + String.format("%.1f", worldData.nearestEnemyDistance) + ")");
-        }
+            changeState(newState);        }
 
         // 現在の状態に応じた行動を実行
         AIAction action = executeCurrentState(worldData);
 
         // デバッグログ（アクションが空でない場合のみ）
-        if (action != null && !"idle".equals(action.action)) {
-            System.out.println("[ALifeAI] " + entity.getName().getString() + " アクション: " + action.action +
-                             " (速度: " + action.speed + ", スプリント: " + action.isSprinting + ")");
-        }
+        if (action != null && !"idle".equals(action.action)) {        }
 
         return action;
     }
@@ -287,8 +282,6 @@ public class ALifeAIBridge {
 
         // 複数の敵に囲まれている場合の判定（3体以上が5ブロック以内）
         if (nearbyEnemyCount >= 3) {
-            System.out.println("[ALifeAI] " + entity.getName().getString() + " は " + nearbyEnemyCount + "体の敵に囲まれている！");
-
             // HPが50%以下なら後退優先
             float hpPercent = data.health / data.maxHealth;
             if (hpPercent < 0.5f) {
@@ -304,9 +297,7 @@ public class ALifeAIBridge {
         // 複数の敵がいる場合、ターゲット優先度を評価（プレイヤー以外の場合）
         if (nearbyEnemyCount >= 2 && !isPlayerTarget) {
             LivingEntity mostDangerous = findMostDangerousEnemy(data);
-            if (mostDangerous != null && mostDangerous != currentTarget) {
-                System.out.println("[ALifeAI] ターゲット変更: " + currentTarget.getName().getString() + " → " + mostDangerous.getName().getString());
-                currentTarget = mostDangerous;
+            if (mostDangerous != null && mostDangerous != currentTarget) {                currentTarget = mostDangerous;
                 entity.setTarget(mostDangerous);
 
                 AIAction action = new AIAction("change_target");
@@ -561,50 +552,28 @@ public class ALifeAIBridge {
      */
     private String detectWeaponType() {
         ItemStack mainHand = entity.getMainHandItem();
-        if (mainHand.isEmpty()) {
-            System.out.println("[ALifeAI] " + entity.getName().getString() + " の手持ちアイテムが空です");
-            return "sword";
+        if (mainHand.isEmpty()) {            return "sword";
         }
 
         // アイテムの完全な名前を取得
         String itemName = mainHand.getItem().toString().toLowerCase();
         String displayName = mainHand.getHoverName().getString().toLowerCase();
-
-        System.out.println("[ALifeAI] " + entity.getName().getString() + " の武器検出:");
-        System.out.println("  - Item名: " + itemName);
-        System.out.println("  - 表示名: " + displayName);
-
         // 直接的なアイテム比較を最優先（IRON_KATANAなどの特定アイテム）
-        if (mainHand.getItem() == TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get()) {
-            System.out.println("  → 武器タイプ: katana (直接比較: IRON_KATANA)");
-            return "katana";
+        if (mainHand.getItem() == TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get()) {            return "katana";
         }
 
         // katanaを最優先でチェック（swordより先に）
         if (itemName.contains("katana") || displayName.contains("katana") ||
-            displayName.contains("刀") || displayName.contains("カタナ")) {
-            System.out.println("  → 武器タイプ: katana");
-            return "katana";
+            displayName.contains("刀") || displayName.contains("カタナ")) {            return "katana";
         } else if (itemName.contains("spear") || displayName.contains("spear") ||
-                   displayName.contains("槍") || displayName.contains("ヤリ")) {
-            System.out.println("  → 武器タイプ: spear");
-            return "spear";
+                   displayName.contains("槍") || displayName.contains("ヤリ")) {            return "spear";
         } else if (itemName.contains("lance") || displayName.contains("lance") ||
-                   displayName.contains("ランス")) {
-            System.out.println("  → 武器タイプ: lance");
-            return "lance";
+                   displayName.contains("ランス")) {            return "lance";
         } else if (itemName.contains("axe") || displayName.contains("axe") ||
-                   displayName.contains("斧") || displayName.contains("アックス")) {
-            System.out.println("  → 武器タイプ: axe");
-            return "axe";
+                   displayName.contains("斧") || displayName.contains("アックス")) {            return "axe";
         } else if (itemName.contains("sword") || displayName.contains("sword") ||
-                   displayName.contains("剣") || displayName.contains("ソード")) {
-            System.out.println("  → 武器タイプ: sword");
-            return "sword";
-        }
-
-        System.out.println("  → 武器タイプ: sword (デフォルト)");
-        return "sword";
+                   displayName.contains("剣") || displayName.contains("ソード")) {            return "sword";
+        }        return "sword";
     }
 
     /**
@@ -695,12 +664,6 @@ public class ALifeAIBridge {
                 // 武器タイプを検出して適切な攻撃パターンを選択
                 String weaponType = detectWeaponType();
                 String attackPattern = getWeaponAttackPattern(weaponType, comboCount);
-
-                System.out.println("[ALifeAI] " + entity.getName().getString() + " の攻撃:");
-                System.out.println("  - 武器タイプ: " + weaponType);
-                System.out.println("  - コンボ: " + comboCount);
-                System.out.println("  - 攻撃パターン: " + attackPattern);
-
                 AIAction action = new AIAction("attack");
                 action.attackType = attackPattern;
                 action.combo = comboCount;
