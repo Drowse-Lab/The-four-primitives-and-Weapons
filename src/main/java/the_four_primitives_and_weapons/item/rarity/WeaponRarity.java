@@ -52,17 +52,22 @@ public enum WeaponRarity {
 
     /**
      * Hookshot 用 — 飛距離倍率 (高 rarity ほど遠くまで届く).
-     * 基準 maxFlyTicks=30 × flyStep=2.0 = 60 ブロックを倍率で延ばす:
-     *   COMMON: x1.0 (60b) / UNCOMMON: x1.5 (90b) / RARE: x2.5 (150b) /
-     *   EPIC: x4.0 (240b) / LEGENDARY: x6.0 (360b) / FORBIDDEN: x10.0 (600b)
+     * LONG (flyStep 4.0 × maxFlyTicks 20 = 80b) / SHORT (3.0 × 20 = 60b) を倍率で延ばす.
+     * server simulation distance (10ch=160b) の倍程度に収めることでチャンクロードなしでも動く:
+     *   COMMON: x1.0 (LONG 80b / SHORT 60b)
+     *   UNCOMMON: x1.2 (96b / 72b)
+     *   RARE: x1.5 (120b / 90b)
+     *   EPIC: x1.8 (144b / 108b)
+     *   LEGENDARY: x2.2 (176b / 132b)
+     *   FORBIDDEN: x2.5 (LONG 200b / SHORT 150b)
      */
     public double getHookshotRangeScale() {
         switch (this) {
-            case UNCOMMON: return 1.50;
-            case RARE:     return 2.50;
-            case EPIC:     return 4.00;
-            case LEGENDARY:return 6.00;
-            case FORBIDDEN:return 10.00;
+            case UNCOMMON: return 1.20;
+            case RARE:     return 1.50;
+            case EPIC:     return 1.80;
+            case LEGENDARY:return 2.20;
+            case FORBIDDEN:return 2.50;
             case COMMON:
             default:       return 1.00;
         }

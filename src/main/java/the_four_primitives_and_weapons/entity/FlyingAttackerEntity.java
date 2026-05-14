@@ -1204,7 +1204,8 @@ public class FlyingAttackerEntity extends Monster {
             }
         }
 
-        // DamageCalculatorを使用してダメージを与える（Killエンチャント等も自動適用）        boolean hit = false;
+        // DamageCalculatorを使用してダメージを与える（Killエンチャント等も自動適用）
+        boolean hit = false;
         if (this.owner != null) {
             // 召喚者の攻撃として扱う
             float actualDamage = the_four_primitives_and_weapons.util.DamageCalculator.dealDamage(this.owner, target, baseDamage, displayItem);

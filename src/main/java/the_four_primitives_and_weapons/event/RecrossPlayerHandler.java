@@ -3,50 +3,77 @@ package the_four_primitives_and_weapons.event;
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 import the_four_primitives_and_weapons.entity.RecrossHookEntity;
 import the_four_primitives_and_weapons.events.DodgeAndBattouHandler;
+import the_four_primitives_and_weapons.init.CustomMobEffectInit;
+import the_four_primitives_and_weapons.item.RecrossHookshotItem;
+import the_four_primitives_and_weapons.item.rarity.WeaponRarity;
 import the_four_primitives_and_weapons.skill.WeaponTypeRegistry;
 import the_four_primitives_and_weapons.util.DamageCalculator;
 
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * Re:Cross Hookshot のサーバーサイド挙動.
+ * Re:Cross Hookshot のサーバーサイド挙動 (slim 版).
  *
- *   1. プレイヤーごとの引き寄せ tick — フック ANCHORED 中はプレイヤーをアンカー方向に
- *      強制 teleport で移動 (元データパックの spectator gamemode + armor_stand 移動の代替).
- *   2. スニーク+空中の浮遊 — 元データパック {@code hold_hookshot} の float 機能を再現.
- *      ReCr_FloatFuel 上限 40 tick で打ち切り、着地でリセット.
+ *   1. Pull — ANCHORED 中の hook 方向に setDeltaMovement で player を加速
+ *   2. Sneak 浮遊 — 持っている間 Sneak で空中静止 (HOOKSHOT_FLOAT effect)
+ *   3. 落下ダメ無効 — 発射直後 + 浮遊燃料切れ後の grace 期間
+ *   4. Pull 中スピン斬り — 小型武器持ちなら Riptide アニメ + 周辺攻撃
  */
 @Mod.EventBusSubscriber(modid = TheFourPrimitivesAndWeaponsMod.MODID)
 public class RecrossPlayerHandler {
 
-    /**
-     * Pull 中の player 移動速度 (block/tick).
-     * 元データパック実測: Motion_Speed=20 + AEC offset 0.1 から velocity = 2 block/tick の direction.
-     */
     public static final double PULL_SPEED = 2.0;
-    /** 到達判定 — anchor との距離がこの値以下になったら pull 終了 (元データパック {@code distance=..1}). */
     public static final double ARRIVAL_DIST = 1.5;
-
-    /** 浮遊の最大持続 tick の基本値 (rarity 無し時). rarity 付なら WeaponRarity の値が優先. */
     public static final int FLOAT_FUEL_MAX = 40;
-    /** Sneak 解除後の落下ダメージ無効 grace 基本値 (rarity 無し時). */
     public static final int DEFAULT_FALL_IMMUNITY_TICKS = 3;
+
+    private static final double SPIRAL_BLADE_RADIUS_BASE = 2.5;
+    private static final double SPIRAL_HIT_RADIUS_BASE = 1.6;
+    private static final double SPIRAL_ANGLE_PER_TICK = Math.toRadians(60);
+    private static final double FLOAT_LIFT_VELOCITY = 0.05;
+
+    private static final Map<UUID, RecrossHookEntity> ANCHORED = new ConcurrentHashMap<>();
+    private static final Map<UUID, Integer> FLOAT_FUEL = new ConcurrentHashMap<>();
+    private static final Map<UUID, Integer> FALL_IMMUNITY = new ConcurrentHashMap<>();
+    private static final Map<UUID, Set<UUID>> SPIN_HITS = new ConcurrentHashMap<>();
+    private static final Map<UUID, AtomicInteger> SPIN_PHASE = new ConcurrentHashMap<>();
+
+    public static void registerAnchoredHook(Player owner, RecrossHookEntity hook) {
+        if (owner instanceof ServerPlayer) ANCHORED.put(owner.getUUID(), hook);
+    }
+    public static void unregisterAnchoredHook(Player owner) {
+        if (owner != null) ANCHORED.remove(owner.getUUID());
+    }
+    public static boolean hasFallGuard(LivingEntity entity) {
+        return entity instanceof ServerPlayer sp && FALL_IMMUNITY.getOrDefault(sp.getUUID(), 0) > 0;
+    }
+    public static void applyFallGuard(ServerPlayer sp, int ticks) {
+        if (ticks <= 0) return;
+        FALL_IMMUNITY.merge(sp.getUUID(), ticks, Math::max);
+    }
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -54,184 +81,128 @@ public class RecrossPlayerHandler {
         if (!(event.player instanceof ServerPlayer sp)) return;
         if (!(sp.level() instanceof ServerLevel)) return;
 
-        UUID uuid = sp.getUUID();
-        RecrossHookEntity anchored = anchoredHookByOwner.get(uuid);
-        boolean holdingHookshot = isHoldingHookshot(sp);
-        int fallGuardLeft = FallImmunity.get(sp);
+        UUID id = sp.getUUID();
+        RecrossHookEntity hook = ANCHORED.get(id);
+        boolean holding = isHoldingHookshot(sp);
+        int fallGuard = FALL_IMMUNITY.getOrDefault(id, 0);
+        boolean hasFloat = sp.hasEffect(CustomMobEffectInit.HOOKSHOT_FLOAT.get());
 
-        // === 早期 return: 何もすることがなければ完全スキップ (大半のプレイヤーがこの分岐) ===
-        if (anchored == null && !holdingHookshot && fallGuardLeft <= 0 && !sp.isNoGravity()) {
-            return;
-        }
+        // 何もすることがなければ完全スキップ (大半の player はこの分岐)
+        if (hook == null && !holding && fallGuard <= 0 && !hasFloat && !sp.isNoGravity()) return;
 
-        // === 1. Pull 処理 ===
-        if (anchored != null) {
-            if (!anchored.isAlive() || anchored.getAnchorPos() == null
-                || anchored.getState() != RecrossHookEntity.State.ANCHORED
-                || anchored.isPullingEntity()) {
-                anchoredHookByOwner.remove(uuid);
-                anchored = null;
+        // 1. Pull
+        if (hook != null) {
+            if (!hook.isAlive() || hook.getAnchorPos() == null
+                || hook.getState() != RecrossHookEntity.State.ANCHORED
+                || hook.isPullingEntity()) {
+                ANCHORED.remove(id);
+                hook = null;
             }
         }
-        if (anchored != null) {
-            tickPull(sp, anchored);
-        } else if (sp.isNoGravity() && !holdingHookshot) {
-            sp.setNoGravity(false);
+        if (hook != null) tickPull(sp, hook);
+        else if (sp.isNoGravity() && !holding) sp.setNoGravity(false);
+
+        // 2. 浮遊効果 (HOOKSHOT_FLOAT) — 上昇速度を維持
+        if (hasFloat) {
+            Vec3 m = sp.getDeltaMovement();
+            if (m.y < FLOAT_LIFT_VELOCITY) {
+                sp.setDeltaMovement(m.x, FLOAT_LIFT_VELOCITY, m.z);
+                sp.hurtMarked = true;
+            }
+            sp.fallDistance = 0f;
         }
 
-        // === 2. スニーク浮遊 ===
-        if (holdingHookshot) tickFloat(sp);
+        // 3. Sneak で浮遊状態を制御 + 燃料管理
+        if (holding) tickFloat(sp);
 
-        // === 3. 落下ダメ無効カウンタを毎 tick 1 減算 ===
-        if (fallGuardLeft > 0) tickFallImmunity(sp);
-    }
-
-    /**
-     * Anchor 完了した hook を player の現在の anchor として登録 (O(1) lookup 用).
-     * {@link RecrossHookEntity#anchorAt} から呼ばれる。
-     */
-    public static void registerAnchoredHook(Player owner, RecrossHookEntity hook) {
-        if (owner instanceof ServerPlayer) {
-            anchoredHookByOwner.put(owner.getUUID(), hook);
+        // 4. fall guard カウンタ消化
+        if (fallGuard > 0) {
+            sp.fallDistance = 0f;
+            int next = fallGuard - 1;
+            if (next <= 0) FALL_IMMUNITY.remove(id);
+            else FALL_IMMUNITY.put(id, next);
         }
     }
 
-    /** hook が discard / 状態変更で anchor 終了したときに呼ぶ. */
-    public static void unregisterAnchoredHook(Player owner) {
-        if (owner != null) anchoredHookByOwner.remove(owner.getUUID());
+    @SubscribeEvent
+    public static void onLivingFall(LivingFallEvent event) {
+        if (hasFallGuard(event.getEntity())
+            || event.getEntity().hasEffect(CustomMobEffectInit.HOOKSHOT_FLOAT.get())) {
+            event.setCanceled(true);
+        }
     }
-
-    /** Player UUID → 現在 ANCHORED な hook の O(1) lookup map. */
-    private static final java.util.Map<UUID, RecrossHookEntity> anchoredHookByOwner =
-        new ConcurrentHashMap<>();
 
     private static void tickPull(ServerPlayer sp, RecrossHookEntity hook) {
-        // ★ Sneak で pull キャンセル (緊急停止)
-        if (sp.isShiftKeyDown()) {
-            cancelPull(sp, hook, "user_sneak");
-            return;
-        }
+        if (sp.isShiftKeyDown()) { cancelPull(sp, hook); return; }
 
-        Vec3 anchor = hook.getAnchorPos();  // ← anchorPos は着弾時に固定された記録済み座標
+        Vec3 anchor = hook.getAnchorPos();
         Vec3 cur = sp.position();
         Vec3 toAnchor = anchor.subtract(cur);
         double dist = toAnchor.length();
 
-        // 到達 → arrivePull で anchor 位置にスナップ + 停止
-        if (dist <= ARRIVAL_DIST) {
-            arrivePull(sp, hook);
-            return;
-        }
+        if (dist <= ARRIVAL_DIST) { arrivePull(sp, hook); return; }
 
-        // 進路上に壁があれば中断 (詰まると velocity と衝突解決で player が荒ぶる)
         Vec3 step = toAnchor.normalize().scale(Math.min(PULL_SPEED, dist));
-        if (isPathBlockedForPlayer(sp, cur, cur.add(step))) {
-            cancelPull(sp, hook, "wall_hit");
-            return;
-        }
+        if (isPathBlocked(sp, cur, cur.add(step))) { cancelPull(sp, hook); return; }
 
-        // anchor は固定座標なので、毎 tick の velocity 計算は単純な "目的地への直線速度" だけで済む。
-        // setDeltaMovement + hurtMarked=true → tick 末に velocity packet が client へ送信され滑らかに移動。
         if (!sp.isNoGravity()) sp.setNoGravity(true);
         sp.setDeltaMovement(step);
         sp.hurtMarked = true;
         sp.fallDistance = 0f;
 
-        // pull 中の縦回転斬り — 小型武器を持っていれば Riptide アニメ + 衝突ダメージ
         tickSpinSlash(sp);
-
-        RecrossDebugLogger.logTick("PULL_TICK", sp, hook);
     }
 
-    /** 螺旋刃の回転半径 (block) — player から刃中心までの距離 (基準値; 武器タイプで scale). */
-    private static final double SPIRAL_BLADE_RADIUS_BASE = 2.5;
-    /** 刃のヒット判定半径 (block) — 刃中心から検出する球の大きさ (基準値; 武器タイプで scale). */
-    private static final double SPIRAL_HIT_RADIUS_BASE = 1.6;
-    /** 刃の縦回転速度 (rad/tick) — 60°/tick = 1 秒で 600° 回る. */
-    private static final double SPIRAL_ANGLE_PER_TICK = Math.toRadians(60);
-
     /**
-     * Pull 中の縦回転スピン斬り — 進行方向を中心軸として、刃が forward-up 平面で
-     * 縦回転する螺旋状の攻撃判定。
-     *
-     *   - 各 tick で player 進行方向 (delta motion) を {@code forward} とする
-     *   - {@code forward} に垂直な {@code right} / {@code up} を作り、刃位置を
-     *     {@code playerPos + (-cos θ)·up + (sin θ)·forward × radius} で計算
-     *   - 角度 θ は session 中累積するので、player が pull で X 方向に進むと
-     *     forward 軸を中心に螺旋を描く軌跡になる
-     *   - 刃位置中心の小さな範囲で敵検出 → ダメージ (1 entity 1 hit)
+     * Pull 中の縦回転スピン斬り — 進行方向を中心軸に刃が forward-up 平面で螺旋を描く.
+     * 小型武器 (剣/刀/レイピア/短剣等) 持ち時のみ。大剣/槍は除外。
      */
     private static void tickSpinSlash(ServerPlayer sp) {
         ItemStack weapon = pickSpinWeapon(sp);
         if (weapon.isEmpty() || isLargeWeapon(weapon)) {
-            SpinHits.reset(sp);
-            SpinPhase.reset(sp);
+            SPIN_HITS.remove(sp.getUUID());
+            SPIN_PHASE.remove(sp.getUUID());
             return;
         }
-
-        // Riptide アニメを毎 tick refresh で持続させる
-        // (LivingEntity の autoSpinAttackTicks は private、getter は isAutoSpinAttack() しか
-        //  public でないので、tick 数を見ずに毎 tick 上書きで OK)
         sp.startAutoSpinAttack(10);
 
-        // (1) 進行方向 forward と、それに直交する right / up
         Vec3 motion = sp.getDeltaMovement();
         Vec3 forward = motion.lengthSqr() > 0.01 ? motion.normalize() : sp.getLookAngle();
         Vec3 right = forward.cross(new Vec3(0, 1, 0));
-        if (right.lengthSqr() < 1.0E-4) {
-            // forward が垂直 (= 真上 / 真下) の場合のフォールバック
-            right = new Vec3(1, 0, 0);
-        }
+        if (right.lengthSqr() < 1.0E-4) right = new Vec3(1, 0, 0);
         right = right.normalize();
         Vec3 up = right.cross(forward).normalize();
 
-        // (2) 縦回転角 θ — session 中累積
-        int phase = SpinPhase.getAndIncrement(sp);
+        int phase = SPIN_PHASE.computeIfAbsent(sp.getUUID(), k -> new AtomicInteger(0)).getAndIncrement();
         double theta = phase * SPIRAL_ANGLE_PER_TICK;
 
-        // (3) 刃位置 = player + (-cos θ)·up + (sin θ)·forward, 半径 bladeRadius
-        //     武器タイプにより範囲がスケールする (大剣/槍 = 広い、短剣 = 狭い)
-        //     θ=0 で player の足元 (-up), θ=90° で前方 (+forward), θ=180° で頭上 (+up), θ=270° で後方 (-forward)
-        double scale = the_four_primitives_and_weapons.skill.WeaponTypeRegistry.getSpinRangeScale(weapon);
+        double scale = WeaponTypeRegistry.getSpinRangeScale(weapon);
         double bladeRadius = SPIRAL_BLADE_RADIUS_BASE * scale;
         double hitRadius = SPIRAL_HIT_RADIUS_BASE * scale;
-        Vec3 bladeOffset = up.scale(-Math.cos(theta) * bladeRadius)
-                            .add(forward.scale(Math.sin(theta) * bladeRadius));
-        Vec3 bladePos = sp.position().add(0, 1.0, 0).add(bladeOffset);   // y+1.0 = 体の中心付近
+        Vec3 bladePos = sp.position().add(0, 1.0, 0)
+            .add(up.scale(-Math.cos(theta) * bladeRadius))
+            .add(forward.scale(Math.sin(theta) * bladeRadius));
 
-        // (4) 刃位置中心の球内の敵にダメージ (1 entity 1 hit)
-        //     もう片方の手が "鞘" (= 抜刀していない状態) の場合は素手相当ダメージ。
-        //     KB は applyNormalKnockback で統一 (saya 武器なら自動で +1.5 強化)。
         boolean otherIsSaya = isOtherHandSaya(sp, weapon);
         float dmg = otherIsSaya ? 1.0f : 6.0f;
-
-        AABB bladeBox = new AABB(bladePos, bladePos).inflate(hitRadius);
-        Set<UUID> hits = SpinHits.getOrCreate(sp);
-        for (LivingEntity le : sp.level().getEntitiesOfClass(LivingEntity.class, bladeBox)) {
-            if (le == sp) continue;
-            if (!le.isAlive()) continue;
-            if (hits.contains(le.getUUID())) continue;
-            // bladePos から target の中心までの距離で球判定
-            Vec3 leMid = le.position().add(0, le.getBbHeight() * 0.5, 0);
-            if (leMid.distanceToSqr(bladePos) > (hitRadius + le.getBbWidth() * 0.5)
-                    * (hitRadius + le.getBbWidth() * 0.5)) continue;
+        AABB box = new AABB(bladePos, bladePos).inflate(hitRadius);
+        Set<UUID> hits = SPIN_HITS.computeIfAbsent(sp.getUUID(), k -> ConcurrentHashMap.newKeySet());
+        for (LivingEntity le : sp.level().getEntitiesOfClass(LivingEntity.class, box)) {
+            if (le == sp || !le.isAlive() || hits.contains(le.getUUID())) continue;
+            Vec3 mid = le.position().add(0, le.getBbHeight() * 0.5, 0);
+            double r = hitRadius + le.getBbWidth() * 0.5;
+            if (mid.distanceToSqr(bladePos) > r * r) continue;
             DamageCalculator.dealDamage(sp, le, dmg, weapon);
             DamageCalculator.applyNormalKnockback(sp, le, weapon);
-
             hits.add(le.getUUID());
         }
 
-        // (5) 刃の軌跡パーティクル (見た目の螺旋表現)
-        //     2 tick に 1 回だけ送信 (60°×2 = 120° の刃軌跡が点描されるが、見た目はほぼ変わらない)
         if (sp.level() instanceof ServerLevel sw && (phase & 1) == 0) {
-            sw.sendParticles(net.minecraft.core.particles.ParticleTypes.SWEEP_ATTACK,
-                bladePos.x, bladePos.y, bladePos.z, 1, 0.05, 0.05, 0.05, 0);
-            sw.sendParticles(net.minecraft.core.particles.ParticleTypes.CRIT,
-                bladePos.x, bladePos.y, bladePos.z, 2, 0.05, 0.05, 0.05, 0.05);
+            sw.sendParticles(ParticleTypes.SWEEP_ATTACK, bladePos.x, bladePos.y, bladePos.z, 1, 0.05, 0.05, 0.05, 0);
+            sw.sendParticles(ParticleTypes.CRIT, bladePos.x, bladePos.y, bladePos.z, 2, 0.05, 0.05, 0.05, 0.05);
         }
     }
 
-    /** 手の武器を 1 つ選ぶ — メインハンド優先、武器でなければオフハンド。 */
     private static ItemStack pickSpinWeapon(ServerPlayer sp) {
         ItemStack main = sp.getMainHandItem();
         if (DodgeAndBattouHandler.isWeapon(main)) return main;
@@ -240,7 +211,6 @@ public class RecrossPlayerHandler {
         return ItemStack.EMPTY;
     }
 
-    /** 大剣 / 槍 = "大型" 判定 (両手で構える系)。それ以外 (刀 / 直刀 / 細剣 / 短剣 / 剣 等) は小型扱い。 */
     private static boolean isLargeWeapon(ItemStack stack) {
         WeaponTypeRegistry.WeaponTypeData type = WeaponTypeRegistry.getTypeForItem(stack);
         if (type == null) return false;
@@ -248,198 +218,93 @@ public class RecrossPlayerHandler {
         return "greatsword".equals(id) || "spear".equals(id);
     }
 
-    /** 武器の "もう片方の手" が saya (鞘) かどうか。 */
-    private static boolean isOtherHandSaya(ServerPlayer sp, ItemStack weaponSelected) {
-        ItemStack other = (sp.getMainHandItem() == weaponSelected) ? sp.getOffhandItem() : sp.getMainHandItem();
+    private static boolean isOtherHandSaya(ServerPlayer sp, ItemStack selected) {
+        ItemStack other = sp.getMainHandItem() == selected ? sp.getOffhandItem() : sp.getMainHandItem();
         return DodgeAndBattouHandler.isSaya(other);
     }
 
     /**
-     * 進路上にブロックがあるかチェック — player の bounding box 全体を swept-AABB で検査.
-     *
-     * 旧版は胸の高さの XZ 平面 ray-cast のみで、player の頭/足や垂直方向の障害物を見逃していた。
-     * その場合 vanilla の衝突解決が velocity を反射 → player が変な方向にぶっ飛ぶ原因になる。
-     *
-     * 新版は player の bounding box を delta 方向に expandTowards で伸ばし、その swept 領域が
-     * ブロックと衝突するかを {@link net.minecraft.world.level.Level#noCollision} で判定する。
+     * 進路上に壁があるかチェック (XZ 平面、胸の高さの ray-cast のみ).
+     * 上下方向はバニラ衝突解決に任せる — 全 bbox 検査だと壁面 anchor 自体を「障害物」と
+     * 誤判定して player が壁の手前で急停止し、vanilla 衝突応答で変な方向に飛ぶ。
      */
-    private static boolean isPathBlockedForPlayer(ServerPlayer sp, Vec3 cur, Vec3 next) {
-        Vec3 delta = next.subtract(cur);
-        if (delta.lengthSqr() < 1.0E-6) return false;
-        // player の bbox を delta 方向に拡張した swept 領域 = 移動中に通過する全容積
-        net.minecraft.world.phys.AABB sweptBox = sp.getBoundingBox().expandTowards(delta);
-        return !sp.level().noCollision(sp, sweptBox);
+    private static boolean isPathBlocked(ServerPlayer sp, Vec3 cur, Vec3 next) {
+        double y = cur.y + 1.0;
+        Vec3 from = new Vec3(cur.x, y, cur.z);
+        Vec3 to = new Vec3(next.x, y, next.z);
+        if (from.distanceToSqr(to) < 1.0E-6) return false;
+        return sp.level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, sp))
+            .getType() != HitResult.Type.MISS;
     }
 
-    /** 壁衝突や中断時 — 暴れずに止める. arrival ジャンプ無し. */
-    private static void cancelPull(ServerPlayer sp, RecrossHookEntity hook, String reason) {
+    private static void cancelPull(ServerPlayer sp, RecrossHookEntity hook) {
         sp.setNoGravity(false);
-        // 現在位置にスナップ — client prediction の慣性 (= shift キャンセルしても飛び続ける問題) を打ち切る。
-        Vec3 here = sp.position();
-        sp.connection.teleport(here.x, here.y, here.z, sp.getYRot(), sp.getXRot());
         sp.setDeltaMovement(Vec3.ZERO);
         sp.hurtMarked = true;
         sp.fallDistance = 0f;
-        SpinHits.reset(sp);
-        SpinPhase.reset(sp);
-        anchoredHookByOwner.remove(sp.getUUID());
-        RecrossDebugLogger.endIfActive(sp, reason);
+        SPIN_HITS.remove(sp.getUUID());
+        SPIN_PHASE.remove(sp.getUUID());
+        ANCHORED.remove(sp.getUUID());
         hook.discard();
     }
 
     private static void arrivePull(ServerPlayer sp, RecrossHookEntity hook) {
         sp.setNoGravity(false);
-        // 1. 慣性を完全にゼロにする (vertical jump を入れると着弾後の浮き上がりで「動き続ける」感が残る)
-        sp.setDeltaMovement(Vec3.ZERO);
-        sp.fallDistance = 0f;
-        // 2. anchor 位置にスナップ — client prediction で蓄積された慣性も位置同期で打ち切る
-        Vec3 anchor = hook.getAnchorPos();
-        if (anchor != null) {
-            sp.connection.teleport(anchor.x, anchor.y, anchor.z, sp.getYRot(), sp.getXRot());
-        }
+        sp.setDeltaMovement(0, 0.4, 0);   // 軽い jump
         sp.hurtMarked = true;
-        SpinHits.reset(sp);
-        SpinPhase.reset(sp);
-        anchoredHookByOwner.remove(sp.getUUID());
+        sp.fallDistance = 0f;
+        SPIN_HITS.remove(sp.getUUID());
+        SPIN_PHASE.remove(sp.getUUID());
+        ANCHORED.remove(sp.getUUID());
         sp.level().playSound(null, sp.getX(), sp.getY(), sp.getZ(),
-            net.minecraft.sounds.SoundEvents.ZOMBIE_INFECT,
-            net.minecraft.sounds.SoundSource.PLAYERS, 1.0f, 2.0f);
-        RecrossDebugLogger.endIfActive(sp, "arrival");
+            SoundEvents.ZOMBIE_INFECT, SoundSource.PLAYERS, 1.0f, 2.0f);
         hook.discard();
     }
 
     private static void tickFloat(ServerPlayer sp) {
-        if (!isHoldingHookshot(sp)) {
-            // hookshot を手放した → fall guard カウンタは onPlayerTick の tickFallImmunity が消化する
-            return;
-        }
+        UUID id = sp.getUUID();
         if (sp.onGround()) {
-            // 着地中 — 時間経過で fuel を回復 (multi_jump エンチャでペースアップ)
-            // base 1/tick + level 分加算: lv0=1, lv1=2, lv2=3, lv3=4
             int recover = 1 + MultiJumpHandler.getHookshotLevel(sp);
-            int cur = FloatFuel.get(sp);
+            int cur = FLOAT_FUEL.getOrDefault(id, 0);
             if (cur > 0) {
                 int next = Math.max(0, cur - recover);
-                if (next == 0) FloatFuel.reset(sp);
-                else FloatFuel.set(sp, next);
+                if (next == 0) FLOAT_FUEL.remove(id);
+                else FLOAT_FUEL.put(id, next);
             }
-            FallImmunity.reset(sp);
+            FALL_IMMUNITY.remove(id);
             return;
         }
 
-        int fuelMax = getFloatFuelMax(sp);
-        int graceMax = getFallImmunityMax(sp);
+        WeaponRarity r = getHeldHookshotRarity(sp);
+        int fuelMax = r != null ? r.getHookshotFloatFuelMax() : FLOAT_FUEL_MAX;
+        int graceMax = r != null ? r.getHookshotFallImmunityTicks() : DEFAULT_FALL_IMMUNITY_TICKS;
 
         if (sp.isShiftKeyDown()) {
-            int fuel = FloatFuel.get(sp);
+            int fuel = FLOAT_FUEL.getOrDefault(id, 0);
             if (fuel >= fuelMax) {
-                // 燃料切れ — float effect 解除. grace はカウンタとして付与
-                sp.removeEffect(the_four_primitives_and_weapons.init.CustomMobEffectInit.HOOKSHOT_FLOAT.get());
+                sp.removeEffect(CustomMobEffectInit.HOOKSHOT_FLOAT.get());
                 applyFallGuard(sp, graceMax);
                 return;
             }
-            // 浮遊中: 独自 HOOKSHOT_FLOAT effect 適用 + 燃料消費
-            // ★ Sneak 離す → 燃料消費停止 (リセットしない). 再度 Sneak で継続。
             sp.addEffect(new MobEffectInstance(
-                the_four_primitives_and_weapons.init.CustomMobEffectInit.HOOKSHOT_FLOAT.get(),
-                5, 0, false, false, false));
+                CustomMobEffectInit.HOOKSHOT_FLOAT.get(), 5, 0, false, false, false));
             sp.fallDistance = 0f;
-            FloatFuel.add(sp, 1);
+            FLOAT_FUEL.merge(id, 1, Integer::sum);
             applyFallGuard(sp, graceMax);
-        } else {
-            // Sneak 離した → 燃料据え置き. fall guard が残っていれば自然減少 (カウンタが tick ごとに減る)
         }
+        // Sneak 離した → fuel 据え置き、grace 自然消化
     }
 
-    /**
-     * 落下ダメ無効 grace を {@code ticks} だけ player に付与 (より長ければ更新).
-     * MobEffect ではなくサーバー内のカウンタで管理し、client への effect 同期を避ける。
-     */
-    public static void applyFallGuard(ServerPlayer sp, int ticks) {
-        if (ticks <= 0) return;
-        int current = FallImmunity.get(sp);
-        if (ticks > current) FallImmunity.set(sp, ticks);
-    }
-
-    /** Player が fall guard 中か (落下ダメージ無効 grace 残量 > 0). */
-    public static boolean hasFallGuard(LivingEntity entity) {
-        return entity instanceof ServerPlayer sp && FallImmunity.get(sp) > 0;
-    }
-
-    /** grace 残量 > 0 の間は fallDistance を 0 に保つ. 毎 tick 1 減算. */
-    private static void tickFallImmunity(ServerPlayer sp) {
-        int rem = FallImmunity.get(sp);
-        if (rem <= 0) return;
-        sp.fallDistance = 0f;
-        FallImmunity.set(sp, rem - 1);
-    }
-
-    private static int getFloatFuelMax(ServerPlayer sp) {
-        var r = getHeldHookshotRarity(sp);
-        return (r != null) ? r.getHookshotFloatFuelMax() : FLOAT_FUEL_MAX;
-    }
-
-    private static int getFallImmunityMax(ServerPlayer sp) {
-        var r = getHeldHookshotRarity(sp);
-        return (r != null) ? r.getHookshotFallImmunityTicks() : DEFAULT_FALL_IMMUNITY_TICKS;
-    }
-
-    private static the_four_primitives_and_weapons.item.rarity.WeaponRarity getHeldHookshotRarity(ServerPlayer sp) {
-        var main = sp.getMainHandItem();
-        if (main.getItem() instanceof the_four_primitives_and_weapons.item.RecrossHookshotItem) {
-            return the_four_primitives_and_weapons.item.rarity.WeaponRarity.getFromStack(main);
-        }
-        var off = sp.getOffhandItem();
-        if (off.getItem() instanceof the_four_primitives_and_weapons.item.RecrossHookshotItem) {
-            return the_four_primitives_and_weapons.item.rarity.WeaponRarity.getFromStack(off);
-        }
+    private static WeaponRarity getHeldHookshotRarity(ServerPlayer sp) {
+        ItemStack main = sp.getMainHandItem();
+        if (main.getItem() instanceof RecrossHookshotItem) return WeaponRarity.getFromStack(main);
+        ItemStack off = sp.getOffhandItem();
+        if (off.getItem() instanceof RecrossHookshotItem) return WeaponRarity.getFromStack(off);
         return null;
     }
 
     private static boolean isHoldingHookshot(Player p) {
-        return p.getMainHandItem().getItem() instanceof the_four_primitives_and_weapons.item.RecrossHookshotItem
-            || p.getOffhandItem().getItem() instanceof the_four_primitives_and_weapons.item.RecrossHookshotItem;
-    }
-
-    /** 1 player 1 fuel カウンタ — 着地で時間経過回復. */
-    private static final class FloatFuel {
-        private static final java.util.Map<java.util.UUID, Integer> map = new java.util.concurrent.ConcurrentHashMap<>();
-        static int get(ServerPlayer p) { return map.getOrDefault(p.getUUID(), 0); }
-        static void add(ServerPlayer p, int n) { map.merge(p.getUUID(), n, Integer::sum); }
-        static void set(ServerPlayer p, int n) {
-            if (n <= 0) map.remove(p.getUUID());
-            else map.put(p.getUUID(), n);
-        }
-        static void reset(ServerPlayer p) { map.remove(p.getUUID()); }
-    }
-
-    /** Pull 中スピン斬りで既にヒットさせた敵の集合 — pull 開始/終了でリセット. */
-    private static final class SpinHits {
-        private static final java.util.Map<UUID, Set<UUID>> map = new ConcurrentHashMap<>();
-        static Set<UUID> getOrCreate(ServerPlayer p) {
-            return map.computeIfAbsent(p.getUUID(), k -> ConcurrentHashMap.newKeySet());
-        }
-        static void reset(ServerPlayer p) { map.remove(p.getUUID()); }
-    }
-
-    /** Pull 中の螺旋刃の累積回転 phase (tick 数) — pull 開始/終了でリセット. */
-    private static final class SpinPhase {
-        private static final java.util.Map<UUID, java.util.concurrent.atomic.AtomicInteger> map = new ConcurrentHashMap<>();
-        static int getAndIncrement(ServerPlayer p) {
-            return map.computeIfAbsent(p.getUUID(),
-                k -> new java.util.concurrent.atomic.AtomicInteger(0)).getAndIncrement();
-        }
-        static void reset(ServerPlayer p) { map.remove(p.getUUID()); }
-    }
-
-    /** Sneak 解除後の落下ダメ無効 grace カウンタ — 着地 / 燃料切れ後リセット. */
-    private static final class FallImmunity {
-        private static final java.util.Map<java.util.UUID, Integer> map = new java.util.concurrent.ConcurrentHashMap<>();
-        static int get(ServerPlayer p) { return map.getOrDefault(p.getUUID(), 0); }
-        static void set(ServerPlayer p, int n) {
-            if (n <= 0) map.remove(p.getUUID());
-            else map.put(p.getUUID(), n);
-        }
-        static void reset(ServerPlayer p) { map.remove(p.getUUID()); }
+        return p.getMainHandItem().getItem() instanceof RecrossHookshotItem
+            || p.getOffhandItem().getItem() instanceof RecrossHookshotItem;
     }
 }
