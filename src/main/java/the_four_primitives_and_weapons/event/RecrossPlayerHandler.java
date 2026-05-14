@@ -90,7 +90,7 @@ public class RecrossPlayerHandler {
         // 何もすることがなければ完全スキップ (大半の player はこの分岐)
         if (hook == null && !holding && fallGuard <= 0 && !hasFloat && !sp.isNoGravity()) return;
 
-        // 1. Pull
+        // 1. Pull (v3 は noGravity を使わないので解除処理も不要)
         if (hook != null) {
             if (!hook.isAlive() || hook.getAnchorPos() == null
                 || hook.getState() != RecrossHookEntity.State.ANCHORED
@@ -100,16 +100,19 @@ public class RecrossPlayerHandler {
             }
         }
         if (hook != null) tickPull(sp, hook);
-        else if (sp.isNoGravity() && !holding) sp.setNoGravity(false);
 
-        // 2. 浮遊効果 (HOOKSHOT_FLOAT) — 上昇速度を維持
+        // 2. 浮遊効果 (HOOKSHOT_FLOAT) — noGravity で重力を切ってから Y を固定
+        //    (重力 ON だと毎 tick "重力で Y 低下 → server が Y=0.05 に上書き" の往復で
+        //     クライアントがガタガタする。浮遊は本質的に no-gravity なので素直に切る。)
         if (hasFloat) {
+            if (!sp.isNoGravity()) sp.setNoGravity(true);
             Vec3 m = sp.getDeltaMovement();
-            if (m.y < FLOAT_LIFT_VELOCITY) {
-                sp.setDeltaMovement(m.x, FLOAT_LIFT_VELOCITY, m.z);
-                sp.hurtMarked = true;
-            }
+            sp.setDeltaMovement(m.x, FLOAT_LIFT_VELOCITY, m.z);
+            sp.hurtMarked = true;
             sp.fallDistance = 0f;
+        } else if (sp.isNoGravity()) {
+            // 浮遊解除 → 重力復帰
+            sp.setNoGravity(false);
         }
 
         // 3. Sneak で浮遊状態を制御 + 燃料管理
@@ -132,20 +135,50 @@ public class RecrossPlayerHandler {
         }
     }
 
+    /**
+     * Pull v3 — 元データパックに倣った「Motion 上書き + 重力で自然減衰」方式。
+     *
+     * v2 までの noGravity 方式の問題:
+     *   - 上向き velocity がクライアント側で減衰しない
+     *   - 結果、斜め上に撃つと client が velocity を保持し続けて player が「めっちゃ上に飛ぶ」
+     *   - 元データパック ({@code data merge entity @s {Motion:[...]}}) は noGravity を使わず、
+     *     毎 tick velocity を上書きしているだけ。重力で Y 成分は緩やかに減衰し、自然な弧を描く。
+     *
+     * v3 の実装:
+     *   1. {@code setNoGravity} を使わない (重力で Y 減衰 → 自然な滑らかさ)
+     *   2. 毎 tick {@code setDeltaMovement(toAnchor 方向 × PULL_SPEED)} で上書き
+     *   3. arrive: dist ≤ ARRIVAL_DIST OR pull 軸の進行度 ≥ 1.0 (= 通過したら戻さず止める)
+     *   4. 落下ダメ防止は {@code fallDistance = 0} + {@link #onLivingFall} キャンセルで対応
+     *   5. teleport は使わない (= client interpolation で滑らかに移動)
+     */
     private static void tickPull(ServerPlayer sp, RecrossHookEntity hook) {
         if (sp.isShiftKeyDown()) { cancelPull(sp, hook); return; }
 
         Vec3 anchor = hook.getAnchorPos();
+        Vec3 origin = hook.getPullOrigin();
         Vec3 cur = sp.position();
         Vec3 toAnchor = anchor.subtract(cur);
         double dist = toAnchor.length();
 
+        // (a) 通常 arrive: anchor 至近
         if (dist <= ARRIVAL_DIST) { arrivePull(sp, hook); return; }
 
+        // (b) 通過 arrive: pullOrigin → anchor 軸への射影で進行度を見る
+        //     overshoot しても progress >= 1 で arrive、後ろ pull に転じない
+        if (origin != null) {
+            Vec3 axis = anchor.subtract(origin);
+            double axisSq = axis.lengthSqr();
+            if (axisSq > 1.0E-4) {
+                double progress = cur.subtract(origin).dot(axis) / axisSq;
+                if (progress >= 1.0) { arrivePull(sp, hook); return; }
+            }
+        }
+
+        // (c) 進路上の壁 → cancel
         Vec3 step = toAnchor.normalize().scale(Math.min(PULL_SPEED, dist));
         if (isPathBlocked(sp, cur, cur.add(step))) { cancelPull(sp, hook); return; }
 
-        if (!sp.isNoGravity()) sp.setNoGravity(true);
+        // (d) Motion 上書き — noGravity なし、重力で Y が自然減衰する
         sp.setDeltaMovement(step);
         sp.hurtMarked = true;
         sp.fallDistance = 0f;
@@ -238,10 +271,11 @@ public class RecrossPlayerHandler {
     }
 
     private static void cancelPull(ServerPlayer sp, RecrossHookEntity hook) {
-        sp.setNoGravity(false);
+        // noGravity は v3 で使わないので解除不要
         sp.setDeltaMovement(Vec3.ZERO);
         sp.hurtMarked = true;
         sp.fallDistance = 0f;
+        applyFallGuard(sp, DEFAULT_FALL_IMMUNITY_TICKS);
         SPIN_HITS.remove(sp.getUUID());
         SPIN_PHASE.remove(sp.getUUID());
         ANCHORED.remove(sp.getUUID());
@@ -249,10 +283,12 @@ public class RecrossPlayerHandler {
     }
 
     private static void arrivePull(ServerPlayer sp, RecrossHookEntity hook) {
-        sp.setNoGravity(false);
-        sp.setDeltaMovement(0, 0.4, 0);   // 軽い jump
+        // 残存 velocity を消して停止 (高所 anchor で「上向き jump」を加えると "めっちゃ上に飛ぶ"
+        // 原因になるので、ジャンプは入れない)
+        sp.setDeltaMovement(Vec3.ZERO);
         sp.hurtMarked = true;
         sp.fallDistance = 0f;
+        applyFallGuard(sp, DEFAULT_FALL_IMMUNITY_TICKS);
         SPIN_HITS.remove(sp.getUUID());
         SPIN_PHASE.remove(sp.getUUID());
         ANCHORED.remove(sp.getUUID());

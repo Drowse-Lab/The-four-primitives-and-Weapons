@@ -60,6 +60,8 @@ public class RecrossHookEntity extends Mob {
 
     private State state = State.FLYING;
     private Vec3 anchorPos;
+    /** Anchor 確定時の owner 位置 — pull 進行度判定で使う (anchor を通り過ぎたら arrive). */
+    private Vec3 pullOrigin;
     /** Heavy 対象 = anchor が entity に追従. */
     private Entity heavyAnchor;
     /** Light 対象 = entity を player へ毎 tick で引き寄せ. */
@@ -108,6 +110,7 @@ public class RecrossHookEntity extends Mob {
     public boolean isOffHand() { return entityData.get(DATA_OFF_HAND); }
     public State getState() { return state; }
     public Vec3 getAnchorPos() { return anchorPos; }
+    public Vec3 getPullOrigin() { return pullOrigin; }
     public boolean isPullingEntity() { return pulledEntity != null; }
 
     public Player getOwnerPlayer() {
@@ -221,7 +224,11 @@ public class RecrossHookEntity extends Mob {
         // light pull 中の hook は player 側 pull の対象外なので登録しない
         if (pulledEntity == null) {
             Player owner = getOwnerPlayer();
-            if (owner != null) RecrossPlayerHandler.registerAnchoredHook(owner, this);
+            if (owner != null) {
+                // pull 開始時の owner 位置を記録 — anchor 通過判定 (= 後ろに引き戻されない) に使う
+                pullOrigin = owner.position();
+                RecrossPlayerHandler.registerAnchoredHook(owner, this);
+            }
         }
     }
 
