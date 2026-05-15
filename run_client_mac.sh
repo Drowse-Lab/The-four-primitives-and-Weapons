@@ -13,8 +13,11 @@ cd "$(dirname "$0")"
 
 GRADLE_ARGS="runClient"
 if [ "$1" = "offline" ]; then
-    GRADLE_ARGS="$GRADLE_ARGS --offline -Dnet.minecraftforge.gradle.check.certs=false"
-    echo "=== Offline mode (using cached dependencies) ==="
+    # downloadAssets は --offline を尊重せず piston-meta.mojang.com に毎回検証 HTTP を送る。
+    # アセットは ~/.gradle/caches/forge_gradle/assets/ にキャッシュ済みなので
+    # offline モードでは -x で明示的に除外する (SSL handshake failure 回避)。
+    GRADLE_ARGS="$GRADLE_ARGS --offline -Dnet.minecraftforge.gradle.check.certs=false -x downloadAssets"
+    echo "=== Offline mode (using cached dependencies, skipping downloadAssets) ==="
 fi
 
 # --- Iron's Spellbooks 同梱の対話確認 ---

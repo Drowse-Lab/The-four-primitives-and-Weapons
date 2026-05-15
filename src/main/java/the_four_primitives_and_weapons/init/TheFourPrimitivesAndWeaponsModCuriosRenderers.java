@@ -21,6 +21,7 @@ public class TheFourPrimitivesAndWeaponsModCuriosRenderers {
 			CuriosRendererRegistry.register(TheFourPrimitivesAndWeaponsModItems.SAYA.get(), ScabbardCurioRenderer::new);
 			CuriosRendererRegistry.register(TheFourPrimitivesAndWeaponsModItems.TYOKUTO_SAYA.get(), ScabbardCurioRenderer::new);
 			CuriosRendererRegistry.register(TheFourPrimitivesAndWeaponsModItems.SWORD_SAYA.get(), ScabbardCurioRenderer::new);
+			CuriosRendererRegistry.register(TheFourPrimitivesAndWeaponsModItems.RAPIER_SAYA.get(), ScabbardCurioRenderer::new);
 		});
 	}
 }
