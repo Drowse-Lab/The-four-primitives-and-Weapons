@@ -705,6 +705,45 @@
 				"up": {"uv": [9.625, 0.625, 9.5, 0.5], "texture": "#missing"},
 				"down": {"uv": [1.125, 9.5, 1, 9.625], "texture": "#missing"}
 			}
+		},
+		{
+			"from": [0.3, 5.99437, 17.04407],
+			"to": [0.5, 6.74437, 17.19407],
+			"rotation": {"x": 135, "y": 0, "z": 0, "origin": [0.4, 7.06431, 17.15411]},
+			"faces": {
+				"north": {"uv": [1.5, 11, 1.625, 11.0625], "texture": "#missing"},
+				"east": {"uv": [11, 1.5, 11.125, 1.5625], "texture": "#missing"},
+				"south": {"uv": [2, 11, 2.125, 11.0625], "texture": "#missing"},
+				"west": {"uv": [11, 2, 11.125, 2.0625], "texture": "#missing"},
+				"up": {"uv": [9.625, 0.625, 9.5, 0.5], "texture": "#missing"},
+				"down": {"uv": [1.125, 9.5, 1, 9.625], "texture": "#missing"}
+			}
+		},
+		{
+			"from": [0.3, 6.10043, 17.15014],
+			"to": [0.5, 7.10043, 17.30014],
+			"rotation": {"x": 135, "y": 0, "z": 0, "origin": [0.4, 7.17038, 17.26018]},
+			"faces": {
+				"north": {"uv": [1.5, 11, 1.625, 11.0625], "texture": "#missing"},
+				"east": {"uv": [11, 1.5, 11.125, 1.5625], "texture": "#missing"},
+				"south": {"uv": [2, 11, 2.125, 11.0625], "texture": "#missing"},
+				"west": {"uv": [11, 2, 11.125, 2.0625], "texture": "#missing"},
+				"up": {"uv": [9.625, 0.625, 9.5, 0.5], "texture": "#missing"},
+				"down": {"uv": [1.125, 9.5, 1, 9.625], "texture": "#missing"}
+			}
+		},
+		{
+			"from": [0.3, 6.2065, 17.2562],
+			"to": [0.5, 7.2565, 17.4062],
+			"rotation": {"x": 135, "y": 0, "z": 0, "origin": [0.4, 7.27645, 17.36624]},
+			"faces": {
+				"north": {"uv": [1.5, 11, 1.625, 11.0625], "texture": "#missing"},
+				"east": {"uv": [11, 1.5, 11.125, 1.5625], "texture": "#missing"},
+				"south": {"uv": [2, 11, 2.125, 11.0625], "texture": "#missing"},
+				"west": {"uv": [11, 2, 11.125, 2.0625], "texture": "#missing"},
+				"up": {"uv": [9.625, 0.625, 9.5, 0.5], "texture": "#missing"},
+				"down": {"uv": [1.125, 9.5, 1, 9.625], "texture": "#missing"}
+			}
 		}
 	],
 	"display": {
@@ -976,7 +1015,7 @@
 									"origin": [8, 8, 8],
 									"scope": 0,
 									"color": 0,
-									"children": [50, 51, 52, 53]
+									"children": [50, 51, 52, 53, 54, 55, 56]
 								}
 							]
 						}
