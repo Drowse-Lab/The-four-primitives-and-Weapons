@@ -109,25 +109,22 @@ public class SwordGuardHandler {
             serverLevel.playSound(null, player.blockPosition(),
                     SoundEvents.ARMOR_EQUIP_GOLD, SoundSource.PLAYERS, 1f, 1f);
 
-            // ガラスパネArmorStandを生成
-            Item glassPane = Items.WHITE_STAINED_GLASS_PANE;
+            // ガラスパネArmorStandはReplica Sword of Lightのみ生成
+            // その他の武器はプレイヤーが武器を目の前に構えるだけ（GuardArmPoseHandlerでBLOCKポーズ）
             if (isReplica) {
-                glassPane = Items.YELLOW_STAINED_GLASS_PANE;
-            } else if (mainHand.getItem() == TheFourPrimitivesAndWeaponsModItems.LOKI_THE_TRICKSTER.get()) {
-                glassPane = Items.LIGHT_GRAY_STAINED_GLASS_PANE;
-            } else if (mainHand.getItem() == TheFourPrimitivesAndWeaponsModItems.PROTOTYPE_KATANA.get()) {
-                glassPane = Items.BLACK_STAINED_GLASS_PANE;
+                Item glassPane = Items.YELLOW_STAINED_GLASS_PANE;
+                ArmorStand stand = new ArmorStand(serverLevel, player.getX(), player.getY(), player.getZ());
+                stand.setNoGravity(true);
+                stand.setInvisible(true);
+                stand.setInvulnerable(true);
+                stand.setMarker(true);
+                stand.addTag("the_four_primitives_and_weapons_guard_bind");
+                stand.setLeftArmPose(new Rotations(0f, 90f, -90f));
+                stand.setRightArmPose(new Rotations(0f, -90f, 90f));
+                stand.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(glassPane));
+                stand.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(glassPane));
+                serverLevel.addFreshEntity(stand);
             }
-            ArmorStand stand = new ArmorStand(serverLevel, player.getX(), player.getY(), player.getZ());
-            stand.setNoGravity(true);
-            stand.setInvisible(true);
-            stand.setInvulnerable(true);
-            stand.addTag("the_four_primitives_and_weapons_guard_bind");
-            stand.setLeftArmPose(new Rotations(0f, 90f, -90f));
-            stand.setRightArmPose(new Rotations(0f, -90f, 90f));
-            stand.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(glassPane));
-            stand.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(glassPane));
-            serverLevel.addFreshEntity(stand);
         }
 
         // ガード状態をクライアントに同期（腕ポーズ用）

@@ -28,22 +28,21 @@ public class GuardposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
 		if (entity == null)
 			return;
-		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.REPLICA_SWORD_OF_LIGHT.get()) {
-			if (world instanceof ServerLevel _level) {
+		if (world instanceof ServerLevel _level) {
+			Item mainHandItem = (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem();
+			if (mainHandItem == TheFourPrimitivesAndWeaponsModItems.REPLICA_SWORD_OF_LIGHT.get()) {
 				spawnGuardArmorStand(_level, x, y, z, Items.YELLOW_STAINED_GLASS_PANE, 1f, 1f, 0.5f);
-			}
-		} else if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.LOKI_THE_TRICKSTER.get()) {
-			if (world instanceof ServerLevel _level) {
-				spawnGuardArmorStand(_level, x, y, z, Items.LIGHT_GRAY_STAINED_GLASS_PANE, 1f, 1f, 0.5f);
-			}
-		} else if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.PROTOTYPE_KATANA.get()) {
-			if (world instanceof ServerLevel _level) {
-				spawnGuardArmorStand(_level, x, y, z, Items.BLACK_STAINED_GLASS_PANE, 0.5f, 0.5f, 0.5f);
-			}
-		} else {
-			// その他の刀/剣: 白いガラスパネでガードエフェクト
-			if (world instanceof ServerLevel _level) {
-				spawnGuardArmorStand(_level, x, y, z, Items.WHITE_STAINED_GLASS_PANE, 0.8f, 0.8f, 0.8f);
+			} else {
+				// Replica以外: アーマースタンドはスポーンせず、パーティクル/サウンドのみ（武器はBLOCKポーズで構える）
+				float r = 0.8f, g = 0.8f, b = 0.8f;
+				if (mainHandItem == TheFourPrimitivesAndWeaponsModItems.LOKI_THE_TRICKSTER.get()) {
+					r = 1f; g = 1f; b = 0.5f;
+				} else if (mainHandItem == TheFourPrimitivesAndWeaponsModItems.PROTOTYPE_KATANA.get()) {
+					r = 0.5f; g = 0.5f; b = 0.5f;
+				}
+				_level.playSound(null, x, y, z, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 2, 2);
+				_level.playSound(null, x, y, z, SoundEvents.ARMOR_EQUIP_GOLD, SoundSource.PLAYERS, 1, 1);
+				_level.sendParticles(new DustParticleOptions(new Vector3f(r, g, b), 0.5f), x, y + 1, z, 35, 0.25, 0.25, 0.25, 1);
 			}
 		}
 		entity.getPersistentData().putDouble("the_four_primitives_and_weapons:muteki_x_chuzume", (entity.getX()));
@@ -103,6 +102,7 @@ public class GuardposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 		armorStand.setNoGravity(true);
 		armorStand.setInvisible(true);
 		armorStand.setInvulnerable(true);
+		armorStand.setMarker(true);
 		armorStand.addTag("the_four_primitives_and_weapons_guard_bind");
 		armorStand.setLeftArmPose(new Rotations(0f, 90f, -90f));
 		armorStand.setRightArmPose(new Rotations(0f, -90f, 90f));
