@@ -1,5 +1,6 @@
 {
 	"format_version": "1.9.0",
+	"parent": "the_four_primitives_and_weapons:custom/saya/rapier/saya_rapier_parent",
 	"credit": "Made with Blockbench",
 	"textures": {
 		"1": "the_four_primitives_and_weapons:item/wooden_rapier",

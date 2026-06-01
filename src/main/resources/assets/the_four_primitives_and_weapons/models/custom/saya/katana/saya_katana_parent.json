@@ -1,19 +1,16 @@
 {
-
 	"format_version": "1.9.0",
-
-	"parent": "the_four_primitives_and_weapons:custom/saya/katana/saya_katana_parent",
-	"credit": "Made with Blockbench",
+	"credit": "MAW saya parent (katana) — edit the_four_primitives_and_weapons:belt / :back via sb_worn_display Blockbench plugin",
+	"parent": "block/block",
 	"texture_size": [16, 16],
 	"textures": {
 		"0": "the_four_primitives_and_weapons:item/saya",
-		"1": "the_four_primitives_and_weapons:block/saya_katana3ddarkness",
+		"1": "the_four_primitives_and_weapons:block/katanairon3d",
 		"particle": "the_four_primitives_and_weapons:item/saya"
 	},
-	"elements": [
-		
+"elements": [
 		{
-			"__comment": "柄の下部分",
+			"name": "柄の下部分",
 			"from": [8, 4.05, 8.8],
 			"to": [8.8, 5.65, 9.6],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
@@ -27,7 +24,7 @@
 			}
 		},
 		{
-			"__comment": "柄の中部分",
+			"name": "柄の中部分",
 			"from": [8, 5.65, 8.8],
 			"to": [8.8, 6.05, 9.4],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
@@ -41,7 +38,7 @@
 			}
 		},
 		{
-			"__comment": "柄の上部分",
+			"name": "柄の上部分",
 			"from": [8, 6.05, 8.6],
 			"to": [8.8, 7.8, 9.4],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
@@ -55,7 +52,7 @@
 			}
 		},
 		{
-			"__comment": "鍔",
+			"name": "鍔",
 			"from": [7.6, 7.8, 7.95],
 			"to": [9.2, 8.05, 10.05],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11, 6.4, 3.45]},
@@ -69,7 +66,7 @@
 			}
 		},
 		{
-			"__comment": "鞘本体の先端部分",
+			"name": "鞘本体の先端部分",
 			"from": [8, 18, 9.525],
 			"to": [8.8, 19.3, 10.375],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 16.4, 4.2]},
@@ -83,7 +80,7 @@
 			}
 		},
 		{
-			"__comment": "鞘本体の中央部分1",
+			"name": "鞘本体の中央部分1",
 			"from": [8, 13, 8.775],
 			"to": [8.8, 16, 9.725],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 11.4, 3.45]},
@@ -97,7 +94,7 @@
 			}
 		},
 		{
-			"__comment": "鞘本体の中央部分2",
+			"name": "鞘本体の中央部分2",
 			"from": [8, 16, 9.025],
 			"to": [8.8, 17, 9.975],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 14.4, 3.7]},
@@ -111,7 +108,7 @@
 			}
 		},
 		{
-			"__comment": "鞘本体のメイン部分",			
+			"name": "鞘本体のメイン部分",
 			"from": [8, 8, 8.55],
 			"to": [8.8, 13, 9.45],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 8.4, 3.2]},
@@ -125,7 +122,7 @@
 			}
 		},
 		{
-			"__comment": "鞘本体の先端部分2",
+			"name": "鞘本体の先端部分2",
 			"from": [8, 17, 9.225],
 			"to": [8.8, 18, 10.175],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 15.4, 3.9]},
@@ -141,56 +138,63 @@
 	],
 	"display": {
 		"thirdperson_righthand": {
-			"rotation": [-180, 0, 0],
-			"translation": [0, 0.75, 2],
+			"rotation": [0, 180, 180],
+			"translation": [-0.5, 0.5, 2],
 			"scale": [1, 1.5, 1]
 		},
 		"thirdperson_lefthand": {
-			"rotation": [-180, 0, 0],
-			"translation": [0, 0.75, 2.25],
+			"rotation": [0, 180, 180],
+			"translation": [0.25, 0.5, 2],
 			"scale": [1, 1.5, 1]
 		},
 		"firstperson_righthand": {
-			"rotation": [125, 0, 0],
-			"translation": [-2.25, 4.75, 5.5],
-			"scale": [1, 1.2, 1]
+			"rotation": [135, 0, 0],
+			"translation": [0.25, 3.5, 3.5],
+			"scale": [1, 1.5, 1]
 		},
 		"firstperson_lefthand": {
-			"rotation": [125, 0, 0],
-			"translation": [-3.5, 5, 6],
-			"scale": [1, 1.2, 1]
+			"rotation": [135, 0, 0],
+			"translation": [0.25, 3.5, 3.5],
+			"scale": [1, 1.5, 1]
 		},
 		"ground": {
-			"rotation": [-180, 0, 0],
-			"translation": [0, 3.5, 1],
-			"scale": [1, 1.5, 1]
+			"rotation": [180, 0, 0],
+			"translation": [-0.5, 10.25, 1.75],
+			"scale": [1.1, 1.6, 1.1]
 		},
 		"gui": {
-			"rotation": [-90, 138, -90],
-			"translation": [2.5, 4.5, 0],
-			"scale": [1, 1.3, 1]
-		},
-		"head": {
-			"rotation": [90, 40, 90],
-			"translation": [3, 5.75, 6.5],
-			"scale": [1, 1.5, 1]
+			"rotation": [90, 45, 90],
+			"translation": [2.25, 4.25, 0],
+			"scale": [0.8, 1.3, 0.8]
 		},
 		"fixed": {
-			"rotation": [-90, -138, 90],
-			"translation": [-3.25, 6, 0],
-			"scale": [1.4, 1.65, 1.4]
+			"rotation": [90, -45, -90],
+			"translation": [-3.5, 5, 0],
+			"scale": [1.1, 1.6, 1.1]
+		},
+		"the_four_primitives_and_weapons:back": {
+			"rotation": [90, 45, 90],
+			"translation": [6.5, -5.75, 3.25],
+			"scale": [1.5, 2, 1.5]
+		},
+		"the_four_primitives_and_weapons:belt": {
+			"rotation": [135, 0, 0],
+			"translation": [-7.5, -14, -6.5],
+			"scale": [1.5, 2, 1.5]
 		}
 	},
 	"groups": [
 		{
 			"name": "katana_handle",
 			"origin": [8, 8, 8],
+			"scope": 0,
 			"color": 0,
 			"children": [0, 1, 2, 3]
 		},
 		{
 			"name": "saya_body",
 			"origin": [8, 8, 8],
+			"scope": 0,
 			"color": 0,
 			"children": [4, 5, 6, 7, 8]
 		}

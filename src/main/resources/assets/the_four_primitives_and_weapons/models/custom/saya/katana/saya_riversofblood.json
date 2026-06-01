@@ -2,6 +2,8 @@
 {
 
 	"format_version": "1.9.0",
+
+	"parent": "the_four_primitives_and_weapons:custom/saya/katana/saya_katana_parent",
 	"credit": "Made with Blockbench",
 	"texture_size": [16, 16],
 	"textures": {

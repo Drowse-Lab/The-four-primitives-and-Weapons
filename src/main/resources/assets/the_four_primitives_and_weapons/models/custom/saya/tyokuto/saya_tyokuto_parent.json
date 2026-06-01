@@ -1,9 +1,9 @@
 {
 	"format_version": "1.9.0",
-	"credit": "Made with Blockbench",
-	"parent": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_tyokuto_parent",
+	"credit": "MAW saya parent (tyokuto) — edit the_four_primitives_and_weapons:belt / :back via sb_worn_display Blockbench plugin",
+	"parent": "block/block",
 	"textures": {
-		"2": "the_four_primitives_and_weapons:block/diamond_tyokuto3d",
+		"2": "the_four_primitives_and_weapons:block/iron_tyokuto3d",
 		"3": "the_four_primitives_and_weapons:item/saya_tyokuto",
 		"particle": "the_four_primitives_and_weapons:item/saya_tyokuto"
 	},
@@ -140,100 +140,23 @@
 		}
 	],
 	"display": {
-		"thirdperson_righthand": {
+		"the_four_primitives_and_weapons:belt": {
 			"rotation": [-180, 0, 0],
 			"translation": [0, 0.75, 2],
 			"scale": [1, 1.5, 1]
 		},
-		"thirdperson_lefthand": {
+		"the_four_primitives_and_weapons:back": {
 			"rotation": [-180, 0, 0],
-			"translation": [0, 0.75, 2.25],
+			"translation": [0, 0.75, 2],
 			"scale": [1, 1.5, 1]
-		},
-		"firstperson_righthand": {
-			"rotation": [125, 0, 0],
-			"translation": [-2.25, 4.75, 5.5],
-			"scale": [1, 1.2, 1]
-		},
-		"firstperson_lefthand": {
-			"rotation": [125, 0, 0],
-			"translation": [-3.5, 5, 6],
-			"scale": [1, 1.2, 1]
-		},
-		"ground": {
-			"rotation": [-180, 0, 0],
-			"translation": [7.75, 3.5, 7.75],
-			"scale": [1, 1.5, 1]
-		},
-		"gui": {
-			"rotation": [90, -135, -90],
-			"translation": [4.25, 2.75, 1.3],
-			"scale": [1, 1.3, 1]
-		},
-		"head": {
-			"rotation": [-90, 40, -90],
-			"translation": [-10.25, -2.75, 14.5],
-			"scale": [1, 1.5, 1]
-		},
-		"fixed": {
-			"rotation": [-90, -135, 90],
-			"translation": [-3.75, 5.5, 0],
-			"scale": [1.4, 1.65, 1.4]
 		}
 	},
 	"groups": [
 		{
-			"name": "group",
-			"origin": [8, 8, 8],
-			"color": 0,
-			"children": [
-				{
-					"name": "group",
-					"origin": [8, 8, 8],
-					"color": 0,
-					"children": []
-				},
-				0,
-				{
-					"name": "group",
-					"origin": [8, 8, 8],
-					"color": 0,
-					"children": [
-						{
-							"name": "group",
-							"origin": [3.9, 7.4, 12.5],
-							"color": 0,
-							"children": []
-						},
-						{
-							"name": "group",
-							"origin": [3.9, 7.4, 12.5],
-							"color": 0,
-							"children": [1, 2, 3, 4, 5, 6]
-						},
-						{
-							"name": "group",
-							"origin": [8, 8, 8],
-							"color": 0,
-							"children": [
-								{
-									"name": "group",
-									"origin": [3.9, 7.4, 12.5],
-									"color": 0,
-									"children": [7]
-								}
-							]
-						}
-					]
-				},
-				8
-			]
-		},
-		{
 			"name": "saya",
 			"origin": [8, 8, 8],
 			"color": 0,
-			"children": [9]
+			"children": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 		}
 	]
 }

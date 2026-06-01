@@ -1,12 +1,12 @@
 {
 	"format_version": "1.9.0",
-	"parent": "the_four_primitives_and_weapons:custom/saya/rapier/saya_rapier_parent",
-	"credit": "Made with Blockbench",
+	"credit": "MAW saya parent (rapier) — edit the_four_primitives_and_weapons:belt / :back via sb_worn_display Blockbench plugin",
+	"parent": "block/block",
 	"textures": {
 		"0": "the_four_primitives_and_weapons:item/saya/saya_rapier",
 		"particle": "the_four_primitives_and_weapons:item/saya/saya_rapier"
 	},
-		"elements": [
+	"elements": [
 		{
 			"from": [8.175, 8, 7.4],
 			"to": [8.625, 18.5, 8.1],
@@ -35,45 +35,15 @@
 		}
 	],
 	"display": {
-		"thirdperson_righthand": {
+		"the_four_primitives_and_weapons:belt": {
 			"rotation": [-180, 0, 0],
 			"translation": [0.25, 0.75, 1.25],
 			"scale": [1, 1.5, 1]
 		},
-		"thirdperson_lefthand": {
+		"the_four_primitives_and_weapons:back": {
 			"rotation": [-180, 0, 0],
-			"translation": [-0.75, 0.75, 1.25],
+			"translation": [0.25, 0.75, 1.25],
 			"scale": [1, 1.5, 1]
-		},
-		"firstperson_righthand": {
-			"rotation": [125, 0, 0],
-			"translation": [-2.25, 4.75, 5],
-			"scale": [1, 1.2, 1]
-		},
-		"firstperson_lefthand": {
-			"rotation": [125, 0, 0],
-			"translation": [-3.5, 5, 6],
-			"scale": [1, 1.2, 1]
-		},
-		"ground": {
-			"rotation": [-180, 0, 0],
-			"translation": [0, 12.75, 0.75],
-			"scale": [1, 1.5, 1]
-		},
-		"gui": {
-			"rotation": [-90, -45, 90],
-			"translation": [2.75, 2.75, 1.75],
-			"scale": [0.9, 1.2, 0.9]
-		},
-		"head": {
-			"rotation": [-90, 40, -90],
-			"translation": [-10.25, -2.75, 14.5],
-			"scale": [1, 1.5, 1]
-		},
-		"fixed": {
-			"rotation": [-90, -135, 90],
-			"translation": [-2.5, 2.25, 0.25],
-			"scale": [1.1, 1.5, 1.1]
 		}
 	},
 	"groups": [
