@@ -75,6 +75,9 @@ public class ScabbardCurioRenderer implements ICurioRenderer {
         //   Y を大きくすると縦に伸びる、X/Z を大きくすると横に太くなる
         // =============================================
 
+        // ハードコード位置/回転/スケール (DEBUG_MODE or 確定値) を fallback として適用。
+        // JSON 側の display.the_four_primitives_and_weapons:back / :belt に値が入っていれば
+        // renderStatic 内で更にその transform が乗る (Blockbench plugin で視覚編集可)。
         if ("belt".equals(slotId)) {
             if (DEBUG_MODE) {
                 poseStack.translate(beltX, beltY, beltZ);
@@ -107,9 +110,20 @@ public class ScabbardCurioRenderer implements ICurioRenderer {
             }
         }
 
+        // slot に応じてカスタム DisplayContext を選択。JSON 側の display.<key> が
+        // あればその rotation/translation/scale が更に乗る (Blockbench plugin 編集対象)。
+        ItemDisplayContext displayCtx;
+        if ("back".equals(slotId)) {
+            displayCtx = the_four_primitives_and_weapons.client.MawDisplayContexts.SAYA_BACK;
+        } else if ("belt".equals(slotId)) {
+            displayCtx = the_four_primitives_and_weapons.client.MawDisplayContexts.SAYA_BELT;
+        } else {
+            displayCtx = ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
+        }
+
         Minecraft.getInstance().getItemRenderer().renderStatic(
                 stack,
-                ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
+                displayCtx,
                 light,
                 OverlayTexture.NO_OVERLAY,
                 poseStack,

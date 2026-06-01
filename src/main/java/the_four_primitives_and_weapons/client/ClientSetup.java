@@ -17,6 +17,10 @@ public class ClientSetup {
 
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event) {
+        // Saya 用カスタム ItemDisplayContext (SAYA_BACK / SAYA_BELT) を class-init
+        // で登録。ScabbardCurioRenderer がこれらを参照する。
+        MawDisplayContexts.init();
+
         event.enqueueWork(() -> {
             // Register item properties for all items
             for (RegistryObject<Item> itemObj : TheFourPrimitivesAndWeaponsModItems.REGISTRY.getEntries()) {
