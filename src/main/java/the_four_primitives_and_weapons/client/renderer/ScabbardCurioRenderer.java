@@ -49,37 +49,15 @@ public class ScabbardCurioRenderer implements ICurioRenderer {
 
         poseStack.pushPose();
 
-        // sb_worn_display Blockbench プラグインは DisplayMode.loadHead() を踏み台に
-        // 使うため、Display プレビューの基準点 = 「Head ボーンの pivot」になる。
-        // ゲーム内でもそれに合わせて model.head を基準にすると、Blockbench で
-        // 設定した display.the_four_primitives_and_weapons:belt / :back の
-        // 位置・回転・スケールがそのままゲーム内に反映される。
-        //
-        // ただし head ボーンはプレイヤーが見回すと回転するため、その rotation を
-        // 打ち消してから display を乗せる (= 鞘は身体に固定されるが、anchor は
-        // head pivot と同じ → Blockbench プレビューと一致する)。
-        if (renderLayerParent.getModel() instanceof HumanoidModel<?> humanoidModel) {
-            @SuppressWarnings("unchecked")
-            HumanoidModel<LivingEntity> model = (HumanoidModel<LivingEntity>) humanoidModel;
-            ICurioRenderer.followBodyRotations(slotContext.entity(), model);
-
-            // body.translateAndRotate で body yaw に追従させる (鞘は身体に付いてくる)
-            model.body.translateAndRotate(poseStack);
-
-            // head ボーンの pivot 位置だけ反映 (translateAndRotate は使わない。
-            // 使うと head の回転 = 見回しの動き まで載ってしまう)。
-            // HumanoidModel では head/body の pivot は同じ (0,0,0) なので
-            // 追加の translate は不要。Blockbench plugin の head 基準と一致。
-        }
+        // Java 側は何も transform を適用しない (body bone setup も削除)。
+        // 位置・回転・スケールは saya_<type>_parent.json の
+        // display.the_four_primitives_and_weapons:belt / :back だけが制御する。
+        // Blockbench sb_worn_display プラグインで設定した値が
+        // そのままゲーム内に反映される。
 
         String slotId = slotContext.identifier();
 
-        // Java 側は何も transform を適用しない。位置・回転・スケールは
-        // saya_<type>_parent.json の display.the_four_primitives_and_weapons:belt / :back
-        // が全てを制御する (Blockbench sb_worn_display プラグインで視覚編集)。
-
-        // slot に応じてカスタム DisplayContext を選択。JSON 側の display.<key> の
-        // rotation/translation/scale がそのまま適用される (Blockbench plugin 編集対象)。
+        // slot に応じてカスタム DisplayContext を選択。
         ItemDisplayContext displayCtx;
         if ("back".equals(slotId)) {
             displayCtx = the_four_primitives_and_weapons.client.MawDisplayContexts.SAYA_BACK;

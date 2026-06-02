@@ -397,6 +397,8 @@ public class CuriosScabbardHelper {
         boolean isSwordSayaTarget  = SwordSayaItem.canSheathe(weaponStack);
         boolean isRapierSayaTarget = RapierSayaItem.canSheathe(weaponStack);
         if (isTyokutoSaya) {
+            // tyokuto は BluepurgeItem の NBT 特例 (CustomModelData==2 → 直刀扱い) を
+            // TyokutoSayaItem.getSwordModelData が拾っているので、こちらに残す。
             return isStraightSword && TyokutoSayaItem.getSwordModelData(weaponStack) != 0;
         } else if (isSwordSaya) {
             return isSwordSayaTarget;
@@ -405,22 +407,26 @@ public class CuriosScabbardHelper {
         } else {
             // 通常鞘 (katana): 専用鞘対象は排除し、katana 登録済みのみ受理
             if (isStraightSword || isSwordSayaTarget || isRapierSayaTarget) return false;
-            return getWeaponModelDataForSaya(weaponStack) != 0;
+            return SayaRegistry.isRegistered(SayaRegistry.SayaType.KATANA, weaponStack);
         }
     }
 
     /**
-     * 通常 saya に登録されているアイテムか (UI フィルタ・デバッグ用)。
+     * 通常 saya (katana) に登録されているアイテムか (UI フィルタ・納刀判定用)。
+     * Why: 旧方式 (整数 custom_model_data) のみ判定していたため、main.json が
+     * ResourceLocation 文字列方式に切り替わった後は常に false を返してしまい、
+     * 刀の納刀ができなくなっていた。 SayaRegistry.isRegistered は両方式を
+     * カバーするので、こちらに切り替える。
      */
     public static boolean isRegisteredForSaya(ItemStack weaponStack) {
-        return getWeaponModelDataForSaya(weaponStack) != 0;
+        return SayaRegistry.isRegistered(SayaRegistry.SayaType.KATANA, weaponStack);
     }
 
     /**
      * 直刀 saya に登録されているアイテムか。
      */
     public static boolean isRegisteredForTyokutoSaya(ItemStack weaponStack) {
-        return TyokutoSayaItem.getSwordModelData(weaponStack) != 0;
+        return SayaRegistry.isRegistered(SayaRegistry.SayaType.TYOKUTO, weaponStack);
     }
 
     /**
