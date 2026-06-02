@@ -7,47 +7,5 @@
 		"0": "the_four_primitives_and_weapons:item/saya",
 		"1": "the_four_primitives_and_weapons:block/katanairon3d",
 		"particle": "the_four_primitives_and_weapons:item/saya"
-	},
-	"display": {
-		"thirdperson_righthand": {
-			"rotation": [-180, 0, 0],
-			"translation": [0, 0.75, 2],
-			"scale": [1, 1.5, 1]
-		},
-		"thirdperson_lefthand": {
-			"rotation": [-180, 0, 0],
-			"translation": [0, 0.75, 2.25],
-			"scale": [1, 1.5, 1]
-		},
-		"firstperson_righthand": {
-			"rotation": [125, 0, 0],
-			"translation": [-2.25, 4.75, 5.5],
-			"scale": [1, 1.2, 1]
-		},
-		"firstperson_lefthand": {
-			"rotation": [125, 0, 0],
-			"translation": [-3.5, 5, 6],
-			"scale": [1, 1.2, 1]
-		},
-		"ground": {
-			"rotation": [-180, 0, 0],
-			"translation": [0, 3.5, 1],
-			"scale": [1, 1.5, 1]
-		},
-		"gui": {
-			"rotation": [-90, 138, -90],
-			"translation": [2.5, 4.5, 0],
-			"scale": [1, 1.3, 1]
-		},
-		"head": {
-			"rotation": [90, 40, 90],
-			"translation": [3, 5.75, 6.5],
-			"scale": [1, 1.5, 1]
-		},
-		"fixed": {
-			"rotation": [-90, -138, 90],
-			"translation": [-3.25, 6, 0],
-			"scale": [1.4, 1.65, 1.4]
-		}
 	}
 }
