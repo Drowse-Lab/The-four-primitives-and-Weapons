@@ -97,7 +97,7 @@
 			"scale": [1, 1.5, 1]
 		},
 		"ground": {
-			"rotation": [180, 0, 0],
+			"rotation": [-180, 0, 0],
 			"translation": [0, 10.25, 1],
 			"scale": [1, 1.5, 1]
 		},
@@ -117,9 +117,9 @@
 			"scale": [1.5, 2, 1.5]
 		},
 		"the_four_primitives_and_weapons:belt": {
-			"rotation": [-180, 0, 0],
-			"translation": [0, 0.75, 2],
-			"scale": [1, 1.5, 1]
+			"rotation": [135, 0, 0],
+			"translation": [-7, -19, -4.5],
+			"scale": [1.5, 2, 1.5]
 		}
 	},
 	"groups": [

@@ -37,12 +37,12 @@
 	"display": {
 		"thirdperson_righthand": {
 			"rotation": [-180, 0, 0],
-			"translation": [0.25, 0.75, 1.25],
+			"translation": [-0.5, 0.75, 1.25],
 			"scale": [1, 1.5, 1]
 		},
 		"thirdperson_lefthand": {
 			"rotation": [-180, 0, 0],
-			"translation": [-0.75, 0.75, 1.25],
+			"translation": [-0.5, 0.75, 1.25],
 			"scale": [1, 1.5, 1]
 		},
 		"firstperson_righthand": {
@@ -78,6 +78,11 @@
 		"the_four_primitives_and_weapons:back": {
 			"rotation": [90, 45, 90],
 			"translation": [8.25, -7.25, 3.25],
+			"scale": [1.5, 2, 1.5]
+		},
+		"the_four_primitives_and_weapons:belt": {
+			"rotation": [135, 0, 0],
+			"translation": [-7.25, -19, -6.5],
 			"scale": [1.5, 2, 1.5]
 		}
 	},
