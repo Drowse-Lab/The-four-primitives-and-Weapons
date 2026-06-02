@@ -49,11 +49,23 @@ public class ScabbardCurioRenderer implements ICurioRenderer {
 
         poseStack.pushPose();
 
-        // Java 側は何も transform を適用しない (body bone setup も削除)。
-        // 位置・回転・スケールは saya_<type>_parent.json の
-        // display.the_four_primitives_and_weapons:belt / :back だけが制御する。
-        // Blockbench sb_worn_display プラグインで設定した値が
-        // そのままゲーム内に反映される。
+        // sb_worn_display Blockbench プラグインは DisplayMode.loadHead() を踏み台に
+        // 「head の visual center (顔の高さ)」を anchor として display 値を解釈する。
+        // HumanoidModel の head bone pivot は head box の下端 (= 首) にあるため、
+        // visual center に合わせるには pivot から head box 内側に半分 (4 unit / 16
+        // = 0.25) 上げる必要がある。
+        // 1) model.body.translateAndRotate で body yaw に追従させる
+        //    (head ではなく body を使うのは、プレイヤーが見回したとき鞘が
+        //     回らないようにするため)
+        // 2) translate(0, -0.25, 0) で PoseStack 原点を head visual center まで持ち上げる
+        //    (Y軸反転フレーム内なので「-0.25」が world Y で「+0.234」)
+        if (renderLayerParent.getModel() instanceof HumanoidModel<?> humanoidModel) {
+            @SuppressWarnings("unchecked")
+            HumanoidModel<LivingEntity> model = (HumanoidModel<LivingEntity>) humanoidModel;
+            ICurioRenderer.followBodyRotations(slotContext.entity(), model);
+            model.body.translateAndRotate(poseStack);
+            poseStack.translate(0.0, -0.25, 0.0);
+        }
 
         String slotId = slotContext.identifier();
 
