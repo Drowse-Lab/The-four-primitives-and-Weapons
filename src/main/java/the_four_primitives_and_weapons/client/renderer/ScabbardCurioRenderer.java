@@ -1,7 +1,6 @@
 package the_four_primitives_and_weapons.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
@@ -50,68 +49,37 @@ public class ScabbardCurioRenderer implements ICurioRenderer {
 
         poseStack.pushPose();
 
-        // ボディモデルの座標系に変換
+        // sb_worn_display Blockbench プラグインは DisplayMode.loadHead() を踏み台に
+        // 使うため、Display プレビューの基準点 = 「Head ボーンの pivot」になる。
+        // ゲーム内でもそれに合わせて model.head を基準にすると、Blockbench で
+        // 設定した display.the_four_primitives_and_weapons:belt / :back の
+        // 位置・回転・スケールがそのままゲーム内に反映される。
+        //
+        // ただし head ボーンはプレイヤーが見回すと回転するため、その rotation を
+        // 打ち消してから display を乗せる (= 鞘は身体に固定されるが、anchor は
+        // head pivot と同じ → Blockbench プレビューと一致する)。
         if (renderLayerParent.getModel() instanceof HumanoidModel<?> humanoidModel) {
             @SuppressWarnings("unchecked")
             HumanoidModel<LivingEntity> model = (HumanoidModel<LivingEntity>) humanoidModel;
             ICurioRenderer.followBodyRotations(slotContext.entity(), model);
+
+            // body.translateAndRotate で body yaw に追従させる (鞘は身体に付いてくる)
             model.body.translateAndRotate(poseStack);
+
+            // head ボーンの pivot 位置だけ反映 (translateAndRotate は使わない。
+            // 使うと head の回転 = 見回しの動き まで載ってしまう)。
+            // HumanoidModel では head/body の pivot は同じ (0,0,0) なので
+            // 追加の translate は不要。Blockbench plugin の head 基準と一致。
         }
 
         String slotId = slotContext.identifier();
 
-        // =============================================
-        // translate(X, Y, Z) — 位置の調整
-        //   X: +で右、-で左（背面視点）
-        //   Y: +で上、-で下
-        //   Z: +で背中から離れる、-で体に近づく
-        //
-        // rotationDegrees — 回転の調整（translate地点を中心に回転）
-        //   XP: 前後に傾く（+で前に倒れる、-で後ろに倒れる）
-        //   YP: 左右に回す（+で左回転、-で右回転）※180で前後反転
-        //   ZP: 斜めに傾ける（+で反時計回り、-で時計回り）
-        //
-        // scale(X, Y, Z) — サイズの調整
-        //   Y を大きくすると縦に伸びる、X/Z を大きくすると横に太くなる
-        // =============================================
+        // Java 側は何も transform を適用しない。位置・回転・スケールは
+        // saya_<type>_parent.json の display.the_four_primitives_and_weapons:belt / :back
+        // が全てを制御する (Blockbench sb_worn_display プラグインで視覚編集)。
 
-        // ハードコード位置/回転/スケール (DEBUG_MODE or 確定値) を fallback として適用。
-        // JSON 側の display.the_four_primitives_and_weapons:back / :belt に値が入っていれば
-        // renderStatic 内で更にその transform が乗る (Blockbench plugin で視覚編集可)。
-        if ("belt".equals(slotId)) {
-            if (DEBUG_MODE) {
-                poseStack.translate(beltX, beltY, beltZ);
-                poseStack.mulPose(Axis.XP.rotationDegrees(beltRotX));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(beltRotZ));
-                poseStack.mulPose(Axis.YP.rotationDegrees(beltRotY));
-                poseStack.scale(beltScaleX, beltScaleY, beltScaleZ);
-            } else {
-                // === ベルト（確定値） ===
-                poseStack.translate(0.280, 0.660, -0.240);
-                poseStack.mulPose(Axis.XP.rotationDegrees(-100f));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(0f));
-                poseStack.mulPose(Axis.YP.rotationDegrees(180f));
-                poseStack.scale(1.15f, 1.3f, 1.15f);
-            }
-        } else if ("back".equals(slotId)) {
-            if (DEBUG_MODE) {
-                poseStack.translate(backX, backY, backZ);
-                poseStack.mulPose(Axis.XP.rotationDegrees(backRotX));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(backRotZ));
-                poseStack.mulPose(Axis.YP.rotationDegrees(backRotY));
-                poseStack.scale(backScaleX, backScaleY, backScaleZ);
-            } else {
-                // === 背中（確定値） ===
-                poseStack.translate(-0.330, 0.040, 0.130);
-                poseStack.mulPose(Axis.XP.rotationDegrees(0f));
-                poseStack.mulPose(Axis.ZP.rotationDegrees(140f));
-                poseStack.mulPose(Axis.YP.rotationDegrees(270f));
-                poseStack.scale(1.15f, 1.25f, 1.15f);
-            }
-        }
-
-        // slot に応じてカスタム DisplayContext を選択。JSON 側の display.<key> が
-        // あればその rotation/translation/scale が更に乗る (Blockbench plugin 編集対象)。
+        // slot に応じてカスタム DisplayContext を選択。JSON 側の display.<key> の
+        // rotation/translation/scale がそのまま適用される (Blockbench plugin 編集対象)。
         ItemDisplayContext displayCtx;
         if ("back".equals(slotId)) {
             displayCtx = the_four_primitives_and_weapons.client.MawDisplayContexts.SAYA_BACK;

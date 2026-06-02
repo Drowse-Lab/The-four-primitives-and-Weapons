@@ -1,6 +1,6 @@
 {
 	"format_version": "1.9.0",
-	"credit": "MAW saya parent (katana) — edit the_four_primitives_and_weapons:belt / :back via sb_worn_display Blockbench plugin",
+	"credit": "Made with Blockbench",
 	"parent": "block/block",
 	"textures": {
 		"0": "the_four_primitives_and_weapons:item/saya",

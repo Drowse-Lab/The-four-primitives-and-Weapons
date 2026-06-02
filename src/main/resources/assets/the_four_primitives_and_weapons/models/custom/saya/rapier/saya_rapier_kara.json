@@ -10,74 +10,57 @@
 		{
 			"from": [8.175, 8, 7.4],
 			"to": [8.625, 18.5, 8.1],
-			"rotation": {
-				"angle": 0,
-				"axis": "y",
-				"origin": [11.125, 7.6, 1.77997]
-			},
+			"rotation": {"angle": 0, "axis": "y", "origin": [11.125, 7.6, 1.77997]},
 			"faces": {
-				"north": {
-					"uv": [2, 0, 2.5, 10.5],
-					"texture": "#0"
-				},
-				"east": {
-					"uv": [0, 0, 0.75, 10.5],
-					"texture": "#0"
-				},
-				"south": {
-					"uv": [3, 0, 3.5, 10.5],
-					"texture": "#0"
-				},
-				"west": {
-					"uv": [1, 0, 1.75, 10.5],
-					"texture": "#0"
-				},
-				"up": {
-					"uv": [4.5, 0.75, 4, 0],
-					"texture": "#0"
-				},
-				"down": {
-					"uv": [4.5, 1, 4, 1.75],
-					"texture": "#0"
-				}
+				"north": {"uv": [2, 0, 2.5, 10.5], "texture": "#0"},
+				"east": {"uv": [0, 0, 0.75, 10.5], "texture": "#0"},
+				"south": {"uv": [3, 0, 3.5, 10.5], "texture": "#0"},
+				"west": {"uv": [1, 0, 1.75, 10.5], "texture": "#0"},
+				"up": {"uv": [4.5, 0.75, 4, 0], "texture": "#0"},
+				"down": {"uv": [4.5, 1, 4, 1.75], "texture": "#0"}
 			}
 		},
 		{
 			"from": [8.175, 25.69683, 1.76538],
 			"to": [8.625, 26.19683, 2.25538],
-			"rotation": {
-				"angle": 45,
-				"axis": "x",
-				"origin": [11.125, 15.29683, -4.10465]
-			},
+			"rotation": {"angle": 45, "axis": "x", "origin": [11.125, 15.29683, -4.10465]},
 			"faces": {
-				"north": {
-					"uv": [4, 2, 4.5, 2.5],
-					"texture": "#0"
-				},
-				"east": {
-					"uv": [4, 3, 4.5, 3.5],
-					"texture": "#0"
-				},
-				"south": {
-					"uv": [4, 4, 4.5, 4.5],
-					"texture": "#0"
-				},
-				"west": {
-					"uv": [5, 0, 5.5, 0.5],
-					"texture": "#0"
-				},
-				"up": {
-					"uv": [5.5, 1.5, 5, 1],
-					"texture": "#0"
-				},
-				"down": {
-					"uv": [5.5, 2, 5, 2.5],
-					"texture": "#0"
-				}
+				"north": {"uv": [4, 2, 4.5, 2.5], "texture": "#0"},
+				"east": {"uv": [4, 3, 4.5, 3.5], "texture": "#0"},
+				"south": {"uv": [4, 4, 4.5, 4.5], "texture": "#0"},
+				"west": {"uv": [5, 0, 5.5, 0.5], "texture": "#0"},
+				"up": {"uv": [5.5, 1.5, 5, 1], "texture": "#0"},
+				"down": {"uv": [5.5, 2, 5, 2.5], "texture": "#0"}
 			}
 		}
 	],
+	"display": {
+		"ground": {
+			"rotation": [-180, 0, 0],
+			"translation": [0, 10.25, 0],
+			"scale": [1, 1.5, 1]
+		},
+		"gui": {
+			"rotation": [90, 45, 90],
+			"translation": [2.25, 1.9, 0],
+			"scale": [1, 1.3, 1]
+		},
+		"fixed": {
+			"rotation": [90, -45, -90],
+			"translation": [-3, 2.75, 0],
+			"scale": [1.1, 1.6, 1.1]
+		},
+		"the_four_primitives_and_weapons:back": {
+			"rotation": [90, 45, 90],
+			"translation": [8.25, -6.25, 3.25],
+			"scale": [1.5, 2, 1.5]
+		},
+		"the_four_primitives_and_weapons:belt": {
+			"rotation": [135, 0, 0],
+			"translation": [-7, -19, -4.5],
+			"scale": [1.5, 2, 1.5]
+		}
+	},
 	"groups": [
 		{
 			"name": "saya",
