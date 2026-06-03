@@ -49,25 +49,38 @@ public class ScabbardCurioRenderer implements ICurioRenderer {
 
         poseStack.pushPose();
 
-        // sb_worn_display Blockbench プラグインは DisplayMode.loadHead() を踏み台に
-        // 「head の visual center (顔の高さ)」を anchor として display 値を解釈する。
-        // HumanoidModel の head bone pivot は head box の下端 (= 首) にあるため、
-        // visual center に合わせるには pivot から head box 内側に半分 (4 unit / 16
-        // = 0.25) 上げる必要がある。
-        // 1) model.body.translateAndRotate で body yaw に追従させる
-        //    (head ではなく body を使うのは、プレイヤーが見回したとき鞘が
-        //     回らないようにするため)
-        // 2) translate(0, -0.25, 0) で PoseStack 原点を head visual center まで持ち上げる
-        //    (Y軸反転フレーム内なので「-0.25」が world Y で「+0.234」)
+        // sb_worn_display Blockbench プラグインが各 slot で使う anchor 位置に
+        // PoseStack を合わせる。プラグイン側で display_area.position.y を設定して
+        // いる値と同じ Minecraft world Y に PoseStack 原点を移動する。
+        //
+        //   Blockbench scene Y → Minecraft world Y の換算:
+        //     world_y = scene_y / 16 × 0.9375 (LivingEntityRenderer の player scale)
+        //
+        //   Blockbench Steve リファレンス内の主な高さ:
+        //     y=28 → 顔の中心   (world 1.640)  ← loadHead デフォルト
+        //     y=24 → 首・頭根元 (world 1.406)  ← body/head bone pivot
+        //     y=18 → 胸・背中   (world 1.054)  ← :back の anchor
+        //     y=12 → 腰・ベルト (world 0.703)  ← :belt の anchor
+        //
+        //   model.body.translateAndRotate で PoseStack は世界 y=1.406 (= scene 24)
+        //   に位置する。そこから各 slot の anchor まで下ろす translate を入れる。
+        //   PoseStack は Y軸反転フレームなので「+Δ in PoseStack」=「-Δ × 0.9375 in
+        //   world」になる。slot ごとの translate Y:
+        //     belt: 1.406 → 0.703 = -0.703 world = +0.703/0.9375 = +0.75 PoseStack
+        //     back: 1.406 → 1.054 = -0.352 world = +0.352/0.9375 = +0.375 PoseStack
         if (renderLayerParent.getModel() instanceof HumanoidModel<?> humanoidModel) {
             @SuppressWarnings("unchecked")
             HumanoidModel<LivingEntity> model = (HumanoidModel<LivingEntity>) humanoidModel;
             ICurioRenderer.followBodyRotations(slotContext.entity(), model);
             model.body.translateAndRotate(poseStack);
-            poseStack.translate(0.0, -0.25, 0.0);
         }
 
         String slotId = slotContext.identifier();
+        if ("belt".equals(slotId)) {
+            poseStack.translate(0.0, 0.75, 0.0);
+        } else if ("back".equals(slotId)) {
+            poseStack.translate(0.0, 0.375, 0.0);
+        }
 
         // slot に応じてカスタム DisplayContext を選択。
         ItemDisplayContext displayCtx;
