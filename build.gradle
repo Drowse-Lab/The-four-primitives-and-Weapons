@@ -98,6 +98,13 @@ dependencies {
     }
 }
 
+// 生成 jar 名を Backpack-Arsenal addon が期待する命名と揃える
+// (archivesBaseName + version の合成だと "...-1.20.1--1.0.jar" のように
+//  二重ダッシュになってしまうので、ここで直接 archiveFileName を上書きする)
+jar {
+    archiveFileName = 'The four primitives and Weapons-forge-1.20.1-test.jar'
+}
+
 processResources {
     inputs.property 'mc_version', mc_version
     filesMatching('META-INF/mods.toml') {
