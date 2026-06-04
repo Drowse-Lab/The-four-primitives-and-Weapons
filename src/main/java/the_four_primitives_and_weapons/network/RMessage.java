@@ -79,22 +79,27 @@ public class RMessage {
 			}
 
 			// 納刀チェック2: Curiosスロットの空の鞘
+			// メインハンドの納刀に失敗 (互換鞘なし等) してもオフハンドを試すよう、
+			// else if ではなく独立した if にする。
 			if (mainIsWeapon) {
 				if (CuriosScabbardHelper.sheathIntoCurioSlot(entity, mainHand, InteractionHand.MAIN_HAND)) {
 					return;
 				}
-			} else if (offIsWeapon) {
+			}
+			if (offIsWeapon) {
 				if (CuriosScabbardHelper.sheathIntoCurioSlot(entity, offHand, InteractionHand.OFF_HAND)) {
 					return;
 				}
 			}
 
 			// 納刀チェック3: インベントリスロットの空の鞘
+			// 同上: メインハンド納刀失敗時もオフハンドを試す
 			if (mainIsWeapon) {
 				if (sheathIntoInventory(entity, mainHand, InteractionHand.MAIN_HAND)) {
 					return;
 				}
-			} else if (offIsWeapon) {
+			}
+			if (offIsWeapon) {
 				if (sheathIntoInventory(entity, offHand, InteractionHand.OFF_HAND)) {
 					return;
 				}

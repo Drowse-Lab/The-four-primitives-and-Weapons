@@ -59,12 +59,12 @@
 		},
 		"the_four_primitives_and_weapons:back": {
 			"rotation": [90, 45, 90],
-			"translation": [6.5, -5.75, 3.25],
+			"translation": [6.5, 9, 3.25],
 			"scale": [1.5, 2, 1.5]
 		},
 		"the_four_primitives_and_weapons:belt": {
 			"rotation": [135, 0, 0],
-			"translation": [-7.5, -14, -6.5],
+			"translation": [-7.5, 9.75, -6.5],
 			"scale": [1.5, 2, 1.5]
 		}
 	},

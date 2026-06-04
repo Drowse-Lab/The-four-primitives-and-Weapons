@@ -216,14 +216,25 @@ public class WeaponWheelState {
     }
 
     private static void updateSelection(double mouseX, double mouseY, int screenWidth, int screenHeight) {
+        int itemCount = drawableWeapons.size();
+        if (itemCount == 0) {
+            selectedIndex = -1;
+            return;
+        }
+        // 候補が1個しかない場合は dead zone でも自動選択する
+        // (長押ししただけで確定できるようにするため)
+        if (itemCount == 1) {
+            selectedIndex = 0;
+            return;
+        }
+
         double centerX = screenWidth / 2.0;
         double centerY = screenHeight / 2.0;
         double dx = mouseX - centerX;
         double dy = mouseY - centerY;
         double distance = Math.sqrt(dx * dx + dy * dy);
 
-        int itemCount = drawableWeapons.size();
-        if (distance < 20.0 || itemCount == 0) {
+        if (distance < 20.0) {
             selectedIndex = -1;
             return;
         }

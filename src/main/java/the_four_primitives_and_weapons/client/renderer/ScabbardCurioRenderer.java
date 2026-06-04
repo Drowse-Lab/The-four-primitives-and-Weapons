@@ -82,6 +82,14 @@ public class ScabbardCurioRenderer implements ICurioRenderer {
             poseStack.translate(0.0, 0.375, 0.0);
         }
 
+        // Blockbench プラグイン (loadHead 経由) はリファレンスに da.scale = 0.625
+        // を適用しているが、Minecraft は PlayerRenderer.scale で 0.9375 を適用する。
+        // 同じ display 値で in-game は 0.9375/0.625 = 1.5 倍大きく見える。
+        // ここで scale(2/3) を入れて Blockbench と一致させる
+        // (1.5 × 2/3 = 1 → 同じ大きさで描画される)。
+        final float SCALE_MATCH = 2.0F / 3.0F;
+        poseStack.scale(SCALE_MATCH, SCALE_MATCH, SCALE_MATCH);
+
         // slot に応じてカスタム DisplayContext を選択。
         ItemDisplayContext displayCtx;
         if ("back".equals(slotId)) {
