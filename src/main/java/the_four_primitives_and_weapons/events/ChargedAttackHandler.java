@@ -380,12 +380,16 @@ public class ChargedAttackHandler {
             return;
         }
 
-//        // Luna専用のチャージ攻撃
-//        if (itemName.equals("LunaItem")) {
-//            performLunaChargedAttack(player, world, lookVec, playerPos, chargePercent);
-//            return;
-//        }
-//
+        // Luna専用のチャージ攻撃 (曲線ビーム)
+        // 曲線ビーム本体は TyokutouThrustAttackProcedure.executeChargedThrust 内の
+        // isLunaItem(heldItem) 分岐に実装されているので、performChargedThrust 経由で呼ぶ。
+        // 旧コードは存在しない performLunaChargedAttack を参照していたため
+        // コメントアウトされていた (= Luna チャージ技が出なくなっていた) のを修正。
+        if (itemName.equals("LunaItem")) {
+            performChargedThrust(player, world, lookVec, playerPos, chargePercent, isCooldown);
+            return;
+        }
+
         // ReplicaSwordOfLightの固有スキル（ガード）
         if (itemName.equals("ReplicaSwordOfLightItem") && skillData.isUniqueSkillEnabled("ReplicaSwordOfLight")) {
             player.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.GUARD.get(), 100, 0));
