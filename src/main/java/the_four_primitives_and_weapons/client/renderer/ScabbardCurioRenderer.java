@@ -22,6 +22,15 @@ public class ScabbardCurioRenderer implements ICurioRenderer {
     // public static boolean DEBUG_MODE = true;
     public static boolean DEBUG_MODE = false;
 
+    // render() が一度でも呼ばれたか確認するための一回限りログフラグ。
+    // ゲーム起動 → saya を curio スロットに装備 → ログ出力されれば
+    // renderer は呼ばれている。出ないなら CuriosRendererRegistry 登録か
+    // capability 側の問題。
+    private static final java.util.concurrent.atomic.AtomicBoolean LOGGED_ONCE =
+            new java.util.concurrent.atomic.AtomicBoolean(false);
+    private static final org.apache.logging.log4j.Logger LOGGER =
+            org.apache.logging.log4j.LogManager.getLogger("MAW/ScabbardCurioRenderer");
+
     // --- デバッグ用 static変数（DEBUG_MODE=true の時のみ使用） ---
     // --- ベルト ---
     public static double beltX = 0.280, beltY = 0.660, beltZ = -0.240;
@@ -46,6 +55,18 @@ public class ScabbardCurioRenderer implements ICurioRenderer {
             float ageInTicks,
             float netHeadYaw,
             float headPitch) {
+
+        if (LOGGED_ONCE.compareAndSet(false, true)) {
+            LOGGER.info("[MAW] ScabbardCurioRenderer.render() called: slot={} stack={} item={}",
+                    slotContext.identifier(), stack, stack.getItem());
+            try {
+                LOGGER.info("[MAW]   SAYA_BACK = {}, SAYA_BELT = {}",
+                        the_four_primitives_and_weapons.client.MawDisplayContexts.SAYA_BACK,
+                        the_four_primitives_and_weapons.client.MawDisplayContexts.SAYA_BELT);
+            } catch (Throwable t) {
+                LOGGER.error("[MAW]   MawDisplayContexts access failed", t);
+            }
+        }
 
         poseStack.pushPose();
 
