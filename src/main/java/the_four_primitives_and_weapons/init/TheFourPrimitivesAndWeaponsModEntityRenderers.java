@@ -21,9 +21,19 @@ import the_four_primitives_and_weapons.client.renderer.CometRenderer;
 import the_four_primitives_and_weapons.client.renderer.CometKillRenderer;
 import the_four_primitives_and_weapons.client.renderer.BlackholeRenderer;
 import the_four_primitives_and_weapons.client.renderer.AlchemyCraftBlockEntityRenderer;
+import the_four_primitives_and_weapons.entity.model.BlackholeModel;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class TheFourPrimitivesAndWeaponsModEntityRenderers {
+	/**
+	 * vanilla モデルの LayerDefinition を登録する。
+	 * GeckoLib を撤去した分、ここで自前モデルをベイクできるようにする。
+	 */
+	@SubscribeEvent
+	public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+		event.registerLayerDefinition(BlackholeModel.LAYER_LOCATION, BlackholeModel::createBodyLayer);
+	}
+
 	@SubscribeEvent
 	public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
 		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.SKELTON_MOB.get(), SkeltonMobRenderer::new);

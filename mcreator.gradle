@@ -44,21 +44,6 @@ dependencies {
 
 repositories {
   maven {
-      url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-  }
-}
-
-dependencies {
-	if (mc_version.startsWith('1.19')) {
-		implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.19:3.1.40')
-	} else if (mc_version.startsWith('1.20')) {
-		// GeckoLib 4.x for 1.20.1
-		implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20.1:4.7.3')
-	}
-}
-
-repositories {
-  maven {
     // location of the maven that hosts JEI files
     name = "Progwml6 maven"
     url = "https://dvs1.progwml6.com/files/maven/"

@@ -3,15 +3,6 @@ package the_four_primitives_and_weapons.entity;
 
 import the_four_primitives_and_weapons.util.VersionHelper;
 
-import software.bernie.geckolib.util.GeckoLibUtil;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
-import software.bernie.geckolib.animatable.GeoEntity;
-
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
@@ -29,6 +20,7 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.PathfinderMob;
@@ -63,15 +55,25 @@ import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModEntiti
 
 import javax.annotation.Nullable;
 
-public class BlackholeEntity extends PathfinderMob implements GeoEntity {
-	public static final EntityDataAccessor<Boolean> SHOOT = SynchedEntityData.defineId(BlackholeEntity.class, EntityDataSerializers.BOOLEAN);
-	public static final EntityDataAccessor<String> ANIMATION = SynchedEntityData.defineId(BlackholeEntity.class, EntityDataSerializers.STRING);
+/**
+ * Blackhole エンティティ (GeckoLib 撤去版).
+ *
+ * 元 GeckoLib 版にあった以下は削除:
+ *   - GeoEntity 実装
+ *   - AnimatableInstanceCache
+ *   - registerControllers / movementPredicate / procedurePredicate
+ *   - RawAnimation / AnimationController / AnimationState (GeckoLib 版)
+ *   - SHOOT / ANIMATION の EntityDataAccessor (アニメ駆動だけに使われていたので削除)
+ *   - swinging / lastloop / lastSwing / animationprocedure (GeckoLib 動的アニメ用)
+ *
+ * 替わりに vanilla {@link net.minecraft.world.entity.AnimationState} で
+ * idle アニメを駆動する。テクスチャ可変だけ残してある。
+ */
+public class BlackholeEntity extends PathfinderMob {
 	public static final EntityDataAccessor<String> TEXTURE = SynchedEntityData.defineId(BlackholeEntity.class, EntityDataSerializers.STRING);
-	private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
-	private boolean swinging;
-	private boolean lastloop;
-	private long lastSwing;
-	public String animationprocedure = "empty";
+
+	/** クライアント側 idle アニメ駆動用 (vanilla {@link AnimationState}). */
+	public final AnimationState idleAnimationState = new AnimationState();
 
 	public BlackholeEntity(PlayMessages.SpawnEntity packet, Level world) {
 		this(TheFourPrimitivesAndWeaponsModEntities.BLACKHOLE.get(), world);
@@ -88,8 +90,6 @@ public class BlackholeEntity extends PathfinderMob implements GeoEntity {
 	@Override
 	protected void defineSynchedData() {
 		super.defineSynchedData();
-		this.entityData.define(SHOOT, false);
-		this.entityData.define(ANIMATION, "undefined");
 		this.entityData.define(TEXTURE, "blackhole");
 	}
 
@@ -114,7 +114,6 @@ public class BlackholeEntity extends PathfinderMob implements GeoEntity {
 	@Override
 	protected void registerGoals() {
 		super.registerGoals();
-
 	}
 
 	@Override
@@ -179,12 +178,7 @@ public class BlackholeEntity extends PathfinderMob implements GeoEntity {
 		ItemStack itemstack = sourceentity.getItemInHand(hand);
 		InteractionResult retval = InteractionResult.sidedSuccess(this.level().isClientSide());
 		super.mobInteract(sourceentity, hand);
-		double x = this.getX();
-		double y = this.getY();
-		double z = this.getZ();
 		Entity entity = this;
-		Level world = VersionHelper.getLevel(this);
-
 		BlackholeenteiteiwoYoukuritukusitaShiProcedure.execute(entity, sourceentity);
 		return retval;
 	}
@@ -243,6 +237,11 @@ public class BlackholeEntity extends PathfinderMob implements GeoEntity {
 		super.aiStep();
 		this.updateSwingTime();
 		this.setNoGravity(true);
+
+		// クライアントなら idle アニメをループ起動 (vanilla AnimationState)
+		if (this.level().isClientSide()) {
+			this.idleAnimationState.startIfStopped(this.tickCount);
+		}
 	}
 
 	public static void init() {
@@ -261,42 +260,6 @@ public class BlackholeEntity extends PathfinderMob implements GeoEntity {
 		return builder;
 	}
 
-	private PlayState movementPredicate(AnimationState<BlackholeEntity> state) {
-		if (this.animationprocedure.equals("empty")) {
-			state.getController().setAnimation(RawAnimation.begin().thenLoop("idle"));
-			return PlayState.CONTINUE;
-		}
-		return PlayState.STOP;
-	}
-
-	private PlayState procedurePredicate(AnimationState<BlackholeEntity> state) {
-		Entity entity = this;
-		Level world = VersionHelper.getLevel(entity);
-		boolean loop = false;
-		double x = entity.getX();
-		double y = entity.getY();
-		double z = entity.getZ();
-		if (!loop && this.lastloop) {
-			this.lastloop = false;
-			state.getController().setAnimation(RawAnimation.begin().thenPlay(this.animationprocedure));
-			state.getController().forceAnimationReset();
-			return PlayState.STOP;
-		}
-		if (!this.animationprocedure.equals("empty") && state.getController().getAnimationState() == AnimationController.State.STOPPED) {
-			if (!loop) {
-				state.getController().setAnimation(RawAnimation.begin().thenPlay(this.animationprocedure));
-				if (state.getController().getAnimationState() == AnimationController.State.STOPPED) {
-					this.animationprocedure = "empty";
-					state.getController().forceAnimationReset();
-				}
-			} else {
-				state.getController().setAnimation(RawAnimation.begin().thenLoop(this.animationprocedure));
-				this.lastloop = true;
-			}
-		}
-		return PlayState.CONTINUE;
-	}
-
 	@Override
 	protected void tickDeath() {
 		++this.deathTime;
@@ -304,24 +267,5 @@ public class BlackholeEntity extends PathfinderMob implements GeoEntity {
 			this.remove(BlackholeEntity.RemovalReason.KILLED);
 			this.dropExperience();
 		}
-	}
-
-	public String getSyncedAnimation() {
-		return this.entityData.get(ANIMATION);
-	}
-
-	public void setAnimation(String animation) {
-		this.entityData.set(ANIMATION, animation);
-	}
-
-	@Override
-	public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-		controllers.add(new AnimationController<>(this, "movement", 4, this::movementPredicate));
-		controllers.add(new AnimationController<>(this, "procedure", 4, this::procedurePredicate));
-	}
-
-	@Override
-	public AnimatableInstanceCache getAnimatableInstanceCache() {
-		return this.cache;
 	}
 }

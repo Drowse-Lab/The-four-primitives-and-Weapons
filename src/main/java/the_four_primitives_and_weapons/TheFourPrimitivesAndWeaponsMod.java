@@ -13,8 +13,6 @@
  */
 package the_four_primitives_and_weapons;
 
-import software.bernie.geckolib.GeckoLib;
-
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -82,7 +80,6 @@ public class TheFourPrimitivesAndWeaponsMod {
 		TheFourPrimitivesAndWeaponsModMenus.REGISTRY.register(bus);
 
 		TheFourPrimitivesAndWeaponsModVillagerProfessions.PROFESSIONS.register(bus);
-		GeckoLib.initialize();
 	}
 
 	private static final String PROTOCOL_VERSION = "1";
