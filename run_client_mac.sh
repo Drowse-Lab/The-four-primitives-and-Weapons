@@ -16,7 +16,15 @@ if [ "$1" = "offline" ]; then
     # downloadAssets は --offline を尊重せず piston-meta.mojang.com に毎回検証 HTTP を送る。
     # アセットは ~/.gradle/caches/forge_gradle/assets/ にキャッシュ済みなので
     # offline モードでは -x で明示的に除外する (SSL handshake failure 回避)。
+    #
+    # ForgeGradle 5.x の MCPRepo.findVersion も同様に --offline を完全には尊重せず、
+    # maven.minecraftforge.net や dvs1.progwml6.com に HEAD 投げる。Java 17 のデフォルト
+    # TLS 設定だと特定 cipher suite で handshake_failure を起こすことが報告されている。
+    # TLS 1.2 を明示して TLS 1.3 関連の互換性問題を回避し、握手だけは通るようにする。
+    # （実通信は --offline でほぼスキップされるので、SSL handshake さえ通れば OK）
     GRADLE_ARGS="$GRADLE_ARGS --offline -Dnet.minecraftforge.gradle.check.certs=false -x downloadAssets"
+    GRADLE_ARGS="$GRADLE_ARGS -Dhttps.protocols=TLSv1.2,TLSv1.3 -Djdk.tls.client.protocols=TLSv1.2,TLSv1.3"
+    GRADLE_ARGS="$GRADLE_ARGS -Djava.security.egd=file:/dev/./urandom"
     echo "=== Offline mode (using cached dependencies, skipping downloadAssets) ==="
 fi
 

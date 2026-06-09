@@ -60,6 +60,16 @@ public class TheFourPrimitivesAndWeaponsMod {
 		MinecraftForge.EVENT_BUS.register(this);
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 
+		// クライアント側: ItemDisplayContext (SAYA_BACK / SAYA_BELT) を最早期に登録。
+		// JSON モデルロード (ItemTransforms.Deserializer) より前に登録されていないと、
+		// "the_four_primitives_and_weapons:back" / ":belt" キーが unknown 扱いになり、
+		// saya の back/belt 用 display 値が無視されて透明化または通常 transform に
+		// なってしまう。FMLClientSetupEvent からの呼び出しと併用。
+		if (net.minecraftforge.fml.loading.FMLEnvironment.dist
+				== net.minecraftforge.api.distmarker.Dist.CLIENT) {
+			the_four_primitives_and_weapons.client.MawDisplayContexts.init();
+		}
+
 		TheFourPrimitivesAndWeaponsModTabs.REGISTRY.register(bus);
 		TheFourPrimitivesAndWeaponsModBlocks.REGISTRY.register(bus);
 		TheFourPrimitivesAndWeaponsModItems.REGISTRY.register(bus);

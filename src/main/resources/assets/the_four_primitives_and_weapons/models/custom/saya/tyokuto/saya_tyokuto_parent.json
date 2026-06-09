@@ -176,14 +176,14 @@
 			"scale": [1.1, 1.6, 1.1]
 		},
 		"the_four_primitives_and_weapons:back": {
-			"rotation": [90, 45, 90],
-			"translation": [6.5, 9, 3.25],
-			"scale": [1.5, 2, 1.5]
+			"rotation": [-90, -45, -90],
+			"translation": [-7.25, -10.25, 3],
+			"scale": [1.7, 2.2, 1.7]
 		},
 		"the_four_primitives_and_weapons:belt": {
-			"rotation": [135, 0, 0],
-			"translation": [-7.5, 9.75, -6.5],
-			"scale": [1.5, 2, 1.5]
+			"rotation": [65, 0, 0],
+			"translation": [5.9, -3.25, -6.5],
+			"scale": [1.7, 2.2, 1.7]
 		}
 	},
 	"groups": [
