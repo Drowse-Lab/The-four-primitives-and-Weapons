@@ -7,14 +7,20 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
+
+import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
+import the_four_primitives_and_weapons.network.SayaRegistrySyncPacket;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -110,6 +116,46 @@ public class SayaRegistry extends SimplePreparableReloadListener<Map<SayaRegistr
     @SubscribeEvent
     public static void onAddReloadListener(AddReloadListenerEvent event) {
         event.addListener(INSTANCE);
+    }
+
+    /**
+     * データパックリロード時 / プレイヤーログイン時に呼ばれる。
+     * サーバー側の ENTRIES をクライアントに同期する。
+     */
+    @SubscribeEvent
+    public static void onDatapackSync(OnDatapackSyncEvent event) {
+        Map<SayaType, Map<ResourceLocation, Entry>> snapshot = snapshotEntries();
+        SayaRegistrySyncPacket packet = new SayaRegistrySyncPacket(snapshot);
+        ServerPlayer player = event.getPlayer();
+        if (player != null) {
+            TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.send(
+                PacketDistributor.PLAYER.with(() -> player), packet);
+        } else {
+            TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.send(
+                PacketDistributor.ALL.noArg(), packet);
+        }
+    }
+
+    /** 現在の ENTRIES の防御的コピーを返す (パケット送信用)。 */
+    private static Map<SayaType, Map<ResourceLocation, Entry>> snapshotEntries() {
+        Map<SayaType, Map<ResourceLocation, Entry>> copy = new EnumMap<>(SayaType.class);
+        for (SayaType t : SayaType.values()) {
+            copy.put(t, new HashMap<>(ENTRIES.get(t)));
+        }
+        return copy;
+    }
+
+    /**
+     * クライアント側: 受信したエントリで ENTRIES を置き換える。
+     * 呼び出しはネットハンドラから enqueueWork 経由なのでクライアントメインスレッド上で動く。
+     */
+    public static void replaceEntriesClient(Map<SayaType, Map<ResourceLocation, Entry>> incoming) {
+        for (SayaType t : SayaType.values()) {
+            Map<ResourceLocation, Entry> dest = ENTRIES.get(t);
+            dest.clear();
+            Map<ResourceLocation, Entry> src = incoming.get(t);
+            if (src != null) dest.putAll(src);
+        }
     }
 
     @Nonnull
