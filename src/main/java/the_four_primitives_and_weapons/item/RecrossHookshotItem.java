@@ -133,6 +133,12 @@ public class RecrossHookshotItem extends Item {
 
     private void fireHook(Level level, Player player, InteractionHand hand, ItemStack stack) {
         if (level.isClientSide) return;
+
+        // 古い hook (ANCHORED 残留 / light-pull / 旧 FLYING) を全部 discard.
+        // これをしないと連射時に古い hook が生き残ったまま spawnChainParticles で線粒子を出し続け、
+        // 画面上に複数の線が残留する。
+        discardActiveHooks(player);
+
         double scale = getRangeScale(stack);
         int scaledMaxFlyTicks = (int) Math.max(1, Math.round(maxFlyTicks * scale));
 
@@ -152,15 +158,28 @@ public class RecrossHookshotItem extends Item {
         player.awardStat(Stats.ITEM_USED.get(this));
     }
 
-    /** 飛行中の hook が存在するか — UUID マップ参照のみ (O(1)). */
+    /** 飛行中 (state==FLYING) の hook が存在するか — UUID マップ参照のみ (O(1)).
+     *  注: state が ANCHORED 等に遷移したエントリは {@link #discardActiveHooks} のために
+     *      レジストリには残しておく。死亡時のみ自動 cleanup. */
     private boolean hasFlyingHook(Player player) {
         RecrossHookEntity h = FLYING_BY_OWNER.get(player.getUUID());
         if (h == null) return false;
-        if (!h.isAlive() || h.getState() != RecrossHookEntity.State.FLYING) {
+        if (!h.isAlive()) {
             FLYING_BY_OWNER.remove(player.getUUID());
             return false;
         }
-        return true;
+        return h.getState() == RecrossHookEntity.State.FLYING;
+    }
+
+    /** 既存の hook (FLYING / ANCHORED / light-pull) を全て discard.
+     *  連射時に古い hook が生き残ったまま spawnChainParticles で線粒子を出し続ける問題への対処. */
+    private void discardActiveHooks(Player player) {
+        if (player == null) return;
+        RecrossHookEntity prev = FLYING_BY_OWNER.get(player.getUUID());
+        if (prev != null && prev.isAlive()) {
+            // discard() は RecrossHookEntity.remove() を呼び、両レジストリから自動で消える.
+            prev.discard();
+        }
     }
 
     private int getEffectiveCooldown(ItemStack stack) {

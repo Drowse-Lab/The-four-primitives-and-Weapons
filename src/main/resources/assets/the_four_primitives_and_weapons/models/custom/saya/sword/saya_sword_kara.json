@@ -1,7 +1,7 @@
 {
 	"format_version": "1.9.0",
 	"credit": "Made with Blockbench",
-	"parent": "the_four_primitives_and_weapons:custom/saya/sword/saya_sword_kara",
+	"parent": "the_four_primitives_and_weapons:custom/saya/sword/saya_sword_parent",
 	"textures": {
 		"3": "the_four_primitives_and_weapons:item/sword_saya",
 		"particle": "the_four_primitives_and_weapons:item/sword_saya"
