@@ -1,10 +1,10 @@
 {
-	"format_version": "1.9.0",
-	"credit": "Made with Blockbench",
-	"parent": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_tyokuto_parent",
-	"textures": {
-		"2": "the_four_primitives_and_weapons:block/luna",
-		"3": "the_four_primitives_and_weapons:item/saya_tyokuto",
-		"particle": "luna"
-	}
+  "format_version": "1.9.0",
+  "credit": "Made with Blockbench",
+  "parent": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_tyokuto_parent",
+  "textures": {
+    "2": "the_four_primitives_and_weapons:block/luna",
+    "3": "the_four_primitives_and_weapons:item/saya_tyokuto",
+    "particle": "luna"
+  }
 }

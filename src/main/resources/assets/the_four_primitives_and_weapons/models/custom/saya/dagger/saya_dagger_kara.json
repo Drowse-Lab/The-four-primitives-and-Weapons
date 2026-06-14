@@ -1,0 +1,9 @@
+{
+	"format_version": "1.9.0",
+	"parent": "the_four_primitives_and_weapons:custom/saya/dagger/saya_dagger_parent",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "the_four_primitives_and_weapons:item/saya",
+		"particle": "the_four_primitives_and_weapons:item/saya"
+	}
+}
