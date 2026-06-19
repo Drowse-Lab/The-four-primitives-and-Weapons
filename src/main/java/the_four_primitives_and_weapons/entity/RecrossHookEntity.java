@@ -140,7 +140,8 @@ public class RecrossHookEntity extends Mob {
         }
 
         if (state == State.FLYING) {
-            if ((totalTicks & 1) == 0) spawnFlightParticles();
+            // flight 粒子は 4 tick に 1 回 (帯域節約)
+            if ((totalTicks & 3) == 0) spawnFlightParticles();
             tickFlying(owner);
         } else { // ANCHORED
             if (heavyAnchor != null) {
@@ -152,8 +153,8 @@ public class RecrossHookEntity extends Mob {
                 tickPullEntity(owner);
                 if (this.isRemoved()) return;
             }
-            // 鎖の dust は 2 tick に 1 回 (帯域節約)
-            if ((totalTicks & 1) == 0) spawnChainParticles(owner);
+            // 鎖の dust は 4 tick に 1 回 (帯域節約 — 2tick だと連発時にラグの原因)
+            if ((totalTicks & 3) == 0) spawnChainParticles(owner);
         }
     }
 
@@ -266,14 +267,16 @@ public class RecrossHookEntity extends Mob {
         server.sendParticles(dust, getX(), getY(), getZ(), 1, 0, 0, 0, 0);
     }
 
-    /** ロープ表現 — hook → owner を直線で結び、最大 32 セグメントに制限 (帯域節約). */
+    /** ロープ表現 — hook → owner を直線で結び、最大 16 セグメントに制限 (帯域節約).
+     *  距離に応じてセグメント数を 2 ブロック / 1 粒子で間引く (見た目はほぼ変わらず通信量半減). */
     private void spawnChainParticles(Player owner) {
         if (!(level() instanceof ServerLevel server)) return;
         Vec3 from = position();
         Vec3 diff = owner.getEyePosition().subtract(from);
         double dist = diff.length();
         if (dist < 0.5) return;
-        int steps = Math.min(32, (int) Math.ceil(dist));
+        // 2 ブロックに 1 粒子、最大 16 個まで
+        int steps = Math.min(16, Math.max(1, (int) Math.ceil(dist / 2.0)));
         Vec3 step = diff.scale(1.0 / Math.max(1, steps));
         DustParticleOptions dust = new DustParticleOptions(new org.joml.Vector3f(1, 1, 1), 0.5f);
         for (int i = 1; i < steps; i++) {
