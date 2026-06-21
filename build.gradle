@@ -15,9 +15,113 @@ apply plugin: 'eclipse'
 //         または gradle.properties に withSpellbooks=true
 def withSpellbooks = project.findProperty('withSpellbooks') == 'true'
 
-version = '1.0'
+// =====================================================================
+// version 解決順:
+//   1. -Pmod_version_override=X.Y.Z (CI / 非対話の上書き)
+//   2. ./gradlew build 実行時の対話プロンプト (base + release_type)
+//   3. gradle.properties の mod_version (空 Enter 時の default)
+//   4. ハードコード fallback '3'
+// =====================================================================
+def baseResolvedVersion = (project.findProperty('mod_version_override')
+        ?: project.findProperty('mod_version')
+        ?: '3')
+
+// release type サフィックス:
+//   alpha  → "-alpha"
+//   beta   → "-beta"   (default)
+//   rc     → "-rc"
+//   release → ""        (suffix 無し)
+//   test   → "-test"   (ローカル動作確認用)
+ext.stripReleaseSuffix = { String v -> v?.replaceFirst(/-(alpha|beta|rc|test)(\.\d+)?$/, '') }
+ext.suffixForReleaseType = { String type ->
+    if (!type) return '-beta'
+    def t = type.toLowerCase().trim()
+    if (t.startsWith('r') && !t.startsWith('rc')) return ''
+    if (t.startsWith('rc')) return '-rc'
+    if (t.startsWith('a')) return '-alpha'
+    if (t.startsWith('t')) return '-test'
+    return '-beta'
+}
+
+// stdin を 1 行読む。System.console() を優先、 null なら System.in 直読みに fallback。
+// (VSCode / IntelliJ の terminal でも動く。同一 BufferedReader を使い回して
+//  piped stdin の 2 行目以降が空文字で消費されるのを防ぐ。)
+ext.cachedStdinReader = null
+ext.readLineFlexible = { ->
+    def console = System.console()
+    if (console != null) {
+        try { return console.readLine() } catch (Throwable ignored) {}
+    }
+    if (project.ext.cachedStdinReader == null) {
+        try {
+            project.ext.cachedStdinReader = new BufferedReader(new InputStreamReader(System.in))
+        } catch (Throwable ignored) {
+            return null
+        }
+    }
+    try {
+        return project.ext.cachedStdinReader.readLine()
+    } catch (Throwable ignored) {
+        return null
+    }
+}
+
+def overrideReleaseType = project.findProperty('release_type')
+def overrideModVersion  = project.findProperty('mod_version_override')
+def isCi = System.getenv('CI') == 'true' || System.getenv('GITHUB_ACTIONS') == 'true'
+def shouldPrompt = !overrideReleaseType &&
+        !overrideModVersion &&
+        !isCi &&
+        gradle.startParameter.taskNames.any { it == 'build' || it.endsWith(':build') }
+
+// 1) バージョン入力 (空 Enter で gradle.properties の mod_version)
+def chosenBaseVersion = null
+if (shouldPrompt) {
+    def fallbackBase = stripReleaseSuffix(baseResolvedVersion)
+    print "\n[the_four_primitives_and_weapons] Enter mod version (press Enter for ${fallbackBase}):\n  > "
+    System.out.flush()
+    def input = readLineFlexible()?.trim()
+    if (input) {
+        chosenBaseVersion = stripReleaseSuffix(input)
+        logger.lifecycle("[the_four_primitives_and_weapons] version override: ${chosenBaseVersion}")
+    } else {
+        chosenBaseVersion = fallbackBase
+        logger.lifecycle("[the_four_primitives_and_weapons] version default: ${chosenBaseVersion}")
+    }
+}
+
+// 2) release type 選択
+def chosenReleaseType = null
+if (overrideReleaseType) {
+    chosenReleaseType = overrideReleaseType
+} else if (shouldPrompt) {
+    def base = chosenBaseVersion ?: stripReleaseSuffix(baseResolvedVersion)
+    print "\n[the_four_primitives_and_weapons] Select release type for version ${base}:\n" +
+          "  [b]eta     (default)\n" +
+          "  [a]lpha\n" +
+          "  [r]elease  (suffix 無し)\n" +
+          "  [rc]       (release candidate)\n" +
+          "  [t]est     (ローカル動作確認用)\n" +
+          "  > "
+    System.out.flush()
+    def input = readLineFlexible()
+    chosenReleaseType = input?.trim() ? input.trim() : 'beta'
+    logger.lifecycle("[the_four_primitives_and_weapons] release_type=${chosenReleaseType} → version=${base}${suffixForReleaseType(chosenReleaseType)}")
+}
+
+// 3) 最終 version を組み立て
+def effectiveBase = chosenBaseVersion ?: stripReleaseSuffix(baseResolvedVersion)
+def mod_version
+if (chosenReleaseType) {
+    mod_version = effectiveBase + suffixForReleaseType(chosenReleaseType)
+} else if (chosenBaseVersion) {
+    mod_version = chosenBaseVersion
+} else {
+    mod_version = baseResolvedVersion
+}
+version = mod_version
 group = 'com.hrmcngs.the_four_primitives_and_weapons'
-archivesBaseName = 'The four primitives and Weapons-forge-1.20.1-'
+archivesBaseName = 'The four primitives and Weapons-forge-1.20.1'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
@@ -98,17 +202,17 @@ dependencies {
     }
 }
 
-// 生成 jar 名を Backpack-Arsenal addon が期待する命名と揃える
-// (archivesBaseName + version の合成だと "...-1.20.1--1.0.jar" のように
-//  二重ダッシュになってしまうので、ここで直接 archiveFileName を上書きする)
+// 生成 jar 名: archivesBaseName-version.jar の形を mod_version で動的に組み立てる。
+// (Backpack-Arsenal addon が期待する命名規則: <name>-forge-<mc>-<version>.jar)
 jar {
-    archiveFileName = 'The four primitives and Weapons-forge-1.20.1-test.jar'
+    archiveFileName = "The four primitives and Weapons-forge-1.20.1-${mod_version}.jar"
 }
 
 processResources {
     inputs.property 'mc_version', mc_version
+    inputs.property 'mod_version', mod_version
     filesMatching('META-INF/mods.toml') {
-        expand 'mc_version': mc_version
+        expand 'mc_version': mc_version, 'version': mod_version
     }
 }
 
