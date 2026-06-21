@@ -1,9 +1,0 @@
-{
-  "pattern": ["TTT", "TLT", "TTT"],
-  "key": {
-    "T": "minecraft:glowstone_dust",
-    "L": "minecraft:diamond"
-  },
-  "result": "the_four_primitives_and_weapons:holy_book",
-  "element_level": 5
-}

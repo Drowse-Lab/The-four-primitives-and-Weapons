@@ -1,9 +1,0 @@
-{
-  "pattern": ["TTT", "TLT", "TTT"],
-  "key": {
-    "T": "minecraft:packed_ice",
-    "L": "minecraft:beacon"
-  },
-  "result": "the_four_primitives_and_weapons:ice_book",
-  "element_level": 10
-}

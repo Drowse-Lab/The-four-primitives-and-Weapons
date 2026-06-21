@@ -1,9 +1,0 @@
-{
-  "pattern": ["TTT", "TLT", "TTT"],
-  "key": {
-    "T": "minecraft:magma_cream",
-    "L": "minecraft:netherite_scrap"
-  },
-  "result": "the_four_primitives_and_weapons:fire_book",
-  "element_level": 9
-}

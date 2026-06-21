@@ -1,9 +1,0 @@
-{
-  "pattern": ["TTT", "TLT", "TTT"],
-  "key": {
-    "T": "minecraft:phantom_membrane",
-    "L": "minecraft:nether_star"
-  },
-  "result": "the_four_primitives_and_weapons:storm_book",
-  "element_level": 10
-}
