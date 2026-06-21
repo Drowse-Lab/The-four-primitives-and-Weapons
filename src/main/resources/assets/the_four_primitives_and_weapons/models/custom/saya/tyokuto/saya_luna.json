@@ -5,6 +5,6 @@
   "textures": {
     "2": "the_four_primitives_and_weapons:block/luna",
     "3": "the_four_primitives_and_weapons:item/saya_tyokuto",
-    "particle": "luna"
+    "particle": "the_four_primitives_and_weapons:item/luna"
   }
 }

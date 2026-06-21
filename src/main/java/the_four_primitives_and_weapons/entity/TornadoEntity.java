@@ -151,8 +151,9 @@ public class TornadoEntity extends Entity {
                 damageNearbyEntities();
             }
 
-            // サーバー側でもパーティクルを生成してクライアントに送信
-            if (tickCount % 2 == 0 && level() instanceof ServerLevel serverLevel) {
+            // サーバー側でパーティクルを生成してクライアントに送信
+            // (旧: 2 tick ごと → 4 tick ごとに変更。 体感差はほぼ無いがネットワーク負荷半減)
+            if (tickCount % 4 == 0 && level() instanceof ServerLevel serverLevel) {
                 createServerParticles(serverLevel);
             }
 
@@ -161,10 +162,18 @@ public class TornadoEntity extends Entity {
                 level().playSound(null, getX(), getY(), getZ(),
                     SoundEvents.EVOKER_CAST_SPELL, SoundSource.HOSTILE, 4.0f, 0.8f);
             }
-        } else {
-            // クライアント側のエフェクト
-            createVisualEffects();
+
+            // Storm 系 (withElectricity=true) の竜巻内で雷を生成
+            //   30 tick (1.5 秒) ごとに 1 本、 竜巻内のランダム位置に visual_only lightning を落とす。
+            //   visual_only=true で建物破壊なし。 ダメージは TornadoEntity 本体の damageNearbyEntities が担当。
+            if (entityData.get(WITH_ELECTRICITY) && tickCount % 30 == 0 && level() instanceof ServerLevel sl) {
+                spawnInternalLightning(sl);
+            }
         }
+        // 旧: クライアント側でも createVisualEffects() を呼んでいたが、
+        //     サーバーから sendParticles で broadcast したものと重複して
+        //     ローカル client は 2 倍のパーティクルを描画 → 重い + 雲が増殖。
+        //     server 側送信だけに統一して負荷を半減。
     }
 
     private void moveAlongPath() {
@@ -174,9 +183,22 @@ public class TornadoEntity extends Entity {
         }
 
         Vec3 currentPos = position();
-        // Y座標は最初の高さを維持（水平移動のみ）
+        float speed = entityData.get(SPEED);
+
+        // 水平成分が極小 (真上 / 真下に向けて撃った時) は moveDirection をそのまま 3D で使う。
+        // そうしないと normalize() がゼロを返し、 竜巻がその場で静止 = "発生場所に残るやつ" バグ。
+        double horizMagSq = moveDirection.x * moveDirection.x + moveDirection.z * moveDirection.z;
+        if (horizMagSq < 1.0E-4) {
+            // 真上 / 真下向き — Y 軸込みで移動 (上昇 / 下降する竜巻)
+            Vec3 dir3d = moveDirection.normalize();
+            Vec3 newPos = currentPos.add(dir3d.scale(speed));
+            setPos(newPos.x, newPos.y, newPos.z);
+            return;
+        }
+
+        // 通常: Y 成分を切り捨てて水平のみで移動 (地表を走る竜巻)
         Vec3 horizontalDirection = new Vec3(moveDirection.x, 0, moveDirection.z).normalize();
-        Vec3 newPos = currentPos.add(horizontalDirection.scale(entityData.get(SPEED)));
+        Vec3 newPos = currentPos.add(horizontalDirection.scale(speed));
         setPos(newPos.x, currentPos.y, newPos.z);
     }
 
@@ -308,6 +330,31 @@ public class TornadoEntity extends Entity {
         }
     }
 
+    /**
+     * Storm 系竜巻の内部で雷を生成する (visual_only)。
+     * 中心からランダム横方向 + 竜巻高さ範囲の上部 70% に配置 — 竜巻の中で稲妻が落ちる演出。
+     */
+    private void spawnInternalLightning(ServerLevel sl) {
+        double ang = random.nextDouble() * Math.PI * 2;
+        double r = random.nextDouble() * tornadoRadius * 0.8;
+        double dx = Math.cos(ang) * r;
+        double dz = Math.sin(ang) * r;
+        // 上部寄りに落とす (竜巻の上から下に走る稲妻の感)
+        double dy = tornadoHeight * (0.3 + random.nextDouble() * 0.6);
+        double x = getX() + dx;
+        double y = getY() + dy;
+        double z = getZ() + dz;
+
+        net.minecraft.world.entity.LightningBolt bolt = net.minecraft.world.entity.EntityType.LIGHTNING_BOLT.create(sl);
+        if (bolt == null) return;
+        bolt.moveTo(x, y, z, 0f, 0f);
+        bolt.setVisualOnly(true); // ブロック破壊なし、 ダメージは tornado 本体が担当
+        if (owner instanceof net.minecraft.server.level.ServerPlayer sp) {
+            bolt.setCause(sp);
+        }
+        sl.addFreshEntity(bolt);
+    }
+
     private void liftAndRotateEntity(LivingEntity entity, Vec3 tornadoCenter) {
         Vec3 entityPos = entity.position();
         Vec3 toCenter = tornadoCenter.subtract(entityPos);
@@ -339,61 +386,78 @@ public class TornadoEntity extends Entity {
 
         // 落下ダメージを無効化
         entity.fallDistance = 0;
+
+        // 竜巻の回転に合わせてプレイヤーを回転させる。
+        //   竜巻の螺旋アニメは tickCount * SPIN_DEG_PER_TICK で進む (createServerParticles と同じ周期)。
+        //   - 通常 entity: setYRot だけだと client に伝わらないので setYBodyRot + setYHeadRot もセット。
+        //   - ServerPlayer: 視点を実際に回すには connection.teleport で yaw を強制する必要がある。
+        float SPIN_DEG_PER_TICK = 35f; // ~ 半秒で一回転
+        float newYaw = (tickCount * SPIN_DEG_PER_TICK) % 360f;
+        entity.setYRot(newYaw);
+        entity.yRotO = newYaw;
+        entity.setYBodyRot(newYaw);
+        entity.setYHeadRot(newYaw);
+        if (entity instanceof net.minecraft.server.level.ServerPlayer sp) {
+            // Vanilla の Connection.teleport は yaw / pitch を強制する。 同じ位置に飛ばすので
+            // 移動は発生せず、 視点だけが回転する。
+            sp.connection.teleport(sp.getX(), sp.getY(), sp.getZ(), newYaw, sp.getXRot());
+        }
     }
 
     private void createServerParticles(ServerLevel serverLevel) {
         Vec3 pos = position();
         boolean withElectricity = entityData.get(WITH_ELECTRICITY);
-        double timeOffset = tickCount * 0.3; // 回転速度を上げる
+        double timeOffset = tickCount * 0.3;
 
-        // 縦型竜巻エフェクト（上に行くほど広がる）
-        for (double h = 0; h <= tornadoHeight; h += 1.0) {
-            // 上に行くほど広がる（元のコマンドと同じ）
-            // h=0: 1.0, h=1: 1.1, h=2: 1.2, ..., h=8: 1.8
+        // 縦型竜巻エフェクト (軽量化版):
+        //   - 行の刻みを 1.0 → 1.5 に広げて 9 行 → 6 行
+        //   - 各行のパーティクル数を currentRadius*8 → currentRadius*4 に半減
+        //   - POOF の速度を 5 (高速で遠くへ飛ぶ) → 0.01 に大幅減速 (鬱陶しい雲飛散の修正)
+        //   - POOF の spread を (1, currentRadius, 0.1) → (0.05, 0.05, 0.05) に縮小
+        //   - SWEEP_ATTACK を 2 個に 1 個 → 4 個に 1 個に削減
+        for (double h = 0; h <= tornadoHeight; h += 1.5) {
             double currentRadius = 1.0 + (h * 0.1);
-
-            // 螺旋状のパーティクル
-            int particleCount = (int)(currentRadius * 8);
+            int particleCount = Math.max(1, (int)(currentRadius * 4));
             for (int i = 0; i < particleCount; i++) {
                 double angle = (i / (double)particleCount) * Math.PI * 2 + h * 0.5 + timeOffset;
                 double xOffset = Math.cos(angle) * currentRadius;
                 double zOffset = Math.sin(angle) * currentRadius;
 
-                // poof パーティクル（元のコマンドと同じ）
+                // POOF: count=1 のみ、 ほぼ動かない (speed 0.01, spread 0.05)
                 serverLevel.sendParticles(ParticleTypes.POOF,
                     pos.x + xOffset, pos.y + h, pos.z + zOffset,
-                    (int)currentRadius, 1, (int)currentRadius, 0.1, 5);
+                    1, 0.05, 0.05, 0.05, 0.01);
 
-                // sweep_attack パーティクル（小さく）
-                if (i % 2 == 0) {
+                // SWEEP_ATTACK は 4 個に 1 個に削減
+                if (i % 4 == 0) {
                     serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK,
                         pos.x + xOffset, pos.y + h, pos.z + zOffset,
-                        1, 0, 0, 0, 1);
+                        1, 0, 0, 0, 0);
                 }
 
-                // 感電エフェクト（StormItemの場合）
-                if (withElectricity && i % 3 == 0) {
+                // 感電 (Storm): 4 個に 1 個に削減
+                if (withElectricity && i % 4 == 0) {
                     serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
                         pos.x + xOffset, pos.y + h, pos.z + zOffset,
-                        1, 0.1, 0.1, 0.1, 0.01);
+                        1, 0.05, 0.05, 0.05, 0.01);
                 }
             }
         }
 
-        // 中心の雲パーティクル（強制的に表示）
+        // 中心の雲パーティクル: count 5→2, spread 縮小
         serverLevel.sendParticles(ParticleTypes.CLOUD,
             pos.x, pos.y + tornadoHeight / 2, pos.z,
-            5, 0.5, 1.5, 0.5, 0.02);
+            2, 0.2, 0.5, 0.2, 0.01);
 
-        // 地面の巻き上げ効果
-        for (int i = 0; i < 10; i++) {
-            double angle = (i / 10.0) * Math.PI * 2 + timeOffset;
+        // 地面の巻き上げ効果: 10 個 → 6 個
+        for (int i = 0; i < 6; i++) {
+            double angle = (i / 6.0) * Math.PI * 2 + timeOffset;
             double groundRadius = 1.2;
             serverLevel.sendParticles(ParticleTypes.POOF,
                 pos.x + Math.cos(angle) * groundRadius,
                 pos.y + 0.1,
                 pos.z + Math.sin(angle) * groundRadius,
-                1, 0, 0, 0, 0.05);
+                1, 0, 0, 0, 0.02);
         }
     }
 

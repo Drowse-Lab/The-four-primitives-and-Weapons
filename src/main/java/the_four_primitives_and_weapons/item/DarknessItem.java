@@ -38,8 +38,9 @@ public class DarknessItem extends Item implements ICurioItem {
 	@Override
 	public void inventoryTick(ItemStack itemstack, Level world, Entity entity, int slot, boolean selected) {
 		super.inventoryTick(itemstack, world, entity, slot, selected);
-		if (selected)
-			DarknessaitemuwoShoudeChituteiruJiannoteitukuProcedure.execute(entity);
+		// MCreator が同じ呼び出しを 2 行生成していた (copy-paste バグ) → 1 回に集約。
+		// curio で身に着けている場合と main hand で持っている場合の両方に対応するため、
+		// selected フラグに依存せず常に呼び出す (procedure 内で持ち主判定済み)。
 		DarknessaitemuwoShoudeChituteiruJiannoteitukuProcedure.execute(entity);
 	}
 

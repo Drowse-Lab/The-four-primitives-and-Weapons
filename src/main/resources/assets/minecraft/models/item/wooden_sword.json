@@ -4,7 +4,7 @@
 	"texture_size": [32, 32],
 	"textures": {
 		"1": "item/wooden_sword",
-		"particle": "item/wood_sword"
+		"particle": "item/wooden_sword"
 	},
 	"elements": [
 		{

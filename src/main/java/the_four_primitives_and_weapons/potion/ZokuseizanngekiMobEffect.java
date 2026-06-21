@@ -39,7 +39,10 @@ public class ZokuseizanngekiMobEffect extends MobEffect {
 
 	@Override
 	public boolean isDurationEffectTick(int duration, int amplifier) {
-		return true;
+		// 軽量化: 毎 tick (true) → 2 tick に 1 回 に間引き。
+		// このプロシージャは 900 行 + 60+ vanilla command 呼び出しがあるため負荷大。
+		// (player の体感上 0.1 秒の遅延は気付かないレベル)
+		return (duration & 1) == 0;
 	}
 
 	@Override

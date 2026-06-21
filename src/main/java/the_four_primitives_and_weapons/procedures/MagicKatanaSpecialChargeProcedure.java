@@ -108,6 +108,9 @@ public class MagicKatanaSpecialChargeProcedure {
             case "ErrorBookItem":
                 executeErrorAttack(world, x, y, z, player, chargePercent, elementLevel);
                 break;
+            case "MiasmaBookItem":
+                executeMiasmaAttack(world, x, y, z, player, chargePercent, elementLevel);
+                break;
             default:
                 executeDefaultMagicAttack(world, x, y, z, player, chargePercent);
                 break;
@@ -131,7 +134,7 @@ public class MagicKatanaSpecialChargeProcedure {
                             itemName.equals("BubbleshotItem") || itemName.equals("DarknessItem") ||
                             itemName.equals("IceBookItem") || itemName.equals("ElectricBookItem") ||
                             itemName.equals("CorrosionBookItem") || itemName.equals("HolyBookItem") ||
-                            itemName.equals("ErrorBookItem")) {
+                            itemName.equals("ErrorBookItem") || itemName.equals("MiasmaBookItem")) {
                             specialItem.set(stack);
                             return;
                         }
@@ -1069,6 +1072,117 @@ public class MagicKatanaSpecialChargeProcedure {
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.5f, 0.5f);
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.5f);
+        }
+    }
+
+    /**
+     * MiasmaBookItem - 瘴気の檻
+     * 前方扇形に瘴気を撒く。命中対象に Miasma DoT + 回復阻害 + Wither + Poison を付与。
+     * パーティクルは緑～紫の混合霧で、瘴気の濃密さを表現。
+     */
+    private static void executeMiasmaAttack(LevelAccessor world, double x, double y, double z,
+                                            Player player, float chargePercent, int elementLevel) {
+        Vec3 lookVec = player.getLookAngle();
+        Vec3 playerPos = player.position();
+        Vec3 forward = lookVec.normalize();
+        double range = 7.0 + elementLevel * 0.4;       // Lv1=7.4, Lv10=11
+        double coneAngle = Math.toRadians(50);          // 50° 円錐
+        double cosAngle = Math.cos(coneAngle);
+
+        // 視覚: 瘴気の霧 (緑 + 紫の dust + SQUID_INK)
+        if (world instanceof ServerLevel serverLevel) {
+            DustParticleOptions miasmaGreen = new DustParticleOptions(
+                    new Vector3f(0.35f, 0.6f, 0.15f), 1.2f);
+            DustParticleOptions miasmaPurple = new DustParticleOptions(
+                    new Vector3f(0.45f, 0.15f, 0.5f), 1.0f);
+            Vec3 startPos = playerPos.add(0, player.getEyeHeight() * 0.7, 0);
+            Vec3 right = forward.cross(new Vec3(0, 1, 0)).normalize();
+            Vec3 coneUp = right.cross(forward).normalize();
+            for (double d = 0.5; d <= range; d += 0.5) {
+                double spreadRadius = d * Math.tan(coneAngle) * 0.7;
+                int ringCount = 12;
+                for (int i = 0; i < ringCount; i++) {
+                    double a = (i / (double) ringCount) * Math.PI * 2;
+                    double offsetR = spreadRadius * Math.sqrt(Math.random());
+                    double ox = Math.cos(a) * offsetR;
+                    double oy = Math.sin(a) * offsetR;
+                    Vec3 pPos = startPos
+                            .add(forward.scale(d))
+                            .add(right.scale(ox))
+                            .add(coneUp.scale(oy));
+                    serverLevel.sendParticles(miasmaGreen,
+                            pPos.x, pPos.y, pPos.z, 1, 0.05, 0.05, 0.05, 0.005);
+                    if (Math.random() < 0.4) {
+                        serverLevel.sendParticles(miasmaPurple,
+                                pPos.x, pPos.y, pPos.z, 1, 0.03, 0.03, 0.03, 0.003);
+                    }
+                }
+                // 中心に SQUID_INK (重い瘴気)
+                Vec3 centerPos = startPos.add(forward.scale(d));
+                if (Math.random() < 0.5) {
+                    serverLevel.sendParticles(ParticleTypes.SQUID_INK,
+                            centerPos.x, centerPos.y, centerPos.z, 1, 0.1, 0.1, 0.1, 0.02);
+                }
+            }
+        }
+
+        // 攻撃判定: コーン内の敵を取得
+        Vec3 eyePos = playerPos.add(0, player.getEyeHeight() * 0.7, 0);
+        AABB searchArea = new AABB(eyePos, eyePos).inflate(range + 2);
+        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
+                entity -> {
+                    if (entity == player) return false;
+                    Vec3 toEntity = entity.getEyePosition().subtract(eyePos);
+                    double dist = toEntity.length();
+                    if (dist > range || dist < 0.5) return false;
+                    double dot = forward.dot(toEntity.normalize());
+                    return dot >= cosAngle;
+                });
+
+        // ダメージ + デバフ
+        float damage = 4.0f + elementLevel * 0.6f;        // Lv1=4.6, Lv10=10
+        int durScale = 1 + elementLevel / 4;              // 1～3
+        int healBlockDur = 100 + elementLevel * 20;       // Lv1=120tick, Lv10=300tick
+        float healBlockRate = Math.min(0.25f + elementLevel * 0.08f, 1.0f); // Lv1=33%, Lv10=100%
+        int dotDur = 60 + elementLevel * 10;
+        float dotDmg = 0.5f + elementLevel * 0.2f;
+
+        for (LivingEntity target : targets) {
+            target.invulnerableTime = 0;
+            target.hurt(player.damageSources().playerAttack(player), damage);
+
+            // 回復阻害 + DoT (Miasma element handler の API を流用)
+            the_four_primitives_and_weapons.damage.MiasmaElementDamageHandler.apply(
+                    target, healBlockDur, healBlockRate);
+            the_four_primitives_and_weapons.damage.ElementalDoTHandler.apply(
+                    target, dotDur, dotDmg,
+                    the_four_primitives_and_weapons.damage.ElementType.MIASMA);
+
+            // 追加デバフ (Wither + Poison + Weakness)
+            target.addEffect(new MobEffectInstance(MobEffects.WITHER,
+                    80 * durScale, Math.min(1 + elementLevel / 4, 3), false, true));
+            target.addEffect(new MobEffectInstance(MobEffects.POISON,
+                    100 * durScale, Math.min(elementLevel / 4, 2), false, true));
+            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS,
+                    120 * durScale, 1, false, true));
+
+            // 視覚: 命中時に target に瘴気の渦
+            if (world instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.SCULK_SOUL,
+                        target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+                        10, 0.3, 0.5, 0.3, 0.05);
+                serverLevel.sendParticles(ParticleTypes.SQUID_INK,
+                        target.getX(), target.getY() + 0.3, target.getZ(),
+                        15, 0.3, 0.1, 0.3, 0.05);
+            }
+        }
+
+        // サウンド
+        if (world instanceof Level level) {
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.SCULK_BLOCK_BREAK, SoundSource.PLAYERS, 1.5f, 0.6f);
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.WART_BLOCK_BREAK, SoundSource.PLAYERS, 1.2f, 0.7f);
         }
     }
 

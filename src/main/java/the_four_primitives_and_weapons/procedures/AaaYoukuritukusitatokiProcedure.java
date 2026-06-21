@@ -8,15 +8,19 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.CommandSource;
 
 public class AaaYoukuritukusitatokiProcedure {
+	// 軽量化:
+	//   旧: 毎 tick で /fill ~3 ~3 ~3 ~-3 ~-3 ~-3 end_stone (= 343 ブロック書き込み) を実行。
+	//   新: 10 tick (0.5秒) に 1 回に間引き。
 	public static void execute(Entity entity) {
-		if (entity == null)
-			return;
-		{
-			Entity _ent = entity;
-			if (!_ent.level().isClientSide() && _ent.getServer() != null) {
-				_ent.getServer().getCommands().performPrefixedCommand(new CommandSourceStack(CommandSource.NULL, _ent.position(), _ent.getRotationVector(), VersionHelper.getLevel(_ent) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(_ent) : null, 4,
-						_ent.getName().getString(), _ent.getDisplayName(), _ent.level().getServer(), _ent), "/fill ~3 ~3 ~3 ~-3 ~-3 ~-3 minecraft:end_stone");
-			}
-		}
+		if (entity == null) return;
+		if (entity.level().isClientSide()) return;
+		if (entity.getServer() == null) return;
+		if ((entity.tickCount % 10) != 0) return;
+
+		entity.getServer().getCommands().performPrefixedCommand(
+				new CommandSourceStack(CommandSource.NULL, entity.position(), entity.getRotationVector(),
+						VersionHelper.getLevel(entity) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(entity) : null,
+						4, entity.getName().getString(), entity.getDisplayName(), entity.level().getServer(), entity),
+				"/fill ~3 ~3 ~3 ~-3 ~-3 ~-3 minecraft:end_stone");
 	}
 }

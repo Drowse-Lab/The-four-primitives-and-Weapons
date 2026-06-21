@@ -29,11 +29,12 @@ import io.netty.buffer.Unpooled;
 
 /**
  * レアリティ解放テーブルのBlockEntity
- * スロット0-1: 触媒, スロット2-10: 3×3クラフトグリッド
+ * スロット0-1: 触媒, スロット2-10: 3×3クラフトグリッド, スロット11: 結果 (output)
  */
 public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer {
 
-    public static final int TOTAL_SLOTS = 11;
+    public static final int TOTAL_SLOTS = 12;
+    public static final int RESULT_SLOT = 11;
 
     private NonNullList<ItemStack> stacks = NonNullList.withSize(TOTAL_SLOTS, ItemStack.EMPTY);
     private final LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.values());
@@ -113,7 +114,8 @@ public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity imp
 
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
-        return index < TOTAL_SLOTS;
+        // 結果スロット (11) は出力専用 — ホッパー等からも投入不可
+        return index < TOTAL_SLOTS && index != RESULT_SLOT;
     }
 
     @Override

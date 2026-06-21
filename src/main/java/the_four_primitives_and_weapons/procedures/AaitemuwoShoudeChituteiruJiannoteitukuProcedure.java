@@ -1,104 +1,38 @@
 package the_four_primitives_and_weapons.procedures;
 
-import net.minecraft.world.level.block.Blocks;
+import the_four_primitives_and_weapons.util.VersionHelper;
+
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.CommandSource;
 
 import the_four_primitives_and_weapons.network.TheFourPrimitivesAndWeaponsModVariables;
 
 public class AaitemuwoShoudeChituteiruJiannoteitukuProcedure {
+	// 軽量化版:
+	//   旧: 毎 tick で player capability を 6 回取得 + 27 個の setBlock を 3 枝で実行 (= 最大 81 setBlock / tick)。
+	//   新: 10 tick (0.5秒) に 1 回に間引き、 capability 取得を 1 回に集約、 7x3x7 (= 147 ブロック) の /fill 1 発に置換。
 	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
-		if (entity == null)
-			return;
-		if ((entity.getCapability(TheFourPrimitivesAndWeaponsModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new TheFourPrimitivesAndWeaponsModVariables.PlayerVariables())).aaa == 4
-				|| (entity.getCapability(TheFourPrimitivesAndWeaponsModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new TheFourPrimitivesAndWeaponsModVariables.PlayerVariables())).aaa == 6) {
-			world.setBlock(new BlockPos((int) x, (int) (y - 1), (int) z), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 1), (int) (y - 1), (int) z), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 1), (int) z), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 1), (int) (y - 1), (int) z), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 1), (int) (z + 1)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 1), (int) (z - 1)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 1), (int) (y - 1), (int) (z - 1)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 1), (int) (y - 1), (int) (z - 1)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 1), (int) (y - 1), (int) (z + 1)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 2), (int) z), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 2), (int) (y - 2), (int) z), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 2), (int) z), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 2), (int) (y - 2), (int) z), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 2), (int) (z + 2)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 2), (int) (z - 2)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 2), (int) (y - 2), (int) (z - 2)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 2), (int) (y - 2), (int) (z - 2)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 2), (int) (y - 2), (int) (z + 2)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 3), (int) z), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 3), (int) (y - 3), (int) z), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 3), (int) z), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 3), (int) (y - 3), (int) z), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 3), (int) (z + 3)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 3), (int) (z - 3)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 3), (int) (y - 3), (int) (z - 3)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 3), (int) (y - 3), (int) (z - 3)), Blocks.WATER.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 3), (int) (y - 3), (int) (z + 3)), Blocks.WATER.defaultBlockState(), 3);
-		}
-		if ((entity.getCapability(TheFourPrimitivesAndWeaponsModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new TheFourPrimitivesAndWeaponsModVariables.PlayerVariables())).aaa == 3
-				|| (entity.getCapability(TheFourPrimitivesAndWeaponsModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new TheFourPrimitivesAndWeaponsModVariables.PlayerVariables())).aaa == 5) {
-			world.setBlock(new BlockPos((int) x, (int) (y - 1), (int) z), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 1), (int) (y - 1), (int) z), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 1), (int) z), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 1), (int) (y - 1), (int) z), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 1), (int) (z + 1)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 1), (int) (z - 1)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 1), (int) (y - 1), (int) (z - 1)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 1), (int) (y - 1), (int) (z - 1)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 1), (int) (y - 1), (int) (z + 1)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 2), (int) z), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 2), (int) (y - 2), (int) z), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 2), (int) z), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 2), (int) (y - 2), (int) z), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 2), (int) (z + 2)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 2), (int) (z - 2)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 2), (int) (y - 2), (int) (z - 2)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 2), (int) (y - 2), (int) (z - 2)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 2), (int) (y - 2), (int) (z + 2)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 3), (int) z), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 3), (int) (y - 3), (int) z), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 3), (int) z), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 3), (int) (y - 3), (int) z), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 3), (int) (z + 3)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 3), (int) (z - 3)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 3), (int) (y - 3), (int) (z - 3)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 3), (int) (y - 3), (int) (z - 3)), Blocks.AIR.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 3), (int) (y - 3), (int) (z + 3)), Blocks.AIR.defaultBlockState(), 3);
-		}
-		if ((entity.getCapability(TheFourPrimitivesAndWeaponsModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new TheFourPrimitivesAndWeaponsModVariables.PlayerVariables())).aaa == 2) {
-			world.setBlock(new BlockPos((int) x, (int) (y - 1), (int) z), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 1), (int) (y - 1), (int) z), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 1), (int) z), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 1), (int) (y - 1), (int) z), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 1), (int) (z + 1)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 1), (int) (z - 1)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 1), (int) (y - 1), (int) (z - 1)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 1), (int) (y - 1), (int) (z - 1)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 1), (int) (y - 1), (int) (z + 1)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 2), (int) z), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 2), (int) (y - 2), (int) z), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 2), (int) z), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 2), (int) (y - 2), (int) z), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 2), (int) (z + 2)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 2), (int) (z - 2)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 2), (int) (y - 2), (int) (z - 2)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 2), (int) (y - 2), (int) (z - 2)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 2), (int) (y - 2), (int) (z + 2)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 3), (int) z), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 3), (int) (y - 3), (int) z), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 3), (int) z), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 3), (int) (y - 3), (int) z), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 3), (int) (z + 3)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) x, (int) (y - 3), (int) (z - 3)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x - 3), (int) (y - 3), (int) (z - 3)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 3), (int) (y - 3), (int) (z - 3)), Blocks.DIRT.defaultBlockState(), 3);
-			world.setBlock(new BlockPos((int) (x + 3), (int) (y - 3), (int) (z + 3)), Blocks.DIRT.defaultBlockState(), 3);
-		}
+		if (entity == null) return;
+		if (entity.level().isClientSide()) return;
+		if (entity.getServer() == null) return;
+		if ((entity.tickCount % 10) != 0) return;
+
+		double aaa = entity.getCapability(TheFourPrimitivesAndWeaponsModVariables.PLAYER_VARIABLES_CAPABILITY, null)
+				.orElse(new TheFourPrimitivesAndWeaponsModVariables.PlayerVariables()).aaa;
+
+		String block;
+		if (aaa == 4 || aaa == 6)      block = "minecraft:water";
+		else if (aaa == 3 || aaa == 5) block = "minecraft:air";
+		else if (aaa == 2)             block = "minecraft:dirt";
+		else return;
+
+		entity.getServer().getCommands().performPrefixedCommand(
+				new CommandSourceStack(CommandSource.NULL, entity.position(), entity.getRotationVector(),
+						VersionHelper.getLevel(entity) instanceof ServerLevel ? (ServerLevel) VersionHelper.getLevel(entity) : null,
+						4, entity.getName().getString(), entity.getDisplayName(), entity.level().getServer(), entity),
+				"/fill ~3 ~-1 ~3 ~-3 ~-3 ~-3 " + block);
 	}
 }

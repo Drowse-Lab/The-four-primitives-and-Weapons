@@ -42,7 +42,8 @@ public class GuardposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 				}
 				_level.playSound(null, x, y, z, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 2, 2);
 				_level.playSound(null, x, y, z, SoundEvents.ARMOR_EQUIP_GOLD, SoundSource.PLAYERS, 1, 1);
-				_level.sendParticles(new DustParticleOptions(new Vector3f(r, g, b), 0.5f), x, y + 1, z, 35, 0.25, 0.25, 0.25, 1);
+				// 軽量化: 35 → 12 個、 speed 1 → 0.05 (爆散感を抑え近場に留める)
+				_level.sendParticles(new DustParticleOptions(new Vector3f(r, g, b), 0.5f), x, y + 1, z, 12, 0.25, 0.25, 0.25, 0.05);
 			}
 		}
 		entity.getPersistentData().putDouble("the_four_primitives_and_weapons:muteki_x_chuzume", (entity.getX()));

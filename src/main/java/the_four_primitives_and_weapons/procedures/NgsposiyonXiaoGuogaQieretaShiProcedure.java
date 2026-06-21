@@ -25,8 +25,16 @@ public class NgsposiyonXiaoGuogaQieretaShiProcedure {
 		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.SWORD_OF_NIGHT.get()) {
 			{
 				final Vec3 _center = new Vec3(x, y, z);
-				List<Entity> _entfound = world.getEntitiesOfClass(Entity.class, new AABB(_center, _center).inflate(50 / 2d), e -> true).stream().sorted(Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_center)))
-						.collect(Collectors.toList());
+				// 軽量化: 50 → 16 ブロック半径に縮小し、 ストリームソート前に predicate で
+				//   "gyamigyapitonndeyaru == 1" マーカー持ちだけにフィルタしてから処理。
+				//   全エンティティ走査の数百件 → 数件規模に。
+				List<Entity> _entfound = world.getEntitiesOfClass(Entity.class,
+						new AABB(_center, _center).inflate(16 / 2d),
+						e -> e.getPersistentData().getDouble("gyamigyapitonndeyaru") == 1)
+					.stream()
+					.sorted(Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_center)))
+					.limit(8) // 念のため上限 8 体
+					.collect(Collectors.toList());
 				for (Entity entityiterator : _entfound) {
 					if (entityiterator.getPersistentData().getDouble("gyamigyapitonndeyaru") == 1) {
 						{

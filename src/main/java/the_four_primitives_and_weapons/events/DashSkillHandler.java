@@ -243,14 +243,17 @@ public class DashSkillHandler {
         }
         shadowStepStates.put(player.getUUID(), state);
 
-        // 初期移動（WASD入力があれば超高速移動、なければその場に留まる）
+        // 初期移動 (WASD 入力があれば移動、なければその場に留まる)
+        // ※ y は 0 以下に clamp して上方向への飛行を禁止 (見上げて空中飛行バグの対策)。
+        //   下方向 (look.y < 0) は維持して降下は可能にする。
+        // ※ 速度は 3.0 → 1.0 に短縮 (リクエスト: 距離をもっと短く)。
         float fwd = player.zza;
         float str = player.xxa;
         if (fwd != 0 || str != 0) {
             Vec3 look = player.getLookAngle();
             Vec3 moveDir = getMovementDirection(player);
-            double yComponent = Math.max(look.y * 1.05, -0.2);
-            player.setDeltaMovement(moveDir.scale(3.0).add(0, yComponent, 0));
+            double yComponent = Math.max(Math.min(look.y * 0.5, 0.0), -0.2);
+            player.setDeltaMovement(moveDir.scale(1.0).add(0, yComponent, 0));
         } else {
             player.setDeltaMovement(0, 0, 0);
         }
@@ -366,14 +369,16 @@ public class DashSkillHandler {
         ServerLevel serverWorld = (ServerLevel) player.level();
         Vec3 pos = player.position();
 
-        // WASD入力に応じて超高速移動、入力なしはその場に留まる
+        // WASD 入力に応じて移動、入力なしはその場に留まる
+        // ※ activateShadowStep と同じく、y は 0 以下に clamp して空中飛行を禁止。
+        // ※ 速度 3.0 → 1.0 に短縮 (距離もっと短く)。
         float forward = player.zza;
         float strafe = player.xxa;
         if (forward != 0 || strafe != 0) {
             Vec3 look = player.getLookAngle();
             Vec3 moveDir = getMovementDirection(player);
-            double yComp = Math.max(look.y * 1.05, -0.2);
-            player.setDeltaMovement(moveDir.scale(3.0).add(0, yComp, 0));
+            double yComp = Math.max(Math.min(look.y * 0.5, 0.0), -0.2);
+            player.setDeltaMovement(moveDir.scale(1.0).add(0, yComp, 0));
             player.hurtMarked = true;
         } else {
             // 入力なし: 移動を停止してその場に留まる
@@ -491,6 +496,22 @@ public class DashSkillHandler {
             if (leapSlashBuffTimers.containsKey(attacker.getUUID())) {
                 event.setAmount(event.getAmount() * LEAP_SLASH_DAMAGE_MULTIPLIER);
             }
+        }
+    }
+
+    /**
+     * シャドーステップ中にプレイヤーが entity 攻撃をしたら即座に解除。
+     * (クライアント側の checkShadowStepCancelClient は client map しか消さないため、
+     *  サーバー側 map に残ったままだと shadow step が継続してしまう。
+     *  AttackEntityEvent は両側で fire するので、 両側の map から remove できる。)
+     */
+    @SubscribeEvent
+    public static void onAttackEntity(net.minecraftforge.event.entity.player.AttackEntityEvent event) {
+        Player player = event.getEntity();
+        if (player == null) return;
+        if (shadowStepStates.containsKey(player.getUUID())) {
+            // 攻撃自体は通す (シャドーステップから攻撃で抜ける感覚)
+            endShadowStep(player, player.getUUID());
         }
     }
 

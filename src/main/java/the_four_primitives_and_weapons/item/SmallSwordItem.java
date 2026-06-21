@@ -43,7 +43,9 @@ public class SmallSwordItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -2.4f, new Item.Properties());
+		// damage 3 → 1 (攻撃力↓, total = tier bonus 5 + 1 = 6)
+		// attackSpeed -2.4f → -1.6f (短剣相当の連撃速度 ~2.4 atk/sec)
+		}, 1, -1.6f, new Item.Properties());
 	}
 
 	@Override

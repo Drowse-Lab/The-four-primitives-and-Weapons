@@ -41,7 +41,8 @@ public class KaitenMobEffect extends MobEffect {
 
 	@Override
 	public boolean isDurationEffectTick(int duration, int amplifier) {
-		return true;
+		// 軽量化: 毎 tick → 2 tick に 1 回 (重い procedure 呼び出し負荷を半減)
+		return (duration & 1) == 0;
 	}
 
 	@Override

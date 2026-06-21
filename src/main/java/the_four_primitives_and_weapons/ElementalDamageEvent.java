@@ -225,16 +225,30 @@ public class ElementalDamageEvent {
     }
 
     /**
-     * 電気属性の伝染ダメージを処理
+     * 電気属性の伝染ダメージを処理。
+     *   - 水中 (water/bubble): 半径 12 ブロック (一番長い)
+     *   - 雨のみ (空中で雨に濡れている): 半径 8 ブロック (中程度)
+     *   - どちらでもない: 伝染しない
+     *   - 属性レベル毎に +0.5 ブロック (最大 +5)
      */
     private static void applyElectricChainDamage(LivingEntity target, LivingEntity attacker, float originalDamage, int elementLevel) {
-        // 水中にいる場合のみ
-        if (!target.isInWaterOrRain() && !target.isInWaterRainOrBubble()) {
-            return;
+        // 水中 (bubble 列含む) かどうかを優先判定。 水中なら雨の判定はスキップ。
+        boolean inWater = target.isInWaterOrBubble();
+        // 「雨のみ」 = 水中ではなく、雨で濡れている状態 (isInWaterOrRain は水含むので水中除外で表現)
+        boolean inRainOnly = !inWater && target.isInWaterOrRain();
+
+        double radius;
+        if (inWater) {
+            radius = 12.0;
+        } else if (inRainOnly) {
+            radius = 8.0;
+        } else {
+            return; // 通電せず
         }
+        // レベルボーナス (Lv1=+0.5, Lv10=+5 上限)
+        radius += Math.min(elementLevel * 0.5, 5.0);
 
         // 周囲のエンティティを検索
-        double radius = 5.0;
         AABB searchBox = new AABB(
             target.getX() - radius,
             target.getY() - radius,
@@ -249,15 +263,25 @@ public class ElementalDamageEvent {
             e -> e != target && e != attacker && (e.isInWaterOrRain() || e.isInWaterRainOrBubble())
         );
 
+        // 軽量化: チェーン対象を最大 16 体までに制限 (大群戦の負荷対策)。
+        // 近い順で優先するため、 距離でソートしてから先頭 16 体を採用。
+        if (nearbyEntities.size() > 16) {
+            final double tx = target.getX(), ty = target.getY(), tz = target.getZ();
+            nearbyEntities.sort((a, b) -> Double.compare(
+                a.distanceToSqr(tx, ty, tz), b.distanceToSqr(tx, ty, tz)));
+            nearbyEntities = nearbyEntities.subList(0, 16);
+        }
+
         for (LivingEntity nearby : nearbyEntities) {
             // 電気の光線が伝染するパーティクルエフェクト
+            //  軽量化: distance * 5 → distance * 2 (粒子数 60% 減)、 上限 12 個
             if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {
                 Vec3 start = target.position().add(0, target.getBbHeight() / 2, 0);
                 Vec3 end = nearby.position().add(0, nearby.getBbHeight() / 2, 0);
                 Vec3 direction = end.subtract(start).normalize();
 
                 double distance = start.distanceTo(end);
-                int particles = (int)(distance * 5);
+                int particles = Math.min(12, Math.max(1, (int)(distance * 2)));
 
                 for (int i = 0; i < particles; i++) {
                     double ratio = (double)i / particles;

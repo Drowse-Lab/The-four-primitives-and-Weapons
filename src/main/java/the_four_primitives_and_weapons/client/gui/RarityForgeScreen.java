@@ -74,20 +74,8 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
         this.renderBackground(gfx);
         super.render(gfx, mouseX, mouseY, partialTicks);
 
-        // クラフト候補リスト描画
-        renderCandidateList(gfx, mouseX, mouseY);
-
-        // スロットツールチップ
+        // スロットツールチップ (結果スロットも含む)
         this.renderTooltip(gfx, mouseX, mouseY);
-
-        // 候補ホバー時のアイテムツールチップ
-        if (hoveredRecipeIndex >= 0) {
-            List<RarityForgeRecipe> all = RarityForgeRecipes.getAll();
-            if (hoveredRecipeIndex < all.size()) {
-                ItemStack stack = new ItemStack(all.get(hoveredRecipeIndex).getResult());
-                gfx.renderTooltip(this.font, stack, mouseX, mouseY);
-            }
-        }
     }
 
     @Override
@@ -111,8 +99,10 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
             for (int c = 0; c < 3; c++)
                 drawSlotBg(gfx, lx + GRID_X + c * CELL, ly + GRID_Y + r * CELL);
 
-        // === 右パネル（クラフト候補）===
+        // === 右パネル（結果スロット + 候補リスト）===
         drawInsetPanel(gfx, lx + 139, ly + 18, 136, 108);
+        // 結果スロット (バニラ作業台と同じ位置感、矢印の右側)
+        drawSlotBg(gfx, lx + 166, ly + 56);
 
         // === プレイヤーインベントリ ===
         for (int r = 0; r < 3; r++)
@@ -127,9 +117,9 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
         gfx.drawString(font, Component.literal("\u00A7l\u30EC\u30A2\u30EA\u30C6\u30A3\u89E3\u653E\u30C6\u30FC\u30D6\u30EB"), 5, 6, 0x404040, false);
         gfx.drawString(font, Component.literal("\u89E6\u5A92"), 20, 22, 0x404040, false);
         gfx.drawString(font, Component.literal("\u30AF\u30E9\u30D5\u30C8"), 83, 26, 0x404040, false);
-        gfx.drawString(font, Component.literal("\u30AF\u30E9\u30D5\u30C8\u5019\u88DC"), 160, 22, 0x404040, false);
+        gfx.drawString(font, Component.literal("\u7D50\u679C"), 175, 22, 0x404040, false); // \u300C\u7D50\u679C\u300D
         gfx.drawString(font, Component.literal("+"), 31, 59, 0x404040, false);
-        gfx.drawString(font, Component.literal("\u2192"), 137, 58, 0x404040, false);
+        gfx.drawString(font, Component.literal("\u2192"), 152, 58, 0x404040, false);
         gfx.drawString(font, Component.literal("\u30A4\u30F3\u30D9\u30F3\u30C8\u30EA"), 59, 128, 0x404040, false);
 
         // === 触媒によるレアリティ確率表示 ===
@@ -170,7 +160,8 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
         }
     }
 
-    /** クラフト候補リスト描画（クラフト可能なレシピのみ表示） */
+    /** クラフト候補リスト描画（クラフト可能なレシピのみ表示） — 旧 UI 用、現在は呼ばれない。 */
+    @SuppressWarnings("unused")
     private void renderCandidateList(GuiGraphics gfx, int mouseX, int mouseY) {
         int lx = this.leftPos + LIST_X;
         int ly = this.topPos + LIST_Y;
@@ -223,29 +214,7 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
         }
     }
 
-    @Override
-    public boolean mouseClicked(double mx, double my, int button) {
-        // クラフト可能なレシピのみクリック可
-        if (button == 0 && hoveredRecipeIndex >= 0
-                && craftableIndices.contains(hoveredRecipeIndex)) {
-            TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(
-                    new RarityForgeButtonMessage(x, y, z, hoveredRecipeIndex));
-            return true;
-        }
-        return super.mouseClicked(mx, my, button);
-    }
-
-    @Override
-    public boolean mouseScrolled(double mx, double my, double delta) {
-        int lx = this.leftPos + LIST_X;
-        int ly = this.topPos + LIST_Y;
-        if (mx >= lx && mx < lx + LIST_W && my >= ly && my < ly + LIST_H) {
-            int maxS = Math.max(0, craftableIndices.size() - VISIBLE_ROWS);
-            scrollOffset = Math.max(0, Math.min(maxS, scrollOffset - (int) delta));
-            return true;
-        }
-        return super.mouseScrolled(mx, my, delta);
-    }
+    // 旧フロー (候補リストクリックで craft) は撤去。result スロットの通常クリックで craft される。
 
     @Override
     public boolean keyPressed(int key, int b, int c) {

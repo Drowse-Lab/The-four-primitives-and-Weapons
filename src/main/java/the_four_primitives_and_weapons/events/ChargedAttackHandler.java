@@ -1295,7 +1295,8 @@ public class ChargedAttackHandler {
             mob.setTarget(decoy);
 
             if (level instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(ParticleTypes.POOF, decoy.getX(), decoy.getY() + 1, decoy.getZ(), 25, 0.0, 0.0, 0.0, 0.25);
+                // 軽量化: 25 → 10 個 (decoy 複数 spawn 時の負荷削減)
+                serverLevel.sendParticles(ParticleTypes.POOF, decoy.getX(), decoy.getY() + 1, decoy.getZ(), 10, 0.0, 0.0, 0.0, 0.1);
             }
         }
 

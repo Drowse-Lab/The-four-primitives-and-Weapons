@@ -82,6 +82,7 @@
 
         "the_four_primitives_and_weapons:sword_of_night",
         "the_four_primitives_and_weapons:gate",
+        "the_four_primitives_and_weapons:machete",
         "minecraft:wooden_sword",
         "minecraft:stone_sword",
         "minecraft:iron_sword",
@@ -207,6 +208,12 @@
       "enabled": true,
       "special_motions": {
         "right_click": ["sword_of_night_special"]
+      }
+    },
+    "the_four_primitives_and_weapons:rivers_of_blood": {
+      "enabled": true,
+      "special_motions": {
+        "right_click": ["rivers_of_blood_special"]
       }
     },
     "the_four_primitives_and_weapons:gate": {

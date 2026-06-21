@@ -62,7 +62,18 @@ public class RiversOfBloodItem extends SwordItem {
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
 		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		KatanaBloodYoukuritukusitatokiProcedure.execute();
+		// 特殊技「血の咆哮」は RIGHT_CLICK スロットが "rivers_of_blood_special" の時だけ発動。
+		// (回避 / なし を選択している間は何もしない — 回避と被らないようにするため)
+		the_four_primitives_and_weapons.skill.PlayerSkillData.SkillStorage sd =
+				the_four_primitives_and_weapons.skill.PlayerSkillData.getSkillData(entity);
+		if (sd != null) {
+			String motion = sd.getMotionForWeapon(
+					the_four_primitives_and_weapons.skill.PlayerSkillData.AttackSlot.RIGHT_CLICK,
+					entity.getMainHandItem());
+			if ("rivers_of_blood_special".equals(motion)) {
+				KatanaBloodYoukuritukusitatokiProcedure.execute(world, entity);
+			}
+		}
 		return ar;
 	}
 

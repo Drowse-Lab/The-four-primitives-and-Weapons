@@ -100,6 +100,38 @@ public class SkillSelectionMenu extends AbstractContainerMenu {
         for (AttackSlot slot : AttackSlot.values()) {
             defaultMotions.put(slot, buf.readUtf());
         }
+        // 武器タイプ別モーション (server → client 同期)。client capability にも書き戻して
+        // 既存の getCurrentMotion (sd.getTypeMotion) が正しく動くようにする。
+        try {
+            java.util.Map<String, java.util.Map<AttackSlot, String>> incoming = new java.util.HashMap<>();
+            int typeCount = buf.readInt();
+            for (int t = 0; t < typeCount; t++) {
+                String typeId = buf.readUtf();
+                int slotCount = buf.readInt();
+                java.util.Map<AttackSlot, String> slotMap = new EnumMap<>(AttackSlot.class);
+                for (int s = 0; s < slotCount; s++) {
+                    String slotId = buf.readUtf();
+                    String motionId = buf.readUtf();
+                    AttackSlot as = AttackSlot.fromId(slotId);
+                    if (as != null) slotMap.put(as, motionId);
+                }
+                incoming.put(typeId, slotMap);
+            }
+            // クライアント側 capability に同期 (UI が即座に正しい選択を表示できる)
+            player.getCapability(PlayerSkillData.SKILL_CAPABILITY).ifPresent(sd ->
+                    sd.replaceAllTypeMotions(incoming));
+            // 武器適正 (proficiency) も同期 — サーバー保存値が UI に反映されるため
+            try {
+                String profId = buf.readUtf();
+                PlayerSkillData.WeaponProficiency prof = PlayerSkillData.WeaponProficiency.fromId(profId);
+                player.getCapability(PlayerSkillData.SKILL_CAPABILITY).ifPresent(sd ->
+                        sd.setWeaponProficiency(prof));
+            } catch (Exception ignoredInner) {
+                // 旧サーバー (proficiency を送らない) との互換
+            }
+        } catch (Exception ignored) {
+            // 旧サーバー (typeMotions を送らない) との互換: 黙って無視
+        }
     }
 
     private void populateMotionsFromCapability() {

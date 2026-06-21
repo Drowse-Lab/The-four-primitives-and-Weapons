@@ -124,9 +124,13 @@ public class SimplifiedWeaponEffectsProcedure {
                 target.setSecondsOnFire(15);
             }
 
-            // Thunderbolt効果 → 雷撃
+            // Thunderbolt効果 → 雷撃 (+ kurikara 系装備時は通電 AOE)
             if (attacker.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.TUNDERBOLTEFFRCT.get())) {
                 applyIfNotFresh(livingTarget, TheFourPrimitivesAndWeaponsModMobEffects.THUNDER_HIT.get(), 120, 6);
+                // kurikara 系装備時: 周囲に通電 AOE (ダメージ + THUNDER_HIT 伝搬)
+                if (hasKurikaraWeapon(attacker)) {
+                    applyConductionAoe(world, livingTarget, attacker, 5.0, 4.0f);
+                }
             }
 
             // Storm効果 → 雷撃＋窒息
@@ -135,6 +139,44 @@ public class SimplifiedWeaponEffectsProcedure {
                 applyIfNotFresh(livingTarget, TheFourPrimitivesAndWeaponsModMobEffects.TISSOKU.get(), 120, 6);
             }
         }
+    }
+
+    /** 攻撃者が kurikara 系武器を持っているか (main または off hand) */
+    private static boolean hasKurikaraWeapon(LivingEntity attacker) {
+        return isKurikara(attacker.getMainHandItem()) || isKurikara(attacker.getOffhandItem());
+    }
+    private static boolean isKurikara(ItemStack s) {
+        if (s.isEmpty()) return false;
+        return s.getItem() == TheFourPrimitivesAndWeaponsModItems.KURIKARAKEN.get()
+            || s.getItem() == TheFourPrimitivesAndWeaponsModItems.KURIKARAKENSWORD.get()
+            || s.getItem() == TheFourPrimitivesAndWeaponsModItems.KURIKARAKENUTIGATANA.get()
+            || s.getItem() == TheFourPrimitivesAndWeaponsModItems.KAMINARI_KURIKARAKEN_SWORD.get()
+            || s.getItem() == TheFourPrimitivesAndWeaponsModItems.KAMINARI_KURIKARAKEN_UTIGATANA.get()
+            || s.getItem() == TheFourPrimitivesAndWeaponsModItems.KAMINARI_KURIKARAKEN_TYOKUTOU.get();
+    }
+
+    /**
+     * 通電 AOE: target を中心に半径 r の範囲で全 LivingEntity に
+     * lightning ダメージ + THUNDER_HIT を伝搬。attacker と target は除外。
+     * 視覚効果として ELECTRIC_SPARK パーティクルも周囲に発射。
+     */
+    private static void applyConductionAoe(LevelAccessor world, LivingEntity target,
+                                           LivingEntity attacker, double radius, float damage) {
+        if (!(world instanceof ServerLevel serverLevel)) return;
+        // 周囲 entity を集めて damage + effect を伝搬
+        net.minecraft.world.phys.AABB box = new net.minecraft.world.phys.AABB(
+            target.getX() - radius, target.getY() - radius, target.getZ() - radius,
+            target.getX() + radius, target.getY() + radius, target.getZ() + radius);
+        for (LivingEntity le : serverLevel.getEntitiesOfClass(LivingEntity.class, box)) {
+            if (le == attacker || le == target) continue;
+            if (le.distanceToSqr(target) > radius * radius) continue;
+            le.hurt(le.damageSources().lightningBolt(), damage);
+            applyIfNotFresh(le, TheFourPrimitivesAndWeaponsModMobEffects.THUNDER_HIT.get(), 120, 6);
+        }
+        // 視覚: ELECTRIC_SPARK を周囲にばらまく
+        serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK,
+            target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+            40, radius * 0.5, radius * 0.3, radius * 0.5, 0.3);
     }
 
     /**

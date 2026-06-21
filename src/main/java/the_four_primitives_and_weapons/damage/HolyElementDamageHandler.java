@@ -6,6 +6,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
@@ -72,8 +74,9 @@ public class HolyElementDamageHandler {
                 target.setSecondsOnFire(5);
             }
 
-            // 発光効果を付与
-            target.setGlowingTag(true);
+            // 発光効果を付与 (旧: setGlowingTag(true) はタイマー無しで永続化していたバグ)
+            // duration 100 tick = 5 秒で自然消滅。 amplifier 0、 ambient false、 visible false、 icon false。
+            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 100, 0, false, false, false));
 
             // 聖なる光のパーティクル（アンデッド専用の強化版）
             if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {

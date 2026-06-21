@@ -288,6 +288,21 @@ public class PlayerSkillData {
                     .put(slot, motionId);
         }
 
+        /** マルチプレイ同期用: 内部 typeMotions の全体ビューを返す (read-only 想定)。 */
+        public Map<String, Map<AttackSlot, String>> getAllTypeMotions() {
+            return typeMotions;
+        }
+
+        /** マルチプレイ同期用: extraData で受け取った typeMotions をクライアント menu にも展開できるよう setter を追加。 */
+        public void replaceAllTypeMotions(Map<String, Map<AttackSlot, String>> source) {
+            typeMotions.clear();
+            for (Map.Entry<String, Map<AttackSlot, String>> e : source.entrySet()) {
+                EnumMap<AttackSlot, String> copy = new EnumMap<>(AttackSlot.class);
+                copy.putAll(e.getValue());
+                typeMotions.put(e.getKey(), copy);
+            }
+        }
+
         // === 固有スキルトグル ===
 
         public boolean isUniqueSkillEnabled(String itemId) {

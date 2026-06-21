@@ -67,6 +67,24 @@ public class OpenSkillScreenPacket {
                 for (AttackSlot slot : AttackSlot.values()) {
                     buf.writeUtf(skillData.getMotion(slot));
                 }
+                // 武器タイプ別モーション設定 (multiplayer 同期: クライアント capability は空のため、
+                //   この extraData を経由して UI 表示に必要なデータを渡す必要がある)
+                // フォーマット: typeId 数 (int) → 各 typeId について [typeId(utf), AttackSlot 数(int),
+                //   各 slot について slotId(utf) + motionId(utf)]
+                java.util.Map<String, java.util.Map<AttackSlot, String>> allTypeMotions =
+                        skillData.getAllTypeMotions();
+                buf.writeInt(allTypeMotions.size());
+                for (java.util.Map.Entry<String, java.util.Map<AttackSlot, String>> e : allTypeMotions.entrySet()) {
+                    buf.writeUtf(e.getKey());
+                    java.util.Map<AttackSlot, String> slotMap = e.getValue();
+                    buf.writeInt(slotMap.size());
+                    for (java.util.Map.Entry<AttackSlot, String> s : slotMap.entrySet()) {
+                        buf.writeUtf(s.getKey().getId());
+                        buf.writeUtf(s.getValue());
+                    }
+                }
+                // 武器適正 (proficiency) も同期 — サーバーが保存している現在値を UI に反映するため
+                buf.writeUtf(skillData.getWeaponProficiency().getId());
             });
         });
         ctx.get().setPacketHandled(true);

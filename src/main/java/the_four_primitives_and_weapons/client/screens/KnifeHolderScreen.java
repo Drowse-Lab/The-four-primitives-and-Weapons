@@ -20,9 +20,13 @@ public class KnifeHolderScreen extends AbstractContainerScreen<KnifeHolderMenu> 
     public KnifeHolderScreen(KnifeHolderMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
         // コンテナサイズ
+        //   holder 2 行 (y=18..52) + 16px gap + player inv 3 行 (y=68..120)
+        //   + 6px gap + hotbar (y=126..142) + 8px 下マージン = 150
+        //   vanilla 公式: inventoryLabelY = imageHeight - 94 = 56 で inv 行 0 (y=68) の 12px 上に正しく配置される。
+        //   旧 値 (166) のままだと inventoryLabelY=72 が inv 行 0 (y=68..86) と重なって「場所が変」になる。
         this.imageWidth = 176;
-        this.imageHeight = 166;
-        this.inventoryLabelY = this.imageHeight - 94;
+        this.imageHeight = 150;
+        this.inventoryLabelY = this.imageHeight - 94; // = 56
     }
 
     @Override

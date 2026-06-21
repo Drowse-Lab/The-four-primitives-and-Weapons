@@ -111,6 +111,8 @@ public class SkillRegistry {
                 MotionCategory.SPECIAL, rightClickOnly, "SwordOfNightItem");
         register("gate_special", "Gate・投刃", "右クリック:放射状に直刀を投げる",
                 MotionCategory.SPECIAL, rightClickOnly, "GateItem");
+        register("rivers_of_blood_special", "血の咆哮", "右クリック:周囲6m に AOE + Wither/Weakness + 命中ごとに +2HP 吸収",
+                MotionCategory.SPECIAL, rightClickOnly, "RiversOfBloodItem");
 
         // === Shift+右クリック専用モーション ===
         Set<AttackSlot> shiftRightClickOnly = EnumSet.of(AttackSlot.SHIFT_RIGHT_CLICK);

@@ -15,6 +15,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -35,15 +36,21 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * レアリティ解放テーブルメニュー
- * スロット0-1: 触媒, スロット2-10: 3×3クラフトグリッド
- * 右パネルのクラフト候補をクリックして作成
+ * レアリティ解放テーブルメニュー (バニラ作業台スタイル)
+ *   スロット 0-1  : 触媒
+ *   スロット 2-10 : 3×3 クラフトグリッド
+ *   スロット 11   : 結果 (output, 取り出し時に素材消費)
+ *
+ * グリッド + 触媒の状態に応じて結果スロットに preview が自動表示される。
+ * プレイヤーが結果スロットからアイテムを取り出した瞬間に rarity を抽選し、
+ * 素材と触媒を消費する。
  */
 public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<Map<Integer, Slot>> {
 
     private static final int CATALYST_SLOTS = 2;
     private static final int GRID_SLOTS = 9;
-    private static final int CONTAINER_SLOTS = CATALYST_SLOTS + GRID_SLOTS; // 11
+    private static final int RESULT_SLOT_INDEX = CATALYST_SLOTS + GRID_SLOTS; // 11
+    private static final int CONTAINER_SLOTS = RESULT_SLOT_INDEX + 1;          // 12
 
     public final Level world;
     public final Player entity;
@@ -51,6 +58,8 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
     private IItemHandler internal;
     private final Map<Integer, Slot> customSlots = new HashMap<>();
     private boolean bound = false;
+    /** 現在 grid にマッチしている recipe (result スロットに preview 中)。なければ null。 */
+    private RarityForgeRecipe currentRecipe = null;
 
     public RarityForgeMenu(int id, Inventory inv, FriendlyByteBuf extraData) {
         super(RarityForgeRegistration.getMenuType(), id);
@@ -87,6 +96,10 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
                 this.customSlots.put(slotIndex, this.addSlot(new SlotItemHandler(internal, slotIndex, slotX, slotY)));
             }
 
+        // スロット11: 結果スロット (output専用)
+        this.customSlots.put(RESULT_SLOT_INDEX,
+                this.addSlot(new ResultSlot(internal, RESULT_SLOT_INDEX, 167, 57)));
+
         // プレイヤーインベントリ (3×9)
         for (int si = 0; si < 3; ++si)
             for (int sj = 0; sj < 9; ++sj)
@@ -95,15 +108,16 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
         // ホットバー
         for (int si = 0; si < 9; ++si)
             this.addSlot(new Slot(inv, si, 59 + si * 18, 196));
+
+        // 初回 preview 計算
+        updateResultPreview();
     }
 
     public IItemHandler getInternal() {
         return internal;
     }
 
-    /**
-     * 3×3グリッド部分をスロット0-8として見せるラッパー
-     */
+    /** 3×3グリッド部分をスロット0-8として見せるラッパー */
     private IItemHandler getGridHandler() {
         return new IItemHandler() {
             @Override public int getSlots() { return GRID_SLOTS; }
@@ -115,9 +129,7 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
         };
     }
 
-    /**
-     * 3×3グリッドのパターンに一致するレシピ一覧を返す
-     */
+    /** 3×3 グリッドのパターンにマッチするレシピ一覧を返す (互換 API、 JEI / Screen が参照) */
     public List<RarityForgeRecipe> getMatchingRecipes() {
         IItemHandler grid = getGridHandler();
         List<RarityForgeRecipe> matches = new ArrayList<>();
@@ -130,78 +142,110 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
     }
 
     /**
-     * クラフト実行（全レシピリストのインデックス指定）
+     * グリッド / 触媒の変化に応じて結果スロットを再計算。バニラ CraftingMenu#slotsChanged 相当。
      */
-    public void performForge(int recipeIndex) {
-        List<RarityForgeRecipe> all = RarityForgeRecipes.getAll();
-        if (recipeIndex < 0 || recipeIndex >= all.size()) return;
+    @Override
+    public void slotsChanged(Container container) {
+        super.slotsChanged(container);
+        updateResultPreview();
+    }
 
-        RarityForgeRecipe recipe = all.get(recipeIndex);
+    private void updateResultPreview() {
+        // クライアント側でも preview は表示したいので両側で計算する
+        // (RarityForgeRecipes は data pack 経由で両側に load 済み)
         IItemHandler grid = getGridHandler();
+        currentRecipe = null;
+        for (RarityForgeRecipe r : RarityForgeRecipes.getAll()) {
+            if (r.matches(grid)) {
+                currentRecipe = r;
+                break;
+            }
+        }
+        ItemStack preview = (currentRecipe != null)
+                ? buildPreviewResult(currentRecipe, grid)
+                : ItemStack.EMPTY;
+        internal.extractItem(RESULT_SLOT_INDEX, internal.getStackInSlot(RESULT_SLOT_INDEX).getCount(), false);
+        if (!preview.isEmpty()) {
+            internal.insertItem(RESULT_SLOT_INDEX, preview, false);
+        }
+    }
 
-        // 3×3グリッドパターンチェック
-        if (!recipe.matches(grid)) return;
-
-        // 触媒取得（両スロット）
-        ItemStack catalyst0 = internal.getStackInSlot(0);
-        ItemStack catalyst1 = internal.getStackInSlot(1);
-
-        // レアリティ抽選（2スロット合算）
-        WeaponRarity rarity = RarityCraftingLogic.rollRarity(catalyst0, catalyst1);
-
-        // 触媒ボーナス計算（各触媒のティアに応じた攻撃力加算）
-        double catalystBonus = RarityCraftingLogic.getCatalystBonus(catalyst0, catalyst1);
-
-        // 結果アイテム作成
-        ItemStack result;
+    /**
+     * preview 用の結果スタックを構築。
+     * - book / unbreakable レシピは確定値 (rarity 抽選なし)
+     * - 通常武器レシピは base item のみ (rarity / catalyst bonus は onTake で適用)
+     */
+    private ItemStack buildPreviewResult(RarityForgeRecipe recipe, IItemHandler grid) {
         if (recipe.isUnbreakable()) {
-            // Unbreakableレシピ: 入力武器のNBTを保持したまま Unbreakable:1 を付与
             int inputIdx = recipe.getInputSlotIndex();
-            if (inputIdx < 0) return;
+            if (inputIdx < 0) return ItemStack.EMPTY;
             int[] offset = recipe.findMatchOffset(grid);
-            if (offset == null) return;
-            int gridSlot = inputIdx; // pattern座標をそのまま使用
-            // pattern内の行列からグリッドスロットを計算
+            if (offset == null) return ItemStack.EMPTY;
             int patW = recipe.getPatternWidth();
             int py = inputIdx / patW;
             int px = inputIdx % patW;
             int actualSlot = (py + offset[1]) * 3 + (px + offset[0]);
             ItemStack inputItem = grid.getStackInSlot(actualSlot);
-            if (inputItem.isEmpty()) return;
-            result = inputItem.copy();
+            if (inputItem.isEmpty()) return ItemStack.EMPTY;
+            ItemStack result = inputItem.copy();
             result.getOrCreateTag().putBoolean("Unbreakable", true);
             result.setCount(1);
+            return result;
         } else if (recipe.isBookRecipe()) {
-            result = new ItemStack(recipe.getResult());
-            // magic bookレシピ: ElementType + ElementLevel NBTを設定
+            ItemStack result = new ItemStack(recipe.getResult());
             ElementType elementType = getElementTypeForBook(recipe.getResult());
             ElementalDamageUtils.setElement(result, elementType, recipe.getElementLevel());
+            return result;
         } else {
-            result = new ItemStack(recipe.getResult());
-            WeaponRarity.setToStack(result, rarity);
-            WeaponRarity.setCatalystBonus(result, catalystBonus);
+            return new ItemStack(recipe.getResult());
         }
+    }
 
-        // グリッドから素材消費
-        recipe.consumeIngredients(grid);
+    /**
+     * 旧 API: 右パネルから recipeIndex で craft する旧フローの互換。
+     * 新フロー (結果スロットから取り出し) では使わないが、互換のため残す。
+     */
+    public void performForge(int recipeIndex) {
+        List<RarityForgeRecipe> all = RarityForgeRecipes.getAll();
+        if (recipeIndex < 0 || recipeIndex >= all.size()) return;
+        RarityForgeRecipe recipe = all.get(recipeIndex);
+        IItemHandler grid = getGridHandler();
+        if (!recipe.matches(grid)) return;
 
-        // 触媒消費（各スロット1個ずつ）
-        if (!catalyst0.isEmpty()) {
-            internal.extractItem(0, 1, false);
-        }
-        if (!catalyst1.isEmpty()) {
-            internal.extractItem(1, 1, false);
-        }
-
-        // プレイヤーに付与
+        ItemStack result = finalizeResult(recipe, grid);
+        if (result.isEmpty()) return;
+        consumeIngredientsAndCatalysts(recipe, grid);
         if (!entity.getInventory().add(result)) {
             entity.drop(result, false);
         }
+        playForgeSound();
+        updateResultPreview();
+    }
 
-        // サウンド
+    /** 取り出し時の最終結果 (rarity 抽選 + bonus 適用) を作る。 */
+    private ItemStack finalizeResult(RarityForgeRecipe recipe, IItemHandler grid) {
+        if (recipe.isUnbreakable() || recipe.isBookRecipe()) {
+            return buildPreviewResult(recipe, grid);
+        }
+        ItemStack cat0 = internal.getStackInSlot(0);
+        ItemStack cat1 = internal.getStackInSlot(1);
+        WeaponRarity rarity = RarityCraftingLogic.rollRarity(cat0, cat1);
+        double bonus = RarityCraftingLogic.getCatalystBonus(cat0, cat1);
+        ItemStack result = new ItemStack(recipe.getResult());
+        WeaponRarity.setToStack(result, rarity);
+        WeaponRarity.setCatalystBonus(result, bonus);
+        return result;
+    }
+
+    private void consumeIngredientsAndCatalysts(RarityForgeRecipe recipe, IItemHandler grid) {
+        recipe.consumeIngredients(grid);
+        if (!internal.getStackInSlot(0).isEmpty()) internal.extractItem(0, 1, false);
+        if (!internal.getStackInSlot(1).isEmpty()) internal.extractItem(1, 1, false);
+    }
+
+    private void playForgeSound() {
         if (entity instanceof ServerPlayer sp) {
-            sp.level().playSound(null,
-                    sp.getX(), sp.getY(), sp.getZ(),
+            sp.level().playSound(null, sp.getX(), sp.getY(), sp.getZ(),
                     SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
         }
     }
@@ -226,14 +270,20 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
         if (slot != null && slot.hasItem()) {
             ItemStack itemstack1 = slot.getItem();
             itemstack = itemstack1.copy();
-            if (index < CONTAINER_SLOTS) {
-                // コンテナ → プレイヤー
+            if (index == RESULT_SLOT_INDEX) {
+                // 結果スロット → プレイヤー: onTake が消費処理
+                if (!this.moveItemStackTo(itemstack1, CONTAINER_SLOTS, this.slots.size(), true))
+                    return ItemStack.EMPTY;
+                slot.onQuickCraft(itemstack1, itemstack);
+                slot.onTake(playerIn, itemstack1);
+            } else if (index < CONTAINER_SLOTS) {
+                // 触媒 / グリッド → プレイヤー
                 if (!this.moveItemStackTo(itemstack1, CONTAINER_SLOTS, this.slots.size(), true))
                     return ItemStack.EMPTY;
                 slot.onQuickCraft(itemstack1, itemstack);
             } else {
                 // プレイヤー → グリッド優先、次に触媒
-                if (!this.moveItemStackTo(itemstack1, CATALYST_SLOTS, CONTAINER_SLOTS, false)
+                if (!this.moveItemStackTo(itemstack1, CATALYST_SLOTS, RESULT_SLOT_INDEX, false)
                         && !this.moveItemStackTo(itemstack1, 0, CATALYST_SLOTS, false))
                     return ItemStack.EMPTY;
             }
@@ -252,12 +302,14 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
     public void removed(Player playerIn) {
         super.removed(playerIn);
         if (!bound && playerIn instanceof ServerPlayer serverPlayer) {
+            // 結果スロットは drop しない (preview なので)
+            internal.extractItem(RESULT_SLOT_INDEX, internal.getStackInSlot(RESULT_SLOT_INDEX).getCount(), false);
             if (!serverPlayer.isAlive() || serverPlayer.hasDisconnected()) {
-                for (int j = 0; j < internal.getSlots(); ++j) {
+                for (int j = 0; j < RESULT_SLOT_INDEX; ++j) {
                     playerIn.drop(internal.extractItem(j, internal.getStackInSlot(j).getCount(), false), false);
                 }
             } else {
-                for (int i = 0; i < internal.getSlots(); ++i) {
+                for (int i = 0; i < RESULT_SLOT_INDEX; ++i) {
                     playerIn.getInventory().placeItemBackInInventory(internal.extractItem(i, internal.getStackInSlot(i).getCount(), false));
                 }
             }
@@ -267,5 +319,46 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
     @Override
     public Map<Integer, Slot> get() {
         return customSlots;
+    }
+
+    /**
+     * 結果スロット: 出力専用 + 取り出し時に rarity 抽選 + 素材消費を行う。
+     * バニラ ResultSlot 相当。
+     */
+    private class ResultSlot extends SlotItemHandler {
+        public ResultSlot(IItemHandler handler, int index, int x, int y) {
+            super(handler, index, x, y);
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            return false; // 出力スロットなので置けない
+        }
+
+        @Override
+        public boolean mayPickup(Player player) {
+            return !getItem().isEmpty() && currentRecipe != null;
+        }
+
+        @Override
+        public void onTake(Player player, ItemStack stack) {
+            if (currentRecipe != null) {
+                IItemHandler grid = getGridHandler();
+                // 通常武器レシピのみ rarity を上書き (book/unbreakable は preview がそのまま結果)
+                if (!currentRecipe.isUnbreakable() && !currentRecipe.isBookRecipe()) {
+                    ItemStack cat0 = internal.getStackInSlot(0);
+                    ItemStack cat1 = internal.getStackInSlot(1);
+                    WeaponRarity rarity = RarityCraftingLogic.rollRarity(cat0, cat1);
+                    double bonus = RarityCraftingLogic.getCatalystBonus(cat0, cat1);
+                    WeaponRarity.setToStack(stack, rarity);
+                    WeaponRarity.setCatalystBonus(stack, bonus);
+                }
+                consumeIngredientsAndCatalysts(currentRecipe, grid);
+                playForgeSound();
+            }
+            super.onTake(player, stack);
+            // 次の preview を更新
+            updateResultPreview();
+        }
     }
 }
