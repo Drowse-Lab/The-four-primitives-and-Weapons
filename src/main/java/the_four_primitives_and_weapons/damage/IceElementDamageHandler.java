@@ -108,13 +108,13 @@ public class IceElementDamageHandler {
      * @param level 属性レベル
      */
     public static void applyIceDamage(LivingEntity target, float damage, LivingEntity source, int level) {
-        // カスタムダメージソースを作成（1.20.1: factory method使用）
-        net.minecraft.world.damagesource.DamageSource ds = target.damageSources().magic();
+        // カスタム DamageType: the_four_primitives_and_weapons:ice
+        net.minecraft.world.damagesource.DamageSource ds =
+                ModDamageSources.ofElement(target.level(), ElementType.ICE, source);
         IElementalDamageSource elementalSource = (IElementalDamageSource) ds;
         elementalSource.setElementType(ElementType.ICE);
         elementalSource.setElementLevel(level);
 
-        // ダメージを適用
         target.hurt(ds, damage);
     }
 

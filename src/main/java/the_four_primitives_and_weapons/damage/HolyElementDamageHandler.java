@@ -132,13 +132,12 @@ public class HolyElementDamageHandler {
      * @param level 属性レベル
      */
     public static void applyHolyDamage(LivingEntity target, float damage, LivingEntity source, int level) {
-        // カスタムダメージソースを作成（1.20.1: factory method使用）
-        DamageSource ds = target.damageSources().magic();
+        // カスタム DamageType: the_four_primitives_and_weapons:holy
+        DamageSource ds = ModDamageSources.ofElement(target.level(), ElementType.HOLY, source);
         IElementalDamageSource elementalSource = (IElementalDamageSource) ds;
         elementalSource.setElementType(ElementType.HOLY);
         elementalSource.setElementLevel(level);
 
-        // ダメージを適用
         target.hurt(ds, damage);
     }
 

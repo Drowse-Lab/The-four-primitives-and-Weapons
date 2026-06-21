@@ -135,19 +135,18 @@ public class ElectricElementDamageHandler {
      * @param level 属性レベル
      */
     public static void applyElectricDamage(LivingEntity target, float damage, LivingEntity source, int level) {
-        // カスタムダメージソースを作成（1.20.1: factory method使用）
-        DamageSource ds = target.damageSources().magic();
+        // カスタム DamageType: the_four_primitives_and_weapons:electric
+        DamageSource ds = ModDamageSources.ofElement(target.level(), ElementType.ELECTRIC, source);
         IElementalDamageSource elementalSource = (IElementalDamageSource) ds;
         elementalSource.setElementType(ElementType.ELECTRIC);
         elementalSource.setElementLevel(level);
 
-        // ダメージを適用
         target.hurt(ds, damage);
     }
 
     public static float handleElectricDamage(LivingEntity attacker, LivingEntity target, ItemStack weapon, float baseDmg) {
         int level = ElementalDamageUtils.getElementLevel(weapon);
-        DamageSource ds = attacker.damageSources().magic();
+        DamageSource ds = ModDamageSources.ofElement(target.level(), ElementType.ELECTRIC, attacker);
         float damage = calculateDamage(target, baseDmg, level, ds);
         applyElectricDamage(target, damage - baseDmg, attacker, level);
         return damage;

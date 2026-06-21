@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "the_four_primitives_and_weapons:holy",
+    "the_four_primitives_and_weapons:ice",
+    "the_four_primitives_and_weapons:electric",
+    "the_four_primitives_and_weapons:thunder",
+    "the_four_primitives_and_weapons:corrosion",
+    "the_four_primitives_and_weapons:dark",
+    "the_four_primitives_and_weapons:miasma",
+    "the_four_primitives_and_weapons:water",
+    "the_four_primitives_and_weapons:wind",
+    "the_four_primitives_and_weapons:fire",
+    "the_four_primitives_and_weapons:error"
+  ]
+}

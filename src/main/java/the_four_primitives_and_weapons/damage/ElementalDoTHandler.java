@@ -2,15 +2,10 @@ package the_four_primitives_and_weapons.damage;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.registries.Registries;
 
 import java.util.Map;
 import java.util.UUID;
@@ -59,21 +54,10 @@ public class ElementalDoTHandler {
      *   （fallback として magic を使います）
      */
     public static DamageSource createDoTSource(LivingEntity target, ElementType element) {
-        try {
-            String typeId = "the_four_primitives_and_weapons:" + element.getName() + "_dot";
-            ResourceKey<DamageType> key = ResourceKey.create(
-                    Registries.DAMAGE_TYPE,
-                    new ResourceLocation(typeId)
-            );
-            return new DamageSource(
-                    target.level().registryAccess()
-                          .registryOrThrow(Registries.DAMAGE_TYPE)
-                          .getHolderOrThrow(key)
-            );
-        } catch (Exception e) {
-            // data-driven DamageType が未登録の場合は magic にフォールバック
-            return target.damageSources().magic();
-        }
+        // mod 独自の DamageType ( the_four_primitives_and_weapons:<element> ) を使う。
+        // バニラの damageSources().magic() は使わない。 解決失敗時のフォールバックは
+        // ModDamageSources 側で magic に落ちる仕様。
+        return ModDamageSources.ofElement(target.level(), element, null);
     }
 
     // ────────────────────────────────────────────────────────────────

@@ -189,7 +189,8 @@ public class CorrosionElementDamageHandler {
 
     public static void applyCorrosionDamage(LivingEntity target, float damage,
                                              LivingEntity source, int level) {
-        DamageSource ds = target.damageSources().magic();
+        // カスタム DamageType: the_four_primitives_and_weapons:corrosion
+        DamageSource ds = ModDamageSources.ofElement(target.level(), ElementType.CORROSION, source);
         IElementalDamageSource elementalSource = (IElementalDamageSource) ds;
         elementalSource.setElementType(ElementType.CORROSION);
         elementalSource.setElementLevel(level);

@@ -114,7 +114,7 @@ public class ThunderElementDamageHandler {
                 if (nearby_entity != target && nearby_entity != attacker
                         && (nearby_entity.isInWaterOrRain() || nearby_entity.isInWaterRainOrBubble())) {
                     nearby_entity.hurt(
-                            level.damageSources().lightningBolt(),
+                            ModDamageSources.ofElement(level, ElementType.THUNDER, attacker),
                             baseDmg * multiplier * 0.5f
                     );
                 }
@@ -150,7 +150,9 @@ public class ThunderElementDamageHandler {
             for (LivingEntity nearby_entity : nearby) {
                 if (nearby_entity != target && nearby_entity != attacker
                         && (nearby_entity.isInWaterOrRain() || nearby_entity.isInWaterRainOrBubble())) {
-                    nearby_entity.hurt(world.damageSources().lightningBolt(), baseDmg * multiplier * 0.5f);
+                    nearby_entity.hurt(
+                            ModDamageSources.ofElement(world, ElementType.THUNDER, attacker),
+                            baseDmg * multiplier * 0.5f);
                 }
             }
         }
