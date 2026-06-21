@@ -111,33 +111,47 @@ public class SimplifiedWeaponEffectsProcedure {
                 );
             }
         }
-        
+
         // その他のステータス効果
         if (target instanceof LivingEntity livingTarget) {
             // Bubbleshot効果 → 窒息
             if (attacker.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.BUBBLESHOT_EFFECT.get())) {
-                livingTarget.addEffect(new MobEffectInstance(
-                    TheFourPrimitivesAndWeaponsModMobEffects.TISSOKU.get(), 120, 6, true, false));
+                applyIfNotFresh(livingTarget, TheFourPrimitivesAndWeaponsModMobEffects.TISSOKU.get(), 120, 6);
             }
-            
+
             // Fireball効果 → 炎上
             if (attacker.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.FIREBALLEFFECT.get())) {
                 target.setSecondsOnFire(15);
             }
-            
+
             // Thunderbolt効果 → 雷撃
             if (attacker.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.TUNDERBOLTEFFRCT.get())) {
-                livingTarget.addEffect(new MobEffectInstance(
-                    TheFourPrimitivesAndWeaponsModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
+                applyIfNotFresh(livingTarget, TheFourPrimitivesAndWeaponsModMobEffects.THUNDER_HIT.get(), 120, 6);
             }
-            
+
             // Storm効果 → 雷撃＋窒息
             if (attacker.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.STORM_EFFECT.get())) {
-                livingTarget.addEffect(new MobEffectInstance(
-                    TheFourPrimitivesAndWeaponsModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
-                livingTarget.addEffect(new MobEffectInstance(
-                    TheFourPrimitivesAndWeaponsModMobEffects.TISSOKU.get(), 120, 6, true, false));
+                applyIfNotFresh(livingTarget, TheFourPrimitivesAndWeaponsModMobEffects.THUNDER_HIT.get(), 120, 6);
+                applyIfNotFresh(livingTarget, TheFourPrimitivesAndWeaponsModMobEffects.TISSOKU.get(), 120, 6);
             }
         }
+    }
+
+    /**
+     * 既に同じ effect が「十分な残り duration」で付与済みの場合は再付与しない。
+     * 連続攻撃で duration が毎 hit リセットされて永続化する問題への対処。
+     * 残り duration が REFRESH_THRESHOLD (40 tick = 2秒) 以下なら refresh する。
+     */
+    private static final int REFRESH_THRESHOLD = 40;
+    private static void applyIfNotFresh(LivingEntity target,
+                                        net.minecraft.world.effect.MobEffect effect,
+                                        int duration, int amplifier) {
+        MobEffectInstance existing = target.getEffect(effect);
+        if (existing != null
+                && existing.getAmplifier() >= amplifier
+                && existing.getDuration() > REFRESH_THRESHOLD) {
+            return; // 既に強力な効果が残っているので追加しない (永続化防止)
+        }
+        target.addEffect(new MobEffectInstance(effect, duration, amplifier, true, false));
     }
 }

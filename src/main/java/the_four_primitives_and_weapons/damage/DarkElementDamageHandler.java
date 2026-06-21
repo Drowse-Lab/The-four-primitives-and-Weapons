@@ -81,7 +81,13 @@ public class DarkElementDamageHandler {
 
     /**
      * ターゲットの既存デバフ（有害エフェクト）を強化する。
+     * 連続ヒットで延長・増幅が無制限に積み上がらないよう上限を設ける。
      */
+    // 延長後の最大持続 (連打しても 30 秒で頭打ち)
+    private static final int MAX_EXTENDED_DURATION = 600;
+    // 増幅可能な amplifier の上限 (Slowness II 等のバニラ上限を超える事故防止)
+    private static final int MAX_AMPLIFIER = 4;
+
     private static void amplifyDebuffs(LivingEntity target, int level) {
         List<MobEffectInstance> debuffs = new ArrayList<>();
         for (MobEffectInstance effect : target.getActiveEffects()) {
@@ -90,8 +96,10 @@ public class DarkElementDamageHandler {
             }
         }
         for (MobEffectInstance debuff : debuffs) {
-            int extendedDuration = debuff.getDuration() + 40 * level;
-            int newAmplifier     = debuff.getAmplifier() + (level >= 3 ? 1 : 0);
+            int extendedDuration = Math.min(debuff.getDuration() + 40 * level, MAX_EXTENDED_DURATION);
+            int newAmplifier     = Math.min(debuff.getAmplifier() + (level >= 3 ? 1 : 0), MAX_AMPLIFIER);
+            // 元より短くなるなら何もしない (MC の addEffect が無視するので無害だが明示)
+            if (extendedDuration <= debuff.getDuration() && newAmplifier <= debuff.getAmplifier()) continue;
             target.addEffect(new MobEffectInstance(
                     debuff.getEffect(),
                     extendedDuration,
