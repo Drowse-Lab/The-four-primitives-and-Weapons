@@ -1,6 +1,7 @@
 package the_four_primitives_and_weapons.util;
 
 import the_four_primitives_and_weapons.util.VersionHelper;
+import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
@@ -178,8 +179,8 @@ public class DamageCalculator {
             int baneLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BANE_OF_ARTHROPODS, weapon);
             if (baneLevel > 0) {
                 damage += 2.5f * baneLevel;
-                // スローネス効果も付与
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 + 10 * baneLevel, 3));
+                // スローネス → attribute modifier ベース (牛乳で消えない / モヤ無し)
+                SpecialDebuffHandler.applySlowness(target, 20 + 10 * baneLevel, 3);
             }
         }
 
@@ -327,10 +328,10 @@ public class DamageCalculator {
         attacker.heal(healAmount);
 
         if (isCursed) {
-            // 呪われた敵への追加効果
+            // 呪われた敵への追加効果 — Wither は DoT (カスタムダメージ) に、 Weakness は attribute modifier に
             target.hurt(target.damageSources().magic(), damage * 0.3f);
-            target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
-            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
+            SpecialDebuffHandler.applyWither(target, 100, 0.5f);
+            SpecialDebuffHandler.applyWeakness(target, 200, 1);
         }
 
         // 血のエフェクト
@@ -350,8 +351,8 @@ public class DamageCalculator {
                            "cursed".equals(target.getPersistentData().getString("Feyn"));
 
         if (isCursed) {
-            // 呪われた敵には強化されたウィザー効果
-            target.addEffect(new MobEffectInstance(MobEffects.WITHER, 200, 2));
+            // 呪われた敵には強化されたウィザー効果 — DoT (カスタムダメージ) で実装
+            SpecialDebuffHandler.applyWither(target, 200, 1.0f);
             target.hurt(target.damageSources().wither(), damage * 0.5f);
 
             // 闇のオーラエフェクト
@@ -361,8 +362,8 @@ public class DamageCalculator {
                     15, 0.5, 0.5, 0.5, 0.05);
             }
         } else {
-            // 通常のウィザー効果
-            target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
+            // 通常のウィザー効果 — DoT (カスタムダメージ) で実装
+            SpecialDebuffHandler.applyWither(target, 100, 0.5f);
         }
 
         // ウィザーサウンド
@@ -371,9 +372,9 @@ public class DamageCalculator {
     }
 
     private static void applyDarknessEffect(LivingEntity attacker, LivingEntity target, float damage) {
-        // 暗闇効果
-        target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 100, 0));
-        target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 60, 0));
+        // 暗闇効果 (ambient=true / visible=false で swirl 抑制)
+        target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 100, 0, true, false));
+        target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 60, 0, true, false));
 
         // 追加の闇ダメージ
         target.hurt(target.damageSources().magic(), damage * 0.2f);

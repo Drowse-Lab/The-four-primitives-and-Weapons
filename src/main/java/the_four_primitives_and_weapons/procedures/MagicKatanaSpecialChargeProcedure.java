@@ -14,6 +14,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import the_four_primitives_and_weapons.damage.ElementType;
 import the_four_primitives_and_weapons.damage.ModDamageSources;
+import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.effect.MobEffects;
@@ -116,6 +117,91 @@ public class MagicKatanaSpecialChargeProcedure {
             default:
                 executeDefaultMagicAttack(world, x, y, z, player, chargePercent);
                 break;
+        }
+
+        // 一度発動したら 1 秒間 (= 20 tick) 通常攻撃の代わりに special を再発動できる
+        // バーストウィンドウを開く。 既に window 中の場合は延長せずそのまま (= 累積無限化を防ぐ)
+        setBurstWindow(player);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // バーストウィンドウ ( 1 秒間、 通常攻撃の代わりに special が再発動 )
+    // ─────────────────────────────────────────────────────────────
+
+    private static final long BURST_DURATION_TICKS = 20L;
+    private static final java.util.Map<java.util.UUID, Long> burstExpiry =
+            new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.Map<java.util.UUID, Boolean> wasSwingingMap =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static void setBurstWindow(Player player) {
+        java.util.UUID id = player.getUUID();
+        long now = player.level().getGameTime();
+        Long existing = burstExpiry.get(id);
+        // 既存 window が残っているならそのまま保持。 新規 / 切れた時のみセット
+        if (existing == null || now > existing) {
+            burstExpiry.put(id, now + BURST_DURATION_TICKS);
+        }
+    }
+
+    public static boolean isInBurstWindow(Player player) {
+        Long expiry = burstExpiry.get(player.getUUID());
+        if (expiry == null) return false;
+        if (player.level().getGameTime() > expiry) {
+            burstExpiry.remove(player.getUUID());
+            wasSwingingMap.remove(player.getUUID());
+            return false;
+        }
+        return true;
+    }
+
+    @net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "the_four_primitives_and_weapons")
+    public static class BurstHandler {
+        /**
+         * 一度 special を発動したプレイヤーが 1 秒間のあいだに左クリック (= スイング) した時、
+         * 通常攻撃の代わりに同じ special を再発動する。
+         * 検出はサーバ側 PlayerTickEvent で player.swinging の transition を見る。
+         */
+        @net.minecraftforge.eventbus.api.SubscribeEvent
+        public static void onPlayerTick(net.minecraftforge.event.TickEvent.PlayerTickEvent event) {
+            if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            Player player = event.player;
+            if (player.level().isClientSide()) return;
+
+            java.util.UUID id = player.getUUID();
+            Long expiry = burstExpiry.get(id);
+            if (expiry == null) {
+                wasSwingingMap.remove(id);
+                return;
+            }
+            if (player.level().getGameTime() > expiry) {
+                burstExpiry.remove(id);
+                wasSwingingMap.remove(id);
+                return;
+            }
+
+            boolean now = player.swinging;
+            Boolean prev = wasSwingingMap.put(id, now);
+            // swing 開始 ( false → true ) の瞬間に special を再発動
+            if (!Boolean.TRUE.equals(prev) && now) {
+                try {
+                    execute(player.level(), player.getX(), player.getY(), player.getZ(), player, 1.0f);
+                } catch (Throwable ignored) {}
+            }
+        }
+
+        /**
+         * バースト中のエンティティ攻撃はキャンセル (= 通常ダメージを通さない)。
+         * 上の onPlayerTick で special が代わりに発動する。
+         */
+        @net.minecraftforge.eventbus.api.SubscribeEvent(priority =
+                net.minecraftforge.eventbus.api.EventPriority.HIGHEST)
+        public static void onAttackEntity(net.minecraftforge.event.entity.player.AttackEntityEvent event) {
+            Player player = event.getEntity();
+            if (player.level().isClientSide()) return;
+            if (isInBurstWindow(player)) {
+                event.setCanceled(true);
+            }
         }
     }
 
@@ -389,8 +475,9 @@ public class MagicKatanaSpecialChargeProcedure {
                 targetLookVec.z * 2.5
             );
 
-            // 鈍足効果3
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 2));
+            // 鈍足効果 — MobEffect ではなく attribute modifier ベース ( SpecialDebuffHandler ) で適用。
+            // 牛乳で消えない & swirl パーティクルも出ない。
+            SpecialDebuffHandler.applySlowness(target, 100, 3);
 
             // 泡エフェクト
             if (world instanceof ServerLevel serverLevel) {
@@ -549,7 +636,7 @@ public class MagicKatanaSpecialChargeProcedure {
             target.invulnerableTime = 0;
             target.hurt(ModDamageSources.ofElement(player.level(), ElementType.ICE, player), 2.0f * levelBonus);
             // Slowness + Frozen
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, Math.min(3 + elementLevel / 3, 6), false, true));
+            SpecialDebuffHandler.applySlowness(target, 100, Math.min(3 + elementLevel / 3, 6));
             int maxFrozen = target.getTicksRequiredToFreeze();
             target.setTicksFrozen(Math.min(target.getTicksFrozen() + 80, maxFrozen + 40));
         }
@@ -763,9 +850,10 @@ public class MagicKatanaSpecialChargeProcedure {
 
             // 結晶侵食デバフ（レベルで効果時間・強度UP）
             int durScale = 1 + elementLevel / 4;
-            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 140 * durScale, Math.min(2 + elementLevel / 3, 5), false, true));
-            target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100 * durScale, Math.min(1 + elementLevel / 4, 3), false, true));
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 80 * durScale, Math.min(1 + elementLevel / 3, 4), false, true));
+            // MobEffect → attribute modifier / DoT (カスタムダメージ) に置換
+            SpecialDebuffHandler.applyWeakness(target, 140 * durScale, Math.min(2 + elementLevel / 3, 5));
+            SpecialDebuffHandler.applyWither(target, 100 * durScale, 0.5f + Math.min(1 + elementLevel / 4, 3) * 0.5f);
+            SpecialDebuffHandler.applySlowness(target, 80 * durScale, Math.min(1 + elementLevel / 3, 4));
 
             // ヒットした敵に結晶化エフェクト（敵を覆う紫結晶の爆発）
             if (world instanceof ServerLevel serverLevel) {
@@ -799,10 +887,91 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * HolyBookItem - 聖なる裁き（前方範囲 + アンデッドに特効 + 自己回復）
-     * 金色の光柱が降り注ぎ、聖なる魔法陣から浄化の光が放たれる
+     * HolyBookItem - 聖なる槍 ( Holy Spear )
+     * 視点方向に金色のパーティクルの槍を飛ばす。
+     * 直撃した entity に Holy ダメージ、 アンデッドには追加ダメージ。
      */
     private static void executeHolyAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent, int elementLevel) {
+        if (!(world instanceof ServerLevel sl)) return;
+
+        Vec3 eyePos   = player.getEyePosition();
+        Vec3 lookVec  = player.getLookAngle().normalize();
+        double range  = 16.0 + Math.min(elementLevel, 10) * 0.5; // Lv1=16.5 / Lv10=21
+        double radius = 0.6; // 槍の太さ
+
+        // 1) 槍の軌跡パーティクル — 金色の連続した粒で槍 / ビームを描画
+        DustParticleOptions holyGoldMain = new DustParticleOptions(
+                new Vector3f(1.0f, 0.85f, 0.2f), 1.4f);
+        DustParticleOptions holyGoldThin = new DustParticleOptions(
+                new Vector3f(1.0f, 0.95f, 0.5f), 0.7f);
+        for (double d = 0.5; d <= range; d += 0.3) {
+            Vec3 p = eyePos.add(lookVec.scale(d));
+            // 太い金色
+            sl.sendParticles(holyGoldMain,
+                    p.x, p.y, p.z, 2, 0.04, 0.04, 0.04, 0.0);
+            // 細い金色 (内側 highlight)
+            sl.sendParticles(holyGoldThin,
+                    p.x, p.y, p.z, 1, 0.02, 0.02, 0.02, 0.0);
+            // END_ROD で槍先端 / 跡が光る
+            if (d % 1.0 < 0.3) {
+                sl.sendParticles(ParticleTypes.END_ROD,
+                        p.x, p.y, p.z, 1, 0.02, 0.02, 0.02, 0.0);
+            }
+        }
+        // 槍の先端で爆発的に派手に
+        Vec3 tip = eyePos.add(lookVec.scale(range));
+        sl.sendParticles(ParticleTypes.FLASH, tip.x, tip.y, tip.z, 1, 0, 0, 0, 0);
+        sl.sendParticles(holyGoldMain, tip.x, tip.y, tip.z, 20, 0.3, 0.3, 0.3, 0.05);
+        sl.sendParticles(ParticleTypes.END_ROD, tip.x, tip.y, tip.z, 10, 0.2, 0.2, 0.2, 0.03);
+
+        // 2) 線上の entity を判定 → 命中したやつに Holy ダメージ
+        AABB box = new AABB(eyePos, tip).inflate(radius + 0.5);
+        List<LivingEntity> nearby = world.getEntitiesOfClass(LivingEntity.class, box, e -> e != player && e.isAlive());
+
+        float holyBonus = 1.0f + elementLevel * 0.3f;
+        float dmgMain   = 5.0f * holyBonus;
+        float dmgUndead = 8.0f * holyBonus;
+
+        for (LivingEntity target : nearby) {
+            // 視線軸と target 中心点の最短距離を計算 (cylinder hit test)
+            Vec3 toTarget = target.getBoundingBox().getCenter().subtract(eyePos);
+            double along  = toTarget.dot(lookVec);
+            if (along < 0 || along > range) continue;
+            Vec3 closest  = eyePos.add(lookVec.scale(along));
+            double perp   = target.getBoundingBox().getCenter().distanceTo(closest);
+            if (perp > radius + 0.4) continue;
+
+            // 命中
+            target.invulnerableTime = 0;
+            target.hurt(ModDamageSources.ofElement(player.level(), ElementType.HOLY, player), dmgMain);
+            if (target.isInvertedHealAndHarm()) {
+                target.invulnerableTime = 0;
+                target.hurt(ModDamageSources.ofElement(player.level(), ElementType.HOLY, player), dmgUndead);
+            }
+
+            // 命中位置に派手なパーティクル
+            sl.sendParticles(holyGoldMain,
+                    target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+                    30, 0.3, 0.4, 0.3, 0.05);
+            sl.sendParticles(ParticleTypes.END_ROD,
+                    target.getX(), target.getY() + 0.2, target.getZ(),
+                    15, 0.15, 1.0, 0.15, 0.02);
+            sl.sendParticles(ParticleTypes.ENCHANTED_HIT,
+                    target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+                    10, 0.3, 0.4, 0.3, 0.1);
+        }
+
+        // 3) サウンド
+        if (world instanceof Level level) {
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.AMETHYST_BLOCK_HIT, SoundSource.PLAYERS, 1.2f, 1.8f);
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.6f, 1.5f);
+        }
+    }
+
+    /** 旧 executeHolyAttack の残りコード ( 範囲攻撃 / 自己回復 / サウンド ) は槍仕様で不要 */
+    private static void executeHolyAttackOldUnused(LevelAccessor world, double x, double y, double z, Player player, float chargePercent, int elementLevel) {
         Vec3 lookVec = player.getLookAngle();
         Vec3 playerPos = player.position();
         double range = 8.0;
@@ -1092,8 +1261,8 @@ public class MagicKatanaSpecialChargeProcedure {
                     15, 0.3, 0.4, 0.3, 0.5);
             }
 
-            // デバフ（空間に切り裂かれた影響）
-            target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 60, 0, false, true));
+            // デバフ（空間に切り裂かれた影響、 ambient=true / visible=false で swirl 抑制）
+            target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 60, 0, true, false));
         }
 
         // サウンド
@@ -1190,9 +1359,8 @@ public class MagicKatanaSpecialChargeProcedure {
             try { target.removeEffect(MobEffects.HEAL); } catch (Throwable ignored) {}
             try { target.removeEffect(MobEffects.SATURATION); } catch (Throwable ignored) {}
 
-            // Weakness のみ追加 (回復系ではない通常デバフ、 special 技の追加効果として)
-            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS,
-                    120 * durScale, 1, false, true));
+            // Weakness — MobEffect ではなく attribute modifier ベース
+            SpecialDebuffHandler.applyWeakness(target, 120 * durScale, 1);
 
             // 視覚: 命中時に target に瘴気の渦
             if (world instanceof ServerLevel serverLevel) {

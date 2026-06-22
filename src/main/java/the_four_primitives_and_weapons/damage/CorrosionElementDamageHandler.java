@@ -45,12 +45,7 @@ public class CorrosionElementDamageHandler {
     private static final UUID   ATTACK_REDUCTION_UUID        =
             UUID.fromString("b4c5d6e7-f8a9-0123-4567-89abcdef0123");
 
-    // 持続ダメージ設定
-    private static final int   DOT_MIN_LEVEL          = 2;    // 発動最低レベル
-    private static final int   DOT_BASE_DURATION      = 60;   // 基礎持続tick (3秒)
-    private static final int   DOT_DURATION_PER_LEVEL = 40;   // +2秒/Lv
-    private static final float DOT_DAMAGE_BASE        = 0.5f; // 基礎ダメージ/tick
-    private static final float DOT_DAMAGE_PER_LEVEL   = 0.5f; // +0.5/tick per Lv
+    // (旧: 持続ダメージ設定を保持していたが、 ユーザー要望で DoT を撤廃したので削除)
 
     // 防御力減少タイマー
     private static final Map<UUID, Integer> armorReductionTimers = new ConcurrentHashMap<>();
@@ -99,16 +94,8 @@ public class CorrosionElementDamageHandler {
             applyAttackReduction(target, atkReduction, ARMOR_REDUCTION_DURATION);
         } catch (Throwable ignored) {}
 
-        // 独自持続ダメージ（Wither effect / wither source 不使用）
-        if (elementLevel >= DOT_MIN_LEVEL) {
-            try {
-                int   duration   = DOT_BASE_DURATION
-                        + DOT_DURATION_PER_LEVEL * (elementLevel - DOT_MIN_LEVEL);
-                float dmgPerTick = DOT_DAMAGE_BASE
-                        + DOT_DAMAGE_PER_LEVEL * (elementLevel - DOT_MIN_LEVEL);
-                ElementalDoTHandler.apply(target, duration, dmgPerTick, ElementType.CORROSION);
-            } catch (Throwable ignored) {}
-        }
+        // (旧: ElementalDoTHandler で持続ダメージを付与していたが、 ユーザー要望で削除)
+        // 侵食属性は「防御力低下 + 攻撃力低下 + 防具耐久消費」 で完結する。
 
         // パーティクル — 侵食属性のイメージカラー: 赤紫 (マゼンタ寄り)
         try {

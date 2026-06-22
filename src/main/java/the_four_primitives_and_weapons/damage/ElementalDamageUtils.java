@@ -170,13 +170,15 @@ public class ElementalDamageUtils {
         ItemStack main = player.getMainHandItem();
         ElementType mType = getBookElementFromItem(main);
         if (mType != ElementType.NONE) {
-            return new BookSlotInfo(mType, getElementLevel(main));
+            // クラスで book と判定できた場合、 NBT level が無くても最低 Lv1 として扱う
+            // (= creative tab で入手 + 普通の武器で殴っても通常攻撃に属性が乗る)
+            return new BookSlotInfo(mType, Math.max(getElementLevel(main), 1));
         }
         // オフハンド
         ItemStack off = player.getOffhandItem();
         ElementType oType = getBookElementFromItem(off);
         if (oType != ElementType.NONE) {
-            return new BookSlotInfo(oType, getElementLevel(off));
+            return new BookSlotInfo(oType, Math.max(getElementLevel(off), 1));
         }
         // Curios の book スロット (1 回だけ走査)
         try {
@@ -190,7 +192,7 @@ public class ElementalDamageUtils {
                         if (s.isEmpty()) continue;
                         ElementType t = getBookElementFromItem(s);
                         if (t != ElementType.NONE) {
-                            result.set(new BookSlotInfo(t, getElementLevel(s)));
+                            result.set(new BookSlotInfo(t, Math.max(getElementLevel(s), 1)));
                             return;
                         }
                     }

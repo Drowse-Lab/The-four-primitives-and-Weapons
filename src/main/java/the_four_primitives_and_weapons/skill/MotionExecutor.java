@@ -39,6 +39,11 @@ public class MotionExecutor {
     public static void executeMotion(String motionId, Player player, float chargePercent) {
         if (motionId == null || motionId.isEmpty()) return;
 
+        // 技 ON/OFF トグル: 無効化されていれば何もしない (通常攻撃にフォールバック)
+        if (!PlayerSkillData.isMotionEnabled(player, motionId)) {
+            return;
+        }
+
         // クロスヘア Attack Cooldown ゲージをキャプチャしてスキル全体に damage scale を適用。
         // ゲージが満タン (1.0) なら 100%、空 (0.0) なら 20% のダメージ。
         // ※ 短時間で連続発動されるとゲージが 0 のままになるため、以前は resetAttackStrengthTicker

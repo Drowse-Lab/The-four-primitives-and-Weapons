@@ -2,6 +2,7 @@
 package the_four_primitives_and_weapons.item;
 
 import the_four_primitives_and_weapons.util.VersionHelper;
+import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
 
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -131,17 +132,17 @@ public class ReitouItem extends SwordItem {
 			target.getPersistentData().putString("Feyn", "cursed");
 
 			if (isCursed) {
-				// 呪われた敵には強化効果
-				target.addEffect(new MobEffectInstance(MobEffects.WITHER, 200, 1));
-				target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 300, 2));
-				target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
+				// 呪われた敵には強化効果 — DoT (カスタムダメージ) + 移動低下/弱体化 (attribute modifier)
+				SpecialDebuffHandler.applyWither(target, 200, 0.5f);
+				SpecialDebuffHandler.applySlowness(target, 300, 2);
+				SpecialDebuffHandler.applyWeakness(target, 200, 1);
 
 				// 怨念の追加ダメージ
 				target.hurt(target.damageSources().magic(), 4.0f);
 			} else {
-				// 初撃: 軽い呪い効果
-				target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 0));
-				target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 160, 1));
+				// 初撃: 軽い呪い効果 — DoT (カスタムダメージ) + 移動低下 (attribute modifier)
+				SpecialDebuffHandler.applyWither(target, 100, 0.25f);
+				SpecialDebuffHandler.applySlowness(target, 160, 1);
 			}
 
 			// 黒いモヤのエフェクト（攻撃時）

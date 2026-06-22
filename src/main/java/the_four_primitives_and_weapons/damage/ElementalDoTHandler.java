@@ -54,10 +54,29 @@ public class ElementalDoTHandler {
      *   （fallback として magic を使います）
      */
     public static DamageSource createDoTSource(LivingEntity target, ElementType element) {
-        // mod 独自の DamageType ( the_four_primitives_and_weapons:<element> ) を使う。
-        // バニラの damageSources().magic() は使わない。 解決失敗時のフォールバックは
-        // ModDamageSources 側で magic に落ちる仕様。
+        // 継続ダメージ専用の DamageType がある element ( 例: DARK → dark_dot ) なら
+        // 直接ヒットと区別された tag/死亡メッセージで処理する。 それ以外は属性そのものの key を使う。
+        // バニラの damageSources().magic() は使わない (解決失敗時のフォールバックだけ magic)。
+        net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> dotKey =
+                dotKeyFor(element);
+        if (dotKey != null) {
+            return ModDamageSources.of(target.level(), dotKey, null);
+        }
         return ModDamageSources.ofElement(target.level(), element, null);
+    }
+
+    /** 継続ダメージ専用の DamageType key を返す。 無ければ null。 */
+    private static net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType>
+            dotKeyFor(ElementType element) {
+        if (element == null) return null;
+        switch (element) {
+            case DARK:
+                return the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModDamageTypes.DARK_DOT;
+            case BLOOD:
+                return the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModDamageTypes.BLOOD_DOT;
+            default:
+                return null;
+        }
     }
 
     // ────────────────────────────────────────────────────────────────

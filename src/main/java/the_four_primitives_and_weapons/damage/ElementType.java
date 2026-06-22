@@ -15,6 +15,7 @@ public enum ElementType {
     THUNDER("thunder"),    // 雷属性
     WATER("water"),        // 水属性
     MIASMA("miasma"),      // 瘴気属性
+    BLOOD("blood"),        // 血属性 (Rivers of Blood 系)
     ERROR("error");        // エラー属性
 
     private final String name;
@@ -53,7 +54,8 @@ public enum ElementType {
             case WATER:     return THUNDER; 
             case WIND:      return ICE;     
             case MIASMA:    return HOLY;
-            case ERROR:     return NONE;   
+            case BLOOD:     return HOLY;   // 血 ↔ 聖
+            case ERROR:     return NONE;
             default:        return NONE;
         }
     }

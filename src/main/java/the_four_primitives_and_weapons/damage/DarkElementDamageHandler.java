@@ -56,11 +56,12 @@ public class DarkElementDamageHandler {
             multiplier = DARKNESS_MULTIPLIER;
         }
 
-        // Blindness付与
+        // Blindness付与 (ambient=true / visible=false で swirl パーティクルを抑制し、
+        // ユーザー要望の「モヤを出さない」を満たす。 BLINDNESS のゲーム挙動は保持)
         int blindDuration = BASE_BLINDNESS_DURATION
                 + BLINDNESS_DURATION_PER_LV * Math.max(level - 1, 0);
         target.addEffect(new MobEffectInstance(
-                MobEffects.BLINDNESS, blindDuration, 0, false, true));
+                MobEffects.BLINDNESS, blindDuration, 0, true, false));
 
         // 独自持続ダメージ（Wither effect / wither source 不使用）
         if (level >= DOT_MIN_LEVEL) {

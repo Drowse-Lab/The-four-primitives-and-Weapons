@@ -19,6 +19,8 @@ import the_four_primitives_and_weapons.damage.CorrosionElementDamageHandler;
 import the_four_primitives_and_weapons.damage.ElementalDoTHandler;
 import the_four_primitives_and_weapons.damage.IceElementDamageHandler;
 import the_four_primitives_and_weapons.damage.MiasmaElementDamageHandler;
+import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
+import the_four_primitives_and_weapons.damage.WaterElementDamageHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +52,8 @@ public class ResetMaxYoukuritukusitatokiProcedure {
 			try { ElementalDoTHandler.clear(living); } catch (Throwable ignored) {}
 			try { CorrosionElementDamageHandler.clear(living); } catch (Throwable ignored) {}
 			try { IceElementDamageHandler.clear(living); } catch (Throwable ignored) {}
+			try { WaterElementDamageHandler.clear(living); } catch (Throwable ignored) {}
+			try { SpecialDebuffHandler.clear(living); } catch (Throwable ignored) {}
 		}
 
 		if (entity instanceof Player player) {

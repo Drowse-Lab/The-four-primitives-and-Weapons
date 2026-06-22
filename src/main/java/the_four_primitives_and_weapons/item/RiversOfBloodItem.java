@@ -26,6 +26,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import the_four_primitives_and_weapons.procedures.KatanaBloodYoukuritukusitatokiProcedure;
+import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModTabs;
@@ -123,9 +124,9 @@ public class RiversOfBloodItem extends SwordItem {
 						10, 0.5, 0.5, 0.5, 0.05);
 				}
 				
-				// 呪い強化：追加デバフ
-				target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
-				target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
+				// 呪い強化：追加デバフ — Wither は DoT (カスタムダメージ)、 Weakness は attribute modifier
+				SpecialDebuffHandler.applyWither(target, 100, 0.5f);
+				SpecialDebuffHandler.applyWeakness(target, 200, 1);
 				
 				// 特殊サウンド
 				attacker.level().playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),

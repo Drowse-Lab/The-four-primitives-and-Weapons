@@ -491,4 +491,35 @@ public class PlayerSkillData {
     public static SkillStorage getSkillData(Player player) {
         return player.getCapability(SKILL_CAPABILITY).orElse(new SkillStorage());
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // 技 (motion) の ON/OFF トグル
+    // ─────────────────────────────────────────────────────────────
+    /**
+     * 指定 motion が有効かを返す。 デフォルト ( 一度もトグルしてない ) は true。
+     * 各 motion を発動する handler から呼んで、 false なら通常攻撃にフォールバックする想定。
+     */
+    public static boolean isMotionEnabled(Player player, String motionId) {
+        if (player == null || motionId == null || motionId.isEmpty()) return true;
+        SkillStorage data = getSkillData(player);
+        if (data == null) return true;
+        // uniqueSkillToggle を流用 — Boolean.FALSE がセットされてる時だけ disable
+        Boolean b = data.uniqueSkillToggle.get(motionId);
+        return b == null || b;
+    }
+
+    /**
+     * 指定 motion の有効/無効をセット。
+     */
+    public static void setMotionEnabled(Player player, String motionId, boolean enabled) {
+        if (player == null || motionId == null || motionId.isEmpty()) return;
+        SkillStorage data = getSkillData(player);
+        if (data == null) return;
+        if (enabled) {
+            // デフォルト true なので map から取り除いて clean state にする
+            data.uniqueSkillToggle.remove(motionId);
+        } else {
+            data.uniqueSkillToggle.put(motionId, Boolean.FALSE);
+        }
+    }
 }

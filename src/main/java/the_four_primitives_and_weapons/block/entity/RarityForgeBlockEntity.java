@@ -20,6 +20,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
 
 import javax.annotation.Nullable;
@@ -38,6 +39,8 @@ public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity imp
 
     private NonNullList<ItemStack> stacks = NonNullList.withSize(TOTAL_SLOTS, ItemStack.EMPTY);
     private final LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.values());
+    /** facing=null (= Menu からの問い合わせ) 用の sided でないラッパー。 BlockEntity の storage に直結。 */
+    private final LazyOptional<InvWrapper> internalHandler = LazyOptional.of(() -> new InvWrapper(this));
 
     public RarityForgeBlockEntity(BlockPos position, BlockState state) {
         super(RarityForgeRegistration.getBlockEntityType(), position, state);
@@ -135,8 +138,13 @@ public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity imp
 
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) {
-        if (!this.remove && facing != null && capability == ForgeCapabilities.ITEM_HANDLER)
+        if (!this.remove && capability == ForgeCapabilities.ITEM_HANDLER) {
+            // facing=null (Menu からの問い合わせ) は sided でないラッパーを返す。
+            // 過去はここで empty を返していて、 Menu が分離した ItemStackHandler を持って
+            // BlockEntity の storage と切り離されてた (= preview / craft 失敗のバグ)。
+            if (facing == null) return internalHandler.cast();
             return handlers[facing.ordinal()].cast();
+        }
         return super.getCapability(capability, facing);
     }
 
@@ -145,5 +153,6 @@ public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity imp
         super.setRemoved();
         for (LazyOptional<? extends IItemHandler> handler : handlers)
             handler.invalidate();
+        internalHandler.invalidate();
     }
 }

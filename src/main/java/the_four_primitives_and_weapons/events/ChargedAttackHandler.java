@@ -39,6 +39,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Items;
 
+import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
 import the_four_primitives_and_weapons.skill.PlayerSkillData;
 import the_four_primitives_and_weapons.skill.PlayerSkillData.AttackSlot;
 import the_four_primitives_and_weapons.skill.MotionExecutor;
@@ -634,9 +635,9 @@ public class ChargedAttackHandler {
             int baneLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BANE_OF_ARTHROPODS, weapon);
             if (baneLevel > 0) {
                 damage += 2.5f * baneLevel;
-                // スロウネス効果も付与
+                // スローネス → attribute modifier ベース (牛乳で消えない / モヤ無し)
                 int duration = 20 + (int)(Math.random() * 10 * baneLevel);
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, 3));
+                SpecialDebuffHandler.applySlowness(target, duration, 3);
             }
         }
         
@@ -689,10 +690,10 @@ public class ChargedAttackHandler {
             player.heal(healAmount);
             
             if (isCursed) {
-                // 呪われた敵への追加効果
+                // 呪われた敵への追加効果 — Wither は DoT (カスタムダメージ) に、 Weakness は attribute modifier に
                 target.hurt(target.damageSources().magic(), damage * 0.3f);
-                target.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1));
-                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
+                SpecialDebuffHandler.applyWither(target, 100, 0.5f);
+                SpecialDebuffHandler.applyWeakness(target, 200, 1);
             }
             
             // 血のエフェクト

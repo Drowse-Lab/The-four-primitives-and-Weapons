@@ -2,6 +2,8 @@ package the_four_primitives_and_weapons.procedures;
 
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
+
+import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
@@ -295,10 +297,10 @@ public class TyokutouThrustAttackProcedure {
             double knockbackPower = 4.0 + chargePercent * 2.0;  // 4.0～6.0
             target.setDeltaMovement(lookVec.scale(knockbackPower).add(0, 0.6 + chargePercent * 0.4, 0));
 
-            // チャージ最大時は追加効果
+            // チャージ最大時は追加効果 — 移動低下は attribute modifier ベースに置換
             if (chargePercent >= 1.0f) {
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 2));  // スタン効果
-                target.setSecondsOnFire(5);  // 燃焼
+                SpecialDebuffHandler.applySlowness(target, 60, 3);
+                target.setSecondsOnFire(5);  // 燃焼 (vanilla 仕様、 swirl 出ない)
             }
 
             // サウンド

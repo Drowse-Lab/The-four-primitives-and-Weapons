@@ -1,6 +1,7 @@
 package the_four_primitives_and_weapons.events;
 
 import the_four_primitives_and_weapons.util.VersionHelper;
+import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
 
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -905,9 +906,9 @@ public class DodgeAndBattouHandler {
             int baneLevel = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BANE_OF_ARTHROPODS, weapon);
             if (baneLevel > 0) {
                 damage += 2.5f * baneLevel;
-                // スローネス効果も付与
+                // スローネス → attribute modifier ベース (牛乳で消えない / モヤ無し)
                 int duration = 20 + (int)(Math.random() * 10 * baneLevel);
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, 3));
+                SpecialDebuffHandler.applySlowness(target, duration, 3);
             }
         }
         

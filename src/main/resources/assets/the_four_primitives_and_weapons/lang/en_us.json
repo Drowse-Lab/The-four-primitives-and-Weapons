@@ -803,6 +803,12 @@
   "death.attack.the_four_primitives_and_weapons.wind.player":  "%1$s was torn apart by %2$s's wind",
   "death.attack.the_four_primitives_and_weapons.error":     "%1$s was deleted by an unknown error",
   "death.attack.the_four_primitives_and_weapons.error.player": "%1$s was deleted by %2$s's error",
+  "death.attack.the_four_primitives_and_weapons.dark_dot":      "%1$s was withered by lingering darkness",
+  "death.attack.the_four_primitives_and_weapons.dark_dot.player": "%1$s was withered by %2$s's darkness",
+  "death.attack.the_four_primitives_and_weapons.blood":         "%1$s was butchered by blood arts",
+  "death.attack.the_four_primitives_and_weapons.blood.player":  "%1$s was butchered by %2$s's blood arts",
+  "death.attack.the_four_primitives_and_weapons.blood_dot":     "%1$s bled out",
+  "death.attack.the_four_primitives_and_weapons.blood_dot.player": "%1$s bled out from %2$s's blood arts",
   "item.the_four_primitives_and_weapons.element_cleanse_potion": "Element Cleanse Potion",
   "tooltip.the_four_primitives_and_weapons.element_cleanse_potion": "§7Removes all element debuffs (Ice / Corrosion / Miasma / DoT).\n§7Vanilla effects are not affected — drink milk for those."
 }

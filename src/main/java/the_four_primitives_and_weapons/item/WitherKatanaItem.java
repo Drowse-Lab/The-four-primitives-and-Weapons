@@ -26,6 +26,7 @@ import the_four_primitives_and_weapons.procedures.WitherKatanaYoukuritukusitatok
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModTabs;
+import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
 
 public class WitherKatanaItem extends SwordItem {
 	public WitherKatanaItem() {
@@ -79,21 +80,17 @@ public class WitherKatanaItem extends SwordItem {
 							    "cursed".equals(target.getPersistentData().getString("Feyn")));
 			
 			if (isCursed) {
-				// 呪われた敵には強化ウィザー効果（15秒間、レベル3）
-				target.addEffect(new MobEffectInstance(MobEffects.WITHER, 300, 2));
-				
-				// 追加で移動速度低下と弱体化
-				target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, 1));
-				target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
-				
+				// 呪われた敵には強化ウィザー効果 — DoT (カスタムダメージ) + 移動低下/弱体化 (attribute modifier)
+				SpecialDebuffHandler.applyWither(target, 300, 1.0f);
+				SpecialDebuffHandler.applySlowness(target, 200, 1);
+				SpecialDebuffHandler.applyWeakness(target, 200, 1);
 				// 即座にウィザーダメージ
 				target.hurt(target.damageSources().wither(), 6.0f);
-				
 				// 呪いをNBTタグに設定（他の武器でも認識できるように）
 				target.getPersistentData().putString("Feyn", "cursed");
 			} else {
-				// 通常のウィザー効果を付与（7秒間、レベル2）
-				target.addEffect(new MobEffectInstance(MobEffects.WITHER, 140, 1));
+				// 通常のウィザー効果 — DoT (カスタムダメージ) で
+				SpecialDebuffHandler.applyWither(target, 140, 0.5f);
 				
 				// 初めて呪う場合はNBTタグを設定
 				target.getPersistentData().putString("Feyn", "cursed");

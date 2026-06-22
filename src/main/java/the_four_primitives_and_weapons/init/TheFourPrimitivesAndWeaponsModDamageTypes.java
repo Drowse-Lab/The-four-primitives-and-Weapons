@@ -30,6 +30,12 @@ public final class TheFourPrimitivesAndWeaponsModDamageTypes {
 	public static final ResourceKey<DamageType> WATER     = key("water");
 	public static final ResourceKey<DamageType> WIND      = key("wind");
 	public static final ResourceKey<DamageType> ERROR     = key("error");
+	public static final ResourceKey<DamageType> BLOOD     = key("blood");
+
+	// 継続ダメージ (DoT) 用の別 key — 直接ヒット と区別して死亡メッセージや
+	// debug 表記を分けたい場合に使う。
+	public static final ResourceKey<DamageType> DARK_DOT  = key("dark_dot");
+	public static final ResourceKey<DamageType> BLOOD_DOT = key("blood_dot");
 
 	private static ResourceKey<DamageType> key(String name) {
 		return ResourceKey.create(Registries.DAMAGE_TYPE,

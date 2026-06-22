@@ -54,6 +54,7 @@ public final class ModDamageSources {
 			case FIRE:      return TheFourPrimitivesAndWeaponsModDamageTypes.FIRE;
 			case WATER:     return TheFourPrimitivesAndWeaponsModDamageTypes.WATER;
 			case WIND:      return TheFourPrimitivesAndWeaponsModDamageTypes.WIND;
+			case BLOOD:     return TheFourPrimitivesAndWeaponsModDamageTypes.BLOOD;
 			default:        return TheFourPrimitivesAndWeaponsModDamageTypes.ERROR;
 		}
 	}
