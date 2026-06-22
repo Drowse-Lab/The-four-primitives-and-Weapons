@@ -59,7 +59,7 @@ public class MagicalKatanaCrystalHandler {
     private static final String MAT_OWNER_KEY     = "MaterializedFor";
 
     private static final int    CRYSTAL_LIFE        = 600;  // 30 sec auto-expire
-    private static final float  CRYSTAL_MAX_HEALTH  = 6.0f;
+    private static final float  CRYSTAL_MAX_HEALTH  = 0.5f; // 素手 1 撃 (1 ダメージ) で破壊できる
     private static final int    MATERIALIZED_LEVEL  = 12;   // Lv 12 = XII 表記
 
     /** owner UUID → 既存結晶があるなら entity UUID ( 同時に複数生やさない ) */
