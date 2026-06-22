@@ -9,10 +9,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.InteractionHand;
-
-import the_four_primitives_and_weapons.procedures.LargeWeaponsProcedure;
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModTabs;
@@ -43,14 +39,7 @@ public class ScytheItem extends SwordItem {
 			public Ingredient getRepairIngredient() {
 				return Ingredient.of();
 			}
-		}, 3, -2.4f, new Item.Properties());
-	}
-
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		LargeWeaponsProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
-		return ar;
+		}, 3, -3.2f, new Item.Properties());
 	}
 
 	@Override

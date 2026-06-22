@@ -57,6 +57,25 @@ public class RMessage {
 			ItemStack mainHand = entity.getItemInHand(InteractionHand.MAIN_HAND);
 			ItemStack offHand = entity.getItemInHand(InteractionHand.OFF_HAND);
 
+			// 具現化 Magical Katana の単押し ( = ホイール無しフォールバック ) 動作:
+			//   互換性ある空鞘があれば 鞘納刀を優先 ( 通常の納刀フローに任せる )、
+			//   なければ shatter ( 破壊して base に戻す )。
+			if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(mainHand)) {
+				if (!hasCompatibleEmptyScabbard(entity, mainHand)) {
+					the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.shatterOnSheathe(
+							entity, mainHand, InteractionHand.MAIN_HAND);
+					return;
+				}
+				// 鞘あり → 通常の納刀フローに落ちる
+			}
+			if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(offHand)) {
+				if (!hasCompatibleEmptyScabbard(entity, offHand)) {
+					the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.shatterOnSheathe(
+							entity, offHand, InteractionHand.OFF_HAND);
+					return;
+				}
+			}
+
 			boolean mainIsBluepurge = isBluepurge(mainHand);
 			boolean offIsBluepurge = isBluepurge(offHand);
 
@@ -125,6 +144,12 @@ public class RMessage {
 			}
 
 			RkigaYasaretatokiProcedure.execute(entity);
+
+			// R キー押下のタイミングで、 オーナーが自分の具現化 Magical Katana を一覧で chat に出す
+			// ( = 納刀 UI の代替。 他人のインベントリにあるものも含める )
+			if (entity instanceof net.minecraft.server.level.ServerPlayer sp) {
+				the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.listOwnedToChat(sp);
+			}
 		}
 	}
 
@@ -216,6 +241,20 @@ public class RMessage {
 			player.getInventory().setItem(i, scabbard);
 			player.playSound(net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 1.0F);
 			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 互換性ある空鞘 ( 手 / Curios / インベントリ ) が 1 個でも見つかれば true。
+	 * Magical Katana 具現化版でも、 ベース Magical Katana の Saya ( KATANA ) には納刀可。
+	 */
+	private static boolean hasCompatibleEmptyScabbard(Player player, ItemStack weaponStack) {
+		for (CuriosScabbardHelper.DrawableWeaponInfo info :
+				CuriosScabbardHelper.findAllEmptyScabbards(player)) {
+			if (CuriosScabbardHelper.isCompatible(weaponStack, info.scabbardStack)) {
+				return true;
+			}
 		}
 		return false;
 	}

@@ -1,0 +1,16 @@
+{
+  "_comment": "中央スロットに置かれたアイテムを「魔導書」と認識し、 element type を決める table。 datapack で新魔導書を追加可能。 element 名は ElementType enum と対応 ( NONE/FIRE/WATER/ICE/THUNDER/WIND/ELECTRIC/CORROSION/HOLY/MIASMA/DARK/BLOOD )。",
+  "elements": {
+    "the_four_primitives_and_weapons:ice_book":       "ICE",
+    "the_four_primitives_and_weapons:electric_book":  "ELECTRIC",
+    "the_four_primitives_and_weapons:corrosion_book": "CORROSION",
+    "the_four_primitives_and_weapons:holy_book":      "HOLY",
+    "the_four_primitives_and_weapons:miasma_book":    "MIASMA",
+    "the_four_primitives_and_weapons:bubbles_book":   "WATER",
+    "the_four_primitives_and_weapons:fire_book":      "FIRE",
+    "the_four_primitives_and_weapons:thunder_book":   "THUNDER",
+    "the_four_primitives_and_weapons:wind_book":      "WIND",
+    "the_four_primitives_and_weapons:storm_book":     "THUNDER",
+    "the_four_primitives_and_weapons:darkness_book":  "DARK"
+  }
+}

@@ -11,35 +11,33 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import the_four_primitives_and_weapons.init.RarityForgeRegistration;
-import the_four_primitives_and_weapons.item.rarity.RarityForgeRecipe;
+import the_four_primitives_and_weapons.item.rarity.RarityForgeNewRecipe;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-
-public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeRecipe> {
+/**
+ * シンプル化レアリティ解放テーブル ( 新仕様 ) の JEI カテゴリ。
+ *
+ * 表示:
+ *   [触媒0] [触媒1]    [中央]    →   [結果]
+ *    +モード説明テキスト
+ */
+public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeNewRecipe> {
 
     public static final ResourceLocation UID = new ResourceLocation("the_four_primitives_and_weapons", "rarity_forge");
-    public static final RecipeType<RarityForgeRecipe> RECIPE_TYPE =
-            RecipeType.create("the_four_primitives_and_weapons", "rarity_forge", RarityForgeRecipe.class);
+    public static final RecipeType<RarityForgeNewRecipe> RECIPE_TYPE =
+            RecipeType.create("the_four_primitives_and_weapons", "rarity_forge", RarityForgeNewRecipe.class);
 
-    // レイアウト:
-    //   [触媒]   [3×3 grid]   →   [result]
-    //    0           24                94
-    //   1px 余白 + 18px slot
-    private static final int CATALYST_X = 1;
-    private static final int CATALYST_Y = 19;
-    private static final int GRID_X     = 24; // 触媒分 (18+5=23) のあと
-    private static final int GRID_Y     = 0;
-    private static final int RESULT_X   = 95;
-    private static final int RESULT_Y   = 19;
-    private static final int BG_WIDTH   = 140;
-    private static final int BG_HEIGHT  = 54;
+    // レイアウト ( 上から: モード説明 / スロット行 )
+    private static final int CAT0_X   = 4;
+    private static final int CAT1_X   = 24;
+    private static final int CENTER_X = 58;
+    private static final int ARROW_X  = 84;
+    private static final int RESULT_X = 102;
+    private static final int SLOT_Y   = 18;
+    private static final int BG_WIDTH  = 132;
+    private static final int BG_HEIGHT = 58;
 
     private final IDrawable background;
     private final IDrawable icon;
@@ -53,7 +51,7 @@ public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeRec
     }
 
     @Override
-    public RecipeType<RarityForgeRecipe> getRecipeType() {
+    public RecipeType<RarityForgeNewRecipe> getRecipeType() {
         return RECIPE_TYPE;
     }
 
@@ -73,106 +71,46 @@ public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeRec
     }
 
     @Override
-    public void setRecipe(IRecipeLayoutBuilder builder, RarityForgeRecipe recipe, IFocusGroup focuses) {
-        // 1) 触媒スロット: catalyst_levels が設定されてる book recipe では required 入力として表示
-        if (recipe.hasCatalystLevels()) {
-            Map<Item, Integer> levels = recipe.getCatalystLevels();
-            // Lv 昇順で表示してローテーション
-            List<ItemStack> catalysts = new ArrayList<>();
-            levels.entrySet().stream()
-                    .sorted(Comparator.comparingInt(Map.Entry::getValue))
-                    .forEach(e -> {
-                        ItemStack st = new ItemStack(e.getKey());
-                        // Lv 情報を tooltip に重ねる
-                        st.setHoverName(Component.literal(
-                                e.getKey().getDescription().getString() + "  → Lv." + e.getValue()));
-                        catalysts.add(st);
-                    });
-            builder.addSlot(RecipeIngredientRole.INPUT, CATALYST_X, CATALYST_Y)
-                    .addItemStacks(catalysts)
-                    .addTooltipCallback((slotView, tooltip) -> {
-                        tooltip.add(Component.literal("§7触媒スロット — 選んだ item で Lv が決まる"));
-                    });
+    public void setRecipe(IRecipeLayoutBuilder builder, RarityForgeNewRecipe recipe, IFocusGroup focuses) {
+        if (!recipe.getCat0Candidates().isEmpty()) {
+            builder.addSlot(RecipeIngredientRole.INPUT, CAT0_X + 1, SLOT_Y + 1)
+                    .addItemStacks(recipe.getCat0Candidates());
         }
-
-        // 2) 3×3 グリッドの中央寄せ
-        Item[][] pattern = recipe.getPattern();
-        int pw = recipe.getPatternWidth();
-        int ph = recipe.getPatternHeight();
-        int offsetX = ((3 - pw) / 2) * 18;
-        int offsetY = ((3 - ph) / 2) * 18;
-
-        int inputSlotIdx = recipe.getInputSlotIndex();
-
-        for (int y = 0; y < ph; y++) {
-            for (int x = 0; x < pw; x++) {
-                int patIdx = y * pw + x;
-                int sx = GRID_X + 1 + offsetX + x * 18;
-                int sy = GRID_Y + 1 + offsetY + y * 18;
-                if (pattern[y][x] != null) {
-                    builder.addSlot(RecipeIngredientRole.INPUT, sx, sy)
-                            .addItemStack(new ItemStack(pattern[y][x]));
-                } else if (recipe.isUnbreakable() && patIdx == inputSlotIdx) {
-                    // #inputスロット: 鉄の剣をサンプルとして表示
-                    builder.addSlot(RecipeIngredientRole.INPUT, sx, sy)
-                            .addItemStack(new ItemStack(net.minecraft.world.item.Items.IRON_SWORD));
-                }
-            }
+        if (!recipe.getCat1Candidates().isEmpty()) {
+            builder.addSlot(RecipeIngredientRole.INPUT, CAT1_X + 1, SLOT_Y + 1)
+                    .addItemStacks(recipe.getCat1Candidates());
         }
-
-        // 3) 結果スロット
-        if (recipe.isUnbreakable()) {
-            ItemStack resultDisplay = new ItemStack(net.minecraft.world.item.Items.IRON_SWORD);
-            resultDisplay.getOrCreateTag().putBoolean("Unbreakable", true);
-            builder.addSlot(RecipeIngredientRole.OUTPUT, RESULT_X, RESULT_Y)
-                    .addItemStack(resultDisplay);
-        } else if (recipe.isBookRecipe() && recipe.hasCatalystLevels()) {
-            // book recipe の結果は Lv 値ごとに 10 種類 (ローテーション表示)
-            List<ItemStack> bookResults = new ArrayList<>();
-            recipe.getCatalystLevels().entrySet().stream()
-                    .sorted(Comparator.comparingInt(Map.Entry::getValue))
-                    .forEach(e -> {
-                        ItemStack st = new ItemStack(recipe.getResult());
-                        // 表示名に Lv を載せる (visual only — element 付与は menu 側で行う)
-                        st.setHoverName(Component.literal(
-                                recipe.getResult().getDescription().getString() + " Lv." + e.getValue()));
-                        bookResults.add(st);
-                    });
-            builder.addSlot(RecipeIngredientRole.OUTPUT, RESULT_X, RESULT_Y)
-                    .addItemStacks(bookResults);
-        } else {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, RESULT_X, RESULT_Y)
-                    .addItemStack(new ItemStack(recipe.getResult()));
+        if (!recipe.getCenterCandidates().isEmpty()) {
+            builder.addSlot(RecipeIngredientRole.INPUT, CENTER_X + 1, SLOT_Y + 1)
+                    .addItemStacks(recipe.getCenterCandidates());
+        }
+        if (!recipe.getOutputCandidates().isEmpty()) {
+            builder.addSlot(RecipeIngredientRole.OUTPUT, RESULT_X + 1, SLOT_Y + 1)
+                    .addItemStacks(recipe.getOutputCandidates());
         }
     }
 
     @Override
-    public void draw(RarityForgeRecipe recipe, IRecipeSlotsView recipeSlotsView,
+    public void draw(RarityForgeNewRecipe recipe, IRecipeSlotsView recipeSlotsView,
                      GuiGraphics gfx, double mouseX, double mouseY) {
-        // 触媒スロット背景 (book recipe のみ)
-        if (recipe.hasCatalystLevels()) {
-            drawSlotBg(gfx, CATALYST_X - 1, CATALYST_Y - 1);
-        }
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
 
-        // 3×3グリッド背景
-        int pw = recipe.getPatternWidth();
-        int ph = recipe.getPatternHeight();
-        int offsetX = ((3 - pw) / 2) * 18;
-        int offsetY = ((3 - ph) / 2) * 18;
-        for (int r = 0; r < 3; r++) {
-            for (int c = 0; c < 3; c++) {
-                int sx = GRID_X + c * 18;
-                int sy = GRID_Y + r * 18;
-                drawSlotBg(gfx, sx, sy);
-            }
-        }
+        // 上部にモード説明
+        String mode = switch (recipe.getKind()) {
+            case BOOK_ELEMENT -> "§b" + recipe.getDescription();
+            case UNBREAKABLE  -> "§6" + recipe.getDescription();
+            case RARITY       -> "§d" + recipe.getDescription();
+        };
+        gfx.drawString(mc.font, mode, 4, 4, 0xFFFFFF, false);
 
-        // 結果スロット背景
-        drawSlotBg(gfx, RESULT_X - 1, RESULT_Y - 1);
+        // スロット背景
+        if (!recipe.getCat0Candidates().isEmpty()) drawSlotBg(gfx, CAT0_X, SLOT_Y);
+        if (!recipe.getCat1Candidates().isEmpty()) drawSlotBg(gfx, CAT1_X, SLOT_Y);
+        if (!recipe.getCenterCandidates().isEmpty()) drawSlotBg(gfx, CENTER_X, SLOT_Y);
+        if (!recipe.getOutputCandidates().isEmpty()) drawSlotBg(gfx, RESULT_X, SLOT_Y);
 
         // 矢印
-        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-        gfx.drawString(mc.font, "→", RESULT_X - 13, RESULT_Y + 4, 0x404040, false);
+        gfx.drawString(mc.font, "→", ARROW_X, SLOT_Y + 5, 0x404040, false);
     }
 
     private static void drawSlotBg(GuiGraphics gfx, int sx, int sy) {

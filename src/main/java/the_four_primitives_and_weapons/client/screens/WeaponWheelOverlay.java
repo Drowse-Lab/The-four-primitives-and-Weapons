@@ -52,7 +52,10 @@ public class WeaponWheelOverlay {
         int centerY = h / 2;
 
         List<DrawableWeaponInfo> weapons = WeaponWheelState.getDrawableWeapons();
-        int count = weapons.size();
+        List<WeaponWheelState.SpecialAction> specials = WeaponWheelState.getSpecialActions();
+        int weaponCount = weapons.size();
+        int specialCount = specials.size();
+        int count = weaponCount + specialCount;
         int selected = WeaponWheelState.getSelectedIndex();
 
         PoseStack poseStack = g.pose();
@@ -69,18 +72,28 @@ public class WeaponWheelOverlay {
 
         WheelMode mode = WeaponWheelState.getCurrentMode();
 
-        // 各アイコンを円周上に配置
+        // 各アイコンを円周上に配置 ( 通常 weapon + special action 順 )
         for (int i = 0; i < count; i++) {
-            DrawableWeaponInfo info = weapons.get(i);
-            // 上から時計回りに配置（-PI/2 オフセット）
             double angle = (2.0 * Math.PI * i / count) - Math.PI / 2.0;
             int iconX = (int) (centerX + Math.cos(angle) * WHEEL_RADIUS - ICON_SIZE / 2);
             int iconY = (int) (centerY + Math.sin(angle) * WHEEL_RADIUS - ICON_SIZE / 2);
 
-            // DRAWモード: 武器アイコン, SHEATHモード: 鞘アイコン
-            ItemStack displayIcon = (mode == WheelMode.SHEATH) ? info.scabbardStack : info.weaponStack;
+            ItemStack displayIcon;
+            Component itemName;
+            String slotLabel;
 
-            // 選択中のアイテムは少し大きく表示
+            if (i < weaponCount) {
+                DrawableWeaponInfo info = weapons.get(i);
+                displayIcon = (mode == WheelMode.SHEATH) ? info.scabbardStack : info.weaponStack;
+                itemName = displayIcon.getHoverName();
+                slotLabel = getSlotLabel(info);
+            } else {
+                WeaponWheelState.SpecialAction sp = specials.get(i - weaponCount);
+                displayIcon = sp.icon;
+                itemName = Component.literal(sp.label);
+                slotLabel = "特殊";
+            }
+
             if (i == selected) {
                 poseStack.pushPose();
                 poseStack.translate(iconX + ICON_SIZE / 2, iconY + ICON_SIZE / 2, 0);
@@ -92,14 +105,10 @@ public class WeaponWheelOverlay {
                 g.renderItem(displayIcon, iconX, iconY);
             }
 
-            // アイテム名
-            Component itemName = displayIcon.getHoverName();
             int nameColor = (i == selected) ? 0xFFFFFF : 0xAAAAAAA;
             int nameY = iconY + (int) ICON_SIZE + 2;
             g.drawCenteredString(mc.font, itemName, iconX + (int)(ICON_SIZE / 2), nameY, nameColor);
 
-            // スロット位置ラベル（グレー）
-            String slotLabel = getSlotLabel(info);
             int labelY = nameY + 10;
             g.drawCenteredString(mc.font, Component.literal("§7[" + slotLabel + "]"),
                 iconX + (int)(ICON_SIZE / 2), labelY, 0x888888);

@@ -763,6 +763,14 @@ public class MagicKatanaSpecialChargeProcedure {
         // === Magical Katana 分岐: 結晶生成モード ===
         if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMagicalKatana(player.getMainHandItem())
                 && !the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(player.getMainHandItem())) {
+            // 未解放 ( = 具現化版破壊歴なし / Lv12 未付与 ) では特殊技を出さない
+            if (!the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isUnlocked(player.getMainHandItem())) {
+                if (!world.isClientSide()) {
+                    player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                            "§7封印された Magical Katana §8— §c具現化版を破壊§7、 または §6Lv12 (CORROSION) §7をセット"), true);
+                }
+                return;
+            }
             the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.spawnCrystal(player);
             return;
         }

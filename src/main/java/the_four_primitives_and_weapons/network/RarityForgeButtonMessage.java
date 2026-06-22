@@ -1,11 +1,7 @@
 package the_four_primitives_and_weapons.network;
 
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
-import the_four_primitives_and_weapons.world.inventory.RarityForgeMenu;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -14,7 +10,8 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 /**
- * クライアント → サーバー: クラフト候補クリック通知
+ * ( 旧 ) クラフト候補クリック通知。 シンプル化版テーブルでは未使用 ( no-op )。
+ * ネットワーク channel は登録残置 ( 古いクライアントからの受信を黙って捨てるため )。
  */
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class RarityForgeButtonMessage {
@@ -44,19 +41,8 @@ public class RarityForgeButtonMessage {
     }
 
     public static void handler(RarityForgeButtonMessage message, Supplier<NetworkEvent.Context> contextSupplier) {
-        NetworkEvent.Context context = contextSupplier.get();
-        context.enqueueWork(() -> {
-            Player player = context.getSender();
-            if (player == null) return;
-
-            Level world = player.level();
-            if (!world.hasChunkAt(new BlockPos(message.x, message.y, message.z))) return;
-
-            if (player.containerMenu instanceof RarityForgeMenu menu) {
-                menu.performForge(message.recipeIndex);
-            }
-        });
-        context.setPacketHandled(true);
+        // シンプル化版テーブルでは候補クリック方式を撤去。 黙って消費するだけ。
+        contextSupplier.get().setPacketHandled(true);
     }
 
     @SubscribeEvent

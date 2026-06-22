@@ -1,13 +1,18 @@
 package the_four_primitives_and_weapons.client;
 
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
+import the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler;
+import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
 import the_four_primitives_and_weapons.network.BattouFromSpecificSlotPacket;
+import the_four_primitives_and_weapons.network.MagicalKatanaActionPacket;
 import the_four_primitives_and_weapons.network.RMessage;
 import the_four_primitives_and_weapons.network.SheathIntoSpecificSlotPacket;
 import the_four_primitives_and_weapons.util.CuriosScabbardHelper;
 import the_four_primitives_and_weapons.util.CuriosScabbardHelper.DrawableWeaponInfo;
 import the_four_primitives_and_weapons.util.CuriosScabbardHelper.ScabbardLocation;
 import the_four_primitives_and_weapons.events.DodgeAndBattouHandler;
+
+import java.util.ArrayList;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -39,17 +44,32 @@ public class WeaponWheelState {
 
     public enum WheelMode { DRAW, SHEATH }
 
+    /** ホイール上の特殊アクション ( 通常の抜刀 / 納刀候補とは別枠 )。 */
+    public static final class SpecialAction {
+        public final MagicalKatanaActionPacket.Action action;
+        public final ItemStack icon;
+        public final String label;
+        public SpecialAction(MagicalKatanaActionPacket.Action action, ItemStack icon, String label) {
+            this.action = action;
+            this.icon = icon;
+            this.label = label;
+        }
+    }
+
     private static final long WHEEL_DELAY_MS = 500L;
 
     private static boolean rKeyDown = false;
     private static boolean wheelVisible = false;
     private static int selectedIndex = -1;
     private static List<DrawableWeaponInfo> drawableWeapons = Collections.emptyList();
+    private static List<SpecialAction> specialActions = Collections.emptyList();
     private static WheelMode currentMode = WheelMode.DRAW;
     private static long pressStartTime = 0L;
 
     public static boolean isWheelVisible() { return wheelVisible; }
     public static List<DrawableWeaponInfo> getDrawableWeapons() { return drawableWeapons; }
+    public static List<SpecialAction> getSpecialActions() { return specialActions; }
+    public static int getTotalEntries() { return drawableWeapons.size() + specialActions.size(); }
     public static int getSelectedIndex() { return selectedIndex; }
     public static WheelMode getCurrentMode() { return currentMode; }
 
@@ -66,6 +86,7 @@ public class WeaponWheelState {
 
         currentMode = WheelMode.DRAW;
         drawableWeapons = weapons;
+        specialActions = buildSpecialActionsForDraw(player);
         rKeyDown = true;
         selectedIndex = -1;
         wheelVisible = false;
@@ -89,11 +110,45 @@ public class WeaponWheelState {
 
         currentMode = WheelMode.SHEATH;
         drawableWeapons = emptyScabbards;
+        specialActions = buildSpecialActionsForSheath(player, weaponStack);
         rKeyDown = true;
         selectedIndex = -1;
         wheelVisible = false;
         pressStartTime = System.currentTimeMillis();
         return true;
+    }
+
+    /**
+     * 抜刀ホイール用の SpecialAction:
+     *   - メイン or オフハンドに 通常版 Magical Katana ( unlocked ) を持っていれば「結晶を出す」
+     *     ( DRAW mode に来るのは手に武器がないケースだが、念のため off-hand を見ない仕様 )
+     */
+    private static List<SpecialAction> buildSpecialActionsForDraw(Player player) {
+        // DRAW mode = 手に武器なし → Magical Katana を直接手に持ってないので special なし
+        return Collections.emptyList();
+    }
+
+    /**
+     * 納刀ホイール用の SpecialAction:
+     *   - 持ってる武器が 通常版 Magical Katana ( unlocked ) → 「結晶を出す」
+     *   - 持ってる武器が 具現化版 Magical Katana → 「破壊」
+     */
+    private static List<SpecialAction> buildSpecialActionsForSheath(Player player, ItemStack weaponStack) {
+        List<SpecialAction> actions = new ArrayList<>();
+        if (MagicalKatanaCrystalHandler.isMagicalKatana(weaponStack)) {
+            if (MagicalKatanaCrystalHandler.isMaterialized(weaponStack)) {
+                actions.add(new SpecialAction(
+                        MagicalKatanaActionPacket.Action.SHATTER,
+                        new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get()),
+                        "§c破壊"));
+            } else if (MagicalKatanaCrystalHandler.isUnlocked(weaponStack)) {
+                actions.add(new SpecialAction(
+                        MagicalKatanaActionPacket.Action.SPAWN_CRYSTAL,
+                        new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get()),
+                        "§d結晶を出す"));
+            }
+        }
+        return actions;
     }
 
     /**
@@ -106,14 +161,24 @@ public class WeaponWheelState {
         boolean wasWheelVisible = wheelVisible;
         int savedSelectedIndex = selectedIndex;
         List<DrawableWeaponInfo> savedWeapons = drawableWeapons;
+        List<SpecialAction> savedSpecials = specialActions;
         WheelMode savedMode = currentMode;
 
         reset();
 
-        if (savedSelectedIndex >= 0 && savedSelectedIndex < savedWeapons.size()) {
-            // 選択あり → 該当パケット送信
-            DrawableWeaponInfo info = savedWeapons.get(savedSelectedIndex);
-            sendPacket(savedMode, info);
+        int weaponCount = savedWeapons.size();
+        int total = weaponCount + savedSpecials.size();
+        if (savedSelectedIndex >= 0 && savedSelectedIndex < total) {
+            if (savedSelectedIndex < weaponCount) {
+                // 通常 weapon entry
+                DrawableWeaponInfo info = savedWeapons.get(savedSelectedIndex);
+                sendPacket(savedMode, info);
+            } else {
+                // SpecialAction
+                SpecialAction sp = savedSpecials.get(savedSelectedIndex - weaponCount);
+                TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(
+                        new MagicalKatanaActionPacket(sp.action));
+            }
         } else {
             // デッドゾーンで離した or 鞘無し → RMessage デフォルト動作にフォールバック (サーバーのみ)
             TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new RMessage(0, 0));
@@ -216,7 +281,7 @@ public class WeaponWheelState {
     }
 
     private static void updateSelection(double mouseX, double mouseY, int screenWidth, int screenHeight) {
-        int itemCount = drawableWeapons.size();
+        int itemCount = drawableWeapons.size() + specialActions.size();
         if (itemCount == 0) {
             selectedIndex = -1;
             return;
@@ -255,6 +320,7 @@ public class WeaponWheelState {
         wheelVisible = false;
         selectedIndex = -1;
         drawableWeapons = Collections.emptyList();
+        specialActions = Collections.emptyList();
         currentMode = WheelMode.DRAW;
         pressStartTime = 0L;
     }

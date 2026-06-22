@@ -29,13 +29,14 @@ import java.util.stream.IntStream;
 import io.netty.buffer.Unpooled;
 
 /**
- * レアリティ解放テーブルのBlockEntity
- * スロット0-1: 触媒, スロット2-10: 3×3クラフトグリッド, スロット11: 結果 (output)
+ * レアリティ解放テーブルのBlockEntity ( シンプル化版 )
+ * スロット 0,1: 触媒 / スロット 2: 中央 ( 武器または魔導書 ) / スロット 3: 結果 ( output )
  */
 public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer {
 
-    public static final int TOTAL_SLOTS = 12;
-    public static final int RESULT_SLOT = 11;
+    public static final int TOTAL_SLOTS = 4;
+    public static final int CENTER_SLOT = 2;
+    public static final int RESULT_SLOT = 3;
 
     private NonNullList<ItemStack> stacks = NonNullList.withSize(TOTAL_SLOTS, ItemStack.EMPTY);
     private final LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.values());

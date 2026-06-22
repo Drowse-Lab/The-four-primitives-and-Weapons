@@ -1,0 +1,15 @@
+{
+  "_comment": "中央スロットに魔導書を置いたとき、 触媒スロットの素材で element レベルを決定する table。 datapack で上書き可能。",
+  "levels": {
+    "minecraft:oak_planks":      1,
+    "minecraft:stone":           2,
+    "minecraft:iron_ingot":      3,
+    "minecraft:gold_ingot":      4,
+    "minecraft:diamond":         5,
+    "minecraft:emerald":         6,
+    "minecraft:blaze_rod":       7,
+    "minecraft:netherite_scrap": 8,
+    "minecraft:nether_star":     9,
+    "minecraft:beacon":         10
+  }
+}

@@ -10,7 +10,7 @@ import mezz.jei.api.registration.IRecipeRegistration;
 import the_four_primitives_and_weapons.init.CustomEntityInit;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
 import the_four_primitives_and_weapons.init.RarityForgeRegistration;
-import the_four_primitives_and_weapons.item.rarity.RarityForgeRecipes;
+import the_four_primitives_and_weapons.item.rarity.RarityForgeNewRecipes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -39,7 +39,7 @@ public class RarityForgeJEIPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        registration.addRecipes(RarityForgeRecipeCategory.RECIPE_TYPE, RarityForgeRecipes.getAll());
+        registration.addRecipes(RarityForgeRecipeCategory.RECIPE_TYPE, RarityForgeNewRecipes.build());
 
         // 鞘クラフトレシピをJEIに登録
         registerSayaCraftingRecipes(registration);

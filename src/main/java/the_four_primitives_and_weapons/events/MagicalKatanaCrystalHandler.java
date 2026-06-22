@@ -57,6 +57,7 @@ public class MagicalKatanaCrystalHandler {
     private static final String CRYSTAL_LIFE_KEY  = "MagicalKatanaCrystalLifeTicks";
     private static final String MAT_TAG_KEY       = "Materialized";
     private static final String MAT_OWNER_KEY     = "MaterializedFor";
+    private static final String UNLOCKED_KEY      = "MagicalKatanaUnlocked";
 
     private static final int    CRYSTAL_LIFE        = 600;  // 30 sec auto-expire
     private static final float  CRYSTAL_MAX_HEALTH  = 0.5f; // 素手 1 撃 (1 ダメージ) で破壊できる
@@ -68,6 +69,76 @@ public class MagicalKatanaCrystalHandler {
     // ─────────────────────────────────────────────────────────────
     // 公開 API
     // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Viewer の UUID が刻まれた具現化武器がサーバ上にあるか走査して、 chat に一覧を出す。
+     * R キー押下時に呼ばれる ( = 納刀 UI の代替 )。 自分のインベントリ外にあるものも含める。
+     * 末尾に「全部破壊」のクリック可能テキストを付ける。
+     */
+    public static void listOwnedToChat(net.minecraft.server.level.ServerPlayer viewer) {
+        if (viewer == null) return;
+        net.minecraft.server.MinecraftServer server = viewer.getServer();
+        if (server == null) return;
+        UUID viewerId = viewer.getUUID();
+
+        java.util.Map<String, Integer> playerCounts = new java.util.LinkedHashMap<>();
+        int dropped = 0;
+        int self = 0;
+        for (ServerLevel sl : server.getAllLevels()) {
+            for (Player holder : sl.players()) {
+                var inv = holder.getInventory();
+                int count = 0;
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    ItemStack s = inv.getItem(i);
+                    if (!isMaterialized(s)) continue;
+                    CompoundTag tg = s.getTag();
+                    if (tg == null || !tg.hasUUID(MAT_OWNER_KEY)) continue;
+                    if (!tg.getUUID(MAT_OWNER_KEY).equals(viewerId)) continue;
+                    count++;
+                }
+                if (count > 0) {
+                    if (holder.getUUID().equals(viewerId)) self += count;
+                    else playerCounts.merge(holder.getName().getString(), count, Integer::sum);
+                }
+            }
+            for (Entity e : sl.getAllEntities()) {
+                if (!(e instanceof net.minecraft.world.entity.item.ItemEntity ie)) continue;
+                ItemStack s = ie.getItem();
+                if (!isMaterialized(s)) continue;
+                CompoundTag tg = s.getTag();
+                if (tg == null || !tg.hasUUID(MAT_OWNER_KEY)) continue;
+                if (!tg.getUUID(MAT_OWNER_KEY).equals(viewerId)) continue;
+                dropped++;
+            }
+        }
+
+        int total = self + dropped;
+        for (int c : playerCounts.values()) total += c;
+        if (total <= 0) return; // 何もなければ何も出さない
+
+        viewer.sendSystemMessage(Component.literal("§6=== 自分の具現化武器 ( 全 " + total + " 本 ) ==="));
+        if (self > 0) {
+            viewer.sendSystemMessage(Component.literal("§7• 自分のインベントリ: §a" + self + " 本"));
+        }
+        for (var entry : playerCounts.entrySet()) {
+            viewer.sendSystemMessage(Component.literal(
+                    "§7• " + entry.getKey() + " のスロット: §c" + entry.getValue() + " 本"));
+        }
+        if (dropped > 0) {
+            viewer.sendSystemMessage(Component.literal("§7• 落下中: §e" + dropped + " 本"));
+        }
+        // 全部破壊ボタン ( クリックで /crystal destroy_mine を実行 )
+        net.minecraft.network.chat.MutableComponent btn =
+                Component.literal("§c§l[全部破壊]§r")
+                        .withStyle(style -> style
+                                .withClickEvent(new net.minecraft.network.chat.ClickEvent(
+                                        net.minecraft.network.chat.ClickEvent.Action.RUN_COMMAND,
+                                        "/crystal destroy_mine"))
+                                .withHoverEvent(new net.minecraft.network.chat.HoverEvent(
+                                        net.minecraft.network.chat.HoverEvent.Action.SHOW_TEXT,
+                                        Component.literal("§7クリックで /crystal destroy_mine を実行"))));
+        viewer.sendSystemMessage(Component.literal("§7→ ").append(btn));
+    }
 
     /**
      * 全プレイヤーのインベントリを走査し、 owner UUID が一致する具現化武器を全部破壊する。
@@ -85,16 +156,22 @@ public class MagicalKatanaCrystalHandler {
                     CompoundTag tg = s.getTag();
                     if (tg == null || !tg.hasUUID(MAT_OWNER_KEY)) continue;
                     if (!tg.getUUID(MAT_OWNER_KEY).equals(ownerId)) continue;
-                    // 該当: 破壊
-                    inv.setItem(i, ItemStack.EMPTY);
+                    // 該当: 具現化を解除して ベースの Magical Katana に戻す
+                    // ( = 該当 slot は空にせず、 ベース武器を残す → 再抜刀できる )
+                    ItemStack base = new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get());
+                    try {
+                        var enchants = EnchantmentHelper.getEnchantments(s);
+                        if (!enchants.isEmpty()) {
+                            EnchantmentHelper.setEnchantments(enchants, base);
+                        }
+                    } catch (Throwable ignored) {}
+                    // 具現化を経験したベース = 解放済み
+                    setUnlocked(base);
+                    inv.setItem(i, base);
                     destroyed++;
-                    // 演出 ( ローカルでスポーン )
+                    // 演出 — 侵食属性のイメージカラー ( 赤紫 + ピンク寄り赤紫 )
                     if (sl != null) {
-                        DustParticleOptions magenta = new DustParticleOptions(
-                                new Vector3f(0.75f, 0.1f, 0.55f), 1.5f);
-                        sl.sendParticles(magenta,
-                                p.getX(), p.getY() + 1.0, p.getZ(),
-                                20, 0.3, 0.5, 0.3, 0.05);
+                        spawnShatterParticles(sl, p.getX(), p.getY() + 1.0, p.getZ());
                         sl.playSound(null, p.getX(), p.getY(), p.getZ(),
                                 SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.8f, 1.2f);
                     }
@@ -115,6 +192,25 @@ public class MagicalKatanaCrystalHandler {
         return destroyed;
     }
 
+    /**
+     * 破壊時の共通パーティクル — 侵食属性のイメージカラー
+     *   - 濃い赤紫 ( マゼンタ寄り )
+     *   - ピンク寄り赤紫
+     * の 2 色を派手にスポーン + 桜の花びらでアクセント。
+     */
+    private static void spawnShatterParticles(ServerLevel sl, double x, double y, double z) {
+        // 濃い赤紫 ( メイン、 多め )
+        DustParticleOptions magenta = new DustParticleOptions(
+                new Vector3f(0.75f, 0.1f, 0.55f), 1.6f);
+        sl.sendParticles(magenta, x, y, z, 30, 0.4, 0.5, 0.4, 0.08);
+        // ピンク寄り赤紫 ( highlight )
+        DustParticleOptions pinkMagenta = new DustParticleOptions(
+                new Vector3f(1.0f, 0.35f, 0.7f), 1.2f);
+        sl.sendParticles(pinkMagenta, x, y, z, 20, 0.4, 0.5, 0.4, 0.06);
+        // 桜の花びら ( アンビエント )
+        sl.sendParticles(ParticleTypes.CHERRY_LEAVES, x, y, z, 8, 0.3, 0.4, 0.3, 0.0);
+    }
+
     /** Magical Katana が手にあるかどうか ( 具現化版含む ) */
     public static boolean isMagicalKatana(ItemStack stack) {
         return !stack.isEmpty()
@@ -126,6 +222,36 @@ public class MagicalKatanaCrystalHandler {
         if (!isMagicalKatana(stack)) return false;
         CompoundTag tag = stack.getTag();
         return tag != null && tag.getBoolean(MAT_TAG_KEY);
+    }
+
+    /**
+     * 特殊技 ( 結晶生成 ) を解放済みか。
+     *   解放条件:
+     *     - 一度 Saya に納刀された ( performSheathing で setUnlocked )
+     *     - 具現化版を shatter したベース ( shatterOnSheathe / destroyAll で setUnlocked )
+     *     - /give 等で CORROSION 属性 Lv>=12 がセットされている ( ElementalDamageUtils で自動 )
+     *   既に具現化済みのものは常に unlocked 扱い。
+     */
+    public static boolean isUnlocked(ItemStack stack) {
+        if (!isMagicalKatana(stack)) return false;
+        if (isMaterialized(stack)) return true;
+        CompoundTag tag = stack.getTag();
+        if (tag == null) return false;
+        if (tag.getBoolean(UNLOCKED_KEY)) return true;
+        // /give 等で ElementalDamageUtils を経由せず直接 NBT セットされたケース:
+        //   ElementType == "corrosion" && ElementLevel >= 12 でも unlocked 扱い
+        if (tag.contains("ElementType") && tag.contains("ElementLevel")) {
+            String type = tag.getString("ElementType");
+            int level = tag.getInt("ElementLevel");
+            if ("corrosion".equalsIgnoreCase(type) && level >= 12) return true;
+        }
+        return false;
+    }
+
+    /** Magical Katana を解放状態にする ( 通常版 stack に NBT flag をセット )。 */
+    public static void setUnlocked(ItemStack stack) {
+        if (!isMagicalKatana(stack)) return;
+        stack.getOrCreateTag().putBoolean(UNLOCKED_KEY, true);
     }
 
     /**
@@ -180,21 +306,27 @@ public class MagicalKatanaCrystalHandler {
                 SoundEvents.AMETHYST_BLOCK_PLACE, SoundSource.PLAYERS, 1.2f, 0.5f);
     }
 
-    /** 具現化された武器を納刀しようとした時の処理。 演出付きで破壊 ( ダメージ無し ) */
+    /**
+     * 具現化された武器を納刀しようとした時の処理。 演出付きで破壊 ( ダメージ無し )。
+     * 破壊後は **ベースの Magical Katana を 1 本返す** ( = 再抜刀できる )。
+     */
     public static void shatterOnSheathe(Player player, ItemStack stack, InteractionHand hand) {
         if (!isMaterialized(stack)) return;
-        // 手から削除
-        player.setItemInHand(hand, ItemStack.EMPTY);
-        // 演出
+        // 元 enchant を救出して新しい Magical Katana に転送 ( グラインダー扱いと同じ )
+        ItemStack base = new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get());
+        try {
+            var enchants = EnchantmentHelper.getEnchantments(stack);
+            if (!enchants.isEmpty()) {
+                EnchantmentHelper.setEnchantments(enchants, base);
+            }
+        } catch (Throwable ignored) {}
+        // 具現化を経験したベース = 解放済み
+        setUnlocked(base);
+        // 手の中身を base で置き換え
+        player.setItemInHand(hand, base);
+        // 破壊演出 — 侵食属性のイメージカラー ( 赤紫 + ピンク寄り赤紫 )
         if (player.level() instanceof ServerLevel sl) {
-            DustParticleOptions magenta = new DustParticleOptions(
-                    new Vector3f(0.75f, 0.1f, 0.55f), 1.5f);
-            sl.sendParticles(magenta,
-                    player.getX(), player.getY() + 1.0, player.getZ(),
-                    40, 0.4, 0.5, 0.4, 0.1);
-            sl.sendParticles(ParticleTypes.ITEM_SLIME,
-                    player.getX(), player.getY() + 1.0, player.getZ(),
-                    15, 0.3, 0.4, 0.3, 0.05);
+            spawnShatterParticles(sl, player.getX(), player.getY() + 1.0, player.getZ());
         }
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.PLAYERS, 1.2f, 0.8f);
@@ -293,6 +425,41 @@ public class MagicalKatanaCrystalHandler {
             if (isMagicalKatana(main) && !isMaterialized(main)) template = main;
         }
         materializeFor(sl, stand.position().add(0, 0.5, 0), ownerId, template);
+    }
+
+    /**
+     * ArmorStand を Player が殴ると ArmorStand.hurt() は LivingEntity.die() を経由せず
+     * 直接 kill() → remove() するため LivingDeathEvent が発火しない。
+     * そのため AttackEntityEvent で先回りして検知し、 結晶ならその場で武器を具現化する。
+     */
+    @SubscribeEvent
+    public static void onAttackEntity(net.minecraftforge.event.entity.player.AttackEntityEvent event) {
+        Entity target = event.getTarget();
+        if (!(target instanceof ArmorStand stand)) return;
+        CompoundTag pd = stand.getPersistentData();
+        if (!pd.contains(CRYSTAL_OWNER_KEY)) return;
+        Player attacker = event.getEntity();
+        if (attacker.level().isClientSide()) return;
+        if (!(attacker.level() instanceof ServerLevel sl)) return;
+
+        UUID ownerId = pd.getUUID(CRYSTAL_OWNER_KEY);
+        existingCrystal.remove(ownerId);
+        Vec3 spawnPos = stand.position().add(0, 0.5, 0);
+
+        // template 取得 ( 元 Magical Katana を持っていれば enchant 転送 )
+        Player owner = sl.getServer().getPlayerList().getPlayer(ownerId);
+        ItemStack template = ItemStack.EMPTY;
+        if (owner != null) {
+            ItemStack main = owner.getMainHandItem();
+            if (isMagicalKatana(main) && !isMaterialized(main)) template = main;
+        }
+
+        // 結晶を破壊
+        stand.discard();
+        // 元の attack 処理をキャンセル ( ArmorStand に余計なダメージ処理が走らないように )
+        event.setCanceled(true);
+
+        materializeFor(sl, spawnPos, ownerId, template);
     }
 
     /**

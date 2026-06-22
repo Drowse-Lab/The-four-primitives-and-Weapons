@@ -27,6 +27,11 @@ public class ElementalDamageUtils {
         CompoundTag tag = stack.getOrCreateTag();
         tag.putString(ELEMENT_TYPE_KEY, elementType.getName());
         tag.putInt(ELEMENT_LEVEL_KEY, level);
+        // Magical Katana 特殊技解放 — CORROSION Lv>=12 セット時に自動 unlock
+        // ( MagicalKatanaCrystalHandler を直接参照しないため key 文字列を直書き )
+        if (elementType == ElementType.CORROSION && level >= 12) {
+            tag.putBoolean("MagicalKatanaUnlocked", true);
+        }
     }
 
     /**
