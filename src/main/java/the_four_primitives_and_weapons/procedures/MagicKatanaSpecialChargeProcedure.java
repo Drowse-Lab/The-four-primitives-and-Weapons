@@ -754,8 +754,19 @@ public class MagicKatanaSpecialChargeProcedure {
     /**
      * CorrosionBookItem - 結晶侵食ブレス（fire breath風のコーン状噴射）
      * プレイヤーの視線方向に扇状に結晶の破片が広がり、当たった敵を結晶化して蝕む
+     *
+     * 分岐: プレイヤーの main hand が **Magical Katana** (= MagicalKatanaItem 自身) なら、
+     *       ブレスではなく「魔の結晶」を生成する別フローへ。 殴って壊すと侵食 Lv12 (XII)
+     *       具現化武器が手に入る ( {@link the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler} )。
      */
     private static void executeCorrosionAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent, int elementLevel) {
+        // === Magical Katana 分岐: 結晶生成モード ===
+        if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMagicalKatana(player.getMainHandItem())
+                && !the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(player.getMainHandItem())) {
+            the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.spawnCrystal(player);
+            return;
+        }
+
         Vec3 lookVec = player.getLookAngle();
         Vec3 playerPos = player.position();
         double range = 10.0;

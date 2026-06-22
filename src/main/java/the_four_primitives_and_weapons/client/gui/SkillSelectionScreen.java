@@ -366,6 +366,22 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                 addRenderableWidget(new AbstractButton(btnX, rowY, btnWidth, btnHeight, motionLabel) {
                     @Override
                     public void onPress() {
+                        // Shift+クリック → 該当 motion の ON/OFF をトグル ( 選択は変えない )
+                        if (net.minecraft.client.gui.screens.Screen.hasShiftDown()) {
+                            boolean currentlyEnabled = minecraft != null && minecraft.player != null
+                                    ? PlayerSkillData.isMotionEnabled(minecraft.player, finalMotion.getId())
+                                    : true;
+                            boolean nextEnabled = !currentlyEnabled;
+                            TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(
+                                SkillSelectionPacket.toggleMotion(finalMotion.getId(), nextEnabled)
+                            );
+                            // クライアント側でも即時反映 ( renderWidget が即座に変化を表示 )
+                            if (minecraft != null && minecraft.player != null) {
+                                PlayerSkillData.setMotionEnabled(minecraft.player, finalMotion.getId(), nextEnabled);
+                            }
+                            return;
+                        }
+
                         if (selectedTypeId != null) {
                             // タイプ別設定: サーバーに送信 + ローカル状態 + クライアントcapability更新
                             TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(
@@ -411,6 +427,8 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                         boolean isSelected = finalMotion.getId().equals(currentMotion);
                         boolean isHover = this.isHoveredOrFocused();
                         boolean isSpecial = finalMotion.getCategory() == MotionCategory.SPECIAL;
+                        boolean isDisabled = minecraft != null && minecraft.player != null
+                                && !PlayerSkillData.isMotionEnabled(minecraft.player, finalMotion.getId());
 
                         int bgColor;
                         if (isSelected) bgColor = COLOR_BTN_SELECTED;
@@ -422,6 +440,16 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
 
                         if (isSelected) {
                             drawBorder(g, this.getX(), this.getY(), this.width, this.height, COLOR_BORDER);
+                        }
+
+                        // 無効化中はボタン全体を半透明の赤で塗りつぶし + 右上に "OFF" マーカー
+                        if (isDisabled) {
+                            g.fill(this.getX(), this.getY(),
+                                this.getX() + this.width, this.getY() + this.height,
+                                0xB0660000);
+                            g.fill(this.getX() + this.width - 11, this.getY() + 1,
+                                this.getX() + this.width - 1, this.getY() + 7,
+                                0xFFAA0000);
                         }
 
                         // ボタン幅に応じてスケール自動縮小 (ラベルが収まるよう)
@@ -438,9 +466,13 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                             isSelected ? 0x7FFF7F : 0xFFFFFF, fitScale);
 
                         if (isHover) {
-                            hoveredDescription = Component.translatableWithFallback(
+                            String desc = Component.translatableWithFallback(
                                 finalMotion.descriptionTranslationKey(),
                                 finalMotion.getDescription()).getString();
+                            String hint = isDisabled
+                                ? " §c[OFF — Shift+Clickで有効化]"
+                                : " §7[Shift+Clickで無効化]";
+                            hoveredDescription = desc + hint;
                         }
                     }
 

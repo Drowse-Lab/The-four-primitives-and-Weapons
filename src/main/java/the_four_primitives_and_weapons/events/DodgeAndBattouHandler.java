@@ -712,6 +712,12 @@ public class DodgeAndBattouHandler {
         if (!isWeapon(weaponStack) || !isSaya(sheathStack)) return;
         if (weaponHand == sheathHand) return; // 同じ手は不可 (武器消失防止)
 
+        // === 具現化 Magical Katana: 納刀しようとすると砕け散る ( 鞘に入らず消滅 ) ===
+        if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(weaponStack)) {
+            the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.shatterOnSheathe(player, weaponStack, weaponHand);
+            return;
+        }
+
         // 直刀鞘の場合
         if (isTyokutouSaya(sheathStack)) {
             // 直刀のみ納刀可能

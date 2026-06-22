@@ -39,6 +39,14 @@ public class SkillSelectionPacket {
         return new SkillSelectionPacket("type:" + typeId, motionId, attackSlot.getId());
     }
 
+    /**
+     * 技 ON/OFF トグル
+     * slotId="motion_toggle", motionId=motionId, itemId="true"/"false"
+     */
+    public static SkillSelectionPacket toggleMotion(String motionId, boolean enabled) {
+        return new SkillSelectionPacket("motion_toggle", motionId, enabled ? "true" : "false");
+    }
+
     private SkillSelectionPacket(String slotId, String motionId, String itemId) {
         this.slotId = slotId;
         this.motionId = motionId;
@@ -70,6 +78,8 @@ public class SkillSelectionPacket {
             player.getCapability(PlayerSkillData.SKILL_CAPABILITY).ifPresent(sd -> {
                 if ("proficiency".equals(slotId)) {
                     handleProficiency(sd);
+                } else if ("motion_toggle".equals(slotId)) {
+                    handleMotionToggle(player);
                 } else if (slotId != null && slotId.startsWith("type:")) {
                     handleTypeMotion(sd);
                 } else {
@@ -78,6 +88,12 @@ public class SkillSelectionPacket {
             });
         });
         ctx.get().setPacketHandled(true);
+    }
+
+    private void handleMotionToggle(ServerPlayer player) {
+        if (motionId == null || itemId == null) return;
+        boolean enabled = "true".equalsIgnoreCase(itemId);
+        PlayerSkillData.setMotionEnabled(player, motionId, enabled);
     }
 
     private void handleTypeMotion(PlayerSkillData.SkillStorage skillData) {

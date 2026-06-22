@@ -12,36 +12,56 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import org.joml.Vector3f;
 
+import the_four_primitives_and_weapons.damage.ElementType;
+import the_four_primitives_and_weapons.damage.ModDamageSources;
 import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Rivers of Blood の右クリック特殊技 (Corpse Piler 風 ).
+ * Rivers of Blood の右クリック特殊技 — テレポート連続斬撃。
  *
- * Elden Ring 「血の貴族の暴行」 のミニマム化:
- *   - 右クリックで前方扇形に血斬撃を 1 発放つ
- *   - 命中した敵に基礎ダメージ + DoT bleed ( = SpecialDebuffHandler.applyWither )
- *   - 命中数 × 1.5 HP のライフスティール
- *   - 短いクールダウン ( 10 tick = 0.5 秒 ) → 連打で多段コンボ可能
- *   - 赤い dust の弧 + DAMAGE_INDICATOR で血しぶき演出
+ * フロー:
+ *   1. 右クリックで周囲 10 ブロック圏内の敵 ( 最大 6 体 ) を target list に登録
+ *   2. 元の位置を save し、 invulnerable = true
+ *   3. tick handler で 1 体ずつ 3 tick おきに敵の隣に TP ( 視覚のみ、 ダメージは保留 )
+ *   4. 全 target 訪問後、 元の位置に戻る → 戻った瞬間にダメージ + bleed を一斉適用
+ *   5. invulnerable 解除 + クールダウン
+ *
+ * シフト ( Sneak ) を押すと TP 連続中にキャンセル可能 → ダメージなしで元の位置に戻る。
  */
 public class KatanaBloodYoukuritukusitatokiProcedure {
 
-    /** 斬撃の射程 */
-    private static final double RANGE = 6.0;
-    /** 扇形の半角 (deg) — 狭めの斬撃線 */
-    private static final double CONE_HALF_DEG = 25.0;
-    /** 基礎ダメージ ( 1 斬撃当たり ) */
-    private static final float BASE_DAMAGE = 6.0f;
-    /** 命中ごとの自己回復 (HP) */
-    private static final float HEAL_PER_HIT = 1.5f;
-    /** クールダウン — 連打コンボ可能な短め */
-    private static final int COOLDOWN_TICKS = 10; // 0.5 sec
+    private static final double SEARCH_RADIUS  = 10.0;
+    private static final int    MAX_TARGETS    = 6;
+    private static final int    TICKS_PER_TP   = 3;
+    private static final float  DAMAGE_PER_HIT = 8.0f;
+    private static final float  BLEED_PER_TICK = 0.6f;
+    private static final int    BLEED_DURATION = 80;
+    private static final float  HEAL_PER_HIT   = 2.0f;
+    private static final int    COOLDOWN_TICKS = 200;
+
+    private static final class State {
+        Vec3 originalPos;
+        List<UUID> targets;
+        int currentIdx;
+        int tickInPhase;
+        boolean returning;
+        boolean wasInvulnerable;
+    }
+    private static final Map<UUID, State> active = new ConcurrentHashMap<>();
 
     public static void execute(Level world, Entity entity) {
         if (entity == null) return;
@@ -49,94 +69,165 @@ public class KatanaBloodYoukuritukusitatokiProcedure {
         ItemStack held = player.getMainHandItem();
         if (held.isEmpty() || held.getItem() != TheFourPrimitivesAndWeaponsModItems.RIVERS_OF_BLOOD.get()) return;
 
-        // クールダウン中なら何もしない (連打可能だが超高速連射は防ぐ)
+        // motion トグル: 無効化されていれば何もしない
+        if (!the_four_primitives_and_weapons.skill.PlayerSkillData.isMotionEnabled(player, "rivers_of_blood_special")) {
+            return;
+        }
+
         if (player.getCooldowns().isOnCooldown(held.getItem())) return;
+        if (active.containsKey(player.getUUID())) return; // 既に発動中
+
+        Vec3 pos = player.position();
+        AABB box = new AABB(
+                pos.x - SEARCH_RADIUS, pos.y - 3, pos.z - SEARCH_RADIUS,
+                pos.x + SEARCH_RADIUS, pos.y + 3, pos.z + SEARCH_RADIUS);
+        List<LivingEntity> nearby = world.getEntitiesOfClass(LivingEntity.class, box,
+                e -> e != player && e.isAlive() && e.distanceTo(player) <= SEARCH_RADIUS);
+        if (nearby.isEmpty()) return;
+        nearby.sort(Comparator.comparingDouble(e -> e.distanceToSqr(player)));
+
         player.getCooldowns().addCooldown(held.getItem(), COOLDOWN_TICKS);
 
-        Vec3 eyePos  = player.getEyePosition();
-        Vec3 lookVec = player.getLookAngle().normalize();
-        double cosHalfAngle = Math.cos(Math.toRadians(CONE_HALF_DEG));
-
-        // 前方扇形内の敵をピックアップ
-        AABB searchBox = new AABB(eyePos, eyePos).inflate(RANGE + 1.5);
-        List<LivingEntity> nearby = world.getEntitiesOfClass(LivingEntity.class, searchBox);
-        int hits = 0;
-        for (LivingEntity le : nearby) {
-            if (le == player) continue;
-            if (!le.isAlive()) continue;
-            Vec3 toCenter = le.getBoundingBox().getCenter().subtract(eyePos);
-            double dist = toCenter.length();
-            if (dist > RANGE || dist < 0.3) continue;
-            if (lookVec.dot(toCenter.normalize()) < cosHalfAngle) continue;
-
-            // 直接ダメージ + bleed DoT
-            le.invulnerableTime = 0;
-            le.hurt(le.damageSources().playerAttack(player), BASE_DAMAGE);
-            SpecialDebuffHandler.applyWither(le, 60, 0.5f); // 3 秒 / 0.5 ダメージ/tick
-            SpecialDebuffHandler.applyWeakness(le, 100, 1);  // 5 秒 / -0.5 atk
-
-            // 命中位置に血しぶき
-            if (world instanceof ServerLevel sl) {
-                sl.sendParticles(ParticleTypes.DAMAGE_INDICATOR,
-                        le.getX(), le.getY() + le.getBbHeight() / 2, le.getZ(),
-                        15, 0.3, 0.4, 0.3, 0.15);
-            }
-            hits++;
+        State s = new State();
+        s.originalPos = pos;
+        s.targets = new ArrayList<>();
+        for (int i = 0; i < Math.min(nearby.size(), MAX_TARGETS); i++) {
+            s.targets.add(nearby.get(i).getUUID());
         }
+        s.currentIdx = 0;
+        s.tickInPhase = 0;
+        s.returning = false;
+        s.wasInvulnerable = player.isInvulnerable();
+        active.put(player.getUUID(), s);
 
-        // 命中数に応じてライフスティール
-        if (hits > 0) {
-            player.heal(HEAL_PER_HIT * hits);
-        }
+        player.setInvulnerable(true);
 
-        // 斬撃エフェクト — 前方に赤い弧 ( blood arc )
         if (world instanceof ServerLevel sl) {
-            DustParticleOptions bloodRed = new DustParticleOptions(
-                    new Vector3f(0.65f, 0.05f, 0.05f), 1.6f);
-            DustParticleOptions bloodCrimson = new DustParticleOptions(
-                    new Vector3f(0.45f, 0.0f, 0.0f), 1.2f);
-            // look 方向と直交する right ベクトル
-            Vec3 right = lookVec.cross(new Vec3(0, 1, 0));
-            if (right.lengthSqr() < 1.0E-4) right = new Vec3(1, 0, 0);
-            right = right.normalize();
-            // 弧を 5 段に分けて、 各段で width を広く取る
-            for (double d = 0.5; d <= RANGE; d += 0.35) {
-                double spread = d * Math.tan(Math.toRadians(CONE_HALF_DEG));
-                // 横方向に -spread .. +spread 5 段
-                for (int i = -2; i <= 2; i++) {
-                    double ratio = i / 2.0;
-                    Vec3 offset = right.scale(spread * ratio);
-                    Vec3 p = eyePos.add(lookVec.scale(d)).add(offset);
-                    // 弧形 — 中央ほど低く、 端ほど高くなるような Y 補正
-                    double yArc = 0.1 * (1 - Math.abs(ratio));
-                    sl.sendParticles(bloodRed,
-                            p.x, p.y + yArc, p.z,
-                            1, 0.04, 0.04, 0.04, 0.0);
-                    if (i == 0) {
-                        // 中央ライン強調
-                        sl.sendParticles(bloodCrimson,
-                                p.x, p.y + yArc, p.z,
-                                1, 0.02, 0.02, 0.02, 0.0);
-                    }
-                }
-            }
-            // 振り始めの足元に血しぶき
-            sl.sendParticles(ParticleTypes.DAMAGE_INDICATOR,
-                    eyePos.x, eyePos.y - 1.0, eyePos.z,
-                    8, 0.3, 0.1, 0.3, 0.05);
+            sl.sendParticles(ParticleTypes.LARGE_SMOKE,
+                    pos.x, pos.y + 1.0, pos.z, 8, 0.3, 0.5, 0.3, 0.05);
+            DustParticleOptions burst = new DustParticleOptions(
+                    new Vector3f(0.7f, 0.05f, 0.05f), 1.5f);
+            sl.sendParticles(burst, pos.x, pos.y + 1.0, pos.z,
+                    20, 0.4, 0.8, 0.4, 0.02);
         }
+        world.playSound(null, pos.x, pos.y, pos.z,
+                SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.7f, 1.6f);
+    }
 
-        // 振り音 + 血の音
-        world.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0f, 1.2f);
-        if (hits > 0) {
-            world.playSound(null, player.getX(), player.getY(), player.getZ(),
-                    SoundEvents.GENERIC_HURT, SoundSource.PLAYERS, 0.7f, 1.4f);
+    public static void execute() { /* legacy */ }
+
+    @Mod.EventBusSubscriber(modid = "the_four_primitives_and_weapons")
+    public static class TeleportStrikeTick {
+        @SubscribeEvent
+        public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+            if (event.phase != TickEvent.Phase.END) return;
+            Player player = event.player;
+            if (player.level().isClientSide()) return;
+
+            State s = active.get(player.getUUID());
+            if (s == null) return;
+
+            // 死亡時は中断
+            if (!player.isAlive()) {
+                player.setInvulnerable(s.wasInvulnerable);
+                active.remove(player.getUUID());
+                return;
+            }
+
+            // Sneak ( シフト ) で強制キャンセル → 即座に元の位置へ戻ってダメージ無しで終了
+            if (player.isShiftKeyDown() && !s.returning) {
+                ServerLevel slCancel = (ServerLevel) player.level();
+                player.teleportTo(s.originalPos.x, s.originalPos.y, s.originalPos.z);
+                player.setInvulnerable(s.wasInvulnerable);
+                active.remove(player.getUUID());
+                slCancel.sendParticles(ParticleTypes.SMOKE,
+                        s.originalPos.x, s.originalPos.y + 1.0, s.originalPos.z,
+                        15, 0.3, 0.5, 0.3, 0.05);
+                slCancel.playSound(null, s.originalPos.x, s.originalPos.y, s.originalPos.z,
+                        SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.5f, 0.8f);
+                return;
+            }
+
+            s.tickInPhase++;
+            if (s.tickInPhase < TICKS_PER_TP) return;
+            s.tickInPhase = 0;
+
+            ServerLevel sl = (ServerLevel) player.level();
+
+            if (s.returning) {
+                // 戻り完了 — ダメージ適用 + state 解除
+                player.teleportTo(s.originalPos.x, s.originalPos.y, s.originalPos.z);
+                applyFinalDamage(sl, player, s);
+                player.setInvulnerable(s.wasInvulnerable);
+                active.remove(player.getUUID());
+                sl.sendParticles(ParticleTypes.EXPLOSION,
+                        s.originalPos.x, s.originalPos.y + 1.0, s.originalPos.z, 1, 0, 0, 0, 0);
+                DustParticleOptions burst = new DustParticleOptions(
+                        new Vector3f(0.8f, 0.05f, 0.05f), 2.0f);
+                sl.sendParticles(burst, s.originalPos.x, s.originalPos.y + 1.0, s.originalPos.z,
+                        40, 0.6, 1.0, 0.6, 0.1);
+                sl.playSound(null, s.originalPos.x, s.originalPos.y, s.originalPos.z,
+                        SoundEvents.WITHER_BREAK_BLOCK, SoundSource.PLAYERS, 1.2f, 0.5f);
+                return;
+            }
+
+            // 次の target に TP
+            if (s.currentIdx >= s.targets.size()) {
+                s.returning = true;
+                return;
+            }
+
+            UUID targetId = s.targets.get(s.currentIdx);
+            Entity targetEntity = sl.getEntity(targetId);
+            s.currentIdx++;
+
+            if (!(targetEntity instanceof LivingEntity target) || !target.isAlive()) {
+                return;
+            }
+
+            Vec3 tpos = target.position();
+            Vec3 from = player.position();
+            Vec3 dir = tpos.subtract(from);
+            if (dir.lengthSqr() < 1.0E-4) dir = new Vec3(1, 0, 0);
+            dir = dir.normalize();
+            Vec3 land = tpos.subtract(dir.scale(0.8));
+            player.teleportTo(land.x, land.y, land.z);
+            player.setYRot((float) Math.toDegrees(Math.atan2(
+                    -(target.getX() - player.getX()),
+                    target.getZ() - player.getZ())));
+            player.setXRot(0);
+
+            DustParticleOptions trail = new DustParticleOptions(
+                    new Vector3f(0.65f, 0.05f, 0.05f), 1.4f);
+            sl.sendParticles(trail, land.x, land.y + 0.5, land.z,
+                    12, 0.3, 0.5, 0.3, 0.05);
+            sl.sendParticles(ParticleTypes.PORTAL, land.x, land.y + 1.0, land.z,
+                    10, 0.2, 0.5, 0.2, 0.3);
+            sl.playSound(null, land.x, land.y, land.z,
+                    SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.5f, 1.8f);
         }
     }
 
-    /** 旧シグネチャ互換 (引数なし版). 何もしない. */
-    public static void execute() {
-        // empty - kept for backward call compatibility
+    private static void applyFinalDamage(ServerLevel sl, Player player, State s) {
+        int hits = 0;
+        for (UUID id : s.targets) {
+            Entity e = sl.getEntity(id);
+            if (!(e instanceof LivingEntity target) || !target.isAlive()) continue;
+            target.invulnerableTime = 0;
+            target.hurt(ModDamageSources.ofElement(player.level(), ElementType.BLOOD, player),
+                    DAMAGE_PER_HIT);
+            SpecialDebuffHandler.applyBleed(target, BLEED_DURATION, BLEED_PER_TICK);
+            sl.sendParticles(ParticleTypes.DAMAGE_INDICATOR,
+                    target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+                    20, 0.3, 0.4, 0.3, 0.15);
+            DustParticleOptions blood = new DustParticleOptions(
+                    new Vector3f(0.65f, 0.05f, 0.05f), 1.5f);
+            sl.sendParticles(blood, target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
+                    20, 0.3, 0.4, 0.3, 0.05);
+            hits++;
+        }
+        if (hits > 0) {
+            player.heal(HEAL_PER_HIT * hits);
+        }
     }
 }
