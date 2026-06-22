@@ -798,5 +798,7 @@
   "death.attack.the_four_primitives_and_weapons.wind":      "%1$sは風に引き裂かれた",
   "death.attack.the_four_primitives_and_weapons.wind.player":  "%1$sは%2$sの風に引き裂かれた",
   "death.attack.the_four_primitives_and_weapons.error":     "%1$sは未知のエラーに削除された",
-  "death.attack.the_four_primitives_and_weapons.error.player": "%1$sは%2$sのエラーに削除された"
+  "death.attack.the_four_primitives_and_weapons.error.player": "%1$sは%2$sのエラーに削除された",
+  "item.the_four_primitives_and_weapons.element_cleanse_potion": "属性デバフ消去ポーション",
+  "tooltip.the_four_primitives_and_weapons.element_cleanse_potion": "§7属性デバフ (氷/侵食/瘴気/属性DoT) をすべて解除する。\n§7バニラの状態異常は対象外 — そちらは牛乳で。"
 }

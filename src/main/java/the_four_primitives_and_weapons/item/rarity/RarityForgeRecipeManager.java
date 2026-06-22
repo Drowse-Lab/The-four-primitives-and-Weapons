@@ -137,6 +137,23 @@ public class RarityForgeRecipeManager extends SimpleJsonResourceReloadListener {
             elementLevel = json.get("element_level").getAsInt();
         }
 
+        // catalyst_levels: 触媒スロット 0 に置いた item で level を決める book recipe 用
+        // 形式: { "minecraft:oak_planks": 1, "minecraft:stone": 2, ... }
+        Map<Item, Integer> catalystLevels = null;
+        if (json.has("catalyst_levels")) {
+            JsonObject catObj = json.getAsJsonObject("catalyst_levels");
+            catalystLevels = new HashMap<>();
+            for (Map.Entry<String, JsonElement> e : catObj.entrySet()) {
+                Item it = ForgeRegistries.ITEMS.getValue(new ResourceLocation(e.getKey()));
+                if (it == null) {
+                    LOGGER.warn("Unknown catalyst item '{}' in recipe {}", e.getKey(), id);
+                    continue;
+                }
+                int lv = e.getValue().getAsInt();
+                if (lv >= 1) catalystLevels.put(it, lv);
+            }
+        }
+
         // Unbreakableレシピ: resultがnullの場合はダミーアイテムを使用（実際はクラフト時に入力を複製）
         if (resultItem == null) {
             resultItem = net.minecraft.world.item.Items.IRON_SWORD; // ダミー（JEI表示用）
@@ -144,6 +161,9 @@ public class RarityForgeRecipeManager extends SimpleJsonResourceReloadListener {
 
         RarityForgeRecipe recipe = new RarityForgeRecipe(resultItem, grid, width, height, elementLevel, isUnbreakable);
         recipe.setInputSlotIndex(inputSlotIdx);
+        if (catalystLevels != null && !catalystLevels.isEmpty()) {
+            recipe.setCatalystLevels(catalystLevels);
+        }
         return recipe;
     }
 }

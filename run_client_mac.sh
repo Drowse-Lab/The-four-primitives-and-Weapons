@@ -13,19 +13,23 @@ cd "$(dirname "$0")"
 
 GRADLE_ARGS="runClient"
 if [ "$1" = "offline" ]; then
-    # downloadAssets は --offline を尊重せず piston-meta.mojang.com に毎回検証 HTTP を送る。
-    # アセットは ~/.gradle/caches/forge_gradle/assets/ にキャッシュ済みなので
-    # offline モードでは -x で明示的に除外する (SSL handshake failure 回避)。
-    #
-    # ForgeGradle 5.x の MCPRepo.findVersion も同様に --offline を完全には尊重せず、
-    # maven.minecraftforge.net や dvs1.progwml6.com に HEAD 投げる。Java 17 のデフォルト
-    # TLS 設定だと特定 cipher suite で handshake_failure を起こすことが報告されている。
-    # TLS 1.2 を明示して TLS 1.3 関連の互換性問題を回避し、握手だけは通るようにする。
-    # （実通信は --offline でほぼスキップされるので、SSL handshake さえ通れば OK）
-    GRADLE_ARGS="$GRADLE_ARGS --offline -Dnet.minecraftforge.gradle.check.certs=false -x downloadAssets"
-    GRADLE_ARGS="$GRADLE_ARGS -Dhttps.protocols=TLSv1.2,TLSv1.3 -Djdk.tls.client.protocols=TLSv1.2,TLSv1.3"
-    GRADLE_ARGS="$GRADLE_ARGS -Djava.security.egd=file:/dev/./urandom"
+    GRADLE_ARGS="$GRADLE_ARGS --offline -x downloadAssets"
     echo "=== Offline mode (using cached dependencies, skipping downloadAssets) ==="
+fi
+
+# --- TLS workaround for Cisco Umbrella SSL inspection ---
+# 開発端末のネット (マンション ISP) が Cisco Umbrella の透過 SSL 検査を経由しており、
+# 中間 Proxy が古くて TLS 1.3 と ECDHE/DHE 系 cipher を理解できない。
+# JDK 17 が ClientHello を送ると handshake_failure になるため、
+# TLS 1.2 + RSA key exchange cipher のみに限定する。
+# 該当 cipher は JDK 17 でデフォルト無効化されているので
+# tls_workaround.properties で再有効化。
+#
+# JAVA_TOOL_OPTIONS は JVM 起動時に自動で picked up されるので
+# Gradle daemon / worker 含む全 JVM に伝播する (org.gradle.jvmargs より確実)。
+TLS_WORKAROUND_FILE="$(pwd)/tls_workaround.properties"
+if [ -f "$TLS_WORKAROUND_FILE" ]; then
+    export JAVA_TOOL_OPTIONS="-Djava.security.properties=${TLS_WORKAROUND_FILE} -Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djdk.tls.client.cipherSuites=TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256"
 fi
 
 # --- Iron's Spellbooks 同梱の対話確認 ---

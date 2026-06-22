@@ -103,6 +103,7 @@ import the_four_primitives_and_weapons.item.CorrosionBookItem;
 import the_four_primitives_and_weapons.item.ReitouItem;
 import the_four_primitives_and_weapons.item.ErrorBookItem;
 import the_four_primitives_and_weapons.item.MiasmaBookItem;
+import the_four_primitives_and_weapons.item.ElementCleansePotionItem;
 import the_four_primitives_and_weapons.item.FireballItem;
 import the_four_primitives_and_weapons.item.DragonRedArmorItem;
 import the_four_primitives_and_weapons.item.DragonGreenArmorItem;
@@ -298,6 +299,7 @@ public class TheFourPrimitivesAndWeaponsModItems {
 	public static final RegistryObject<Item> HOLY_BOOK = REGISTRY.register("holy_book", () -> new HolyBookItem());
 	public static final RegistryObject<Item> ERROR_BOOK = REGISTRY.register("error_book", () -> new ErrorBookItem());
 	public static final RegistryObject<Item> MIASMA_BOOK = REGISTRY.register("miasma_book", () -> new MiasmaBookItem());
+	public static final RegistryObject<Item> ELEMENT_CLEANSE_POTION = REGISTRY.register("element_cleanse_potion", () -> new ElementCleansePotionItem());
 	public static final RegistryObject<Item> REITOU = REGISTRY.register("reitou", () -> new ReitouItem());
 	public static final RegistryObject<Item> OFUDA = REGISTRY.register("ofuda", () -> new OfudaItem());
 	public static final RegistryObject<Item> WOODEN_RAPIER = REGISTRY.register("wooden_rapier", () -> new WoodenRapierItem());

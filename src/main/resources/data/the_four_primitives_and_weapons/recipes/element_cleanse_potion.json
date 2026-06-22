@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " G ",
+    "AHA",
+    " B "
+  ],
+  "key": {
+    "G": { "item": "minecraft:glowstone_dust" },
+    "A": { "item": "minecraft:amethyst_shard" },
+    "H": { "item": "minecraft:ghast_tear" },
+    "B": { "item": "minecraft:glass_bottle" }
+  },
+  "result": {
+    "item": "the_four_primitives_and_weapons:element_cleanse_potion",
+    "count": 2
+  }
+}

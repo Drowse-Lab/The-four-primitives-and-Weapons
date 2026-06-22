@@ -105,7 +105,7 @@ public class ElementalTooltipEvent {
             case THUNDER:   return "#FFFF55";  // 黄色
             case DARK:      return "#AA00AA";  // 紫
             case ELECTRIC:  return "#FFFF55";  // 黄色
-            case CORROSION: return "#8B00FF";  // 紫
+            case CORROSION: return "#BF198C";  // 赤紫 (マゼンタ — 通常パーティクル色と統一)
             case HOLY:      return "#FFAA00";  // 金色
             case ERROR:     return "#FF0000";  // 赤
             case MIASMA:    return "#550088";  // 暗紫

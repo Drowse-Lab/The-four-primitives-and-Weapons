@@ -8,6 +8,8 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.item.ItemArgument;
+import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -108,12 +110,19 @@ public class TestCommand {
                 )
             )
 
-            // /test elementall [level]
+            // /test elementall [level] [item]
+            //   item を省略すると minecraft:diamond_sword。 item には mod 武器の id も指定可能。
+            //   例: /test elementall 10 the_four_primitives_and_weapons:iron_katana
             .then(Commands.literal("elementall")
-                .executes(ctx -> giveAllElementSwords(ctx.getSource(), 5))
+                .executes(ctx -> giveAllElementSwords(ctx.getSource(), 5, null))
                 .then(Commands.argument("level", IntegerArgumentType.integer(1, 100))
                     .executes(ctx -> giveAllElementSwords(ctx.getSource(),
-                        IntegerArgumentType.getInteger(ctx, "level")))
+                        IntegerArgumentType.getInteger(ctx, "level"), null))
+                    .then(Commands.argument("item", ItemArgument.item(event.getBuildContext()))
+                        .executes(ctx -> giveAllElementSwords(ctx.getSource(),
+                            IntegerArgumentType.getInteger(ctx, "level"),
+                            ItemArgument.getItem(ctx, "item")))
+                    )
                 )
             )
 
@@ -339,24 +348,39 @@ public class TestCommand {
         return 1;
     }
 
-    // === /test elementall [level] ===
-    private static int giveAllElementSwords(CommandSourceStack source, int lvl) {
+    // === /test elementall [level] [item] ===
+    //   itemInput が null の場合は minecraft:diamond_sword をベースに使う。
+    //   ItemInput を渡すと、 その item の ItemStack ( nbt 含む ) を各属性版で複製する。
+    private static int giveAllElementSwords(CommandSourceStack source, int lvl, ItemInput itemInput) {
         if (!(source.getEntity() instanceof ServerPlayer player)) {
             source.sendFailure(Component.literal("§cプレイヤー専用コマンドです"));
             return 0;
         }
         int count = 0;
+        String baseName;
         for (ElementType elem : ElementType.values()) {
             if (elem == ElementType.NONE || elem == ElementType.ERROR) continue;
-            ItemStack sword = new ItemStack(Items.DIAMOND_SWORD);
-            ElementalDamageUtils.setElement(sword, elem, lvl);
-            sword.setHoverName(Component.literal("§6" + elem.getName().toUpperCase() + "§fの剣"));
-            player.addItem(sword);
+            ItemStack stack;
+            try {
+                stack = (itemInput != null)
+                        ? itemInput.createItemStack(1, false)
+                        : new ItemStack(Items.DIAMOND_SWORD);
+            } catch (Exception e) {
+                source.sendFailure(Component.literal("§citem 生成失敗: " + e.getMessage()));
+                return 0;
+            }
+            ElementalDamageUtils.setElement(stack, elem, lvl);
+            stack.setHoverName(Component.literal("§6" + elem.getName().toUpperCase() + "§f " + stack.getItem().getDescription().getString()));
+            player.addItem(stack);
             count++;
         }
+        baseName = (itemInput != null)
+                ? itemInput.getItem().toString()
+                : "minecraft:diamond_sword";
         final int total = count;
+        final String fBase = baseName;
         source.sendSuccess(() -> Component.literal(
-            "§a全" + total + "属性のダイヤ剣を付与しました (Lv." + lvl + ")"), false);
+            "§a全" + total + "属性の §e" + fBase + " §aを付与しました (Lv." + lvl + ")"), false);
         return count;
     }
 

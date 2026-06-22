@@ -12,6 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import the_four_primitives_and_weapons.damage.ElementType;
+import the_four_primitives_and_weapons.damage.ModDamageSources;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.effect.MobEffects;
@@ -234,9 +236,9 @@ public class MagicKatanaSpecialChargeProcedure {
             // ダメージ（武器で実際に攻撃 + ボーナス2）
             player.attack(target);
 
-            // 無敵時間をリセットしてボーナスダメージを追加
+            // 無敵時間をリセットしてボーナスダメージを追加 (Thunder)
             target.invulnerableTime = 0;
-            target.hurt(player.damageSources().playerAttack(player), 2.0f);
+            target.hurt(ModDamageSources.ofElement(player.level(), ElementType.THUNDER, player), 2.0f);
 
             // プレイヤーの向いている方向に少しノックバック
             Vec3 knockbackVec = lookVec.normalize().multiply(0.5, 0.2, 0.5); // 水平方向に0.5、上に0.2
@@ -305,6 +307,30 @@ public class MagicKatanaSpecialChargeProcedure {
                 30, 0.5, 0.5, 0.5, 0.1);
         }
 
+        // 発射と同時に前方コーンに Fire 属性ダメージ (custom DamageType: fire)
+        // — fireball は遅延で着弾するため、 発射時の "業火の余波" として直接適用する。
+        {
+            Vec3 forward = lookVec.normalize();
+            Vec3 eyePos = player.position().add(0, player.getEyeHeight() * 0.7, 0);
+            double range = 5.0;
+            double coneAngle = Math.toRadians(35);
+            double cosAngle = Math.cos(coneAngle);
+            AABB searchArea = new AABB(eyePos, eyePos).inflate(range + 1);
+            List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
+                entity -> {
+                    if (entity == player) return false;
+                    Vec3 toEntity = entity.getEyePosition().subtract(eyePos);
+                    double dist = toEntity.length();
+                    if (dist > range || dist < 0.5) return false;
+                    return forward.dot(toEntity.normalize()) >= cosAngle;
+                });
+            for (LivingEntity target : targets) {
+                target.invulnerableTime = 0;
+                target.hurt(ModDamageSources.ofElement(player.level(), ElementType.FIRE, player), 3.0f);
+                target.setSecondsOnFire(4);
+            }
+        }
+
         // サウンド
         if (world instanceof Level level) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
@@ -350,6 +376,10 @@ public class MagicKatanaSpecialChargeProcedure {
         for (LivingEntity target : targets) {
             // ダメージ（武器で実際に攻撃、ボーナスなし）
             player.attack(target);
+
+            // Water 属性として追加ダメージを登録 (custom DamageType: water)
+            target.invulnerableTime = 0;
+            target.hurt(ModDamageSources.ofElement(player.level(), ElementType.WATER, player), 2.0f);
 
             // ターゲットが向いている方向に強力なノックバック（10マス程度）
             Vec3 targetLookVec = target.getLookAngle();
@@ -515,9 +545,9 @@ public class MagicKatanaSpecialChargeProcedure {
         float levelBonus = 1.0f + elementLevel * 0.3f; // Lv10 = 4.0x
         for (LivingEntity target : targets) {
             player.attack(target);
-            // レベルに応じた追加ダメージ
+            // レベルに応じた追加ダメージ (Ice)
             target.invulnerableTime = 0;
-            target.hurt(player.damageSources().playerAttack(player), 2.0f * levelBonus);
+            target.hurt(ModDamageSources.ofElement(player.level(), ElementType.ICE, player), 2.0f * levelBonus);
             // Slowness + Frozen
             target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, Math.min(3 + elementLevel / 3, 6), false, true));
             int maxFrozen = target.getTicksRequiredToFreeze();
@@ -546,7 +576,7 @@ public class MagicKatanaSpecialChargeProcedure {
             float elecBonus = 1.0f + elementLevel * 0.3f;
             player.attack(primaryTarget);
             primaryTarget.invulnerableTime = 0;
-            primaryTarget.hurt(player.damageSources().playerAttack(player), 3.0f * elecBonus);
+            primaryTarget.hurt(ModDamageSources.ofElement(player.level(), ElementType.ELECTRIC, player), 3.0f * elecBonus);
 
             // 電撃エフェクト（プライマリ：大量スパーク + FLASH + 黄色dust）
             if (world instanceof ServerLevel serverLevel) {
@@ -585,7 +615,7 @@ public class MagicKatanaSpecialChargeProcedure {
             int chainCount = 0;
             for (LivingEntity chainTarget : chainTargets) {
                 if (chainCount >= 4 + elementLevel / 3) break;
-                chainTarget.hurt(player.damageSources().playerAttack(player), 4.0f * elecBonus);
+                chainTarget.hurt(ModDamageSources.ofElement(player.level(), ElementType.ELECTRIC, player), 4.0f * elecBonus);
 
                 if (world instanceof ServerLevel serverLevel) {
                     // チェイン先にスパーク
@@ -653,12 +683,13 @@ public class MagicKatanaSpecialChargeProcedure {
         }
         Vec3 coneUp = right.cross(forward).normalize();
 
+        // 色は通常侵食攻撃と統一: 赤紫 (マゼンタ寄り)
         DustParticleOptions crystalDust = new DustParticleOptions(
-            new Vector3f(0.55f, 0.15f, 0.65f), 1.5f);
+            new Vector3f(0.75f, 0.1f, 0.55f), 1.5f);
         DustParticleOptions tipDust = new DustParticleOptions(
-            new Vector3f(0.8f, 0.3f, 0.9f), 0.8f);
+            new Vector3f(1.0f, 0.35f, 0.7f), 0.8f);
         DustParticleOptions darkDust = new DustParticleOptions(
-            new Vector3f(0.3f, 0.05f, 0.4f), 1.0f);
+            new Vector3f(0.5f, 0.05f, 0.35f), 1.0f);
 
         if (world instanceof ServerLevel serverLevel) {
             Vec3 startPos = playerPos.add(0, player.getEyeHeight() * 0.7, 0);
@@ -700,11 +731,11 @@ public class MagicKatanaSpecialChargeProcedure {
                     centerPos.x, centerPos.y, centerPos.z,
                     2, 0.1, 0.1, 0.1, 0.01);
 
-                // 遠くでイカスミ（侵食の残り香）
+                // 遠くで桜の花びら (赤紫アンビエント、 通常技と統一)
                 if (d > range * 0.5 && Math.random() < 0.4) {
-                    serverLevel.sendParticles(ParticleTypes.SQUID_INK,
+                    serverLevel.sendParticles(ParticleTypes.CHERRY_LEAVES,
                         centerPos.x, centerPos.y, centerPos.z,
-                        1, 0.2, 0.2, 0.2, 0.03);
+                        1, 0.2, 0.2, 0.2, 0.0);
                 }
             }
         }
@@ -728,7 +759,7 @@ public class MagicKatanaSpecialChargeProcedure {
         for (LivingEntity target : targets) {
             player.attack(target);
             target.invulnerableTime = 0;
-            target.hurt(player.damageSources().playerAttack(player), 2.0f * corrBonus);
+            target.hurt(ModDamageSources.ofElement(player.level(), ElementType.CORROSION, player), 2.0f * corrBonus);
 
             // 結晶侵食デバフ（レベルで効果時間・強度UP）
             int durScale = 1 + elementLevel / 4;
@@ -744,9 +775,9 @@ public class MagicKatanaSpecialChargeProcedure {
                 serverLevel.sendParticles(tipDust,
                     target.getX(), target.getY() + target.getBbHeight(), target.getZ(),
                     20, 0.2, 0.4, 0.2, 0.03);
-                serverLevel.sendParticles(ParticleTypes.SQUID_INK,
+                serverLevel.sendParticles(ParticleTypes.CHERRY_LEAVES,
                     target.getX(), target.getY() + 0.3, target.getZ(),
-                    15, 0.3, 0.1, 0.3, 0.06);
+                    8, 0.3, 0.1, 0.3, 0.0);
                 // 結晶柱が敵から突き出る
                 for (int spike = 0; spike < 6; spike++) {
                     double sAngle = spike * Math.PI / 3;
@@ -840,15 +871,15 @@ public class MagicKatanaSpecialChargeProcedure {
         for (LivingEntity target : targets) {
             player.attack(target);
 
-            // レベルに応じた追加ダメージ
+            // レベルに応じた追加ダメージ (Holy)
             float holyBonus = 1.0f + elementLevel * 0.3f;
             target.invulnerableTime = 0;
-            target.hurt(player.damageSources().playerAttack(player), 2.0f * holyBonus);
+            target.hurt(ModDamageSources.ofElement(player.level(), ElementType.HOLY, player), 2.0f * holyBonus);
 
             // アンデッドにはさらに追加ダメージ（発火なし）
             if (target.isInvertedHealAndHarm()) {
                 target.invulnerableTime = 0;
-                target.hurt(player.damageSources().playerAttack(player), 6.0f * holyBonus);
+                target.hurt(ModDamageSources.ofElement(player.level(), ElementType.HOLY, player), 6.0f * holyBonus);
             }
 
             // 発光効果
@@ -1035,7 +1066,7 @@ public class MagicKatanaSpecialChargeProcedure {
 
         for (LivingEntity target : targets) {
             float damage = (12.0f + (float)(Math.random() * 8.0)) * errBonus;
-            target.hurt(player.damageSources().playerAttack(player), damage);
+            target.hurt(ModDamageSources.ofElement(player.level(), ElementType.ERROR, player), damage);
 
             // ヒットエフェクト：敵の体に斬撃跡
             if (world instanceof ServerLevel serverLevel) {
@@ -1077,8 +1108,8 @@ public class MagicKatanaSpecialChargeProcedure {
 
     /**
      * MiasmaBookItem - 瘴気の檻
-     * 前方扇形に瘴気を撒く。命中対象に Miasma DoT + 回復阻害 + Wither + Poison を付与。
-     * パーティクルは緑～紫の混合霧で、瘴気の濃密さを表現。
+     * 前方扇形に瘴気を撒く。命中対象に 回復阻害 + 回復系effect除去 を付与 (毒系 DoT は無し)。
+     * パーティクルは通常 Miasma 攻撃と統一: 紫系 dust + WITCH。
      */
     private static void executeMiasmaAttack(LevelAccessor world, double x, double y, double z,
                                             Player player, float chargePercent, int elementLevel) {
@@ -1089,12 +1120,12 @@ public class MagicKatanaSpecialChargeProcedure {
         double coneAngle = Math.toRadians(50);          // 50° 円錐
         double cosAngle = Math.cos(coneAngle);
 
-        // 視覚: 瘴気の霧 (緑 + 紫の dust + SQUID_INK)
+        // 視覚: 瘴気の霧 (紫一色、 通常 Miasma 攻撃と統一)
         if (world instanceof ServerLevel serverLevel) {
-            DustParticleOptions miasmaGreen = new DustParticleOptions(
-                    new Vector3f(0.35f, 0.6f, 0.15f), 1.2f);
             DustParticleOptions miasmaPurple = new DustParticleOptions(
-                    new Vector3f(0.45f, 0.15f, 0.5f), 1.0f);
+                    new Vector3f(0.45f, 0.1f, 0.7f), 1.3f);
+            DustParticleOptions miasmaLightPurple = new DustParticleOptions(
+                    new Vector3f(0.75f, 0.4f, 0.95f), 1.0f);
             Vec3 startPos = playerPos.add(0, player.getEyeHeight() * 0.7, 0);
             Vec3 right = forward.cross(new Vec3(0, 1, 0)).normalize();
             Vec3 coneUp = right.cross(forward).normalize();
@@ -1110,17 +1141,17 @@ public class MagicKatanaSpecialChargeProcedure {
                             .add(forward.scale(d))
                             .add(right.scale(ox))
                             .add(coneUp.scale(oy));
-                    serverLevel.sendParticles(miasmaGreen,
+                    serverLevel.sendParticles(miasmaPurple,
                             pPos.x, pPos.y, pPos.z, 1, 0.05, 0.05, 0.05, 0.005);
                     if (Math.random() < 0.4) {
-                        serverLevel.sendParticles(miasmaPurple,
+                        serverLevel.sendParticles(miasmaLightPurple,
                                 pPos.x, pPos.y, pPos.z, 1, 0.03, 0.03, 0.03, 0.003);
                     }
                 }
-                // 中心に SQUID_INK (重い瘴気)
+                // 中心に WITCH パーティクル (紫色の魔法感、 通常技と統一)
                 Vec3 centerPos = startPos.add(forward.scale(d));
                 if (Math.random() < 0.5) {
-                    serverLevel.sendParticles(ParticleTypes.SQUID_INK,
+                    serverLevel.sendParticles(ParticleTypes.WITCH,
                             centerPos.x, centerPos.y, centerPos.z, 1, 0.1, 0.1, 0.1, 0.02);
                 }
             }
@@ -1139,30 +1170,27 @@ public class MagicKatanaSpecialChargeProcedure {
                     return dot >= cosAngle;
                 });
 
-        // ダメージ + デバフ
+        // ダメージ + デバフ — 毒系 (Poison / Wither / DoT) は使わない
         float damage = 4.0f + elementLevel * 0.6f;        // Lv1=4.6, Lv10=10
         int durScale = 1 + elementLevel / 4;              // 1～3
         int healBlockDur = 100 + elementLevel * 20;       // Lv1=120tick, Lv10=300tick
         float healBlockRate = Math.min(0.25f + elementLevel * 0.08f, 1.0f); // Lv1=33%, Lv10=100%
-        int dotDur = 60 + elementLevel * 10;
-        float dotDmg = 0.5f + elementLevel * 0.2f;
 
         for (LivingEntity target : targets) {
             target.invulnerableTime = 0;
-            target.hurt(player.damageSources().playerAttack(player), damage);
+            target.hurt(ModDamageSources.ofElement(player.level(), ElementType.MIASMA, player), damage);
 
-            // 回復阻害 + DoT (Miasma element handler の API を流用)
+            // 回復阻害 (Miasma の本体効果)
             the_four_primitives_and_weapons.damage.MiasmaElementDamageHandler.apply(
                     target, healBlockDur, healBlockRate);
-            the_four_primitives_and_weapons.damage.ElementalDoTHandler.apply(
-                    target, dotDur, dotDmg,
-                    the_four_primitives_and_weapons.damage.ElementType.MIASMA);
 
-            // 追加デバフ (Wither + Poison + Weakness)
-            target.addEffect(new MobEffectInstance(MobEffects.WITHER,
-                    80 * durScale, Math.min(1 + elementLevel / 4, 3), false, true));
-            target.addEffect(new MobEffectInstance(MobEffects.POISON,
-                    100 * durScale, Math.min(elementLevel / 4, 2), false, true));
+            // 回復系 effect を即時除去 (通常 Miasma 攻撃と統一仕様)
+            try { target.removeEffect(MobEffects.ABSORPTION); } catch (Throwable ignored) {}
+            try { target.removeEffect(MobEffects.REGENERATION); } catch (Throwable ignored) {}
+            try { target.removeEffect(MobEffects.HEAL); } catch (Throwable ignored) {}
+            try { target.removeEffect(MobEffects.SATURATION); } catch (Throwable ignored) {}
+
+            // Weakness のみ追加 (回復系ではない通常デバフ、 special 技の追加効果として)
             target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS,
                     120 * durScale, 1, false, true));
 

@@ -17,9 +17,16 @@ public class RarityForgeRecipe {
     private final int patternWidth;
     private final int patternHeight;
     private final Item result;
-    private final int elementLevel; // 0 = 通常レシピ, 1-10 = magic bookレベル
+    private final int elementLevel; // 0 = 通常レシピ, 1-10 = magic bookレベル (静的固定)
     private final boolean unbreakable; // true = 入力武器をUnbreakable化するレシピ
     private int inputSlotIndex = -1; // #input のスロット位置
+
+    /**
+     * 触媒スロット 0 に置いた item → element level のマッピング。
+     * null = 触媒で level を決めない (旧 element_level 固定方式)。
+     * 設定されている場合、 マッチ時に触媒スロット 0 が map のいずれかの item でなければマッチしない。
+     */
+    private Map<Item, Integer> catalystLevels = null;
 
     public RarityForgeRecipe(Item result, Item[][] pattern, int width, int height) {
         this(result, pattern, width, height, 0, false);
@@ -47,7 +54,29 @@ public class RarityForgeRecipe {
     }
 
     public boolean isBookRecipe() {
-        return elementLevel > 0;
+        return elementLevel > 0 || (catalystLevels != null && !catalystLevels.isEmpty());
+    }
+
+    /** 触媒スロットでレベルが決まる book recipe か */
+    public boolean hasCatalystLevels() {
+        return catalystLevels != null && !catalystLevels.isEmpty();
+    }
+
+    /** catalyst → level マッピング ( unmodifiable )、 無ければ空 map */
+    public Map<Item, Integer> getCatalystLevels() {
+        return catalystLevels == null ? java.util.Collections.emptyMap()
+                                       : java.util.Collections.unmodifiableMap(catalystLevels);
+    }
+
+    public void setCatalystLevels(Map<Item, Integer> map) {
+        this.catalystLevels = (map == null || map.isEmpty()) ? null : new HashMap<>(map);
+    }
+
+    /** 触媒アイテムから element level を引く。 mapに無ければ 0。 */
+    public int getLevelForCatalyst(Item catalystItem) {
+        if (catalystLevels == null || catalystItem == null) return 0;
+        Integer lv = catalystLevels.get(catalystItem);
+        return lv == null ? 0 : lv;
     }
 
     public boolean isUnbreakable() {

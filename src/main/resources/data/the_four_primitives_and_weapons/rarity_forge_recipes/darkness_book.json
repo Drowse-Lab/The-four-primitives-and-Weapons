@@ -1,0 +1,20 @@
+{
+  "pattern": ["EEE", "EBE", "EEE"],
+  "key": {
+    "E": "minecraft:obsidian",
+    "B": "minecraft:book"
+  },
+  "result": "the_four_primitives_and_weapons:darkness_book",
+  "catalyst_levels": {
+    "minecraft:oak_planks": 1,
+    "minecraft:stone": 2,
+    "minecraft:iron_ingot": 3,
+    "minecraft:gold_ingot": 4,
+    "minecraft:diamond": 5,
+    "minecraft:emerald": 6,
+    "minecraft:blaze_rod": 7,
+    "minecraft:netherite_scrap": 8,
+    "minecraft:nether_star": 9,
+    "minecraft:beacon": 10
+  }
+}

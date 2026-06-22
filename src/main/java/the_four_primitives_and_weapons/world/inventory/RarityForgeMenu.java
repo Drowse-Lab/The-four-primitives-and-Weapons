@@ -7,6 +7,13 @@ import the_four_primitives_and_weapons.item.CorrosionBookItem;
 import the_four_primitives_and_weapons.item.ElectricBookItem;
 import the_four_primitives_and_weapons.item.HolyBookItem;
 import the_four_primitives_and_weapons.item.IceBookItem;
+import the_four_primitives_and_weapons.item.MiasmaBookItem;
+import the_four_primitives_and_weapons.item.BubbleshotItem;
+import the_four_primitives_and_weapons.item.FireballItem;
+import the_four_primitives_and_weapons.item.ThunderboltItem;
+import the_four_primitives_and_weapons.item.WindStepItem;
+import the_four_primitives_and_weapons.item.StormItem;
+import the_four_primitives_and_weapons.item.DarknessItem;
 import the_four_primitives_and_weapons.item.rarity.RarityCraftingLogic;
 import the_four_primitives_and_weapons.item.rarity.RarityForgeRecipe;
 import the_four_primitives_and_weapons.item.rarity.RarityForgeRecipes;
@@ -156,10 +163,16 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
         IItemHandler grid = getGridHandler();
         currentRecipe = null;
         for (RarityForgeRecipe r : RarityForgeRecipes.getAll()) {
-            if (r.matches(grid)) {
-                currentRecipe = r;
-                break;
+            if (!r.matches(grid)) continue;
+            // catalyst-driven book recipe は触媒スロット 0 に有効な触媒がないとマッチ扱いしない
+            if (r.hasCatalystLevels()) {
+                ItemStack cat = internal.getStackInSlot(0);
+                if (cat.isEmpty() || r.getLevelForCatalyst(cat.getItem()) <= 0) {
+                    continue;
+                }
             }
+            currentRecipe = r;
+            break;
         }
         ItemStack preview = (currentRecipe != null)
                 ? buildPreviewResult(currentRecipe, grid)
@@ -194,7 +207,16 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
         } else if (recipe.isBookRecipe()) {
             ItemStack result = new ItemStack(recipe.getResult());
             ElementType elementType = getElementTypeForBook(recipe.getResult());
-            ElementalDamageUtils.setElement(result, elementType, recipe.getElementLevel());
+            // catalyst-driven の場合は触媒スロット 0 の item でレベルを決める
+            int lvl = recipe.getElementLevel();
+            if (recipe.hasCatalystLevels()) {
+                ItemStack cat = internal.getStackInSlot(0);
+                if (!cat.isEmpty()) {
+                    int lookup = recipe.getLevelForCatalyst(cat.getItem());
+                    if (lookup > 0) lvl = lookup;
+                }
+            }
+            ElementalDamageUtils.setElement(result, elementType, lvl);
             return result;
         } else {
             return new ItemStack(recipe.getResult());
@@ -255,6 +277,13 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
         if (item instanceof ElectricBookItem)  return ElementType.ELECTRIC;
         if (item instanceof CorrosionBookItem) return ElementType.CORROSION;
         if (item instanceof HolyBookItem)      return ElementType.HOLY;
+        if (item instanceof MiasmaBookItem)    return ElementType.MIASMA;
+        if (item instanceof BubbleshotItem)    return ElementType.WATER;
+        if (item instanceof FireballItem)      return ElementType.FIRE;
+        if (item instanceof ThunderboltItem)   return ElementType.THUNDER;
+        if (item instanceof WindStepItem)      return ElementType.WIND;
+        if (item instanceof StormItem)         return ElementType.THUNDER; // storm = 雷雨系
+        if (item instanceof DarknessItem)      return ElementType.DARK;
         return ElementType.NONE;
     }
 
