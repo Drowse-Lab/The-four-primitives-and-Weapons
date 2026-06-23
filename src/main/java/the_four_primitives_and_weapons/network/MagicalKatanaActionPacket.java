@@ -62,13 +62,34 @@ public class MagicalKatanaActionPacket {
 
     private void handleSpawnCrystal(ServerPlayer player) {
         ItemStack stack = pickMagicalKatana(player, false);
-        if (stack.isEmpty()) return;
+        if (stack.isEmpty()) {
+            // インベ / 手 / saya に Magical Katana 物理的に存在しなくても、
+            // 過去に結晶化したことがあれば player.persistentData の SavedMagicalKatanaNBT
+            // から「虚空から復元」 して結晶化を発動する ( = backbone storage 風 別保管 )
+            net.minecraft.nbt.CompoundTag pd = player.getPersistentData();
+            ItemStack restored = new ItemStack(
+                    the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get());
+            if (pd.contains("SavedMagicalKatanaNBT", 10)) {
+                // 過去に結晶化経験あり = saved NBT から復元 + unlock 強制
+                net.minecraft.nbt.CompoundTag savedTag = pd.getCompound("SavedMagicalKatanaNBT").copy();
+                savedTag.putBoolean("MagicalKatanaUnlocked", true);
+                restored.setTag(savedTag);
+            } else {
+                // 完全 fresh start ( 初回 ) — unlocked のみセット
+                restored.getOrCreateTag().putBoolean("MagicalKatanaUnlocked", true);
+            }
+            MagicalKatanaCrystalHandler.spawnCrystal(player, restored);
+            player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                    "§5虚空から結晶化"), true);
+            return;
+        }
         if (!MagicalKatanaCrystalHandler.isUnlocked(stack)) {
             player.displayClientMessage(net.minecraft.network.chat.Component.literal(
                     "§7封印された Magical Katana §8— §c具現化版を破壊§7、 または §6Lv12 (CORROSION) §7をセット"), true);
             return;
         }
-        MagicalKatanaCrystalHandler.spawnCrystal(player);
+        // 元 stack の NBT を player に保存して、 具現化版に引き継ぐ
+        MagicalKatanaCrystalHandler.spawnCrystal(player, stack);
     }
 
     private void handleShatter(ServerPlayer player) {

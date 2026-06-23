@@ -57,14 +57,17 @@ public class RMessage {
 			ItemStack mainHand = entity.getItemInHand(InteractionHand.MAIN_HAND);
 			ItemStack offHand = entity.getItemInHand(InteractionHand.OFF_HAND);
 
-			// 具現化 Magical Katana は bluepurge と同じ扱い:
-			//   R 短押し = 破壊 ( = 納刀の代替 )。 鞘の有無関係なく必ず shatter。
-			if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(mainHand)) {
+			// 具現化 Magical Katana の R 短押し動作:
+			//   抜刀は最優先でインベントリにある鞘から。 鞘がインベに 1 個も無ければ shatter。
+			boolean hasSayaInInv = hasAnyScabbardInInventory(entity);
+			if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(mainHand)
+					&& !hasSayaInInv) {
 				the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.shatterOnSheathe(
 						entity, mainHand, InteractionHand.MAIN_HAND);
 				return;
 			}
-			if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(offHand)) {
+			if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(offHand)
+					&& !hasSayaInInv) {
 				the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.shatterOnSheathe(
 						entity, offHand, InteractionHand.OFF_HAND);
 				return;
@@ -72,15 +75,10 @@ public class RMessage {
 
 			boolean mainIsBluepurge = isBluepurge(mainHand);
 			boolean offIsBluepurge = isBluepurge(offHand);
-			// 具現化 Magical Katana も bluepurge 同様、 通常武器扱いから除外
-			boolean mainIsMatKatana = the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(mainHand);
-			boolean offIsMatKatana = the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(offHand);
 
-			boolean mainIsWeapon = !mainIsBluepurge && !mainIsMatKatana
-					&& DodgeAndBattouHandler.isWeapon(mainHand)
+			boolean mainIsWeapon = !mainIsBluepurge && DodgeAndBattouHandler.isWeapon(mainHand)
 					&& !DodgeAndBattouHandler.isSaya(mainHand);
-			boolean offIsWeapon = !offIsBluepurge && !offIsMatKatana
-					&& DodgeAndBattouHandler.isWeapon(offHand)
+			boolean offIsWeapon = !offIsBluepurge && DodgeAndBattouHandler.isWeapon(offHand)
 					&& !DodgeAndBattouHandler.isSaya(offHand);
 
 			// 納刀チェック1: 武器+空の鞘を両手で持っていれば納刀
@@ -254,6 +252,16 @@ public class RMessage {
 			if (CuriosScabbardHelper.isCompatible(weaponStack, info.scabbardStack)) {
 				return true;
 			}
+		}
+		return false;
+	}
+
+	/** メインインベントリ ( + ホットバー ) に saya ( SayaItem 系 ) が 1 個でもあれば true。 */
+	private static boolean hasAnyScabbardInInventory(Player player) {
+		net.minecraft.world.entity.player.Inventory inv = player.getInventory();
+		for (int i = 0; i < inv.getContainerSize(); i++) {
+			ItemStack s = inv.getItem(i);
+			if (CuriosScabbardHelper.isScabbard(s)) return true;
 		}
 		return false;
 	}

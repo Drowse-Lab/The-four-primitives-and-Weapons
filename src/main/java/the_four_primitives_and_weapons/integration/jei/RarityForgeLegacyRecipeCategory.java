@@ -57,7 +57,7 @@ public class RarityForgeLegacyRecipeCategory implements IRecipeCategory<RarityFo
         this.background = guiHelper.createBlankDrawable(BG_WIDTH, BG_HEIGHT);
         this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
                 new ItemStack(RarityForgeRegistration.getBlock()));
-        this.title = Component.literal("レアリティ解放テーブル ( JSON )");
+        this.title = Component.translatable("jei.the_four_primitives_and_weapons.rarity_forge.legacy");
     }
 
     @Override public RecipeType<RarityForgeRecipe> getRecipeType() { return RECIPE_TYPE; }

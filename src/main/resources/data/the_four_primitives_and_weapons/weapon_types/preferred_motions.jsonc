@@ -32,7 +32,8 @@
     "sword":          ["slam_down"],         // 剣: 叩きつける
     "greatsword":     ["slam_down"],         // 大剣: 叩きつける
     "dagger":         [],
-    "trident":        ["thrust"]             // 槍: 突き特化
+    "trident":        ["thrust"],             // 槍: 突き特化
+    "nata":           ["slam_down"]              // 鉈: 叩きつける
   },
   "normal_motions": {
     "katana":         [                     
@@ -81,6 +82,7 @@
     "sword":          ["upper_left_slash","upper_right_slash"],
     "greatsword":     ["thrust"],                    // 大剣は突きが苦手
     "dagger":         ["slam_down", "spin_slash"],   // 短剣には重い技は不向き
-    "trident":        ["spin_slash","upper_left_slash","upper_right_slash"]                 // 槍は回転斬りが苦手
+    "trident":        ["spin_slash","upper_left_slash","upper_right_slash"],      // 槍は回転斬りが苦手
+    "nata":           ["thrust","spin_slash","upper_left_slash","upper_right_slash","upper_left_slash"] 
   }
 }

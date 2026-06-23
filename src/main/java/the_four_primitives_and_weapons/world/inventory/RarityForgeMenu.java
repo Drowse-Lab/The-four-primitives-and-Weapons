@@ -241,49 +241,42 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
 
         java.util.Set<String> seen = new java.util.HashSet<>();
 
-        // 旧 RarityForge JSON レシピ
+        // 旧 RarityForge JSON レシピ ( グリッド完全マッチのみ )
+        IItemHandler gridHandler = getGridHandler();
         for (RarityForgeRecipe lr : RarityForgeRecipes.getAll()) {
+            if (!lr.matches(gridHandler)) continue;
             ItemStack r = lr.isUnbreakable()
                     ? new ItemStack(net.minecraft.world.item.Items.IRON_SWORD)
                     : new ItemStack(lr.getResult());
             if (r.isEmpty()) continue;
             if (!lr.isBookRecipe() && !lr.isUnbreakable() && !isCraftableWeapon(r)) continue;
-            boolean match = false;
-            for (Item[] row : lr.getPattern()) {
-                if (row == null) continue;
-                for (Item it : row) {
-                    if (it == null) continue;
-                    for (ItemStack s : gridStacks) {
-                        if (s.isEmpty()) continue;
-                        if (s.getItem() == it) { match = true; break; }
-                    }
-                    if (match) break;
-                }
-                if (match) break;
-            }
-            if (!match) continue;
             String id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(r.getItem()).toString();
             if (seen.add(id)) out.add(r);
         }
 
-        // バニラ CraftingRecipe
-        for (CraftingRecipe recipe : world.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING)) {
-            ItemStack r;
-            try { r = recipe.getResultItem(world.registryAccess()); }
-            catch (Throwable t) { continue; }
-            if (r.isEmpty() || !isCraftableWeapon(r)) continue;
-            String id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(r.getItem()).toString();
-            if (seen.contains(id)) continue;
-            boolean match = false;
-            for (Ingredient ing : recipe.getIngredients()) {
-                if (ing.isEmpty()) continue;
-                for (ItemStack s : gridStacks) {
-                    if (s.isEmpty()) continue;
-                    if (ing.test(s)) { match = true; break; }
-                }
-                if (match) break;
+        // バニラ CraftingRecipe ( グリッド完全マッチのみ ) — TransientCraftingContainer の
+        // setItem が menu.slotsChanged を呼ぶので、 再帰防止 flag を一時的に立てる。
+        boolean prevFlag = updatingPreview;
+        updatingPreview = true;
+        try {
+            CraftingContainer cc = new TransientCraftingContainer(this, 3, 3);
+            for (int i = 0; i < GRID_SIZE; i++) {
+                cc.setItem(i, gridStacks[i].copy());
             }
-            if (match && seen.add(id)) out.add(r);
+            for (CraftingRecipe recipe : world.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING)) {
+                boolean matched;
+                try { matched = recipe.matches(cc, world); }
+                catch (Throwable t) { continue; }
+                if (!matched) continue;
+                ItemStack r;
+                try { r = recipe.getResultItem(world.registryAccess()); }
+                catch (Throwable t) { continue; }
+                if (r.isEmpty() || !isCraftableWeapon(r)) continue;
+                String id = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(r.getItem()).toString();
+                if (seen.add(id)) out.add(r);
+            }
+        } finally {
+            updatingPreview = prevFlag;
         }
         return out;
     }
@@ -619,8 +612,9 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
                 IItemHandler grid = getGridHandler();
                 if (!currentLegacyRecipe.matches(grid)) {
                     if (player instanceof ServerPlayer sp) {
-                        sp.displayClientMessage(net.minecraft.network.chat.Component.literal(
-                                "§c素材が揃っていません or 配置が違います"), true);
+                        sp.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+                                "gui.the_four_primitives_and_weapons.rarity_forge.no_materials")
+                                .withStyle(net.minecraft.ChatFormatting.RED), true);
                     }
                     internal.insertItem(RESULT_SLOT, stack.copy(), false);
                     stack.setCount(0);
@@ -661,8 +655,9 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
                 if (!matched) {
                     // 素材が揃ってない / 配置が違う → 取得拒否
                     if (player instanceof ServerPlayer sp) {
-                        sp.displayClientMessage(net.minecraft.network.chat.Component.literal(
-                                "§c素材が揃っていません or 配置が違います"), true);
+                        sp.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+                                "gui.the_four_primitives_and_weapons.rarity_forge.no_materials")
+                                .withStyle(net.minecraft.ChatFormatting.RED), true);
                     }
                     // 取得した stack を内部に戻す
                     internal.insertItem(RESULT_SLOT, stack.copy(), false);

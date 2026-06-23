@@ -90,10 +90,10 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
 
     @Override
     protected void renderLabels(GuiGraphics gfx, int mouseX, int mouseY) {
-        gfx.drawString(font, Component.literal("§lレアリティ解放テーブル"), 5, 4, 0x404040, false);
+        gfx.drawString(font, Component.translatable("gui.the_four_primitives_and_weapons.rarity_forge.title").withStyle(net.minecraft.ChatFormatting.BOLD), 5, 4, 0x404040, false);
         gfx.drawString(font, Component.literal("→"), 116, 43, 0x404040, false);
-        gfx.drawString(font, Component.literal("候補"), 165, 6, 0x404040, false);
-        gfx.drawString(font, Component.literal("インベントリ"), 8, 90, 0x404040, false);
+        gfx.drawString(font, Component.translatable("gui.the_four_primitives_and_weapons.rarity_forge.candidates"), 165, 6, 0x404040, false);
+        gfx.drawString(font, Component.translatable("gui.the_four_primitives_and_weapons.rarity_forge.inventory"), 8, 90, 0x404040, false);
 
         // モード判定 + ラベル
         boolean gridEmpty = true;
@@ -105,18 +105,24 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
         ItemStack cat0 = menu.getInternal().getStackInSlot(RarityForgeMenu.CAT_SLOT_0);
         ItemStack cat1 = menu.getInternal().getStackInSlot(RarityForgeMenu.CAT_SLOT_1);
 
-        String modeLabel;
+        Component modeLabel;
         if (gridEmpty) {
             RarityForgeCenterLogic.Mode em = RarityForgeCenterLogic.resolveEnhanceMode(cat0, cat1);
             switch (em) {
-                case BOOK_ELEMENT: modeLabel = "§b強化: 魔導書 element"; break;
-                case RARITY:       modeLabel = "§d強化: レアリティ抽選"; break;
-                default:           modeLabel = "§7強化モード ( 媒体 + 触媒 )"; break;
+                case BOOK_ELEMENT:
+                    modeLabel = Component.translatable("gui.the_four_primitives_and_weapons.rarity_forge.mode.book").withStyle(net.minecraft.ChatFormatting.AQUA);
+                    break;
+                case RARITY:
+                    modeLabel = Component.translatable("gui.the_four_primitives_and_weapons.rarity_forge.mode.rarity").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE);
+                    break;
+                default:
+                    modeLabel = Component.translatable("gui.the_four_primitives_and_weapons.rarity_forge.mode.enhance_empty").withStyle(net.minecraft.ChatFormatting.GRAY);
+                    break;
             }
         } else {
-            modeLabel = "§a作成モード ( バニラレシピ + 触媒 )";
+            modeLabel = Component.translatable("gui.the_four_primitives_and_weapons.rarity_forge.mode.craft").withStyle(net.minecraft.ChatFormatting.GREEN);
         }
-        gfx.drawString(font, Component.literal(modeLabel), 5, 92, 0xFFFFFF, false);
+        gfx.drawString(font, modeLabel, 5, 92, 0xFFFFFF, false);
     }
 
     /** 右パネルに部分マッチ候補を並べる。 */

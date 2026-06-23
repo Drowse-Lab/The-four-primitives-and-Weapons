@@ -58,6 +58,8 @@ public class MagicalKatanaCrystalHandler {
     private static final String MAT_TAG_KEY       = "Materialized";
     private static final String MAT_OWNER_KEY     = "MaterializedFor";
     private static final String UNLOCKED_KEY      = "MagicalKatanaUnlocked";
+    /** player persistent data: 結晶化前の magical katana NBT を保存して、 具現化版に転送する */
+    private static final String PLAYER_SAVED_MK_NBT_KEY = "SavedMagicalKatanaNBT";
 
     private static final int    CRYSTAL_LIFE        = 600;  // 30 sec auto-expire
     private static final float  CRYSTAL_MAX_HEALTH  = 0.5f; // 素手 1 撃 (1 ダメージ) で破壊できる
@@ -264,8 +266,24 @@ public class MagicalKatanaCrystalHandler {
      * 既に owner の結晶があれば破壊してから新しく作る。
      */
     public static void spawnCrystal(Player player) {
+        spawnCrystal(player, ItemStack.EMPTY);
+    }
+
+    /**
+     * 結晶生成 + 結晶化前の Magical Katana NBT を player に保存。
+     * sourceStack の NBT ( = エンチャント / レアリティ等 ) を player.persistentData に保存しておき、
+     * 具現化版が作られるときにそこから取り出して引き継ぐ。
+     */
+    public static void spawnCrystal(Player player, ItemStack sourceStack) {
         if (player == null || player.level().isClientSide()) return;
         ServerLevel sl = (ServerLevel) player.level();
+
+        // 結晶化前の NBT を player に保存 ( 具現化版に転送するため )
+        if (!sourceStack.isEmpty() && isMagicalKatana(sourceStack) && sourceStack.getTag() != null) {
+            player.getPersistentData().put(PLAYER_SAVED_MK_NBT_KEY, sourceStack.getTag().copy());
+        } else {
+            // 持ってる元 stack が無ければ過去の保存を維持 ( 削除しない )
+        }
 
         // 既存結晶の掃除
         UUID prevId = existingCrystal.remove(player.getUUID());
@@ -274,8 +292,18 @@ public class MagicalKatanaCrystalHandler {
             if (prev != null) prev.discard();
         }
 
+        // 視線方向 2.5 ブロック先 ( 視線が下向きすぎる場合は player の正面足元へ補正 )
         Vec3 lookVec = player.getLookAngle();
-        Vec3 spawn = player.getEyePosition().add(lookVec.normalize().scale(2.5));
+        Vec3 spawn;
+        if (lookVec.y < -0.4) {
+            // 視線が下向きすぎ → 足元前方に補正
+            Vec3 horiz = new Vec3(lookVec.x, 0, lookVec.z);
+            if (horiz.lengthSqr() < 1.0E-4) horiz = new Vec3(0, 0, 1);
+            horiz = horiz.normalize();
+            spawn = player.position().add(horiz.scale(1.5)).add(0, 0.5, 0);
+        } else {
+            spawn = player.getEyePosition().add(lookVec.normalize().scale(2.5));
+        }
 
         ArmorStand stand = new ArmorStand(sl, spawn.x, spawn.y - 0.5, spawn.z);
         stand.setInvisible(true);
@@ -309,6 +337,12 @@ public class MagicalKatanaCrystalHandler {
                 10, 0.3, 0.4, 0.3, 0.0);
         sl.playSound(null, spawn.x, spawn.y, spawn.z,
                 SoundEvents.AMETHYST_BLOCK_PLACE, SoundSource.PLAYERS, 1.2f, 0.5f);
+
+        // フィードバック ( 結晶が見えない場所に出ても「動いた」 ことを伝える )
+        if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
+            sp.displayClientMessage(Component.literal(
+                    "§5魔の結晶を生成しました §7( 殴って具現化 )"), true);
+        }
     }
 
     /**
@@ -343,7 +377,8 @@ public class MagicalKatanaCrystalHandler {
         // 侵食属性 Lv 12 ( XII 表記 )
         ElementalDamageUtils.setElement(weapon, ElementType.CORROSION, MATERIALIZED_LEVEL);
 
-        // エンチャント転送 (元の Magical Katana が手に残ってればその enchant を引き継ぐ)
+        // エンチャント転送 — まず template ( 手に残ってる元 Magical Katana ) から、
+        // 次に player.persistentData に保存しておいた 結晶化前 NBT からも復元する。
         if (templateForEnchants != null && !templateForEnchants.isEmpty()) {
             try {
                 var enchants = EnchantmentHelper.getEnchantments(templateForEnchants);
@@ -351,6 +386,25 @@ public class MagicalKatanaCrystalHandler {
                     EnchantmentHelper.setEnchantments(enchants, weapon);
                 }
             } catch (Throwable ignored) {}
+        }
+        // player.persistentData に保存されてる原本 NBT があれば、 そこから追加でエンチャント転送
+        Player ownerForRestore = sl.getServer().getPlayerList().getPlayer(ownerId);
+        if (ownerForRestore != null) {
+            CompoundTag savedNbt = null;
+            CompoundTag pd = ownerForRestore.getPersistentData();
+            if (pd.contains(PLAYER_SAVED_MK_NBT_KEY, 10)) { // 10 = COMPOUND
+                savedNbt = pd.getCompound(PLAYER_SAVED_MK_NBT_KEY);
+            }
+            if (savedNbt != null) {
+                ItemStack restored = new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get());
+                restored.setTag(savedNbt.copy());
+                try {
+                    var enchants = EnchantmentHelper.getEnchantments(restored);
+                    if (!enchants.isEmpty()) {
+                        EnchantmentHelper.setEnchantments(enchants, weapon);
+                    }
+                } catch (Throwable ignored) {}
+            }
         }
 
         // owner に渡す ( 居なければ落下 )
@@ -380,6 +434,31 @@ public class MagicalKatanaCrystalHandler {
     // ─────────────────────────────────────────────────────────────
     // event handlers
     // ─────────────────────────────────────────────────────────────
+
+    /**
+     * 自分のインベから magical katana が **破壊以外で** 消えた場合 ( = drop / 死亡 等 ) は、
+     * saved NBT を invalidate する。 これで「ワールドから無くなったのに結晶化で再生」 を防ぐ。
+     */
+    @SubscribeEvent
+    public static void onItemToss(net.minecraftforge.event.entity.item.ItemTossEvent event) {
+        ItemStack thrown = event.getEntity().getItem();
+        if (!isMagicalKatana(thrown)) return;
+        Player player = event.getPlayer();
+        if (player == null || player.level().isClientSide()) return;
+        // 「破壊」 ルートは shatterOnSheathe で setItemInHand(EMPTY) するので drop しない。
+        // ここで drop されたものは「ユーザーが捨てた」 = 破壊以外の喪失 → saved NBT 無効化。
+        player.getPersistentData().remove("SavedMagicalKatanaNBT");
+    }
+
+    /**
+     * プレイヤー死亡時、 saved NBT を invalidate ( ワールドから magical katana が無くなる可能性 )。
+     */
+    @SubscribeEvent
+    public static void onPlayerDeath(LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (player.level().isClientSide()) return;
+        player.getPersistentData().remove("SavedMagicalKatanaNBT");
+    }
 
     /**
      * グラインダーで具現化武器を投入したら、 出力アイテムから具現化 NBT + 侵食属性を剥がす

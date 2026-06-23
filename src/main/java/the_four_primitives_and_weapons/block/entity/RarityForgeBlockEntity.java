@@ -106,7 +106,7 @@ public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity imp
 
     @Override
     public Component getDisplayName() {
-        return Component.literal("レアリティ解放テーブル");
+        return Component.translatable("gui.the_four_primitives_and_weapons.rarity_forge.title");
     }
 
     @Override

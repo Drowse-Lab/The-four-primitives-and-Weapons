@@ -49,10 +49,15 @@ public class WeaponWheelState {
         public final MagicalKatanaActionPacket.Action action;
         public final ItemStack icon;
         public final String label;
+        public final String slotLabel; // スロット位置ラベル ( "[インベントリ]" / "[背中]" 等 )
         public SpecialAction(MagicalKatanaActionPacket.Action action, ItemStack icon, String label) {
+            this(action, icon, label, "特殊");
+        }
+        public SpecialAction(MagicalKatanaActionPacket.Action action, ItemStack icon, String label, String slotLabel) {
             this.action = action;
             this.icon = icon;
             this.label = label;
+            this.slotLabel = slotLabel;
         }
     }
 
@@ -125,22 +130,66 @@ public class WeaponWheelState {
      */
     private static List<SpecialAction> buildSpecialActionsForDraw(Player player) {
         List<SpecialAction> actions = new ArrayList<>();
-        // 自分のインベントリ ( ホットバー含む ) に Magical Katana ( ロック含む ) があれば「結晶を出す」
-        // ( unlock 判定は server side で行う — ロック中ならメッセージで案内 )
-        if (hasMagicalKatanaInInventory(player)) {
+        ItemStack mkIcon = new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get());
+        // 「結晶化」 entry は常時表示。 server 側 handleSpawnCrystal が手 / インベ / saya 内 / Curios を
+        // 全部走査して Magical Katana を探す。 見つからなければメッセージで案内する。
+        List<String> slots = findMagicalKatanaSlotLabels(player);
+        if (slots.isEmpty()) {
             actions.add(new SpecialAction(
                     MagicalKatanaActionPacket.Action.SPAWN_CRYSTAL,
-                    new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get()),
-                    "§d結晶を出す"));
+                    mkIcon, "§d結晶化", "[?]"));
+        } else {
+            for (String slot : slots) {
+                actions.add(new SpecialAction(
+                        MagicalKatanaActionPacket.Action.SPAWN_CRYSTAL,
+                        mkIcon, "§d結晶化", slot));
+            }
         }
         // 自分の UUID 付き具現化版が世界 ( client 可視範囲 ) にあれば 「全破壊」
         if (hasOwnMaterializedInWorld(player)) {
             actions.add(new SpecialAction(
                     MagicalKatanaActionPacket.Action.DESTROY_ALL_OWNED,
-                    new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get()),
-                    "§c破壊 ( 自分の UUID )"));
+                    mkIcon, "§c破壊 ( 自分の UUID )", "[全 UUID]"));
         }
         return actions;
+    }
+
+    /**
+     * Magical Katana ( 直接 or saya 内 ) が存在する全ての場所のラベル list を返す。
+     * 同じ場所に複数あっても 1 個だけ表示 ( 重複排除 )。
+     */
+    private static List<String> findMagicalKatanaSlotLabels(Player player) {
+        List<String> labels = new ArrayList<>();
+        if (player == null) return labels;
+        java.util.Set<String> seen = new java.util.HashSet<>();
+
+        // 手持ち
+        ItemStack main = player.getMainHandItem();
+        if (containsMagicalKatana(main) && seen.add("メインハンド")) labels.add("メインハンド");
+        ItemStack off = player.getOffhandItem();
+        if (containsMagicalKatana(off) && seen.add("オフハンド")) labels.add("オフハンド");
+
+        // インベントリ ( ホットバー含む )
+        net.minecraft.world.entity.player.Inventory inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (containsMagicalKatana(s) && seen.add("インベントリ")) {
+                labels.add("インベントリ");
+                break;
+            }
+        }
+        return labels;
+    }
+
+    /** stack が Magical Katana 自身 もしくは saya に納刀された Magical Katana か。 */
+    private static boolean containsMagicalKatana(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        if (MagicalKatanaCrystalHandler.isMagicalKatana(stack)) return true;
+        if (CuriosScabbardHelper.isScabbard(stack) && CuriosScabbardHelper.hasStoredWeapon(stack)) {
+            ItemStack stored = CuriosScabbardHelper.extractWeaponFromScabbard(stack);
+            return MagicalKatanaCrystalHandler.isMagicalKatana(stored);
+        }
+        return false;
     }
 
     /**

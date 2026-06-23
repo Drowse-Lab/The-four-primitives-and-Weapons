@@ -47,7 +47,7 @@ public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeNew
         this.background = guiHelper.createBlankDrawable(BG_WIDTH, BG_HEIGHT);
         this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
                 new ItemStack(RarityForgeRegistration.getBlock()));
-        this.title = Component.literal("レアリティ解放テーブル ( 強化 )");
+        this.title = Component.translatable("jei.the_four_primitives_and_weapons.rarity_forge.enhance");
     }
 
     @Override

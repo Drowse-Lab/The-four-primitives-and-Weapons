@@ -771,7 +771,7 @@ public class MagicKatanaSpecialChargeProcedure {
                 }
                 return;
             }
-            the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.spawnCrystal(player);
+            the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.spawnCrystal(player, player.getMainHandItem());
             return;
         }
 

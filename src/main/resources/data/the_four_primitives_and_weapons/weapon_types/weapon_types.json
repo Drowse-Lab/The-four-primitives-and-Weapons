@@ -82,7 +82,6 @@
 
         "the_four_primitives_and_weapons:sword_of_night",
         "the_four_primitives_and_weapons:gate",
-        "the_four_primitives_and_weapons:machete",
         "minecraft:wooden_sword",
         "minecraft:stone_sword",
         "minecraft:iron_sword",
@@ -92,6 +91,18 @@
       ],
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash", "slam_down"],
+        "dash": ["dash_rush", "leap_slash", "shadow_step"],
+        "right_click": ["dodge", "none_right"],
+        "shift_right_click": ["guard", "none_shift"]
+      }
+    },
+    "nata": {
+      "display_name": "鉈",
+      "items": [
+        "the_four_primitives_and_weapons:machete"
+      ],
+      "motions": {
+        "combat": ["upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
         "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]

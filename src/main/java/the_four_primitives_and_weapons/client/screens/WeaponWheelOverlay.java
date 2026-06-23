@@ -91,7 +91,7 @@ public class WeaponWheelOverlay {
                 WeaponWheelState.SpecialAction sp = specials.get(i - weaponCount);
                 displayIcon = sp.icon;
                 itemName = Component.literal(sp.label);
-                slotLabel = "特殊";
+                slotLabel = sp.slotLabel != null ? sp.slotLabel : "特殊";
             }
 
             if (i == selected) {
