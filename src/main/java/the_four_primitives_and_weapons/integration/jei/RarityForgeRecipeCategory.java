@@ -17,11 +17,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * シンプル化レアリティ解放テーブル ( 新仕様 ) の JEI カテゴリ。
+ * Hybrid レアリティ解放テーブル ( 強化モード ) の JEI カテゴリ。
  *
  * 表示:
- *   [触媒0] [触媒1]    [中央]    →   [結果]
- *    +モード説明テキスト
+ *   [媒体]   [触媒]    →    [結果]
+ *
+ * クラフトモード ( バニラレシピ + 触媒 ) は バニラ crafting カテゴリで
+ * 自動表示される。 ここでは強化モード + Unbreakable 説明のみ。
  */
 public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeNewRecipe> {
 
@@ -29,15 +31,13 @@ public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeNew
     public static final RecipeType<RarityForgeNewRecipe> RECIPE_TYPE =
             RecipeType.create("the_four_primitives_and_weapons", "rarity_forge", RarityForgeNewRecipe.class);
 
-    // レイアウト ( 上から: モード説明 / スロット行 )
-    private static final int CAT0_X   = 4;
-    private static final int CAT1_X   = 24;
-    private static final int CENTER_X = 58;
-    private static final int ARROW_X  = 84;
-    private static final int RESULT_X = 102;
-    private static final int SLOT_Y   = 18;
-    private static final int BG_WIDTH  = 132;
-    private static final int BG_HEIGHT = 58;
+    private static final int MEDIUM_X  = 6;
+    private static final int CAT_X     = 30;
+    private static final int ARROW_X   = 56;
+    private static final int RESULT_X  = 76;
+    private static final int SLOT_Y    = 22;
+    private static final int BG_WIDTH  = 102;
+    private static final int BG_HEIGHT = 60;
 
     private final IDrawable background;
     private final IDrawable icon;
@@ -47,7 +47,7 @@ public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeNew
         this.background = guiHelper.createBlankDrawable(BG_WIDTH, BG_HEIGHT);
         this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK,
                 new ItemStack(RarityForgeRegistration.getBlock()));
-        this.title = Component.literal("レアリティ解放テーブル");
+        this.title = Component.literal("レアリティ解放テーブル ( 強化 )");
     }
 
     @Override
@@ -72,17 +72,14 @@ public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeNew
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, RarityForgeNewRecipe recipe, IFocusGroup focuses) {
+        // 媒体 = cat0Candidates, 触媒 = cat1Candidates ( 新 hybrid 仕様 )
         if (!recipe.getCat0Candidates().isEmpty()) {
-            builder.addSlot(RecipeIngredientRole.INPUT, CAT0_X + 1, SLOT_Y + 1)
+            builder.addSlot(RecipeIngredientRole.INPUT, MEDIUM_X + 1, SLOT_Y + 1)
                     .addItemStacks(recipe.getCat0Candidates());
         }
         if (!recipe.getCat1Candidates().isEmpty()) {
-            builder.addSlot(RecipeIngredientRole.INPUT, CAT1_X + 1, SLOT_Y + 1)
+            builder.addSlot(RecipeIngredientRole.INPUT, CAT_X + 1, SLOT_Y + 1)
                     .addItemStacks(recipe.getCat1Candidates());
-        }
-        if (!recipe.getCenterCandidates().isEmpty()) {
-            builder.addSlot(RecipeIngredientRole.INPUT, CENTER_X + 1, SLOT_Y + 1)
-                    .addItemStacks(recipe.getCenterCandidates());
         }
         if (!recipe.getOutputCandidates().isEmpty()) {
             builder.addSlot(RecipeIngredientRole.OUTPUT, RESULT_X + 1, SLOT_Y + 1)
@@ -95,19 +92,22 @@ public class RarityForgeRecipeCategory implements IRecipeCategory<RarityForgeNew
                      GuiGraphics gfx, double mouseX, double mouseY) {
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
 
-        // 上部にモード説明
         String mode = switch (recipe.getKind()) {
             case BOOK_ELEMENT -> "§b" + recipe.getDescription();
             case UNBREAKABLE  -> "§6" + recipe.getDescription();
             case RARITY       -> "§d" + recipe.getDescription();
         };
-        gfx.drawString(mc.font, mode, 4, 4, 0xFFFFFF, false);
+        gfx.drawString(mc.font, mode, 2, 4, 0xFFFFFF, false);
+
+        // ラベル
+        gfx.drawString(mc.font, "§7媒体", MEDIUM_X, SLOT_Y - 9, 0x404040, false);
+        gfx.drawString(mc.font, "§7触媒", CAT_X, SLOT_Y - 9, 0x404040, false);
+        gfx.drawString(mc.font, "§7結果", RESULT_X, SLOT_Y - 9, 0x404040, false);
 
         // スロット背景
-        if (!recipe.getCat0Candidates().isEmpty()) drawSlotBg(gfx, CAT0_X, SLOT_Y);
-        if (!recipe.getCat1Candidates().isEmpty()) drawSlotBg(gfx, CAT1_X, SLOT_Y);
-        if (!recipe.getCenterCandidates().isEmpty()) drawSlotBg(gfx, CENTER_X, SLOT_Y);
-        if (!recipe.getOutputCandidates().isEmpty()) drawSlotBg(gfx, RESULT_X, SLOT_Y);
+        drawSlotBg(gfx, MEDIUM_X, SLOT_Y);
+        drawSlotBg(gfx, CAT_X, SLOT_Y);
+        drawSlotBg(gfx, RESULT_X, SLOT_Y);
 
         // 矢印
         gfx.drawString(mc.font, "→", ARROW_X, SLOT_Y + 5, 0x404040, false);

@@ -47,6 +47,9 @@ public class TyokutouThrustAttackProcedure {
 
     /**
      * アイテムが直刀かどうかを判定
+     *   1. weapon_types.json の "straight_sword" type に登録されていれば true
+     *   2. fallback: STRAIGHT_SWORD_ITEMS hardcoded list ( 旧仕様 )
+     *   3. BluepurgeItem の CustomModelData==2 特例
      */
     public static boolean isStraightSword(ItemStack stack) {
         if (stack.isEmpty()) return false;
@@ -65,6 +68,11 @@ public class TyokutouThrustAttackProcedure {
             }
             return false;
         }
+
+        // weapon_types.json の "straight_sword" type に登録されていれば true
+        the_four_primitives_and_weapons.skill.WeaponTypeRegistry.WeaponTypeData wt =
+                the_four_primitives_and_weapons.skill.WeaponTypeRegistry.getTypeForItem(stack);
+        if (wt != null && "straight_sword".equals(wt.getId())) return true;
 
         return STRAIGHT_SWORD_ITEMS.contains(itemName);
     }

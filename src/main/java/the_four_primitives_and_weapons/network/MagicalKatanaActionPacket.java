@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class MagicalKatanaActionPacket {
 
-    public enum Action { SPAWN_CRYSTAL, SHATTER }
+    public enum Action { SPAWN_CRYSTAL, SHATTER, DESTROY_ALL_OWNED }
 
     private final Action action;
 
@@ -42,13 +42,22 @@ public class MagicalKatanaActionPacket {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
             if (player == null) return;
-            if (action == Action.SPAWN_CRYSTAL) {
-                handleSpawnCrystal(player);
-            } else {
-                handleShatter(player);
+            switch (action) {
+                case SPAWN_CRYSTAL:     handleSpawnCrystal(player); break;
+                case SHATTER:           handleShatter(player); break;
+                case DESTROY_ALL_OWNED: handleDestroyAllOwned(player); break;
             }
         });
         ctx.get().setPacketHandled(true);
+    }
+
+    private void handleDestroyAllOwned(ServerPlayer player) {
+        int n = MagicalKatanaCrystalHandler.destroyAllOwnedMaterialized(
+                player.getServer(), player.getUUID());
+        if (n > 0) {
+            player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                    "§7自分の具現化武器を §c" + n + " §7本破壊しました"), true);
+        }
     }
 
     private void handleSpawnCrystal(ServerPlayer player) {
@@ -74,7 +83,10 @@ public class MagicalKatanaActionPacket {
         }
     }
 
-    /** Magical Katana が手のどちらかにあれば返す ( materialized 含む or 限定 ) */
+    /**
+     * Magical Katana を 手 → インベントリ全体 ( ホットバー含む ) の順で探して返す。
+     * materializedOnly=true なら 具現化版のみ。
+     */
     private static ItemStack pickMagicalKatana(ServerPlayer player, boolean materializedOnly) {
         ItemStack main = player.getMainHandItem();
         if (MagicalKatanaCrystalHandler.isMagicalKatana(main)
@@ -82,6 +94,20 @@ public class MagicalKatanaActionPacket {
         ItemStack off = player.getOffhandItem();
         if (MagicalKatanaCrystalHandler.isMagicalKatana(off)
                 && (!materializedOnly || MagicalKatanaCrystalHandler.isMaterialized(off))) return off;
+        // インベントリ全体 ( SPAWN_CRYSTAL では手に持っていない状態でも発動できるように )
+        net.minecraft.world.entity.player.Inventory inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (MagicalKatanaCrystalHandler.isMagicalKatana(s)
+                    && (!materializedOnly || MagicalKatanaCrystalHandler.isMaterialized(s))) return s;
+            // saya 内に納刀された Magical Katana も探す
+            if (the_four_primitives_and_weapons.util.CuriosScabbardHelper.isScabbard(s)
+                    && the_four_primitives_and_weapons.util.CuriosScabbardHelper.hasStoredWeapon(s)) {
+                ItemStack stored = the_four_primitives_and_weapons.util.CuriosScabbardHelper.extractWeaponFromScabbard(s);
+                if (MagicalKatanaCrystalHandler.isMagicalKatana(stored)
+                        && (!materializedOnly || MagicalKatanaCrystalHandler.isMaterialized(stored))) return stored;
+            }
+        }
         return ItemStack.EMPTY;
     }
 

@@ -29,14 +29,17 @@ import java.util.stream.IntStream;
 import io.netty.buffer.Unpooled;
 
 /**
- * レアリティ解放テーブルのBlockEntity ( シンプル化版 )
- * スロット 0,1: 触媒 / スロット 2: 中央 ( 武器または魔導書 ) / スロット 3: 結果 ( output )
+ * レアリティ解放テーブルのBlockEntity ( hybrid 版 )
+ *   スロット 0,1   : 触媒 / 媒体 ( 強化モードでは 0=媒体, 1=触媒 )
+ *   スロット 2-10 : 3×3 クラフトグリッド ( バニラレシピを引く )
+ *   スロット 11   : 結果 ( output 専用 )
  */
 public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer {
 
-    public static final int TOTAL_SLOTS = 4;
-    public static final int CENTER_SLOT = 2;
-    public static final int RESULT_SLOT = 3;
+    public static final int TOTAL_SLOTS = 12;
+    public static final int GRID_START  = 2;
+    public static final int GRID_SIZE   = 9;
+    public static final int RESULT_SLOT = 11;
 
     private NonNullList<ItemStack> stacks = NonNullList.withSize(TOTAL_SLOTS, ItemStack.EMPTY);
     private final LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.values());
@@ -118,8 +121,10 @@ public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity imp
 
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
-        // 結果スロット (11) は出力専用 — ホッパー等からも投入不可
-        return index < TOTAL_SLOTS && index != RESULT_SLOT;
+        // Menu からの内部操作 ( InvWrapper / facing=null ) は全 slot 許可。
+        // 結果スロットへの preview 挿入を Menu 側で行うため。
+        // 外部 ( ホッパー等 facing!=null ) は canPlaceItemThroughFace 側で弾く。
+        return index < TOTAL_SLOTS;
     }
 
     @Override
@@ -129,7 +134,8 @@ public class RarityForgeBlockEntity extends RandomizableContainerBlockEntity imp
 
     @Override
     public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction direction) {
-        return this.canPlaceItem(index, stack);
+        // 外部 ( ホッパー等 ) からは結果スロットへ投入不可
+        return index < TOTAL_SLOTS && index != RESULT_SLOT;
     }
 
     @Override

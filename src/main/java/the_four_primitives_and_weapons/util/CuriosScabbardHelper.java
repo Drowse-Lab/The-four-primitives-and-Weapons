@@ -397,9 +397,9 @@ public class CuriosScabbardHelper {
         boolean isSwordSayaTarget  = SwordSayaItem.canSheathe(weaponStack);
         boolean isRapierSayaTarget = RapierSayaItem.canSheathe(weaponStack);
         if (isTyokutoSaya) {
-            // tyokuto は BluepurgeItem の NBT 特例 (CustomModelData==2 → 直刀扱い) を
-            // TyokutoSayaItem.getSwordModelData が拾っているので、こちらに残す。
-            return isStraightSword && TyokutoSayaItem.getSwordModelData(weaponStack) != 0;
+            // 直刀 saya は 直刀なら全部受理 ( SayaRegistry 未登録でも納刀可能 )。
+            // モデルデータが無い武器は saya 側でデフォルト表示になるだけで機能上問題ない。
+            return isStraightSword;
         } else if (isSwordSaya) {
             return isSwordSayaTarget;
         } else if (isRapierSaya) {

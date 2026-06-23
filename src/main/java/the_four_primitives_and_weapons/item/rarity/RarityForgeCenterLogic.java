@@ -35,6 +35,60 @@ public final class RarityForgeCenterLogic {
         RARITY
     }
 
+    /**
+     * 強化モード:
+     *   cat0 = 媒体 ( 強化対象 )、 cat1 = 触媒
+     *   - 媒体 = 魔導書 + 触媒で element level → BOOK_ELEMENT
+     *   - 媒体 = 武器 ( + 触媒 ) → RARITY
+     * 媒体スロットが武器/魔導書でなければ NONE。
+     */
+    public static Mode resolveEnhanceMode(ItemStack medium, ItemStack catalyst) {
+        if (medium.isEmpty() || catalyst.isEmpty()) return Mode.NONE;
+        if (isBookItem(medium)) {
+            if (getCatalystLevel(catalyst) > 0) return Mode.BOOK_ELEMENT;
+            return Mode.NONE;
+        }
+        // 武器 ( SwordItem 含む任意 Item ) → rarity 抽選
+        return Mode.RARITY;
+    }
+
+    public static ItemStack buildEnhancePreview(ItemStack medium, ItemStack catalyst) {
+        Mode mode = resolveEnhanceMode(medium, catalyst);
+        switch (mode) {
+            case BOOK_ELEMENT: {
+                ElementType type = getBookElement(medium);
+                int lvl = getCatalystLevel(catalyst);
+                if (lvl <= 0) return ItemStack.EMPTY;
+                ItemStack out = medium.copy();
+                out.setCount(1);
+                ElementalDamageUtils.setElement(out, type, lvl);
+                return out;
+            }
+            case RARITY: {
+                // preview はベース表示、 rarity は取り出し時に確定
+                ItemStack out = medium.copy();
+                out.setCount(1);
+                return out;
+            }
+            default:
+                return ItemStack.EMPTY;
+        }
+    }
+
+    public static ItemStack finalizeEnhance(ItemStack medium, ItemStack catalyst) {
+        Mode mode = resolveEnhanceMode(medium, catalyst);
+        if (mode == Mode.RARITY) {
+            ItemStack out = medium.copy();
+            out.setCount(1);
+            WeaponRarity rarity = RarityCraftingLogic.rollRarity(catalyst, ItemStack.EMPTY);
+            double bonus = RarityCraftingLogic.getCatalystBonus(catalyst, ItemStack.EMPTY);
+            WeaponRarity.setToStack(out, rarity);
+            WeaponRarity.setCatalystBonus(out, bonus);
+            return out;
+        }
+        return buildEnhancePreview(medium, catalyst);
+    }
+
     /** Unbreakable 化条件 ( cat0/cat1 のペア、 順不同 ) */
     public record UnbreakablePair(String catA, String catB) {
         public boolean matches(String id0, String id1) {

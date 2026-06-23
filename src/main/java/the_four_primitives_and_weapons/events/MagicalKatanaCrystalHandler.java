@@ -156,18 +156,8 @@ public class MagicalKatanaCrystalHandler {
                     CompoundTag tg = s.getTag();
                     if (tg == null || !tg.hasUUID(MAT_OWNER_KEY)) continue;
                     if (!tg.getUUID(MAT_OWNER_KEY).equals(ownerId)) continue;
-                    // 該当: 具現化を解除して ベースの Magical Katana に戻す
-                    // ( = 該当 slot は空にせず、 ベース武器を残す → 再抜刀できる )
-                    ItemStack base = new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get());
-                    try {
-                        var enchants = EnchantmentHelper.getEnchantments(s);
-                        if (!enchants.isEmpty()) {
-                            EnchantmentHelper.setEnchantments(enchants, base);
-                        }
-                    } catch (Throwable ignored) {}
-                    // 具現化を経験したベース = 解放済み
-                    setUnlocked(base);
-                    inv.setItem(i, base);
+                    // 破壊 = 完全消滅 ( 残骸の Magical Katana は残さない )
+                    inv.setItem(i, ItemStack.EMPTY);
                     destroyed++;
                     // 演出 — 侵食属性のイメージカラー ( 赤紫 + ピンク寄り赤紫 )
                     if (sl != null) {
@@ -255,6 +245,21 @@ public class MagicalKatanaCrystalHandler {
     }
 
     /**
+     * 具現化 Magical Katana を生成 ( /crystal give_materialized で使用 )。
+     *   - Materialized = true
+     *   - MaterializedFor = ownerId ( 破壊判定用 )
+     *   - 侵食属性 Lv 12 ( XII )
+     */
+    public static ItemStack createMaterialized(UUID ownerId) {
+        ItemStack weapon = new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get());
+        CompoundTag tag = weapon.getOrCreateTag();
+        tag.putBoolean(MAT_TAG_KEY, true);
+        tag.putUUID(MAT_OWNER_KEY, ownerId);
+        ElementalDamageUtils.setElement(weapon, ElementType.CORROSION, MATERIALIZED_LEVEL);
+        return weapon;
+    }
+
+    /**
      * Magical Katana の侵食特殊技で結晶を生成。 視線方向に 2.5 ブロック先に置く。
      * 既に owner の結晶があれば破壊してから新しく作る。
      */
@@ -312,18 +317,8 @@ public class MagicalKatanaCrystalHandler {
      */
     public static void shatterOnSheathe(Player player, ItemStack stack, InteractionHand hand) {
         if (!isMaterialized(stack)) return;
-        // 元 enchant を救出して新しい Magical Katana に転送 ( グラインダー扱いと同じ )
-        ItemStack base = new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get());
-        try {
-            var enchants = EnchantmentHelper.getEnchantments(stack);
-            if (!enchants.isEmpty()) {
-                EnchantmentHelper.setEnchantments(enchants, base);
-            }
-        } catch (Throwable ignored) {}
-        // 具現化を経験したベース = 解放済み
-        setUnlocked(base);
-        // 手の中身を base で置き換え
-        player.setItemInHand(hand, base);
+        // 破壊 = 完全消滅 ( 残骸の Magical Katana は残さない )
+        player.setItemInHand(hand, ItemStack.EMPTY);
         // 破壊演出 — 侵食属性のイメージカラー ( 赤紫 + ピンク寄り赤紫 )
         if (player.level() instanceof ServerLevel sl) {
             spawnShatterParticles(sl, player.getX(), player.getY() + 1.0, player.getZ());

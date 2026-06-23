@@ -11,22 +11,47 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.List;
+
 /**
- * シンプル化レアリティ解放テーブル GUI
- *   [触媒0] [触媒1]   [中央]   →  [結果]
+ * Hybrid レアリティ解放テーブル GUI
+ *   [触媒0]   [3×3 グリッド]   →   [結果]     [候補リスト]
+ *   [触媒1]
+ *
+ * 右パネル: 現在のグリッドに部分マッチするバニラレシピを並べる ( 表示のみ )。
  */
 public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> {
 
+    // 右パネル ( 候補リスト ) レイアウト
+    private static final int LIST_X = 165;
+    private static final int LIST_Y = 18;
+    private static final int LIST_W = 105;
+    private static final int VISIBLE_ROWS = 5;
+    private static final int ROW_HEIGHT = 18;
+    private static final int LIST_H = VISIBLE_ROWS * ROW_HEIGHT;
+
+    private List<ItemStack> matches = List.of();
+    private int scrollOffset = 0;
+
     public RarityForgeScreen(RarityForgeMenu container, Inventory inventory, Component text) {
         super(container, inventory, text);
-        this.imageWidth = 198;
+        this.imageWidth = 278;
         this.imageHeight = 184;
+    }
+
+    @Override
+    public void containerTick() {
+        super.containerTick();
+        matches = menu.getPartialMatchResults();
+        int maxScroll = Math.max(0, matches.size() - VISIBLE_ROWS);
+        if (scrollOffset > maxScroll) scrollOffset = maxScroll;
     }
 
     @Override
     public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(gfx);
         super.render(gfx, mouseX, mouseY, partialTicks);
+        renderCandidateList(gfx, mouseX, mouseY);
         this.renderTooltip(gfx, mouseX, mouseY);
     }
 
@@ -36,86 +61,138 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
         int lx = this.leftPos;
         int ly = this.topPos;
 
-        // メイン背景
         gfx.fill(lx, ly, lx + imageWidth, ly + imageHeight, 0xFFC6C6C6);
         draw3DBorder(gfx, lx, ly, imageWidth, imageHeight, true);
 
-        // 上部パネル
-        drawInsetPanel(gfx, lx + 6, ly + 18, imageWidth - 12, 68);
+        // 左 + 中央パネル
+        drawInsetPanel(gfx, lx + 6, ly + 14, 153, 78);
+        // 右パネル ( 候補リスト )
+        drawInsetPanel(gfx, lx + 162, ly + 14, 110, 78);
 
+        // slot 背景は slot 位置から -1, -1 オフセット ( 18×18 の枠で 16×16 アイテムを中央配置 )
         // 触媒 ×2
-        drawSlotBg(gfx, lx + 20, ly + 56);
-        drawSlotBg(gfx, lx + 44, ly + 56);
-        // 中央スロット
-        drawSlotBg(gfx, lx + 96, ly + 56);
+        drawSlotBg(gfx, lx + 15, ly + 36);
+        drawSlotBg(gfx, lx + 15, ly + 64);
+        // 3×3 グリッド
+        for (int r = 0; r < 3; r++)
+            for (int c = 0; c < 3; c++)
+                drawSlotBg(gfx, lx + 51 + c * 18, ly + 22 + r * 18);
         // 結果スロット
-        drawSlotBg(gfx, lx + 152, ly + 56);
+        drawSlotBg(gfx, lx + 131, ly + 40);
 
-        // プレイヤーインベントリ枠
+        // インベントリ
         for (int r = 0; r < 3; r++)
             for (int c = 0; c < 9; c++)
-                drawSlotBg(gfx, lx + 8 + c * 18, ly + 100 + r * 18);
+                drawSlotBg(gfx, lx + 9 + c * 18, ly + 101 + r * 18);
         for (int c = 0; c < 9; c++)
-            drawSlotBg(gfx, lx + 8 + c * 18, ly + 158);
+            drawSlotBg(gfx, lx + 9 + c * 18, ly + 159);
     }
 
     @Override
     protected void renderLabels(GuiGraphics gfx, int mouseX, int mouseY) {
-        gfx.drawString(font, Component.literal("§lレアリティ解放テーブル"), 5, 6, 0x404040, false);
-        gfx.drawString(font, Component.literal("触媒"), 24, 44, 0x404040, false);
-        gfx.drawString(font, Component.literal("中央"), 100, 44, 0x404040, false);
-        gfx.drawString(font, Component.literal("結果"), 152, 44, 0x404040, false);
-        gfx.drawString(font, Component.literal("→"), 138, 60, 0x404040, false);
+        gfx.drawString(font, Component.literal("§lレアリティ解放テーブル"), 5, 4, 0x404040, false);
+        gfx.drawString(font, Component.literal("→"), 116, 43, 0x404040, false);
+        gfx.drawString(font, Component.literal("候補"), 165, 6, 0x404040, false);
         gfx.drawString(font, Component.literal("インベントリ"), 8, 90, 0x404040, false);
 
-        // モード表示
-        ItemStack center = menu.getInternal().getStackInSlot(RarityForgeMenu.CENTER_SLOT);
+        // モード判定 + ラベル
+        boolean gridEmpty = true;
+        for (int i = 0; i < RarityForgeMenu.GRID_SIZE; i++) {
+            if (!menu.getInternal().getStackInSlot(RarityForgeMenu.GRID_START + i).isEmpty()) {
+                gridEmpty = false; break;
+            }
+        }
         ItemStack cat0 = menu.getInternal().getStackInSlot(RarityForgeMenu.CAT_SLOT_0);
         ItemStack cat1 = menu.getInternal().getStackInSlot(RarityForgeMenu.CAT_SLOT_1);
-        RarityForgeCenterLogic.Mode mode = RarityForgeCenterLogic.resolveMode(center, cat0, cat1);
-        String modeLabel;
-        switch (mode) {
-            case BOOK_ELEMENT: modeLabel = "§b魔導書 element 付与"; break;
-            case UNBREAKABLE:  modeLabel = "§6Unbreakable 付与"; break;
-            case RARITY:       modeLabel = "§dレアリティ抽選"; break;
-            case NONE: default: modeLabel = "§7( 中央と触媒を設置 )"; break;
-        }
-        gfx.drawString(font, Component.literal(modeLabel), 6, 76, 0xFFFFFF, false);
 
-        // RARITY モードのみ確率表示
-        if (mode == RarityForgeCenterLogic.Mode.RARITY) {
-            int dy = 18;
-            float scale = 0.8f;
-            WeaponRarity transferred = RarityCraftingLogic.getTransferredRarity(cat0, cat1);
-            int[] weights = RarityCraftingLogic.getWeightsForCatalysts(cat0, cat1);
-            if (weights == null) {
-                gfx.drawString(font, Component.literal("§4Forbidden §c100%"), 110, dy, 0xFFFFFF, false);
-            } else if (transferred != null) {
-                String line = transferred.getColorCode() + transferred.getDisplayName() + " §f100%";
-                gfx.drawString(font, Component.literal(line), 110, dy, 0xFFFFFF, false);
-            } else {
-                int total = 0;
-                for (int w : weights) total += w;
-                WeaponRarity[] rarities = WeaponRarity.values();
-                int curY = dy;
-                for (int i = 0; i < weights.length && i < rarities.length; i++) {
-                    if (weights[i] <= 0) continue;
-                    int pct = weights[i] * 100 / total;
-                    String line = rarities[i].getColorCode() + rarities[i].getDisplayName() + " §f" + pct + "%";
-                    gfx.pose().pushPose();
-                    gfx.pose().translate(110, curY, 0);
-                    gfx.pose().scale(scale, scale, 1);
-                    gfx.drawString(font, Component.literal(line), 0, 0, 0xFFFFFF, false);
-                    gfx.pose().popPose();
-                    curY += 8;
-                }
+        String modeLabel;
+        if (gridEmpty) {
+            RarityForgeCenterLogic.Mode em = RarityForgeCenterLogic.resolveEnhanceMode(cat0, cat1);
+            switch (em) {
+                case BOOK_ELEMENT: modeLabel = "§b強化: 魔導書 element"; break;
+                case RARITY:       modeLabel = "§d強化: レアリティ抽選"; break;
+                default:           modeLabel = "§7強化モード ( 媒体 + 触媒 )"; break;
             }
-        } else if (mode == RarityForgeCenterLogic.Mode.BOOK_ELEMENT) {
-            int lvl = Math.max(
-                    RarityForgeCenterLogic.getCatalystLevel(cat0),
-                    RarityForgeCenterLogic.getCatalystLevel(cat1));
-            gfx.drawString(font, Component.literal("§bLv " + lvl), 110, 18, 0xFFFFFF, false);
+        } else {
+            modeLabel = "§a作成モード ( バニラレシピ + 触媒 )";
         }
+        gfx.drawString(font, Component.literal(modeLabel), 5, 92, 0xFFFFFF, false);
+    }
+
+    /** 右パネルに部分マッチ候補を並べる。 */
+    private void renderCandidateList(GuiGraphics gfx, int mouseX, int mouseY) {
+        int lx = this.leftPos + LIST_X;
+        int ly = this.topPos + LIST_Y;
+        if (matches.isEmpty()) return;
+
+        gfx.enableScissor(lx, ly, lx + LIST_W, ly + LIST_H);
+        for (int i = 0; i < matches.size(); i++) {
+            int di = i - scrollOffset;
+            if (di < 0 || di >= VISIBLE_ROWS) continue;
+
+            ItemStack stack = matches.get(i);
+            int rowY = ly + di * ROW_HEIGHT;
+
+            boolean hovered = mouseX >= lx && mouseX < lx + LIST_W
+                    && mouseY >= rowY && mouseY < rowY + ROW_HEIGHT;
+            gfx.fill(lx, rowY, lx + LIST_W, rowY + ROW_HEIGHT,
+                    hovered ? 0x4000FF00 : ((i % 2 == 0) ? 0x20000000 : 0x10000000));
+
+            if (!stack.isEmpty()) {
+                gfx.renderItem(stack, lx + 1, rowY + 1);
+                String name = stack.getHoverName().getString();
+                int maxW = LIST_W - 22;
+                while (name.length() > 1 && font.width(name + "..") > maxW) {
+                    name = name.substring(0, name.length() - 1);
+                }
+                if (font.width(name) > maxW) name += "..";
+                gfx.drawString(font, name, lx + 19, rowY + 5, 0xFFFFFF, true);
+            }
+        }
+        gfx.disableScissor();
+
+        // スクロールバー
+        if (matches.size() > VISIBLE_ROWS) {
+            int sbX = lx + LIST_W - 4;
+            int maxS = matches.size() - VISIBLE_ROWS;
+            int thumbH = Math.max(10, LIST_H * VISIBLE_ROWS / matches.size());
+            int thumbY = ly + (LIST_H - thumbH) * scrollOffset / maxS;
+            gfx.fill(sbX, ly, sbX + 4, ly + LIST_H, 0x40000000);
+            gfx.fill(sbX, thumbY, sbX + 4, thumbY + thumbH, 0xA0FFFFFF);
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double mx, double my, int button) {
+        // 候補リストのクリック → サーバに「この候補を作りたい」 通知
+        int lx = this.leftPos + LIST_X;
+        int ly = this.topPos + LIST_Y;
+        if (button == 0 && mx >= lx && mx < lx + LIST_W && my >= ly && my < ly + LIST_H) {
+            int row = (int) ((my - ly) / ROW_HEIGHT);
+            int index = scrollOffset + row;
+            if (index >= 0 && index < matches.size()) {
+                ItemStack picked = matches.get(index);
+                String itemId = net.minecraftforge.registries.ForgeRegistries.ITEMS
+                        .getKey(picked.getItem()).toString();
+                the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(
+                        new the_four_primitives_and_weapons.network.RarityForgeSelectCandidatePacket(itemId));
+                return true;
+            }
+        }
+        return super.mouseClicked(mx, my, button);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mx, double my, double dy) {
+        int lx = this.leftPos + LIST_X;
+        int ly = this.topPos + LIST_Y;
+        if (mx >= lx && mx < lx + LIST_W && my >= ly && my < ly + LIST_H) {
+            int maxScroll = Math.max(0, matches.size() - VISIBLE_ROWS);
+            if (dy > 0 && scrollOffset > 0) scrollOffset--;
+            else if (dy < 0 && scrollOffset < maxScroll) scrollOffset++;
+            return true;
+        }
+        return super.mouseScrolled(mx, my, dy);
     }
 
     @Override

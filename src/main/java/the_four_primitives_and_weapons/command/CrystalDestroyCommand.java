@@ -28,7 +28,28 @@ public class CrystalDestroyCommand {
                 .executes(ctx -> destroyMine(ctx.getSource())))
             .then(Commands.literal("unlock")
                 .executes(ctx -> unlockHand(ctx.getSource())))
+            .then(Commands.literal("give_materialized")
+                .executes(ctx -> giveMaterialized(ctx.getSource())))
         );
+    }
+
+    /**
+     * test 用: 自分の UUID が刻まれた具現化 Magical Katana を 1 本生成。
+     *   /crystal destroy_mine で破壊できる ( 自分の UUID 一致 )。
+     */
+    private static int giveMaterialized(CommandSourceStack source) {
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.literal("§cこのコマンドはプレイヤー専用"));
+            return 0;
+        }
+        net.minecraft.world.item.ItemStack stack =
+                MagicalKatanaCrystalHandler.createMaterialized(player.getUUID());
+        if (!player.getInventory().add(stack)) {
+            player.drop(stack, false);
+        }
+        source.sendSuccess(() -> Component.literal(
+                "§a具現化 Magical Katana を 1 本生成しました §7( /crystal destroy_mine で破壊可能 )"), false);
+        return 1;
     }
 
     private static int destroyMine(CommandSourceStack source) {

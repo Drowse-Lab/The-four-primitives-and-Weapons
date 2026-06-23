@@ -124,14 +124,51 @@ public class WeaponWheelState {
      *     ( DRAW mode に来るのは手に武器がないケースだが、念のため off-hand を見ない仕様 )
      */
     private static List<SpecialAction> buildSpecialActionsForDraw(Player player) {
-        // DRAW mode = 手に武器なし → Magical Katana を直接手に持ってないので special なし
-        return Collections.emptyList();
+        List<SpecialAction> actions = new ArrayList<>();
+        // 自分のインベントリ ( ホットバー含む ) に Magical Katana ( ロック含む ) があれば「結晶を出す」
+        // ( unlock 判定は server side で行う — ロック中ならメッセージで案内 )
+        if (hasMagicalKatanaInInventory(player)) {
+            actions.add(new SpecialAction(
+                    MagicalKatanaActionPacket.Action.SPAWN_CRYSTAL,
+                    new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get()),
+                    "§d結晶を出す"));
+        }
+        // 自分の UUID 付き具現化版が世界 ( client 可視範囲 ) にあれば 「全破壊」
+        if (hasOwnMaterializedInWorld(player)) {
+            actions.add(new SpecialAction(
+                    MagicalKatanaActionPacket.Action.DESTROY_ALL_OWNED,
+                    new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get()),
+                    "§c破壊 ( 自分の UUID )"));
+        }
+        return actions;
+    }
+
+    /**
+     * 自分のインベントリ全体 ( 手 + ホットバー + メイン inventory ) に Magical Katana があるか。
+     * 直接置かれた Magical Katana だけでなく、 saya に納刀された Magical Katana も検出。
+     */
+    private static boolean hasMagicalKatanaInInventory(Player player) {
+        if (player == null) return false;
+        net.minecraft.world.entity.player.Inventory inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (MagicalKatanaCrystalHandler.isMagicalKatana(s)) {
+                return true;
+            }
+            // saya に納刀された武器 も覗く
+            if (CuriosScabbardHelper.isScabbard(s) && CuriosScabbardHelper.hasStoredWeapon(s)) {
+                ItemStack stored = CuriosScabbardHelper.extractWeaponFromScabbard(s);
+                if (MagicalKatanaCrystalHandler.isMagicalKatana(stored)) return true;
+            }
+        }
+        return false;
     }
 
     /**
      * 納刀ホイール用の SpecialAction:
      *   - 持ってる武器が 通常版 Magical Katana ( unlocked ) → 「結晶を出す」
      *   - 持ってる武器が 具現化版 Magical Katana → 「破壊」
+     *   - 自分の UUID 付き具現化版が世界に存在 → 「破壊 ( 全 )」
      */
     private static List<SpecialAction> buildSpecialActionsForSheath(Player player, ItemStack weaponStack) {
         List<SpecialAction> actions = new ArrayList<>();
@@ -148,7 +185,45 @@ public class WeaponWheelState {
                         "§d結晶を出す"));
             }
         }
+        // 持ってる武器とは別に、 自分の UUID 付き具現化版が世界に存在すれば 「全破壊」
+        if (hasOwnMaterializedInWorld(player)) {
+            actions.add(new SpecialAction(
+                    MagicalKatanaActionPacket.Action.DESTROY_ALL_OWNED,
+                    new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get()),
+                    "§c破壊 ( 自分の UUID )"));
+        }
         return actions;
+    }
+
+    /**
+     * 自分の UUID が刻まれた具現化版 Magical Katana が、 client 可視範囲 ( = 自分のインベントリ
+     * + 周辺の落下中アイテム ) に存在するかをチェック。 完璧ではないが、 通常プレイのほとんどを
+     * カバー ( 他人のインベントリ / 遠くの落下中は server 側 destroyAllOwnedMaterialized で網羅 )。
+     */
+    private static boolean hasOwnMaterializedInWorld(Player player) {
+        if (player == null) return false;
+        java.util.UUID myId = player.getUUID();
+        // 自分のインベントリ
+        net.minecraft.world.entity.player.Inventory inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            if (isOwnedMaterialized(inv.getItem(i), myId)) return true;
+        }
+        // 近くの ItemEntity
+        net.minecraft.world.level.Level lv = player.level();
+        if (lv == null) return false;
+        net.minecraft.world.phys.AABB box = player.getBoundingBox().inflate(64);
+        for (net.minecraft.world.entity.item.ItemEntity ie :
+                lv.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box)) {
+            if (isOwnedMaterialized(ie.getItem(), myId)) return true;
+        }
+        return false;
+    }
+
+    private static boolean isOwnedMaterialized(ItemStack s, java.util.UUID myId) {
+        if (!MagicalKatanaCrystalHandler.isMaterialized(s)) return false;
+        net.minecraft.nbt.CompoundTag tag = s.getTag();
+        if (tag == null || !tag.hasUUID("MaterializedFor")) return false;
+        return tag.getUUID("MaterializedFor").equals(myId);
     }
 
     /**

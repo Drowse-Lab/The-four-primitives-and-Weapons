@@ -11,6 +11,7 @@ import the_four_primitives_and_weapons.init.CustomEntityInit;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
 import the_four_primitives_and_weapons.init.RarityForgeRegistration;
 import the_four_primitives_and_weapons.item.rarity.RarityForgeNewRecipes;
+import the_four_primitives_and_weapons.item.rarity.RarityForgeRecipes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -35,11 +36,15 @@ public class RarityForgeJEIPlugin implements IModPlugin {
     public void registerCategories(IRecipeCategoryRegistration registration) {
         registration.addRecipeCategories(
                 new RarityForgeRecipeCategory(registration.getJeiHelpers().getGuiHelper()));
+        registration.addRecipeCategories(
+                new RarityForgeLegacyRecipeCategory(registration.getJeiHelpers().getGuiHelper()));
     }
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         registration.addRecipes(RarityForgeRecipeCategory.RECIPE_TYPE, RarityForgeNewRecipes.build());
+        // 旧 rarity_forge_recipes/*.json を JEI に表示
+        registration.addRecipes(RarityForgeLegacyRecipeCategory.RECIPE_TYPE, RarityForgeRecipes.getAll());
 
         // 鞘クラフトレシピをJEIに登録
         registerSayaCraftingRecipes(registration);
@@ -165,5 +170,21 @@ public class RarityForgeJEIPlugin implements IModPlugin {
         registration.addRecipeCatalyst(
                 new ItemStack(RarityForgeRegistration.getBlock()),
                 RarityForgeRecipeCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(
+                new ItemStack(RarityForgeRegistration.getBlock()),
+                RarityForgeLegacyRecipeCategory.RECIPE_TYPE);
+        // バニラ crafting カテゴリでも RarityForge ブロックを触媒として表示
+        // ( = レアリティ作業台でもバニラ crafting レシピが作れるとユーザに伝える )
+        registration.addRecipeCatalyst(
+                new ItemStack(RarityForgeRegistration.getBlock()),
+                mezz.jei.api.constants.RecipeTypes.CRAFTING);
+    }
+
+    @Override
+    public void registerRecipeTransferHandlers(
+            mezz.jei.api.registration.IRecipeTransferRegistration registration) {
+        // JEI レシピの「+」 ボタンで グリッドに素材を自動転送
+        registration.addRecipeTransferHandler(
+                new RarityForgeRecipeTransferInfo());
     }
 }

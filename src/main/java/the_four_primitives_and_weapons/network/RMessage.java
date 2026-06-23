@@ -57,31 +57,30 @@ public class RMessage {
 			ItemStack mainHand = entity.getItemInHand(InteractionHand.MAIN_HAND);
 			ItemStack offHand = entity.getItemInHand(InteractionHand.OFF_HAND);
 
-			// 具現化 Magical Katana の単押し ( = ホイール無しフォールバック ) 動作:
-			//   互換性ある空鞘があれば 鞘納刀を優先 ( 通常の納刀フローに任せる )、
-			//   なければ shatter ( 破壊して base に戻す )。
+			// 具現化 Magical Katana は bluepurge と同じ扱い:
+			//   R 短押し = 破壊 ( = 納刀の代替 )。 鞘の有無関係なく必ず shatter。
 			if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(mainHand)) {
-				if (!hasCompatibleEmptyScabbard(entity, mainHand)) {
-					the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.shatterOnSheathe(
-							entity, mainHand, InteractionHand.MAIN_HAND);
-					return;
-				}
-				// 鞘あり → 通常の納刀フローに落ちる
+				the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.shatterOnSheathe(
+						entity, mainHand, InteractionHand.MAIN_HAND);
+				return;
 			}
 			if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(offHand)) {
-				if (!hasCompatibleEmptyScabbard(entity, offHand)) {
-					the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.shatterOnSheathe(
-							entity, offHand, InteractionHand.OFF_HAND);
-					return;
-				}
+				the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.shatterOnSheathe(
+						entity, offHand, InteractionHand.OFF_HAND);
+				return;
 			}
 
 			boolean mainIsBluepurge = isBluepurge(mainHand);
 			boolean offIsBluepurge = isBluepurge(offHand);
+			// 具現化 Magical Katana も bluepurge 同様、 通常武器扱いから除外
+			boolean mainIsMatKatana = the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(mainHand);
+			boolean offIsMatKatana = the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(offHand);
 
-			boolean mainIsWeapon = !mainIsBluepurge && DodgeAndBattouHandler.isWeapon(mainHand)
+			boolean mainIsWeapon = !mainIsBluepurge && !mainIsMatKatana
+					&& DodgeAndBattouHandler.isWeapon(mainHand)
 					&& !DodgeAndBattouHandler.isSaya(mainHand);
-			boolean offIsWeapon = !offIsBluepurge && DodgeAndBattouHandler.isWeapon(offHand)
+			boolean offIsWeapon = !offIsBluepurge && !offIsMatKatana
+					&& DodgeAndBattouHandler.isWeapon(offHand)
 					&& !DodgeAndBattouHandler.isSaya(offHand);
 
 			// 納刀チェック1: 武器+空の鞘を両手で持っていれば納刀
