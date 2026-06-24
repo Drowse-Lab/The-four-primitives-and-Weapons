@@ -27,7 +27,9 @@ import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = {Dist.CLIENT})
 public class TheFourPrimitivesAndWeaponsModKeyMappings {
-	public static final KeyMapping R = new KeyMapping("key.the_four_primitives_and_weapons.r", GLFW.GLFW_KEY_R, "key.categories.misc") {
+	// デフォルトは G キー。 R は Iron's Spellbooks の「次のスペル」 と衝突するので回避。
+	// G はバニラ / Spellbooks の両方で未使用。 ユーザーは Controls 設定で自由に変更可能。
+	public static final KeyMapping R = new KeyMapping("key.the_four_primitives_and_weapons.r", GLFW.GLFW_KEY_G, "key.categories.misc") {
 		private boolean isDownOld = false;
 
 		@Override

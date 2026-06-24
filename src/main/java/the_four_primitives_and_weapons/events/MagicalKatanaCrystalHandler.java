@@ -75,7 +75,7 @@ public class MagicalKatanaCrystalHandler {
     /** ドロップ中の具現化武器が破壊されたとき、 周辺エンティティに与える AoE 侵食ダメージ */
     private static final float  DROPPED_DESTROY_AOE_DAMAGE = 12.0f;
     /** ドロップ破壊時 AoE の半径 ( ブロック単位 ) */
-    private static final double DROPPED_DESTROY_AOE_RADIUS = 2.0;
+    private static final double DROPPED_DESTROY_AOE_RADIUS = 4.0;
 
     /** owner UUID → 既存結晶があるなら entity UUID ( 同時に複数生やさない ) */
     private static final Map<UUID, UUID> existingCrystal = new ConcurrentHashMap<>();
@@ -206,12 +206,21 @@ public class MagicalKatanaCrystalHandler {
                 if (!tg.getUUID(MAT_OWNER_KEY).equals(ownerId)) continue;
 
                 // ドロップ位置で AoE 侵食ダメージ
-                AABB area = ie.getBoundingBox().inflate(DROPPED_DESTROY_AOE_RADIUS);
+                //   ItemEntity の getBoundingBox() は ~0.25 cube なので inflate で 中心から
+                //   DROPPED_DESTROY_AOE_RADIUS ブロック広げる。
+                Vec3 ic = ie.position();
+                AABB area = new AABB(
+                        ic.x - DROPPED_DESTROY_AOE_RADIUS, ic.y - DROPPED_DESTROY_AOE_RADIUS, ic.z - DROPPED_DESTROY_AOE_RADIUS,
+                        ic.x + DROPPED_DESTROY_AOE_RADIUS, ic.y + DROPPED_DESTROY_AOE_RADIUS, ic.z + DROPPED_DESTROY_AOE_RADIUS);
                 for (net.minecraft.world.entity.LivingEntity le
                         : sl.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, area)) {
+                    // 距離での厳密チェック ( AABB の角は radius 超え部分があるので球で絞り込み )
+                    if (le.distanceToSqr(ic) > DROPPED_DESTROY_AOE_RADIUS * DROPPED_DESTROY_AOE_RADIUS) continue;
                     // owner と同チームのプレイヤーは除外 ( = 味方判定 )
                     if (le instanceof Player p && !p.getUUID().equals(ownerId) && areAllies(owner, p)) continue;
                     try {
+                        // invulnerableTime を 0 にして 連続ダメージが落ちないように
+                        le.invulnerableTime = 0;
                         CorrosionElementDamageHandler.applyCorrosionDamage(
                                 le, DROPPED_DESTROY_AOE_DAMAGE, owner, MATERIALIZED_LEVEL);
                     } catch (Throwable ignored) {}
@@ -664,14 +673,18 @@ public class MagicalKatanaCrystalHandler {
         // 攻撃元位置を解決 ( direct entity → causing entity → source position の順 )
         Entity direct = event.getSource().getDirectEntity();
         Entity attacker = event.getSource().getEntity();
+        boolean isExplosion = event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION);
         Vec3 from;
         if (direct != null) {
-            from = direct.getEyePosition();
+            from = isExplosion ? direct.position() : direct.getEyePosition();
         } else if (attacker != null) {
-            from = attacker.getEyePosition();
+            from = isExplosion ? attacker.position() : attacker.getEyePosition();
         } else {
             Vec3 srcPos = event.getSource().getSourcePosition();
-            if (srcPos == null) return; // 位置不明 ( poison 等 ) → 防げない
+            if (srcPos == null) {
+                // 爆発で原因不明 ( /summon TNT 経由等 ) は防げない
+                return;
+            }
             from = srcPos;
         }
         Vec3 to = owner.getEyePosition();
@@ -679,7 +692,26 @@ public class MagicalKatanaCrystalHandler {
         // 結晶を「ブロック相当」 の AABB に膨らませて、 from→to の線分と交差判定
         AABB crystalAabb = stand.getBoundingBox().inflate(CRYSTAL_BLOCK_AABB_INFLATE);
         Optional<Vec3> intersect = crystalAabb.clip(from, to);
-        if (intersect.isEmpty()) return;
+        if (intersect.isEmpty()) {
+            // 爆発の追加判定:
+            //   震源位置が ずれていたり ( =caused entity の眼位置 ≠ 実際の爆心 ) 、
+            //   爆風が広範囲のため strict な line-of-sight 判定では漏れることがある。
+            //   結晶が owner と震源の「間」 にあれば防御成立 ( 方向 cone + 距離 )。
+            if (!isExplosion) return;
+            Vec3 ownerPos   = owner.position().add(0, owner.getBbHeight() / 2.0, 0);
+            Vec3 crystalCtr = stand.getBoundingBox().getCenter();
+            Vec3 toCrystal  = crystalCtr.subtract(from);
+            Vec3 toOwner    = ownerPos.subtract(from);
+            double crystalDist = toCrystal.length();
+            double ownerDist   = toOwner.length();
+            if (crystalDist < 1.0E-3 || ownerDist < 1.0E-3) return;
+            // 結晶が owner より震源に近い ( 間にある ) 必要
+            if (crystalDist > ownerDist) return;
+            // 結晶 と owner が震源から見て だいたい同方向 ( cos > 0.75 = 約 41° 以内 )
+            double cosAngle = toCrystal.normalize().dot(toOwner.normalize());
+            if (cosAngle < 0.75) return;
+            // 通過 OK ( 防御成立 ) — 通常の AABB 経路に合流
+        }
 
         // 結晶が代わりにダメージを受ける ( キャンセル )
         event.setCanceled(true);
@@ -717,25 +749,38 @@ public class MagicalKatanaCrystalHandler {
             Vec3 cp = stand0.position().add(0, 0.5, 0); // 中心は足元 + 0.5
             applyCrystalBoundingBox(stand0, cp);
 
-            // 2) AABB 内の非味方エンティティを外へ押す ( 通り抜け防止 )
+            // 2) AABB に侵入したエンティティを 直接 外へ「テレポート」( push() の velocity 加算は
+            //    走り込む player に追いつかず貫通する。 座標固定の方が確実 )。
+            //    結晶の AABB を 少し縮めた "コア" に侵入を判定 → コアの外へ最短距離で押し戻す。
             AABB box = stand0.getBoundingBox();
+            AABB core = box.deflate(0.05); // 端ぎりぎりは許容 ( 隙間 5cm )
             for (net.minecraft.world.entity.LivingEntity le
                     : sl0.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, box)) {
                 if (le == stand0) continue;
-                // owner 自身も押す ( 自分の結晶でも通り抜けさせない )。 ただし同チームは押さない。
-                if (le instanceof Player p && !p.getUUID().equals(ownerId) && areAllies(owner, p)) continue;
-                Vec3 diff = le.position().subtract(cp);
-                double horizLen = Math.hypot(diff.x, diff.z);
-                Vec3 push;
-                if (horizLen < 1.0E-4) {
-                    // 中心とほぼ同じ → owner 視線方向の逆へ
-                    Vec3 look = owner.getLookAngle();
-                    push = new Vec3(-look.x, 0, -look.z).normalize().scale(0.4);
-                } else {
-                    push = new Vec3(diff.x / horizLen, 0, diff.z / horizLen).scale(0.4);
-                }
+                // owner / 同チームは通り抜け OK ( 敵だけ通せない )
+                if (le instanceof Player p
+                        && (p.getUUID().equals(ownerId) || areAllies(owner, p))) continue;
+
+                AABB eb = le.getBoundingBox();
+                // 各軸での「コアからの食い込み量」 を計算 ( 軸ごとに 必要な押し戻し距離 )
+                double overlapMinX = core.maxX - eb.minX;
+                double overlapMaxX = eb.maxX - core.minX;
+                double overlapMinZ = core.maxZ - eb.minZ;
+                double overlapMaxZ = eb.maxZ - core.minZ;
+                // 食い込んでない軸はスキップ
+                if (overlapMinX <= 0 && overlapMaxX <= 0
+                        && overlapMinZ <= 0 && overlapMaxZ <= 0) continue;
+
+                // 最小の食い込み軸を選んで そっち向けにテレポート
+                double dx = 0, dz = 0;
+                double minPush = Double.MAX_VALUE;
+                if (overlapMinX > 0 && overlapMinX < minPush) { minPush = overlapMinX; dx = -overlapMinX - 0.01; dz = 0; }
+                if (overlapMaxX > 0 && overlapMaxX < minPush) { minPush = overlapMaxX; dx =  overlapMaxX + 0.01; dz = 0; }
+                if (overlapMinZ > 0 && overlapMinZ < minPush) { minPush = overlapMinZ; dz = -overlapMinZ - 0.01; dx = 0; }
+                if (overlapMaxZ > 0 && overlapMaxZ < minPush) { minPush = overlapMaxZ; dz =  overlapMaxZ + 0.01; dx = 0; }
+
                 try {
-                    le.push(push.x, 0, push.z);
+                    le.teleportTo(le.getX() + dx, le.getY(), le.getZ() + dz);
                     le.hurtMarked = true;
                 } catch (Throwable ignored) {}
             }

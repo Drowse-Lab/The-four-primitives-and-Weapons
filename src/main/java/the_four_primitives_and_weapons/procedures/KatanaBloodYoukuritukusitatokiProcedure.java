@@ -283,6 +283,19 @@ public class KatanaBloodYoukuritukusitatokiProcedure {
 
     // ─── BURST: 全マーク敵に最終 AoE ────────────────────────────────────
     private static void tickBurst(ServerLevel sl, Player player, State s) {
+        // 発動位置に帰還 ( BURST の直前に TP back )
+        player.teleportTo(s.originalPos.x, s.originalPos.y, s.originalPos.z);
+        // 帰還演出
+        DustParticleOptions returnBurst = new DustParticleOptions(
+                new Vector3f(0.8f, 0.05f, 0.05f), 1.8f);
+        sl.sendParticles(returnBurst, s.originalPos.x, s.originalPos.y + 1.0, s.originalPos.z,
+                40, 0.5, 0.8, 0.5, 0.1);
+        sl.sendParticles(ParticleTypes.PORTAL,
+                s.originalPos.x, s.originalPos.y + 1.0, s.originalPos.z,
+                20, 0.3, 0.6, 0.3, 0.3);
+        sl.playSound(null, s.originalPos.x, s.originalPos.y, s.originalPos.z,
+                SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0f, 1.4f);
+
         int elemLevel = Math.max(ElementalDamageUtils.getElementLevel(player.getMainHandItem()), 1);
         int hits = 0;
         for (UUID id : s.targets) {

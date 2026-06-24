@@ -44,13 +44,16 @@ public final class SpellbooksCompat {
 
     private static boolean initReflection() {
         try {
+            // Iron's Spellbooks 3.15.6 の実 API:
+            //   io.redspace.ironsspellbooks.api.magic.MagicData
+            //     static MagicData getPlayerMagicData(LivingEntity)
+            //     float  getMana()
+            //     void   setMana(float)
             Class<?> cls = Class.forName(
-                "io.redspace.ironsspellbooks.capabilities.magic.PlayerMagicData");
-            // PlayerMagicData.getPlayerMagicData(LivingEntity) → static
+                "io.redspace.ironsspellbooks.api.magic.MagicData");
             mGetPlayerMagicData = cls.getMethod("getPlayerMagicData", LivingEntity.class);
-            Class<?> dataType = mGetPlayerMagicData.getReturnType();
-            mGetMana = dataType.getMethod("getMana");
-            mSetMana = dataType.getMethod("setMana", int.class);
+            mGetMana = cls.getMethod("getMana");
+            mSetMana = cls.getMethod("setMana", float.class);
             return true;
         } catch (Throwable t) {
             // クラス/メソッドが見つからなければ無効化 (バージョン不整合でも落ちない)
@@ -76,7 +79,7 @@ public final class SpellbooksCompat {
         try {
             Object data = mGetPlayerMagicData.invoke(null, p);
             if (data == null) return;
-            int clamped = (int) Math.max(0, Math.floor(value));
+            float clamped = (float) Math.max(0.0, value);
             mSetMana.invoke(data, clamped);
         } catch (Throwable ignored) {}
     }
