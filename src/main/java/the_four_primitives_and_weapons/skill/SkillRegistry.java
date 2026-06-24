@@ -111,7 +111,7 @@ public class SkillRegistry {
                 MotionCategory.SPECIAL, rightClickOnly, "SwordOfNightItem");
         register("gate_special", "Gate・投刃", "右クリック:放射状に直刀を投げる",
                 MotionCategory.SPECIAL, rightClickOnly, "GateItem");
-        register("rivers_of_blood_special", "血の貴族の暴行", "右クリック連打:前方扇形に血斬撃 (連撃) / bleed + 命中ごとに +1.5HP 吸収",
+        register("rivers_of_blood_special", "Hemorrhagic Eclipse", "右クリック連打:前方扇形に血斬撃 (連撃) / bleed + 命中ごとに +1.5HP 吸収",
                 MotionCategory.SPECIAL, rightClickOnly, "RiversOfBloodItem");
 
         // === Shift+右クリック専用モーション ===

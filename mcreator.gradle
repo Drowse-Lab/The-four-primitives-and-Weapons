@@ -37,8 +37,8 @@ dependencies {
 		runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.19.2-5.1.1.0")
 		compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.19.2-5.1.1.0:api")
 	} else if (mc_version.startsWith('1.20')) {
-		runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.10.0+1.20.1")
-		compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.10.0+1.20.1:api")
+		runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.14.1+1.20.1")
+		compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.14.1+1.20.1:api")
 	}
 }
 

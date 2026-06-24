@@ -535,6 +535,26 @@ public class RarityForgeMenu extends AbstractContainerMenu implements Supplier<M
         return true;
     }
 
+    /**
+     * 全スロットクリック後に preview を再計算する。
+     * 理由: SlotItemHandler.setChanged は menu の slotsChanged を呼ばないため、
+     *       触媒や グリッドの slot を変更しても updateResultPreview が走らず、
+     *       結果スロットに古い preview が残る ( = 触媒を取り戻すと
+     *       result slot に preview が残って 取れてしまう duplication )。
+     *       click のたびに強制再計算することで残留を防ぐ。
+     */
+    @Override
+    public void clicked(int slotId, int dragType, net.minecraft.world.inventory.ClickType clickType,
+                        Player player) {
+        super.clicked(slotId, dragType, clickType, player);
+        // RESULT_SLOT そのもののクリック ( = 取り出し ) は内部で消費処理が走るので
+        // ここで preview を上書きしない方が安全。 それ以外のスロット変更時は再計算する。
+        if (slotId != RESULT_SLOT) {
+            updateResultPreview();
+            broadcastChanges();
+        }
+    }
+
     @Override
     public ItemStack quickMoveStack(Player playerIn, int index) {
         ItemStack itemstack = ItemStack.EMPTY;

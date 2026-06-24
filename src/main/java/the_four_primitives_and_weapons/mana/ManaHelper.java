@@ -60,14 +60,26 @@ public final class ManaHelper {
         return true;
     }
 
-    /** 最大 MP: attribute "mana_max" を参照 (装備/エフェクトで変動)。 */
+    /** 最大 MP: Spellbooks loaded なら irons_spellbooks:max_mana、 そうでなければ自前 attribute。 */
     public static double maxMana(Player player) {
+        if (SpellbooksCompat.isLoaded()) {
+            double v = SpellbooksCompat.getMaxMana(player);
+            if (v >= 0) return v;
+        }
         AttributeInstance ai = player.getAttribute(MawExtraAttributes.MANA_MAX.get());
         return ai == null ? MANA_MAX : ai.getValue();
     }
 
-    /** 1tick あたり回復量: attribute "mana_regen" を参照。 */
+    /**
+     * 1 tick あたり回復量:
+     *   Spellbooks loaded → irons_spellbooks:mana_regen ( 1秒値 ) を /20 した値
+     *   なければ 自前 attribute "mana_regen" ( 元から 1tick値 ) を返す
+     */
     public static double regenPerTick(Player player) {
+        if (SpellbooksCompat.isLoaded()) {
+            double perSec = SpellbooksCompat.getManaRegenPerSec(player);
+            if (perSec >= 0) return perSec / 20.0;
+        }
         AttributeInstance ai = player.getAttribute(MawExtraAttributes.MANA_REGEN.get());
         return ai == null ? MANA_REGEN_PER_TICK : ai.getValue();
     }

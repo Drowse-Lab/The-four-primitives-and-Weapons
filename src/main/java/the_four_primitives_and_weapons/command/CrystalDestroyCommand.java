@@ -58,7 +58,7 @@ public class CrystalDestroyCommand {
             return 0;
         }
         int n = MagicalKatanaCrystalHandler.destroyAllOwnedMaterialized(
-                source.getServer(), player.getUUID());
+                source.getServer(), player);
         final int total = n;
         source.sendSuccess(() -> Component.literal(
                 "§7自分の具現化武器を §c" + total + " §7本破壊しました"), false);

@@ -53,7 +53,7 @@ public class MagicalKatanaActionPacket {
 
     private void handleDestroyAllOwned(ServerPlayer player) {
         int n = MagicalKatanaCrystalHandler.destroyAllOwnedMaterialized(
-                player.getServer(), player.getUUID());
+                player.getServer(), player);
         if (n > 0) {
             player.displayClientMessage(net.minecraft.network.chat.Component.literal(
                     "§7自分の具現化武器を §c" + n + " §7本破壊しました"), true);

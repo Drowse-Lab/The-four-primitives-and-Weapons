@@ -42,17 +42,24 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
     @Override
     public void containerTick() {
         super.containerTick();
-        matches = menu.getPartialMatchResults();
-        int maxScroll = Math.max(0, matches.size() - VISIBLE_ROWS);
-        if (scrollOffset > maxScroll) scrollOffset = maxScroll;
+        refreshMatches();
     }
 
     @Override
     public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTicks) {
+        // slot 同期が containerTick より遅れる場合があるので、 render でも最新化する。
+        // ( これで「アイテムを置いた瞬間に candidates 側が反映されない」 問題を回避 )
+        refreshMatches();
         this.renderBackground(gfx);
         super.render(gfx, mouseX, mouseY, partialTicks);
         renderCandidateList(gfx, mouseX, mouseY);
         this.renderTooltip(gfx, mouseX, mouseY);
+    }
+
+    private void refreshMatches() {
+        matches = menu.getPartialMatchResults();
+        int maxScroll = Math.max(0, matches.size() - VISIBLE_ROWS);
+        if (scrollOffset > maxScroll) scrollOffset = maxScroll;
     }
 
     @Override
@@ -122,7 +129,8 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
         } else {
             modeLabel = Component.translatable("gui.the_four_primitives_and_weapons.rarity_forge.mode.craft").withStyle(net.minecraft.ChatFormatting.GREEN);
         }
-        gfx.drawString(font, modeLabel, 5, 92, 0xFFFFFF, false);
+        // 「Inventory」 ラベル ( 8, 90 ) と重ならないように、 結果スロットの右下の空きへ
+        gfx.drawString(font, modeLabel, 80, 92, 0xFFFFFF, false);
     }
 
     /** 右パネルに部分マッチ候補を並べる。 */

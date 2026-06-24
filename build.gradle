@@ -10,10 +10,22 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 
-// Iron's Spells 'n Spellbooks をテスト用に同梱する。
-// 有効化: ./gradlew runClient -PwithSpellbooks=true
-//         または gradle.properties に withSpellbooks=true
-def withSpellbooks = project.findProperty('withSpellbooks') == 'true'
+// 外部 mod ( libs/local/ 配下の .jar 全部 ) を runClient/runServer に同梱するためのトグル。
+//
+// 使い方:
+//   1. libs/local/ に追加したい外部 mod jar を 「mod 名関係なく」 投げ込む
+//      ( フラットでも libs/local/<modid>/<version>/*.jar の階層でも OK、 再帰で全部拾う )
+//   2. CLI で有効化: ./gradlew runClient -PwithExternalMods=true
+//      または gradle.properties に withExternalMods=true
+//   3. off にするだけで 1 行も触らずに 外部 mod を全部 切れる
+def boolProp = { String name, boolean defaultValue ->
+    def v = project.findProperty(name)
+    if (v == null) return defaultValue
+    return v.toString().equalsIgnoreCase('true')
+}
+def withExternalMods = boolProp('withExternalMods', false)
+// 後方互換: withSpellbooks=true でも有効化できる ( 既存スクリプト用 )
+if (!withExternalMods) withExternalMods = boolProp('withSpellbooks', false)
 
 // =====================================================================
 // version 解決順:
@@ -129,7 +141,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 // For 1.19.2: ./gradlew build -PMC_VERSION=1.19.2 -PMAPPING_VERSION=1.19.2 -PFORGE_VERSION=1.19.2-43.3.13
 def mc_version = project.findProperty('MC_VERSION') ?: '1.20.1'
 def mapping_version = project.findProperty('MAPPING_VERSION') ?: '1.20.1'
-def forge_version = project.findProperty('FORGE_VERSION') ?: '1.20.1-47.1.0'
+def forge_version = project.findProperty('FORGE_VERSION') ?: '1.20.1-47.4.0'
 
 println("Building for Minecraft ${mc_version} with Forge ${forge_version}")
 
@@ -170,6 +182,15 @@ minecraft {
 }
 
 repositories {
+    // libs/ をローカル Maven リポジトリとして登録 ( Backpack-Arsenal と同じ方式 )
+    //   libs/local/<artifact>/<version>/<artifact>-<version>.jar が
+    //   "local:<artifact>:<version>" として解決される。
+    //   これで fg.deobf("local:...") が SRG → official のリマップを掛けてくれるので
+    //   dev userdev 環境でもクラッシュせず動く。
+    maven {
+        url = file('libs').toURI()
+        metadataSources { artifact() }
+    }
     // CurseForge Maven (Iron's Spellbooks など、CurseForge 公開 MOD の取得用)
     maven {
         url 'https://cursemaven.com'
@@ -184,20 +205,65 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${forge_version}"
 
-    if (withSpellbooks) {
-        // CurseForge project IDs for Iron's Spells 'n Spellbooks (1.20.1 Forge):
-        //   projectId:    855414     (irons-spells-n-spellbooks)
-        //   fileId:       YYYYYYY    ← 最新版の fileId に置き換える
-        // 手動指定例 (fileId は https://www.curseforge.com/minecraft/mc-mods/irons-spells-n-spellbooks/files から取得):
-        // runtimeOnly fg.deobf("curse.maven:irons-spells-n-spellbooks-855414:5500000")
-        //
-        // より確実な方法: ローカルに JAR をドロップ。次の行を有効化する:
-        // runtimeOnly fg.deobf(files('libs/ironsspellbooks-1.20.1.jar'))
-        println "[Build] withSpellbooks=true: Iron's Spellbooks を実行時に読み込みます (libs/ に JAR を置いてください)"
-        if (file('libs/ironsspellbooks-1.20.1.jar').exists()) {
-            runtimeOnly fg.deobf(files('libs/ironsspellbooks-1.20.1.jar'))
+    // ─── 外部 mod 同梱 ( libs/local/ 配下の .jar を Maven 風配置に変換して取り込み ) ──
+    //   - mod 名 / version は記載不要。 jar のファイル名から自動推定する。
+    //   - フラット配置 ( libs/local/foo-1.2.3.jar ) を Maven 階層
+    //     ( libs/local/foo/1.2.3/foo-1.2.3.jar ) に自動配置 → fg.deobf("local:foo:1.2.3")
+    //   - これで ForgeGradle が SRG → official deobf を掛けるので dev でも動作する。
+    if (withExternalMods) {
+        def localDir = file('libs/local')
+        if (!localDir.exists()) {
+            println "[Build] [external] libs/local/ が無いので作成してください ( jar を入れると自動ロード )"
         } else {
-            println "[Build] libs/ironsspellbooks-1.20.1.jar が見つかりません。run/mods/ に直接置いても動作します。"
+            // ファイル名から artifact + version を推定 ( 最初に数字で始まる token から先を version )
+            def parseJar = { String baseName ->
+                def tokens = baseName.split('-')
+                def i = tokens.findIndexOf { it ==~ /^\d.*/ }
+                if (i <= 0) return null
+                return [
+                    artifact: tokens[0..<i].join('-'),
+                    version : tokens[i..-1].join('-')
+                ]
+            }
+            int count = 0
+            // フラット配置の jar を Maven 階層に転送
+            localDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.jar') }?.each { f ->
+                def base = f.name.replaceFirst(/\.jar$/, '')
+                def info = parseJar(base)
+                if (info == null) {
+                    println "[Build] [external] ${f.name} のファイル名から artifact/version を解析できません ( skip )"
+                    return
+                }
+                def mvnDir = new File(localDir, "${info.artifact}/${info.version}")
+                def mvnJar = new File(mvnDir, "${info.artifact}-${info.version}.jar")
+                if (!mvnJar.exists()) {
+                    mvnDir.mkdirs()
+                    java.nio.file.Files.copy(f.toPath(), mvnJar.toPath())
+                }
+                println "[Build] [external] local:${info.artifact}:${info.version} を fg.deobf で取り込み"
+                runtimeOnly fg.deobf("local:${info.artifact}:${info.version}")
+                count++
+            }
+            // 既に Maven 階層に置かれてる jar も拾う
+            (localDir.listFiles()?.findAll { it.isDirectory() } ?: []).each { artifactDir ->
+                artifactDir.listFiles()?.findAll { it.isDirectory() }?.each { verDir ->
+                    def expected = new File(verDir, "${artifactDir.name}-${verDir.name}.jar")
+                    if (expected.exists()) {
+                        // 上のループで既に処理済みかも — 重複追加しない
+                        def alreadyHave = (count > 0)  // 簡易判定 ( フラット派生は count > 0 になっている )
+                        if (!alreadyHave) {
+                            println "[Build] [external] local:${artifactDir.name}:${verDir.name} を fg.deobf で取り込み"
+                            runtimeOnly fg.deobf("local:${artifactDir.name}:${verDir.name}")
+                            count++
+                        }
+                    }
+                }
+            }
+            if (count == 0) {
+                println "[Build] [external] libs/local/ に .jar が見つかりません"
+            } else {
+                println "[Build] [external] 合計 ${count} 個の外部 mod jar をロード"
+            }
         }
     }
 }

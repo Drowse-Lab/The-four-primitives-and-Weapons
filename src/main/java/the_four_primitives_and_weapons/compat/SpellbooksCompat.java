@@ -1,9 +1,13 @@
 package the_four_primitives_and_weapons.compat;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.lang.reflect.Method;
 
@@ -75,5 +79,33 @@ public final class SpellbooksCompat {
             int clamped = (int) Math.max(0, Math.floor(value));
             mSetMana.invoke(data, clamped);
         } catch (Throwable ignored) {}
+    }
+
+    // ─── Attribute フォワーディング ( max_mana / mana_regen ) ─────────────
+    //   Iron's Spellbooks の attribute を ResourceLocation 経由で引いて値を返す。
+    //   compile-time dep なしで動くように ForgeRegistries.ATTRIBUTES を走査する。
+
+    private static final ResourceLocation MAX_MANA_ATTR_ID    =
+            new ResourceLocation(MOD_ID, "max_mana");
+    private static final ResourceLocation MANA_REGEN_ATTR_ID  =
+            new ResourceLocation(MOD_ID, "mana_regen");
+
+    private static AttributeInstance lookupAttr(Player p, ResourceLocation id) {
+        Attribute attr = ForgeRegistries.ATTRIBUTES.getValue(id);
+        return attr == null ? null : p.getAttribute(attr);
+    }
+
+    /** @return Iron's 管理下の最大 Mana、未ロード / attribute 無しは -1 */
+    public static double getMaxMana(Player p) {
+        if (!isLoaded()) return -1;
+        AttributeInstance ai = lookupAttr(p, MAX_MANA_ATTR_ID);
+        return ai == null ? -1 : ai.getValue();
+    }
+
+    /** @return Iron's 管理下のマナ回復速度 ( 1秒あたり )、未ロード / attribute 無しは -1 */
+    public static double getManaRegenPerSec(Player p) {
+        if (!isLoaded()) return -1;
+        AttributeInstance ai = lookupAttr(p, MANA_REGEN_ATTR_ID);
+        return ai == null ? -1 : ai.getValue();
     }
 }

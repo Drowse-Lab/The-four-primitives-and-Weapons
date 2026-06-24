@@ -18,14 +18,18 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import org.joml.Vector3f;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import the_four_primitives_and_weapons.procedures.KatanaBloodYoukuritukusitatokiProcedure;
+import the_four_primitives_and_weapons.skill.BloodSlashSkill;
 import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 
@@ -60,22 +64,61 @@ public class RiversOfBloodItem extends SwordItem {
 		}, 3, -2.4f, new Item.Properties());
 	}
 
+	/** 単押し ( tap ) / 長押し ( hold ) の閾値 — useDuration から残 tick を引いた値で判定 */
+	public static final int HOLD_THRESHOLD_TICKS = 10; // 0.5 秒以上で長押し扱い
+	public static final int USE_DURATION_TICKS   = 72000;
+
+	@Override
+	public UseAnim getUseAnimation(ItemStack stack) {
+		return UseAnim.BLOCK;
+	}
+
+	@Override
+	public int getUseDuration(ItemStack stack) {
+		return USE_DURATION_TICKS;
+	}
+
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		// 特殊技「血の咆哮」は RIGHT_CLICK スロットが "rivers_of_blood_special" の時だけ発動。
-		// (回避 / なし を選択している間は何もしない — 回避と被らないようにするため)
+		// RIGHT_CLICK スロットが "rivers_of_blood_special" の時のみ使用開始 ( チャージ開始 )。
+		// 単押し: 血斬撃波 / 長押し: TP 連続斬撃 → releaseUsing で振り分け。
 		the_four_primitives_and_weapons.skill.PlayerSkillData.SkillStorage sd =
 				the_four_primitives_and_weapons.skill.PlayerSkillData.getSkillData(entity);
-		if (sd != null) {
-			String motion = sd.getMotionForWeapon(
-					the_four_primitives_and_weapons.skill.PlayerSkillData.AttackSlot.RIGHT_CLICK,
-					entity.getMainHandItem());
-			if ("rivers_of_blood_special".equals(motion)) {
-				KatanaBloodYoukuritukusitatokiProcedure.execute(world, entity);
-			}
+		if (sd == null) return super.use(world, entity, hand);
+		String motion = sd.getMotionForWeapon(
+				the_four_primitives_and_weapons.skill.PlayerSkillData.AttackSlot.RIGHT_CLICK,
+				entity.getMainHandItem());
+		if (!"rivers_of_blood_special".equals(motion)) {
+			return super.use(world, entity, hand);
 		}
-		return ar;
+		entity.startUsingItem(hand);
+		return InteractionResultHolder.consume(entity.getItemInHand(hand));
+	}
+
+	@Override
+	public void onUseTick(Level world, LivingEntity user, ItemStack stack, int remainingUseDuration) {
+		if (!(user instanceof Player player)) return;
+		int held = USE_DURATION_TICKS - remainingUseDuration;
+		// 視界の邪魔にならないように 「ため」 中は周囲パーティクルを出さない。
+		//   進行状況は HUD ( BloodChargeOverlay ) でホットバー上に表示する。
+		// 閾値到達 frame だけ、 短い音とごく控えめな flash で 「ため完了」 を通知。
+		if (held == HOLD_THRESHOLD_TICKS && world instanceof ServerLevel sl) {
+			sl.playSound(null, player.getX(), player.getY(), player.getZ(),
+					SoundEvents.WITHER_SHOOT, SoundSource.PLAYERS, 0.4f, 1.7f);
+		}
+	}
+
+	@Override
+	public void releaseUsing(ItemStack stack, Level world, LivingEntity user, int timeLeft) {
+		if (!(user instanceof Player player)) return;
+		int held = USE_DURATION_TICKS - timeLeft;
+		if (held < HOLD_THRESHOLD_TICKS) {
+			// 単押し → 前方扇形の血斬撃波
+			BloodSlashSkill.fire(player);
+		} else {
+			// 長押し → TP 連続斬撃 ( Hemorrhagic Eclipse )
+			KatanaBloodYoukuritukusitatokiProcedure.execute(world, player);
+		}
 	}
 
 	@Override
@@ -132,11 +175,19 @@ public class RiversOfBloodItem extends SwordItem {
 				attacker.level().playSound(null, attacker.getX(), attacker.getY(), attacker.getZ(),
 					SoundEvents.WITHER_HURT, SoundSource.PLAYERS, 0.5f, 0.8f);
 			} else {
-				// 通常の血のエフェクト
+				// 通常の血のエフェクト ( 派手な dust + sweep_attack で「血しぶき」 を強調 )
 				if (VersionHelper.getLevel(attacker) instanceof ServerLevel serverLevel) {
+					double tx = target.getX();
+					double ty = target.getY() + target.getBbHeight() / 2.0;
+					double tz = target.getZ();
 					serverLevel.sendParticles(ParticleTypes.DAMAGE_INDICATOR,
-						target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
-						5, 0.3, 0.3, 0.3, 0.1);
+						tx, ty, tz, 12, 0.3, 0.3, 0.3, 0.1);
+					DustParticleOptions deep   = new DustParticleOptions(new Vector3f(0.55f, 0.03f, 0.03f), 1.2f);
+					DustParticleOptions bright = new DustParticleOptions(new Vector3f(0.85f, 0.10f, 0.10f), 1.0f);
+					serverLevel.sendParticles(deep,   tx, ty, tz, 18, 0.35, 0.40, 0.35, 0.05);
+					serverLevel.sendParticles(bright, tx, ty, tz, 10, 0.30, 0.35, 0.30, 0.08);
+					serverLevel.sendParticles(ParticleTypes.SWEEP_ATTACK,
+						tx, ty, tz, 2, 0.2, 0.2, 0.2, 0.0);
 				}
 			}
 			

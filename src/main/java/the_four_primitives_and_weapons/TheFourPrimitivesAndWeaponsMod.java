@@ -90,6 +90,9 @@ public class TheFourPrimitivesAndWeaponsMod {
 		TheFourPrimitivesAndWeaponsModMenus.REGISTRY.register(bus);
 
 		TheFourPrimitivesAndWeaponsModVillagerProfessions.PROFESSIONS.register(bus);
+
+		// Magical Katana 解放クラフトレシピのシリアライザ
+		the_four_primitives_and_weapons.item.MagicalKatanaUnlockRecipe.Registrar.SERIALIZERS.register(bus);
 	}
 
 	private static final String PROTOCOL_VERSION = "1";

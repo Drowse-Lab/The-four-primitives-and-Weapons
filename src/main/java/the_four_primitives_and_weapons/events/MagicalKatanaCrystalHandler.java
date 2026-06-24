@@ -14,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -24,11 +25,14 @@ import net.minecraftforge.fml.common.Mod;
 
 import org.joml.Vector3f;
 
+import the_four_primitives_and_weapons.damage.CorrosionElementDamageHandler;
 import the_four_primitives_and_weapons.damage.ElementType;
 import the_four_primitives_and_weapons.damage.ElementalDamageUtils;
+import the_four_primitives_and_weapons.damage.ModDamageSources;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -64,6 +68,14 @@ public class MagicalKatanaCrystalHandler {
     private static final int    CRYSTAL_LIFE        = 600;  // 30 sec auto-expire
     private static final float  CRYSTAL_MAX_HEALTH  = 0.5f; // 素手 1 撃 (1 ダメージ) で破壊できる
     private static final int    MATERIALIZED_LEVEL  = 12;   // Lv 12 = XII 表記
+    /** 他人インベントリで具現化武器を破壊された時、 そのホルダーに入るダメージ ( 1 本ごと ) */
+    private static final float  REMOTE_DESTROY_DAMAGE = 6.0f;
+    /** 結晶を「ブロック相当」 として扱う際の AABB 膨張量 ( 結晶自体は ArmorStand-small なので大きめに ) */
+    private static final double CRYSTAL_BLOCK_AABB_INFLATE = 0.4;
+    /** ドロップ中の具現化武器が破壊されたとき、 周辺エンティティに与える AoE 侵食ダメージ */
+    private static final float  DROPPED_DESTROY_AOE_DAMAGE = 12.0f;
+    /** ドロップ破壊時 AoE の半径 ( ブロック単位 ) */
+    private static final double DROPPED_DESTROY_AOE_RADIUS = 2.0;
 
     /** owner UUID → 既存結晶があるなら entity UUID ( 同時に複数生やさない ) */
     private static final Map<UUID, UUID> existingCrystal = new ConcurrentHashMap<>();
@@ -145,13 +157,20 @@ public class MagicalKatanaCrystalHandler {
     /**
      * 全プレイヤーのインベントリを走査し、 owner UUID が一致する具現化武器を全部破壊する。
      * 戻り値は破壊した本数。 ( /crystal destroy_mine コマンドから呼ばれる )
+     *
+     * 仕様:
+     *   - 自分自身のインベントリにあるものはダメージ無しで破壊
+     *   - 他人のインベントリにあるものは破壊と同時にホルダーへ侵食ダメージ
+     *   - ただし owner と同じチームのプレイヤーには ダメージを与えない ( 味方判定 )
      */
-    public static int destroyAllOwnedMaterialized(net.minecraft.server.MinecraftServer server, UUID ownerId) {
-        if (server == null) return 0;
+    public static int destroyAllOwnedMaterialized(net.minecraft.server.MinecraftServer server, Player owner) {
+        if (server == null || owner == null) return 0;
+        UUID ownerId = owner.getUUID();
         int destroyed = 0;
         for (ServerLevel sl : server.getAllLevels()) {
             for (Player p : sl.players()) {
                 var inv = p.getInventory();
+                int destroyedInThisInv = 0;
                 for (int i = 0; i < inv.getContainerSize(); i++) {
                     ItemStack s = inv.getItem(i);
                     if (!isMaterialized(s)) continue;
@@ -161,15 +180,23 @@ public class MagicalKatanaCrystalHandler {
                     // 破壊 = 完全消滅 ( 残骸の Magical Katana は残さない )
                     inv.setItem(i, ItemStack.EMPTY);
                     destroyed++;
+                    destroyedInThisInv++;
                     // 演出 — 侵食属性のイメージカラー ( 赤紫 + ピンク寄り赤紫 )
-                    if (sl != null) {
-                        spawnShatterParticles(sl, p.getX(), p.getY() + 1.0, p.getZ());
-                        sl.playSound(null, p.getX(), p.getY(), p.getZ(),
-                                SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.8f, 1.2f);
-                    }
+                    spawnShatterParticles(sl, p.getX(), p.getY() + 1.0, p.getZ());
+                    sl.playSound(null, p.getX(), p.getY(), p.getZ(),
+                            SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.8f, 1.2f);
+                }
+                // 他人のインベで破壊された場合は ホルダーにダメージ ( 同チーム除外 )
+                if (destroyedInThisInv > 0
+                        && !p.getUUID().equals(ownerId)
+                        && !areAllies(owner, p)) {
+                    float dmg = REMOTE_DESTROY_DAMAGE * destroyedInThisInv;
+                    p.hurt(ModDamageSources.ofElement(sl, ElementType.CORROSION, owner), dmg);
                 }
             }
-            // 落下しているアイテムにも対応
+            // 落下しているアイテム — 破壊時に周辺 AoE 侵食ダメージ ( Lv12 )
+            //   ダメージ発行元は UUID で紐付く owner エンティティ
+            //   同チームのプレイヤーのみ除外 ( オーナー本人も巻き込まれる )
             for (Entity e : sl.getAllEntities()) {
                 if (!(e instanceof net.minecraft.world.entity.item.ItemEntity ie)) continue;
                 ItemStack s = ie.getItem();
@@ -177,11 +204,48 @@ public class MagicalKatanaCrystalHandler {
                 CompoundTag tg = s.getTag();
                 if (tg == null || !tg.hasUUID(MAT_OWNER_KEY)) continue;
                 if (!tg.getUUID(MAT_OWNER_KEY).equals(ownerId)) continue;
+
+                // ドロップ位置で AoE 侵食ダメージ
+                AABB area = ie.getBoundingBox().inflate(DROPPED_DESTROY_AOE_RADIUS);
+                for (net.minecraft.world.entity.LivingEntity le
+                        : sl.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, area)) {
+                    // owner と同チームのプレイヤーは除外 ( = 味方判定 )
+                    if (le instanceof Player p && !p.getUUID().equals(ownerId) && areAllies(owner, p)) continue;
+                    try {
+                        CorrosionElementDamageHandler.applyCorrosionDamage(
+                                le, DROPPED_DESTROY_AOE_DAMAGE, owner, MATERIALIZED_LEVEL);
+                    } catch (Throwable ignored) {}
+                }
+                // 演出
+                spawnShatterParticles(sl, ie.getX(), ie.getY() + 0.2, ie.getZ());
+                sl.playSound(null, ie.getX(), ie.getY(), ie.getZ(),
+                        SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 1.0f, 0.8f);
+
                 ie.discard();
                 destroyed++;
             }
         }
         return destroyed;
+    }
+
+    /**
+     * 結晶 ArmorStand に block 相当の 1×1×1 AABB を強制セットする。
+     * ArmorStand 既定 hitbox ( 0.5w × 1.975h ) は block 相当の遮蔽として小さく、
+     * 通り抜け / 投射物の擦り抜けが起こりやすいので明示的に拡張する。
+     * tick で refreshDimensions が走るとリセットされるので、 onServerTick でも再設定する。
+     */
+    private static void applyCrystalBoundingBox(ArmorStand stand, Vec3 center) {
+        AABB box = new AABB(
+                center.x - 0.5, center.y - 0.5, center.z - 0.5,
+                center.x + 0.5, center.y + 0.5, center.z + 0.5);
+        try { stand.setBoundingBox(box); } catch (Throwable ignored) {}
+    }
+
+    /** 同チーム判定 ( チームが両方非 null かつ同じ team なら味方 )。 vanilla の isAlliedTo に委譲。 */
+    private static boolean areAllies(Player a, Player b) {
+        if (a == null || b == null) return false;
+        if (a.getUUID().equals(b.getUUID())) return true;
+        return a.getTeam() != null && a.getTeam() == b.getTeam();
     }
 
     /**
@@ -305,28 +369,32 @@ public class MagicalKatanaCrystalHandler {
             spawn = player.getEyePosition().add(lookVec.normalize().scale(2.5));
         }
 
+        // 当たり判定を block 相当 ( 1×1×1 ) にする。
+        //   - Small=false : フルサイズ ( 殴り/矢 のヒットしやすさ )
+        //   - Marker=false : 物理的当たり判定 ON ( 通り抜け不可 )
+        // 足元 = spawn.y - 0.5 にすると AABB ( 後で 1×1×1 に再設定 ) の中心が spawn.y 付近
         ArmorStand stand = new ArmorStand(sl, spawn.x, spawn.y - 0.5, spawn.z);
         stand.setInvisible(true);
         stand.setNoGravity(true);
-        // setShowArms / setSmall は protected アクセスなので NBT 経由で設定
         CompoundTag prelim = new CompoundTag();
         stand.addAdditionalSaveData(prelim);
-        prelim.putBoolean("Small", true);
+        prelim.putBoolean("Small", false);
         prelim.putBoolean("ShowArms", false);
-        prelim.putBoolean("Marker", false); // false = ヒット判定残す ( 殴れる )
+        prelim.putBoolean("Marker", false);
+        prelim.putBoolean("NoBasePlate", true);
         stand.readAdditionalSaveData(prelim);
-        // ArmorStand は default invulnerable がきつい設定なので明示的に hurtable に
         stand.setInvulnerable(false);
         stand.setCustomName(Component.literal("§5魔の結晶"));
         stand.setCustomNameVisible(true);
         stand.getPersistentData().putUUID(CRYSTAL_OWNER_KEY, player.getUUID());
         stand.getPersistentData().putInt(CRYSTAL_LIFE_KEY, CRYSTAL_LIFE);
-        // ArmorStand 自身の HP は固定 (= killer は player 想定、 1 撃で死ぬのを避けたい場合は調整)
         try {
             stand.setHealth(CRYSTAL_MAX_HEALTH);
         } catch (Throwable ignored) {}
 
         sl.addFreshEntity(stand);
+        // addFreshEntity の後で AABB を 1×1×1 に強制 ( ArmorStand 既定 0.5w が小さいので拡張 )
+        applyCrystalBoundingBox(stand, spawn);
         existingCrystal.put(player.getUUID(), stand.getUUID());
 
         // 生成エフェクト
@@ -502,6 +570,39 @@ public class MagicalKatanaCrystalHandler {
     }
 
     /**
+     * 投射物 ( 矢 / トライデント / 雪玉等 ) が結晶にヒットしたら、 攻撃と同等に扱う。
+     * AttackEntityEvent は近接のみで投射物は来ないので別ハンドラ。
+     */
+    @SubscribeEvent
+    public static void onProjectileImpact(net.minecraftforge.event.entity.ProjectileImpactEvent event) {
+        net.minecraft.world.phys.HitResult hr = event.getRayTraceResult();
+        if (!(hr instanceof net.minecraft.world.phys.EntityHitResult ehr)) return;
+        Entity target = ehr.getEntity();
+        if (!(target instanceof ArmorStand stand)) return;
+        CompoundTag pd = stand.getPersistentData();
+        if (!pd.contains(CRYSTAL_OWNER_KEY)) return;
+        if (!(stand.level() instanceof ServerLevel sl)) return;
+
+        UUID ownerId = pd.getUUID(CRYSTAL_OWNER_KEY);
+        existingCrystal.remove(ownerId);
+        Vec3 spawnPos = stand.position().add(0, 0.5, 0);
+
+        Player owner = sl.getServer().getPlayerList().getPlayer(ownerId);
+        ItemStack template = ItemStack.EMPTY;
+        if (owner != null) {
+            ItemStack main = owner.getMainHandItem();
+            if (isMagicalKatana(main) && !isMaterialized(main)) template = main;
+        }
+
+        stand.discard();
+        // 投射物自体は消費 ( 突き抜けさせない )
+        event.setCanceled(true);
+        try { event.getProjectile().discard(); } catch (Throwable ignored) {}
+
+        materializeFor(sl, spawnPos, ownerId, template);
+    }
+
+    /**
      * ArmorStand を Player が殴ると ArmorStand.hurt() は LivingEntity.die() を経由せず
      * 直接 kill() → remove() するため LivingDeathEvent が発火しない。
      * そのため AttackEntityEvent で先回りして検知し、 結晶ならその場で武器を具現化する。
@@ -537,8 +638,12 @@ public class MagicalKatanaCrystalHandler {
     }
 
     /**
-     * 結晶がオーナーと攻撃者の間にあれば、 オーナーへのダメージを結晶が肩代わり。
-     * これで「抜刀時の結晶で防御できる」を実現。
+     * 結晶を「ブロック相当の遮蔽物」 として扱い、 攻撃者 → オーナーの線分が結晶の
+     * AABB を貫けば防御成立 ( = エンティティ貫通攻撃でもブロックを貫通しない攻撃は防げる )。
+     *
+     * 注意:
+     *   - 真にブロックを貫通する攻撃 ( bypasses_invulnerability の DamageSource ) は防げない
+     *   - 攻撃元位置が分からない damage ( 毒 / 飢餓 等 ) は防御対象外
      */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlayerHurt(LivingHurtEvent event) {
@@ -553,18 +658,28 @@ public class MagicalKatanaCrystalHandler {
             return;
         }
 
-        // 結晶が攻撃者とオーナーの間にあるかを軽量チェック
-        Entity attacker = event.getSource().getEntity();
-        Vec3 ownerPos    = owner.position();
-        Vec3 crystalPos  = stand.position();
-        Vec3 attackerPos = (attacker != null) ? attacker.position() : ownerPos.add(0, 0, 1);
+        // bypasses_invulnerability ( /kill, void 等 ) は防げない
+        if (event.getSource().is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
 
-        Vec3 oa = attackerPos.subtract(ownerPos);
-        Vec3 oc = crystalPos.subtract(ownerPos);
-        // 結晶がオーナーから攻撃者方向に存在し、 直線距離が近ければ防御成立
-        boolean inFront = oa.lengthSqr() > 1.0E-4 && oc.dot(oa.normalize()) > 0.0;
-        boolean closeEnough = crystalPos.distanceToSqr(ownerPos) <= 16.0; // 4m 以内
-        if (!inFront || !closeEnough) return;
+        // 攻撃元位置を解決 ( direct entity → causing entity → source position の順 )
+        Entity direct = event.getSource().getDirectEntity();
+        Entity attacker = event.getSource().getEntity();
+        Vec3 from;
+        if (direct != null) {
+            from = direct.getEyePosition();
+        } else if (attacker != null) {
+            from = attacker.getEyePosition();
+        } else {
+            Vec3 srcPos = event.getSource().getSourcePosition();
+            if (srcPos == null) return; // 位置不明 ( poison 等 ) → 防げない
+            from = srcPos;
+        }
+        Vec3 to = owner.getEyePosition();
+
+        // 結晶を「ブロック相当」 の AABB に膨らませて、 from→to の線分と交差判定
+        AABB crystalAabb = stand.getBoundingBox().inflate(CRYSTAL_BLOCK_AABB_INFLATE);
+        Optional<Vec3> intersect = crystalAabb.clip(from, to);
+        if (intersect.isEmpty()) return;
 
         // 結晶が代わりにダメージを受ける ( キャンセル )
         event.setCanceled(true);
@@ -572,6 +687,7 @@ public class MagicalKatanaCrystalHandler {
             stand.hurt(event.getSource(), Math.max(1.0f, event.getAmount() * 0.5f));
         } catch (Throwable ignored) {}
         // 結晶のヒット演出
+        Vec3 crystalPos = stand.position();
         DustParticleOptions hit = new DustParticleOptions(
                 new Vector3f(1.0f, 0.35f, 0.7f), 1.8f);
         sl.sendParticles(hit, crystalPos.x, crystalPos.y + 0.6, crystalPos.z,
@@ -580,12 +696,52 @@ public class MagicalKatanaCrystalHandler {
                 SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1.0f, 1.5f);
     }
 
-    /** 結晶の自動消滅タイマー + パーティクル + プレイヤーが Sneak で武器発行 */
+    /** 結晶の自動消滅タイマー + パーティクル + プレイヤーが Sneak で武器発行 + 当たり判定維持 */
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (event.getServer() == null) return;
-        if ((event.getServer().getTickCount() % 5) != 0) return; // 5tick おきの軽量化
+
+        // === 毎 tick: 当たり判定 ( AABB ) を block 相当に再設定 + 周辺エンティティを押し出す ===
+        //   ArmorStand 既定 hitbox は refreshDimensions でリセットされうるので毎 tick 再適用。
+        //   かつ AABB 内に居る非味方を外側へ押し出して通り抜けを物理的に防ぐ。
+        for (Map.Entry<UUID, UUID> entry : existingCrystal.entrySet()) {
+            UUID ownerId = entry.getKey();
+            Player owner = event.getServer().getPlayerList().getPlayer(ownerId);
+            if (owner == null) continue;
+            if (!(owner.level() instanceof ServerLevel sl0)) continue;
+            Entity crystal0 = sl0.getEntity(entry.getValue());
+            if (!(crystal0 instanceof ArmorStand stand0) || !stand0.isAlive()) continue;
+
+            // 1) 1×1×1 AABB を強制
+            Vec3 cp = stand0.position().add(0, 0.5, 0); // 中心は足元 + 0.5
+            applyCrystalBoundingBox(stand0, cp);
+
+            // 2) AABB 内の非味方エンティティを外へ押す ( 通り抜け防止 )
+            AABB box = stand0.getBoundingBox();
+            for (net.minecraft.world.entity.LivingEntity le
+                    : sl0.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, box)) {
+                if (le == stand0) continue;
+                // owner 自身も押す ( 自分の結晶でも通り抜けさせない )。 ただし同チームは押さない。
+                if (le instanceof Player p && !p.getUUID().equals(ownerId) && areAllies(owner, p)) continue;
+                Vec3 diff = le.position().subtract(cp);
+                double horizLen = Math.hypot(diff.x, diff.z);
+                Vec3 push;
+                if (horizLen < 1.0E-4) {
+                    // 中心とほぼ同じ → owner 視線方向の逆へ
+                    Vec3 look = owner.getLookAngle();
+                    push = new Vec3(-look.x, 0, -look.z).normalize().scale(0.4);
+                } else {
+                    push = new Vec3(diff.x / horizLen, 0, diff.z / horizLen).scale(0.4);
+                }
+                try {
+                    le.push(push.x, 0, push.z);
+                    le.hurtMarked = true;
+                } catch (Throwable ignored) {}
+            }
+        }
+
+        if ((event.getServer().getTickCount() % 5) != 0) return; // 以下は 5tick おきの軽量化
 
         // オーナーが Sneak している間に結晶を「ガード解除」 → 武器発行
         for (Map.Entry<UUID, UUID> entry : existingCrystal.entrySet()) {
