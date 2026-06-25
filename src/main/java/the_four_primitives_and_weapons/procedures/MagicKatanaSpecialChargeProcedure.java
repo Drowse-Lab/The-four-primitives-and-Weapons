@@ -821,20 +821,20 @@ public class MagicKatanaSpecialChargeProcedure {
         DustParticleOptions darkDust = new DustParticleOptions(
             new Vector3f(0.5f, 0.05f, 0.35f), 1.0f);
 
-        // 「髭根」 風の枝分かれパターン生成 ( メイン根 + 副根 + 末端の細根 )
-        //   - メイン根: 視線方向の cone ±25° に N 本展開、 各 3〜5 セグメント、 セグメント間で 緩く曲がる
-        //   - 副根: 各セグメント分岐点で 確率発火、 メインから 30〜60° 外れる方向に 0.5〜0.9 倍長
-        //   - 末端: tip 用 dust を 多めに撒く ( 根の先っぽが派手 )
-        //   - branchTips に 全枝の通過点を蓄積 → 後段の 当たり判定に流す
+        // 「髭根」 風の枝分かれパターンを 生成 + 徐々に伸びる アニメーションを スケジューリング。
+        //   - メイン根 N 本を 視線方向の 狭い cone (±25° / ±20°) に展開 ( 拡散しすぎない )
+        //   - 各メイン根は 3〜5 セグメント、 セグメント間で 緩く曲がる
+        //   - 各セグメント末端で 35〜50% で 副根が 1〜2 本 ( 0.5〜0.9 倍長 ) 分岐
+        //   - 全セグメントを 1 ティックずつ 順次描画 → 徐々に侵食される見た目
         Vec3 startPos = playerPos.add(0, player.getEyeHeight() * 0.7, 0);
-        List<Vec3> branchPoints = new ArrayList<>();
         java.util.Random rnd = new java.util.Random();
-        int mainBranches = 5 + Math.min(elementLevel / 3, 4);     // 5〜9 本
-        double mainSpreadH = Math.toRadians(45);                  // 水平の最大ブレ
-        double mainSpreadV = Math.toRadians(35);                  // 垂直の最大ブレ
+        int mainBranches = 4 + Math.min(elementLevel / 3, 3);     // 4〜7 本 ( やや控えめ )
+        double mainSpreadH = Math.toRadians(25);                  // 水平 ±25°
+        double mainSpreadV = Math.toRadians(20);                  // 垂直 ±20°
+
+        List<Vec3[]> allSegments = new ArrayList<>(); // [start, end] のペア
 
         for (int m = 0; m < mainBranches; m++) {
-            // メイン根の初期方向: 視線方向に cone 内で 散らばる
             double aH = (rnd.nextDouble() - 0.5) * 2 * mainSpreadH;
             double aV = (rnd.nextDouble() - 0.5) * 2 * mainSpreadV;
             Vec3 dir = forward
@@ -842,54 +842,52 @@ public class MagicKatanaSpecialChargeProcedure {
                     .add(coneUp.scale(Math.tan(aV)))
                     .normalize();
             Vec3 cursor = startPos;
-            int segs = 3 + rnd.nextInt(3);                        // 3〜5 セグメント
+            int segs = 3 + rnd.nextInt(3);
             double segLen = range / segs;
 
             for (int s = 0; s < segs; s++) {
-                // セグメントごとに 緩く曲げる ( 根が ぐねぐね する効果 )
                 dir = dir.add(new Vec3(
-                                (rnd.nextDouble() - 0.5) * 0.35,
                                 (rnd.nextDouble() - 0.5) * 0.25,
-                                (rnd.nextDouble() - 0.5) * 0.35))
+                                (rnd.nextDouble() - 0.5) * 0.20,
+                                (rnd.nextDouble() - 0.5) * 0.25))
                         .normalize();
                 Vec3 next = cursor.add(dir.scale(segLen));
-                if (world instanceof ServerLevel sl_) {
-                    drawRootSegment(sl_, cursor, next, crystalDust, tipDust, darkDust, false);
-                }
+                allSegments.add(new Vec3[]{cursor, next});
                 cursor = next;
-                branchPoints.add(cursor);
 
-                // 副根の分岐 ( セグメント末端で 確率発火、 末端付近ほど 確率高 )
                 double subProb = 0.35 + 0.15 * ((double) s / segs);
                 if (rnd.nextDouble() < subProb && s < segs - 1) {
-                    int subN = 1 + rnd.nextInt(2);                // 1〜2 本
+                    int subN = 1 + rnd.nextInt(2);
                     for (int sb = 0; sb < subN; sb++) {
                         Vec3 subDir = dir
-                                .add(right.scale((rnd.nextDouble() - 0.5) * 1.0))
-                                .add(coneUp.scale((rnd.nextDouble() - 0.5) * 0.7))
+                                .add(right.scale((rnd.nextDouble() - 0.5) * 0.7))
+                                .add(coneUp.scale((rnd.nextDouble() - 0.5) * 0.5))
                                 .normalize();
                         double subLen = segLen * (0.5 + rnd.nextDouble() * 0.4);
                         Vec3 subEnd = cursor.add(subDir.scale(subLen));
-                        if (world instanceof ServerLevel sl_) {
-                            drawRootSegment(sl_, cursor, subEnd, crystalDust, tipDust, darkDust, true);
-                        }
-                        branchPoints.add(subEnd);
+                        allSegments.add(new Vec3[]{cursor, subEnd});
                     }
                 }
             }
         }
 
-        // 当たり判定: いずれかの 枝通過点に エンティティが近接していれば ヒット
-        //   ( 範囲は branchPoints の凸包 + 余裕 )
+        // 成長アニメーション用に登録 ( 後の tick で 1 セグメントずつ描画される )
+        if (world instanceof ServerLevel sl_) {
+            CorrosionGrowth growth = new CorrosionGrowth(sl_, player.getUUID(), allSegments,
+                    crystalDust, tipDust, darkDust, elementLevel);
+            activeGrowths.add(growth);
+        }
+
+        // 当たり判定は 全セグメントの 終点を 通過点として使用 ( 範囲はそのまま )
         Vec3 eyePos = playerPos.add(0, player.getEyeHeight() * 0.7, 0);
         AABB searchArea = new AABB(eyePos, eyePos).inflate(range + 2);
-        final double HIT_RADIUS_SQR = 1.8 * 1.8;
+        final double HIT_RADIUS_SQR = 1.5 * 1.5;
         List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
             entity -> {
                 if (entity == player) return false;
                 Vec3 ePos = entity.position().add(0, entity.getBbHeight() / 2.0, 0);
-                for (Vec3 bp : branchPoints) {
-                    if (bp.distanceToSqr(ePos) < HIT_RADIUS_SQR) return true;
+                for (Vec3[] seg : allSegments) {
+                    if (seg[1].distanceToSqr(ePos) < HIT_RADIUS_SQR) return true;
                 }
                 return false;
             });
@@ -1498,6 +1496,69 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     // createHomingProjectile メソッドは削除（DarkProjectileEntityで置き換え）
+
+    // ─────────────────────────────────────────────────────────────
+    // 侵食技 ( 髭根 ) の 徐々に伸びる アニメーション state + tick
+    // ─────────────────────────────────────────────────────────────
+
+    private static final java.util.List<CorrosionGrowth> activeGrowths
+            = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** 1 つの侵食技 ( 髭根 ) の成長状態。 1 tick につき SEGMENTS_PER_TICK 本描画する。 */
+    private static final class CorrosionGrowth {
+        static final int SEGMENTS_PER_TICK = 3;        // 1 tick で描画する セグメント数
+        static final int MAX_LIFE_TICKS    = 60;       // 安全装置 ( 強制終了 )
+        final ServerLevel level;
+        final java.util.UUID ownerId;
+        final java.util.List<Vec3[]> segments;
+        final DustParticleOptions main;
+        final DustParticleOptions tip;
+        final DustParticleOptions dark;
+        final int elementLevel;
+        int cursor = 0;
+        int life = 0;
+
+        CorrosionGrowth(ServerLevel level, java.util.UUID ownerId,
+                        java.util.List<Vec3[]> segments,
+                        DustParticleOptions main, DustParticleOptions tip,
+                        DustParticleOptions dark, int elementLevel) {
+            this.level = level;
+            this.ownerId = ownerId;
+            this.segments = segments;
+            this.main = main;
+            this.tip = tip;
+            this.dark = dark;
+            this.elementLevel = elementLevel;
+        }
+
+        /** 1 tick 分 前進。 終わったら true を返す。 */
+        boolean tickAdvance() {
+            life++;
+            int end = Math.min(segments.size(), cursor + SEGMENTS_PER_TICK);
+            for (int i = cursor; i < end; i++) {
+                Vec3[] seg = segments.get(i);
+                drawRootSegment(level, seg[0], seg[1], main, tip, dark, false);
+            }
+            cursor = end;
+            return cursor >= segments.size() || life > MAX_LIFE_TICKS;
+        }
+    }
+
+    @net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "the_four_primitives_and_weapons")
+    public static class GrowthTickHandler {
+        @net.minecraftforge.eventbus.api.SubscribeEvent
+        public static void onServerTick(net.minecraftforge.event.TickEvent.ServerTickEvent event) {
+            if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
+            if (activeGrowths.isEmpty()) return;
+            java.util.Iterator<CorrosionGrowth> it = activeGrowths.iterator();
+            java.util.List<CorrosionGrowth> done = new java.util.ArrayList<>();
+            while (it.hasNext()) {
+                CorrosionGrowth g = it.next();
+                if (g.tickAdvance()) done.add(g);
+            }
+            if (!done.isEmpty()) activeGrowths.removeAll(done);
+        }
+    }
 
     /**
      * 「髭根」 風の枝分かれパターン用 : 1 セグメント ( start → end ) を 細い線として
