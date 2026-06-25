@@ -99,13 +99,15 @@ public class RiversOfBloodItem extends SwordItem {
 	public void onUseTick(Level world, LivingEntity user, ItemStack stack, int remainingUseDuration) {
 		if (!(user instanceof Player player)) return;
 		int held = USE_DURATION_TICKS - remainingUseDuration;
-		// 視界の邪魔にならないように 「ため」 中は周囲パーティクルを出さない。
-		//   進行状況は HUD ( BloodChargeOverlay ) でホットバー上に表示する。
-		// 閾値到達 frame だけ、 短い音とごく控えめな flash で 「ため完了」 を通知。
-		if (held == HOLD_THRESHOLD_TICKS && world instanceof ServerLevel sl) {
-			sl.playSound(null, player.getX(), player.getY(), player.getZ(),
-					SoundEvents.WITHER_SHOOT, SoundSource.PLAYERS, 0.4f, 1.7f);
-		}
+		float progress = Math.min(1.0f, (float) held / (float) HOLD_THRESHOLD_TICKS);
+		boolean hitThreshold = (held == HOLD_THRESHOLD_TICKS);
+
+		// 暗赤 → 鮮赤
+		the_four_primitives_and_weapons.client.event.ChargeParticleEmitter.emit(
+				world, player, progress,
+				new Vector3f(0.55f, 0.05f, 0.05f),
+				new Vector3f(0.95f, 0.12f, 0.12f),
+				held, hitThreshold);
 	}
 
 	@Override

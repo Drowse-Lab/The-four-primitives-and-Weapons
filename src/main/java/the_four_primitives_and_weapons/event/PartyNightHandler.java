@@ -122,6 +122,9 @@ public class PartyNightHandler {
     }
 
     private static void spawnPartyMobs(ServerLevel level, ServerPlayer player, int count, Random rand) {
+        // ワールド設定で mob spawn が OFF / 難易度が PEACEFUL ならパーティナイトでも湧かせない
+        if (!level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING)) return;
+        if (level.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) return;
         for (int i = 0; i < count; i++) {
             // プレイヤーから24〜40ブロック離れた位置にスポーン
             double angle = rand.nextDouble() * Math.PI * 2.0;

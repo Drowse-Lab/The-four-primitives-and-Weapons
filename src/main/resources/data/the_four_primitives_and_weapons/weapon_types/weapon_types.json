@@ -254,6 +254,13 @@
         "dash": ["electric_discharge"]
       }
     },
+    "the_four_primitives_and_weapons:magical_katana": {
+      "enabled": true,
+      "special_motions": {
+        "combat": ["magic_katana_special"],
+        "dash": ["magic_katana_special"]
+      }
+    },
     "the_four_primitives_and_weapons:magischesfeen_katana": {
       "enabled": true,
       "special_motions": {

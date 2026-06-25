@@ -62,6 +62,21 @@ public class MagicKatanaSpecialChargeProcedure {
     public static void execute(LevelAccessor world, double x, double y, double z, Entity entity, float chargePercent) {
         if (!(entity instanceof Player player)) return;
 
+        // === Magical Katana のため技デフォルト ===
+        //   メインハンドが MagicalKatanaItem の場合は、 インベントリの魔導書を見ずに
+        //   侵食属性の「枝分かれ」 ( = コーン状ブレス ) 攻撃を強制発動する。
+        //   既存の 結晶生成フロー ( 解放後の右クリック特殊技 ) とは別経路。
+        {
+            String mhName = player.getMainHandItem().getItem().getClass().getSimpleName();
+            if ("MagicalKatanaItem".equals(mhName)) {
+                int lv = the_four_primitives_and_weapons.damage.ElementalDamageUtils
+                        .getElementLevel(player.getMainHandItem());
+                executeCorrosionAttack(world, x, y, z, player, chargePercent, Math.max(1, lv), true);
+                setBurstWindow(player);
+                return;
+            }
+        }
+
         // プレイヤーのインベントリをチェック
         ItemStack specialItem = findSpecialItem(player);
 
@@ -760,8 +775,17 @@ public class MagicKatanaSpecialChargeProcedure {
      *       具現化武器が手に入る ( {@link the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler} )。
      */
     private static void executeCorrosionAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent, int elementLevel) {
-        // === Magical Katana 分岐: 結晶生成モード ===
-        if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMagicalKatana(player.getMainHandItem())
+        executeCorrosionAttack(world, x, y, z, player, chargePercent, elementLevel, false);
+    }
+
+    /**
+     * @param forceConeBreath true の時は Magical Katana 分岐 ( 結晶生成 ) を スキップして
+     *                        必ずコーンブレス側を 実行する ( = ため技デフォルト用 )。
+     */
+    private static void executeCorrosionAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent, int elementLevel, boolean forceConeBreath) {
+        // === Magical Katana 分岐: 結晶生成モード ( forceConeBreath=true ならスキップ ) ===
+        if (!forceConeBreath
+                && the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMagicalKatana(player.getMainHandItem())
                 && !the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(player.getMainHandItem())) {
             // 未解放 ( = 具現化版破壊歴なし / Lv12 未付与 ) では特殊技を出さない
             if (!the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isUnlocked(player.getMainHandItem())) {
@@ -797,68 +821,77 @@ public class MagicKatanaSpecialChargeProcedure {
         DustParticleOptions darkDust = new DustParticleOptions(
             new Vector3f(0.5f, 0.05f, 0.35f), 1.0f);
 
-        if (world instanceof ServerLevel serverLevel) {
-            Vec3 startPos = playerPos.add(0, player.getEyeHeight() * 0.7, 0);
+        // 「髭根」 風の枝分かれパターン生成 ( メイン根 + 副根 + 末端の細根 )
+        //   - メイン根: 視線方向の cone ±25° に N 本展開、 各 3〜5 セグメント、 セグメント間で 緩く曲がる
+        //   - 副根: 各セグメント分岐点で 確率発火、 メインから 30〜60° 外れる方向に 0.5〜0.9 倍長
+        //   - 末端: tip 用 dust を 多めに撒く ( 根の先っぽが派手 )
+        //   - branchTips に 全枝の通過点を蓄積 → 後段の 当たり判定に流す
+        Vec3 startPos = playerPos.add(0, player.getEyeHeight() * 0.7, 0);
+        List<Vec3> branchPoints = new ArrayList<>();
+        java.util.Random rnd = new java.util.Random();
+        int mainBranches = 5 + Math.min(elementLevel / 3, 4);     // 5〜9 本
+        double mainSpreadH = Math.toRadians(45);                  // 水平の最大ブレ
+        double mainSpreadV = Math.toRadians(35);                  // 垂直の最大ブレ
 
-            // ブレス状に結晶パーティクルをコーン放射
-            for (double d = 1.0; d <= range; d += 0.6) {
-                // 距離に応じて広がる半径
-                double spreadRadius = Math.tan(coneAngle) * d;
-                // 距離が遠いほどパーティクル数を増やす（コーンを密に埋める）
-                int ringCount = (int)(4 + d * 2.5);
+        for (int m = 0; m < mainBranches; m++) {
+            // メイン根の初期方向: 視線方向に cone 内で 散らばる
+            double aH = (rnd.nextDouble() - 0.5) * 2 * mainSpreadH;
+            double aV = (rnd.nextDouble() - 0.5) * 2 * mainSpreadV;
+            Vec3 dir = forward
+                    .add(right.scale(Math.tan(aH)))
+                    .add(coneUp.scale(Math.tan(aV)))
+                    .normalize();
+            Vec3 cursor = startPos;
+            int segs = 3 + rnd.nextInt(3);                        // 3〜5 セグメント
+            double segLen = range / segs;
 
-                for (int i = 0; i < ringCount; i++) {
-                    double angle = (i / (double) ringCount) * Math.PI * 2;
-                    double offsetR = spreadRadius * Math.sqrt(Math.random()); // 均等分布
-                    double ox = Math.cos(angle) * offsetR;
-                    double oy = Math.sin(angle) * offsetR;
-
-                    Vec3 particlePos = startPos
-                        .add(forward.scale(d))
-                        .add(right.scale(ox))
-                        .add(coneUp.scale(oy));
-
-                    // メイン結晶粒子（濃い紫）
-                    serverLevel.sendParticles(crystalDust,
-                        particlePos.x, particlePos.y, particlePos.z,
-                        1, 0.05, 0.05, 0.05, 0.005);
-
-                    // ランダムに明るい結晶の破片
-                    if (Math.random() < 0.3) {
-                        serverLevel.sendParticles(tipDust,
-                            particlePos.x, particlePos.y, particlePos.z,
-                            1, 0.02, 0.02, 0.02, 0.002);
-                    }
+            for (int s = 0; s < segs; s++) {
+                // セグメントごとに 緩く曲げる ( 根が ぐねぐね する効果 )
+                dir = dir.add(new Vec3(
+                                (rnd.nextDouble() - 0.5) * 0.35,
+                                (rnd.nextDouble() - 0.5) * 0.25,
+                                (rnd.nextDouble() - 0.5) * 0.35))
+                        .normalize();
+                Vec3 next = cursor.add(dir.scale(segLen));
+                if (world instanceof ServerLevel sl_) {
+                    drawRootSegment(sl_, cursor, next, crystalDust, tipDust, darkDust, false);
                 }
+                cursor = next;
+                branchPoints.add(cursor);
 
-                // コーン中心ライン沿いに暗い侵食粒子
-                Vec3 centerPos = startPos.add(forward.scale(d));
-                serverLevel.sendParticles(darkDust,
-                    centerPos.x, centerPos.y, centerPos.z,
-                    2, 0.1, 0.1, 0.1, 0.01);
-
-                // 遠くで桜の花びら (赤紫アンビエント、 通常技と統一)
-                if (d > range * 0.5 && Math.random() < 0.4) {
-                    serverLevel.sendParticles(ParticleTypes.CHERRY_LEAVES,
-                        centerPos.x, centerPos.y, centerPos.z,
-                        1, 0.2, 0.2, 0.2, 0.0);
+                // 副根の分岐 ( セグメント末端で 確率発火、 末端付近ほど 確率高 )
+                double subProb = 0.35 + 0.15 * ((double) s / segs);
+                if (rnd.nextDouble() < subProb && s < segs - 1) {
+                    int subN = 1 + rnd.nextInt(2);                // 1〜2 本
+                    for (int sb = 0; sb < subN; sb++) {
+                        Vec3 subDir = dir
+                                .add(right.scale((rnd.nextDouble() - 0.5) * 1.0))
+                                .add(coneUp.scale((rnd.nextDouble() - 0.5) * 0.7))
+                                .normalize();
+                        double subLen = segLen * (0.5 + rnd.nextDouble() * 0.4);
+                        Vec3 subEnd = cursor.add(subDir.scale(subLen));
+                        if (world instanceof ServerLevel sl_) {
+                            drawRootSegment(sl_, cursor, subEnd, crystalDust, tipDust, darkDust, true);
+                        }
+                        branchPoints.add(subEnd);
+                    }
                 }
             }
         }
 
-        // 攻撃範囲: コーン内の敵を検出
+        // 当たり判定: いずれかの 枝通過点に エンティティが近接していれば ヒット
+        //   ( 範囲は branchPoints の凸包 + 余裕 )
         Vec3 eyePos = playerPos.add(0, player.getEyeHeight() * 0.7, 0);
         AABB searchArea = new AABB(eyePos, eyePos).inflate(range + 2);
-
-        double cosAngle = Math.cos(coneAngle);
+        final double HIT_RADIUS_SQR = 1.8 * 1.8;
         List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
             entity -> {
                 if (entity == player) return false;
-                Vec3 toEntity = entity.getEyePosition().subtract(eyePos);
-                double dist = toEntity.length();
-                if (dist > range || dist < 0.5) return false;
-                double dot = forward.dot(toEntity.normalize());
-                return dot >= cosAngle; // コーン内判定
+                Vec3 ePos = entity.position().add(0, entity.getBbHeight() / 2.0, 0);
+                for (Vec3 bp : branchPoints) {
+                    if (bp.distanceToSqr(ePos) < HIT_RADIUS_SQR) return true;
+                }
+                return false;
             });
 
         float corrBonus = 1.0f + elementLevel * 0.3f;
@@ -867,12 +900,10 @@ public class MagicKatanaSpecialChargeProcedure {
             target.invulnerableTime = 0;
             target.hurt(ModDamageSources.ofElement(player.level(), ElementType.CORROSION, player), 2.0f * corrBonus);
 
-            // 結晶侵食デバフ（レベルで効果時間・強度UP）
-            int durScale = 1 + elementLevel / 4;
-            // MobEffect → attribute modifier / DoT (カスタムダメージ) に置換
-            SpecialDebuffHandler.applyWeakness(target, 140 * durScale, Math.min(2 + elementLevel / 3, 5));
-            SpecialDebuffHandler.applyWither(target, 100 * durScale, 0.5f + Math.min(1 + elementLevel / 4, 3) * 0.5f);
-            SpecialDebuffHandler.applySlowness(target, 80 * durScale, Math.min(1 + elementLevel / 3, 4));
+            // 侵食属性の効果は「防御減少」 のみ。
+            //   実際の防御減少は target.hurt → CorrosionElementDamageHandler 内で
+            //   attribute modifier として適用される ( ARMOR_REDUCTION )。
+            //   ここで 衰弱 / 継続ダメージ / 鈍足 は付与しない ( ユーザー仕様 )。
 
             // ヒットした敵に結晶化エフェクト（敵を覆う紫結晶の爆発）
             if (world instanceof ServerLevel serverLevel) {
@@ -1467,4 +1498,34 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     // createHomingProjectile メソッドは削除（DarkProjectileEntityで置き換え）
+
+    /**
+     * 「髭根」 風の枝分かれパターン用 : 1 セグメント ( start → end ) を 細い線として
+     * パーティクルで描画。 isSub=true なら 副根 ( 細め / 暗め ) として描画。
+     */
+    private static void drawRootSegment(ServerLevel sl, Vec3 start, Vec3 end,
+                                        DustParticleOptions mainDust,
+                                        DustParticleOptions tipDust,
+                                        DustParticleOptions darkDust,
+                                        boolean isSub) {
+        double dist = start.distanceTo(end);
+        int steps = Math.max(2, (int) Math.ceil(dist * (isSub ? 4 : 5)));
+        Vec3 step = end.subtract(start).scale(1.0 / steps);
+        for (int i = 0; i <= steps; i++) {
+            Vec3 p = start.add(step.scale(i));
+            // ベース dust ( 副根は半分の頻度で密度落とす )
+            if (!isSub || (i % 2) == 0) {
+                sl.sendParticles(mainDust, p.x, p.y, p.z, 1, 0.03, 0.03, 0.03, 0.002);
+            }
+            // 末端付近で 明るい tip dust ( 根の先っぽ強調 )
+            if (i >= steps - 2) {
+                sl.sendParticles(tipDust, p.x, p.y, p.z, isSub ? 1 : 2,
+                        0.05, 0.05, 0.05, 0.005);
+            }
+            // 暗い影 dust を 散発的に
+            if (Math.random() < 0.15) {
+                sl.sendParticles(darkDust, p.x, p.y, p.z, 1, 0.04, 0.04, 0.04, 0.003);
+            }
+        }
+    }
 }

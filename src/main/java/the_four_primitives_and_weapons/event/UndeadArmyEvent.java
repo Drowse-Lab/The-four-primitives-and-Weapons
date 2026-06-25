@@ -200,6 +200,9 @@ public class UndeadArmyEvent {
 
         for (ServerLevel level : event.getServer().getAllLevels()) {
             if (!level.dimensionType().natural()) continue;
+            // ワールド設定で mob spawn が OFF / 難易度が PEACEFUL なら侵攻させない
+            if (!level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING)) continue;
+            if (level.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) continue;
 
             long dayTime = level.getDayTime() % 24000;
             if (dayTime < 13000 || dayTime > 23000) continue;
@@ -244,6 +247,9 @@ public class UndeadArmyEvent {
     public static boolean triggerRaid(ServerPlayer player) {
         if (activeRaids.containsKey(player.getUUID())) return false;
         if (!(player.level() instanceof ServerLevel level)) return false;
+        // mob spawn OFF / PEACEFUL ではコマンドからも発動させない
+        if (!level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING)) return false;
+        if (level.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) return false;
         CustomDifficulty diff = CustomDifficultyCommand.getCurrentDifficulty();
         startRaid(level, player, diff);
         cooldowns.put(player.getUUID(), COOLDOWN_TICKS);
@@ -293,6 +299,12 @@ public class UndeadArmyEvent {
     private static void spawnWave(UndeadRaid raid) {
         ServerPlayer player = raid.player;
         if (!(player.level() instanceof ServerLevel level)) return;
+        // 進行中に mob spawn が OFF / PEACEFUL に変えられたら次ウェーブをスポーンせず中断
+        if (!level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING)
+                || level.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) {
+            endRaid(player.getUUID(), false);
+            return;
+        }
 
         int aiLevel = CustomDifficultyCommand.getCurrentDifficulty().getAiLevel();
         raid.currentWave++;

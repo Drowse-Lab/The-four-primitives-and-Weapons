@@ -212,18 +212,39 @@ public class MagicalKatanaCrystalHandler {
                 AABB area = new AABB(
                         ic.x - DROPPED_DESTROY_AOE_RADIUS, ic.y - DROPPED_DESTROY_AOE_RADIUS, ic.z - DROPPED_DESTROY_AOE_RADIUS,
                         ic.x + DROPPED_DESTROY_AOE_RADIUS, ic.y + DROPPED_DESTROY_AOE_RADIUS, ic.z + DROPPED_DESTROY_AOE_RADIUS);
+                int aoeHits = 0;
+                int aoeScanned = 0;
                 for (net.minecraft.world.entity.LivingEntity le
                         : sl.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, area)) {
+                    aoeScanned++;
                     // 距離での厳密チェック ( AABB の角は radius 超え部分があるので球で絞り込み )
                     if (le.distanceToSqr(ic) > DROPPED_DESTROY_AOE_RADIUS * DROPPED_DESTROY_AOE_RADIUS) continue;
                     // owner と同チームのプレイヤーは除外 ( = 味方判定 )
                     if (le instanceof Player p && !p.getUUID().equals(ownerId) && areAllies(owner, p)) continue;
+
+                    // invulnerableTime を 0 にして 連続ダメージが落ちないように
+                    le.invulnerableTime = 0;
+                    boolean hit = false;
+                    // 1) 侵食属性 DamageSource で hurt 試行 ( 主経路 )
                     try {
-                        // invulnerableTime を 0 にして 連続ダメージが落ちないように
-                        le.invulnerableTime = 0;
                         CorrosionElementDamageHandler.applyCorrosionDamage(
                                 le, DROPPED_DESTROY_AOE_DAMAGE, owner, MATERIALIZED_LEVEL);
+                        hit = true;
                     } catch (Throwable ignored) {}
+                    // 2) 上で失敗 / 入らなかった場合は vanilla magic damage に fallback
+                    if (!hit || !le.isDeadOrDying()) {
+                        try {
+                            le.invulnerableTime = 0;
+                            le.hurt(owner.damageSources().magic(), DROPPED_DESTROY_AOE_DAMAGE);
+                            hit = true;
+                        } catch (Throwable ignored) {}
+                    }
+                    if (hit) aoeHits++;
+                }
+                if (owner instanceof net.minecraft.server.level.ServerPlayer sp) {
+                    sp.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                            "§7爆散 §c" + aoeHits + " §7体ヒット ( 半径 " + (int) DROPPED_DESTROY_AOE_RADIUS
+                                    + " m に §e" + aoeScanned + " §7体 )"));
                 }
                 // 演出
                 spawnShatterParticles(sl, ie.getX(), ie.getY() + 0.2, ie.getZ());

@@ -164,6 +164,9 @@ public class CustomDifficultyEventHandler {
         if (!(source.level() instanceof ServerLevel serverLevel)) {
             return;
         }
+        // ワールド設定で mob spawn が OFF / 難易度が PEACEFUL なら援軍も湧かせない
+        if (!serverLevel.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING)) return;
+        if (serverLevel.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) return;
 
         EntityType<?> reinforceType = null;
 

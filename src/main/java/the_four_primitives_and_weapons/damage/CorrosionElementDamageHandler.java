@@ -72,30 +72,11 @@ public class CorrosionElementDamageHandler {
             // 失敗してもダメージは通す
         }
 
-        // 防具の耐久値を少し削る (侵食属性の追加効果)
-        //   Lv1-2 = 1, Lv3-4 = 1-2, Lv10 = 5  amount/装備
-        //   target 自身が onBroken 通知の対象 (broadcastBreakEvent はバニラ既定)
-        try {
-            int wear = Math.max(1, elementLevel / 2);
-            for (ItemStack armor : target.getArmorSlots()) {
-                if (armor == null || armor.isEmpty()) continue;
-                if (!armor.isDamageableItem()) continue;
-                try {
-                    armor.hurtAndBreak(wear, target, e -> { /* no slot-specific break callback */ });
-                } catch (Throwable ignored) {}
-            }
-        } catch (Throwable ignored) {}
-
-        // 攻撃力減少 (MobEffect.WEAKNESS は牛乳で消されるので attribute modifier で実装)
-        try {
-            double atkReduction = Math.min(
-                    ATTACK_REDUCTION_PER_LEVEL * Math.max(elementLevel, 1),
-                    ATTACK_REDUCTION_MAX);
-            applyAttackReduction(target, atkReduction, ARMOR_REDUCTION_DURATION);
-        } catch (Throwable ignored) {}
-
-        // (旧: ElementalDoTHandler で持続ダメージを付与していたが、 ユーザー要望で削除)
-        // 侵食属性は「防御力低下 + 攻撃力低下 + 防具耐久消費」 で完結する。
+        // 侵食属性の効果は「防御力低下のみ ( 一定時間 )」 ( ユーザー仕様 )。
+        //   - 旧: 防具耐久消費 → 削除
+        //   - 旧: 攻撃力減少    → 削除
+        //   - 旧: 持続ダメージ  → 削除
+        // 既に上で applyArmorReduction を呼び 防御減少を 期限付きで 付与済み。
 
         // パーティクル — 侵食属性のイメージカラー: 赤紫 (マゼンタ寄り)
         try {

@@ -130,8 +130,23 @@ public class SkillRegistry {
         register("electric_discharge", "放電バースト", "周囲に電撃を放出",
                 MotionCategory.SPECIAL, allSlots, "KurikarakenswordItem");
         // sword_of_night_tpは右クリック専用（sword_of_night_specialに統合済み）
+        // 「magic_katana_special」 は MagicalKatanaItem ( 侵食ベース ) と
+        // MagischesFeenKatanaItem ( 妖精ベース ) の両方で使えるデフォルト技
         register("magic_katana_special", "魔法刀・特殊攻撃", "魔法を纏った特殊攻撃",
-                MotionCategory.SPECIAL, allSlots, "MagischesFeenKatanaItem");
+                MotionCategory.SPECIAL, allSlots, "MagicalKatanaItem,MagischesFeenKatanaItem");
+    }
+
+    /**
+     * requiredWeaponClass の文字列 ( カンマ区切り可 ) と weaponClassName を照合する。
+     * 例: required = "MagicalKatanaItem,MagischesFeenKatanaItem"、 weaponClassName = "MagicalKatanaItem" → true
+     */
+    private static boolean weaponClassMatches(String requiredWeaponClass, String weaponClassName) {
+        if (requiredWeaponClass == null || weaponClassName == null) return false;
+        if (requiredWeaponClass.equals(weaponClassName)) return true;
+        for (String s : requiredWeaponClass.split(",")) {
+            if (s.trim().equals(weaponClassName)) return true;
+        }
+        return false;
     }
 
     /**
@@ -191,7 +206,7 @@ public class SkillRegistry {
                 result.add(info);
             } else if (info.category == MotionCategory.SPECIAL
                     && weaponClass != null
-                    && weaponClass.equals(info.requiredWeaponClass)) {
+                    && weaponClassMatches(info.requiredWeaponClass, weaponClass)) {
                 result.add(info);
             }
         }
@@ -260,7 +275,7 @@ public class SkillRegistry {
         List<String> result = new ArrayList<>();
         for (MotionInfo info : BY_ID.values()) {
             if (info.category == MotionCategory.SPECIAL
-                && weaponClassName.equals(info.requiredWeaponClass)) {
+                && weaponClassMatches(info.requiredWeaponClass, weaponClassName)) {
                 result.add(info.id);
             }
         }
