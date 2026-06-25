@@ -3,6 +3,7 @@ package the_four_primitives_and_weapons.init;
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 import the_four_primitives_and_weapons.item.AntiGravityBraceletItem;
 import the_four_primitives_and_weapons.item.ExplosiveThrowingKnifeItem;
+import the_four_primitives_and_weapons.item.MaterializedPouchItem;
 
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
@@ -24,6 +25,10 @@ public final class KnifeExtrasRegistrar {
 
     public static final RegistryObject<Item> ANTI_GRAVITY_BRACELET =
         ITEMS.register("anti_gravity_bracelet", AntiGravityBraceletItem::new);
+
+    /** 具現化武器を保管する結晶ポーチ ( 右クリックで中身 GUI ) */
+    public static final RegistryObject<Item> MATERIALIZED_POUCH =
+        ITEMS.register("materialized_pouch", MaterializedPouchItem::new);
 
     private KnifeExtrasRegistrar() {}
 }

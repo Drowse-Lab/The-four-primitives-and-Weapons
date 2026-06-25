@@ -61,6 +61,8 @@ public class MagicalKatanaCrystalHandler {
     private static final String CRYSTAL_LIFE_KEY  = "MagicalKatanaCrystalLifeTicks";
     private static final String MAT_TAG_KEY       = "Materialized";
     private static final String MAT_OWNER_KEY     = "MaterializedFor";
+    /** 具現化武器に埋め込む「結晶化前の元装備」の完全 NBT ( 破壊で元に戻すために使う ) */
+    private static final String MAT_ORIGINAL_KEY  = "OriginalEquipment";
     private static final String UNLOCKED_KEY      = "MagicalKatanaUnlocked";
     /** player persistent data: 結晶化前の magical katana NBT を保存して、 具現化版に転送する */
     private static final String PLAYER_SAVED_MK_NBT_KEY = "SavedMagicalKatanaNBT";
@@ -311,6 +313,37 @@ public class MagicalKatanaCrystalHandler {
     }
 
     /**
+     * 具現化マーカー ( {@link #MAT_TAG_KEY} ) が付いた「あらゆるアイテム」か。
+     * ローダウトポーチで防具 / Curios 品 / 武器を具現化版として扱うために、
+     * Magical Katana 限定の {@link #isMaterialized} とは別に汎用判定を提供する。
+     */
+    public static boolean isAnyMaterialized(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        CompoundTag tag = stack.getTag();
+        return tag != null && tag.getBoolean(MAT_TAG_KEY);
+    }
+
+    /**
+     * 任意の装備の「具現化版コピー」を作る ( 壊れ物 )。
+     *   - Materialized = true / MaterializedFor = owner
+     *   - 元装備 ( {@link #MAT_ORIGINAL_KEY} ) を埋め込み、 破壊で元に戻せるようにする
+     *   - Magical Katana の場合は侵食属性 Lv12 も付与 ( 既存仕様に合わせる )
+     */
+    public static ItemStack materializeCopy(ItemStack original, UUID ownerId) {
+        if (original == null || original.isEmpty()) return ItemStack.EMPTY;
+        ItemStack copy = original.copy();
+        copy.setCount(1);
+        CompoundTag tag = copy.getOrCreateTag();
+        tag.putBoolean(MAT_TAG_KEY, true);
+        tag.putUUID(MAT_OWNER_KEY, ownerId);
+        if (isMagicalKatana(copy)) {
+            try { ElementalDamageUtils.setElement(copy, ElementType.CORROSION, MATERIALIZED_LEVEL); } catch (Throwable ignored) {}
+        }
+        embedOriginal(copy, original);
+        return copy;
+    }
+
+    /**
      * 特殊技 ( 結晶生成 ) を解放済みか。
      *   解放条件:
      *     - 一度 Saya に納刀された ( performSheathing で setUnlocked )
@@ -352,7 +385,66 @@ public class MagicalKatanaCrystalHandler {
         tag.putBoolean(MAT_TAG_KEY, true);
         tag.putUUID(MAT_OWNER_KEY, ownerId);
         ElementalDamageUtils.setElement(weapon, ElementType.CORROSION, MATERIALIZED_LEVEL);
+        // 元装備が不明なので「素の Magical Katana」を復元対象として埋め込む
+        embedOriginal(weapon, new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get()));
         return weapon;
+    }
+
+    /**
+     * 具現化武器に「結晶化前の元装備」の完全 NBT を埋め込む。
+     * R キーの破壊で {@link #revertToOriginal} がこれを読んで元装備に戻す。
+     */
+    public static void embedOriginal(ItemStack materialized, ItemStack original) {
+        if (materialized.isEmpty() || original == null || original.isEmpty()) return;
+        ItemStack clean = original.copy();
+        // 元装備に具現化マーカーが残っていたら剥がす ( 入れ子防止 )
+        CompoundTag ct = clean.getTag();
+        if (ct != null) {
+            ct.remove(MAT_TAG_KEY);
+            ct.remove(MAT_OWNER_KEY);
+            ct.remove(MAT_ORIGINAL_KEY);
+        }
+        materialized.getOrCreateTag().put(MAT_ORIGINAL_KEY, clean.save(new CompoundTag()));
+    }
+
+    /**
+     * 具現化武器を「元装備していたもの」に戻す。
+     *   - 埋め込まれた {@link #MAT_ORIGINAL_KEY} があればそれを復元
+     *   - 無ければ具現化マーカー / 侵食属性を剥がした素の Magical Katana にフォールバック
+     */
+    public static ItemStack revertToOriginal(ItemStack materialized) {
+        if (!isAnyMaterialized(materialized)) return ItemStack.EMPTY;
+        CompoundTag tag = materialized.getTag();
+        if (tag != null && tag.contains(MAT_ORIGINAL_KEY, 10)) { // 10 = COMPOUND
+            ItemStack orig = ItemStack.of(tag.getCompound(MAT_ORIGINAL_KEY));
+            if (!orig.isEmpty()) return orig;
+        }
+        // フォールバック: 具現化マーカーを剥がす
+        ItemStack base = materialized.copy();
+        CompoundTag bt = base.getTag();
+        if (bt != null) {
+            bt.remove(MAT_TAG_KEY);
+            bt.remove(MAT_OWNER_KEY);
+            bt.remove(MAT_ORIGINAL_KEY);
+        }
+        try {
+            ElementalDamageUtils.setElement(base, ElementType.NONE, 0);
+        } catch (Throwable ignored) {}
+        return base;
+    }
+
+    /** owner の UUID が刻まれた具現化版アイテムか ( 防具 / Curios / 武器 すべて対象 ) */
+    public static boolean isOwnedMaterialized(ItemStack s, UUID ownerId) {
+        if (!isAnyMaterialized(s)) return false;
+        CompoundTag tg = s.getTag();
+        return tg != null && tg.hasUUID(MAT_OWNER_KEY) && tg.getUUID(MAT_OWNER_KEY).equals(ownerId);
+    }
+
+    /** 破壊演出 ( パーティクル + 音 ) を public で公開 ( ローダウト復帰時にも使う ) */
+    public static void playShatterAt(ServerLevel sl, double x, double y, double z) {
+        spawnShatterParticles(sl, x, y, z);
+        sl.playSound(null, x, y, z, SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.PLAYERS, 1.0f, 0.9f);
+        sl.playSound(null, x, y, z, SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.7f, 1.2f);
     }
 
     /**
@@ -505,6 +597,24 @@ public class MagicalKatanaCrystalHandler {
             }
         }
 
+        // 「結晶化前の元装備」を埋め込む ( R キーの破壊で元に戻すため )。
+        //   優先順: 手に残ってる元 template → player.persistentData の保存 NBT → 素の Magical Katana
+        ItemStack original = null;
+        if (templateForEnchants != null && !templateForEnchants.isEmpty()) {
+            original = templateForEnchants.copy();
+        } else if (ownerForRestore != null) {
+            CompoundTag pd = ownerForRestore.getPersistentData();
+            if (pd.contains(PLAYER_SAVED_MK_NBT_KEY, 10)) {
+                ItemStack restored = new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get());
+                restored.setTag(pd.getCompound(PLAYER_SAVED_MK_NBT_KEY).copy());
+                original = restored;
+            }
+        }
+        if (original == null || original.isEmpty()) {
+            original = new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get());
+        }
+        embedOriginal(weapon, original);
+
         // owner に渡す ( 居なければ落下 )
         Player owner = sl.getServer().getPlayerList().getPlayer(ownerId);
         if (owner != null && owner.isAlive()) {
@@ -527,6 +637,14 @@ public class MagicalKatanaCrystalHandler {
         sl.sendParticles(ParticleTypes.FLASH, pos.x, pos.y, pos.z, 1, 0, 0, 0, 0);
         sl.playSound(null, pos.x, pos.y, pos.z,
                 SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.5f, 1.2f);
+
+        // 結晶破壊と同時に、 owner が結晶ローダウトポーチを持っていれば中身を
+        // 具現化版として実スロットへ一括装着する ( 呼び出しは Deployed フラグで 1 回限り )。
+        if (owner instanceof net.minecraft.server.level.ServerPlayer sp) {
+            try {
+                the_four_primitives_and_weapons.util.LoadoutPouchHelper.deploy(sp);
+            } catch (Throwable ignored) {}
+        }
     }
 
     // ─────────────────────────────────────────────────────────────

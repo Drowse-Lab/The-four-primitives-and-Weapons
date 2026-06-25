@@ -57,20 +57,18 @@ public class RMessage {
 			ItemStack mainHand = entity.getItemInHand(InteractionHand.MAIN_HAND);
 			ItemStack offHand = entity.getItemInHand(InteractionHand.OFF_HAND);
 
-			// 具現化 Magical Katana の R 短押し動作:
-			//   抜刀は最優先でインベントリにある鞘から。 鞘がインベに 1 個も無ければ shatter。
-			boolean hasSayaInInv = hasAnyScabbardInInventory(entity);
-			if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(mainHand)
-					&& !hasSayaInInv) {
-				the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.shatterOnSheathe(
-						entity, mainHand, InteractionHand.MAIN_HAND);
-				return;
-			}
-			if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(offHand)
-					&& !hasSayaInInv) {
-				the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.shatterOnSheathe(
-						entity, offHand, InteractionHand.OFF_HAND);
-				return;
+			// 具現化装備の R 短押し動作:
+			//   手に具現化版を持っている / 結晶ローダウトを呼び出し中なら、 装着中の具現化版を
+			//   全部破壊して元装備を結晶ポーチに戻す ( 防具 / Curios / 武器 すべて )。
+			if (entity instanceof net.minecraft.server.level.ServerPlayer sp) {
+				boolean hasMat = the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isAnyMaterialized(mainHand)
+						|| the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isAnyMaterialized(offHand);
+				if (hasMat || the_four_primitives_and_weapons.util.LoadoutPouchHelper.hasDeployedLoadout(sp)) {
+					int n = the_four_primitives_and_weapons.util.LoadoutPouchHelper.returnToPouch(sp);
+					sp.displayClientMessage(net.minecraft.network.chat.Component.literal(
+							"§d具現化装備を §f" + n + " §d点破壊してポーチに戻しました"), true);
+					return;
+				}
 			}
 
 			boolean mainIsBluepurge = isBluepurge(mainHand);
