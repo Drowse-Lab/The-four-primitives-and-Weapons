@@ -27,6 +27,10 @@
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
         "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
+      },
+      "default_motions": {
+        "right_click": "dodge",
+        "shift_right_click": "guard"
       }
     },
     "rapier": {
