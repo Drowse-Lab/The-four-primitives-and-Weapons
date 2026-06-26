@@ -113,6 +113,8 @@ public class SkillRegistry {
                 MotionCategory.SPECIAL, rightClickOnly, "GateItem");
         register("rivers_of_blood_special", "Hemorrhagic Eclipse", "右クリック連打:前方扇形に血斬撃 (連撃) / bleed + 命中ごとに +1.5HP 吸収",
                 MotionCategory.SPECIAL, rightClickOnly, "RiversOfBloodItem");
+        register("giant_bone_arm_special", "巨骨の腕", "右クリック長押し:肩から巨大な骨の腕を生やし 薙ぎ払い→地叩き。着弾点から半径16mを揺らす",
+                MotionCategory.SPECIAL, rightClickOnly, "KatanaNiguHumerusItem");
 
         // === Shift+右クリック専用モーション ===
         Set<AttackSlot> shiftRightClickOnly = EnumSet.of(AttackSlot.SHIFT_RIGHT_CLICK);

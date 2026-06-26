@@ -5,6 +5,8 @@ import the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
@@ -47,13 +49,75 @@ public class MaterializedPouchItem extends Item {
         super(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC));
     }
 
+    /**
+     * 右クリック        : 着用中の防具をポーチへ収納 ( = 装備をセット )
+     * スニーク+右クリック: 中身を全部インベントリへ取り出す
+     *
+     * ( バンドル操作 = ポーチとアイテムを右クリックで重ねる、 も併用可 )
+     */
+    @Override
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+        ItemStack pouch = player.getItemInHand(hand);
+        if (level.isClientSide) {
+            return InteractionResultHolder.sidedSuccess(pouch, true);
+        }
+
+        // スニーク+右クリック → 全部取り出し ( 取り出しは結晶化中でも可 )
+        if (player.isShiftKeyDown()) {
+            int out = 0;
+            ItemStack[] lo = getLoadout(pouch);
+            for (int i = 0; i < SLOTS; i++) {
+                if (lo[i].isEmpty()) continue;
+                if (!player.getInventory().add(lo[i])) player.drop(lo[i], false);
+                lo[i] = ItemStack.EMPTY;
+                out++;
+            }
+            setLoadout(pouch, lo);
+            player.displayClientMessage(Component.literal("§d結晶ポーチ §7— 中身を §f" + out + " §7点取り出した"), true);
+            return InteractionResultHolder.sidedSuccess(pouch, false);
+        }
+
+        // 右クリック → 着用中の防具をポーチへ収納 ( 結晶化中は不可 )
+        if (isInsertLocked(pouch, player)) {
+            player.displayClientMessage(Component.literal("§c呼び出し中は収納できません"), true);
+            return InteractionResultHolder.fail(pouch);
+        }
+        int stored = 0;
+        ItemStack[] lo = getLoadout(pouch);
+        for (EquipmentSlot slot : ARMOR_SLOTS) {
+            ItemStack worn = player.getItemBySlot(slot);
+            if (worn.isEmpty() || !canStore(worn)) continue;
+            int empty = firstEmpty(lo);
+            if (empty < 0) break;
+            lo[empty] = worn.copy();
+            player.setItemSlot(slot, ItemStack.EMPTY);
+            stored++;
+        }
+        setLoadout(pouch, lo);
+        if (stored > 0) {
+            playInsert(player);
+            player.displayClientMessage(Component.literal("§d結晶ポーチ §7— 着用防具を §f" + stored + " §7点セットした"), true);
+            return InteractionResultHolder.sidedSuccess(pouch, false);
+        }
+        player.displayClientMessage(Component.literal(
+            "§7着用防具が無い / ポーチが満杯です §8( スニーク+右クリックで取り出し )"), true);
+        return InteractionResultHolder.fail(pouch);
+    }
+
+    /** 最初の空き枠 index ( 無ければ -1 ) */
+    private static int firstEmpty(ItemStack[] lo) {
+        for (int i = 0; i < SLOTS; i++) if (lo[i].isEmpty()) return i;
+        return -1;
+    }
+
     // --- 収納可否 -------------------------------------------------------
 
-    /** 収納できるアイテムか ( ポーチ自身 / 具現化版 / 空 以外なら何でも可 ) */
+    /** 収納できるアイテムか ( ポーチ自身 / 具現化版 / Magical Katana / 空 は不可 ) */
     public static boolean canStore(ItemStack stack) {
         if (stack.isEmpty()) return false;
         if (stack.getItem() instanceof MaterializedPouchItem) return false;     // 入れ子防止
         if (MagicalKatanaCrystalHandler.isAnyMaterialized(stack)) return false; // 具現化版は不可
+        if (MagicalKatanaCrystalHandler.isMagicalKatana(stack)) return false;   // Magical Katana は不可
         return true;
     }
 
@@ -115,12 +179,19 @@ public class MaterializedPouchItem extends Item {
      * 場合は新規収納を禁止する ( 取り出しは常に可 )。 侵食属性の有無は問わない。
      */
     private static boolean isInsertLocked(ItemStack pouch, Player player) {
-        if (isDeployed(pouch)) return true;
-        if (player != null) {
-            var inv = player.getInventory();
-            for (int i = 0; i < inv.getContainerSize(); i++) {
-                if (MagicalKatanaCrystalHandler.isAnyMaterialized(inv.getItem(i))) return true;
-            }
+        return isInsertLocked(player);
+    }
+
+    /**
+     * GUI / バンドルで「収納」 をロックすべきか。
+     * 判定は <b>具現化防具が実際に装備スロットに着いているか</b> ( = 結晶化が有効中 ) 。
+     * Deployed フラグが残っても、 具現化防具が無ければ収納できる ( ロック残り防止 )。
+     */
+    public static boolean isInsertLocked(Player player) {
+        if (player == null) return false;
+        java.util.UUID id = player.getUUID();
+        for (EquipmentSlot slot : ARMOR_SLOTS) {
+            if (MagicalKatanaCrystalHandler.isOwnedMaterialized(player.getItemBySlot(slot), id)) return true;
         }
         return false;
     }
@@ -206,6 +277,51 @@ public class MaterializedPouchItem extends Item {
         pouch.getOrCreateTag().putBoolean(TAG_DEPLOYED, deployed);
     }
 
+    /**
+     * スロット i の「空気置換」 フラグ ( bit フラグ )。
+     * ON のとき: 結晶化で そのスロットの中身が空でも、 着用中の防具を空気に置換して退避する。
+     */
+    public static final String TAG_REPLACE_AIR = "ReplaceAir";
+
+    public static boolean getReplaceAir(ItemStack pouch, int i) {
+        CompoundTag tag = pouch.getTag();
+        if (tag == null) return false;
+        return ((tag.getInt(TAG_REPLACE_AIR) >> i) & 1) != 0;
+    }
+
+    public static void setReplaceAir(ItemStack pouch, int i, boolean on) {
+        CompoundTag tag = pouch.getOrCreateTag();
+        int flags = tag.getInt(TAG_REPLACE_AIR);
+        if (on) flags |= (1 << i); else flags &= ~(1 << i);
+        tag.putInt(TAG_REPLACE_AIR, flags);
+    }
+
+    public static void toggleReplaceAir(ItemStack pouch, int i) {
+        setReplaceAir(pouch, i, !getReplaceAir(pouch, i));
+    }
+
+    /**
+     * 「ポーチ由来」 刻印 ( 所有者 UUID )。 ポーチから出した装備に刻んでおくと、
+     * Magical Katana の破壊 ( returnToPouch ) で 確実に見つけて回収できる。
+     */
+    public static final String TAG_FROM_POUCH = "PouchOwner";
+
+    public static void stampFromPouch(ItemStack stack, java.util.UUID owner) {
+        if (stack.isEmpty() || owner == null) return;
+        stack.getOrCreateTag().putUUID(TAG_FROM_POUCH, owner);
+    }
+
+    public static boolean isFromPouch(ItemStack stack, java.util.UUID owner) {
+        if (stack.isEmpty()) return false;
+        CompoundTag t = stack.getTag();
+        return t != null && t.hasUUID(TAG_FROM_POUCH) && t.getUUID(TAG_FROM_POUCH).equals(owner);
+    }
+
+    public static void clearFromPouch(ItemStack stack) {
+        CompoundTag t = stack.getTag();
+        if (t != null) t.remove(TAG_FROM_POUCH);
+    }
+
     public static ItemStack findFirst(Player player) {
         var inv = player.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
@@ -247,7 +363,7 @@ public class MaterializedPouchItem extends Item {
             }
         }
         tooltip.add(Component.literal("§8バンドル式: ポーチ↔アイテムを右クリックで出し入れ"));
-        tooltip.add(Component.literal("§8結晶化アイテム所持中は取り出しのみ可 ( 収納不可 )"));
+        tooltip.add(Component.literal("§8呼び出し中は取り出しのみ可 ( 収納不可 )"));
         tooltip.add(Component.literal("§8Magical Katana の結晶破壊で具現化装着 ( 1 回 )"));
         tooltip.add(Component.literal("§8R キー: 具現化装備を破壊して元装備に戻す"));
     }

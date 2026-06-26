@@ -1,13 +1,10 @@
 package the_four_primitives_and_weapons.client.event;
 
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 
 import org.joml.Vector3f;
 
@@ -39,19 +36,9 @@ public final class ChargeParticleEmitter {
         if (!hitThreshold) return;
         if (!(world instanceof ServerLevel sl)) return;
 
-        Vec3 look = player.getLookAngle().normalize();
-
-        // 「ピン」 とした 軽い 鈴音 ( マックスチャージの合図 )
+        // 「ピン」 とした 軽い 鈴音 ( マックスチャージの合図 )。
+        // 閃光 ( FLASH ) パーティクルは視界が眩しいので出さない。
         sl.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.7f, 1.8f);
-
-        // owner ( 自分 ) 視点だけ ピンポイントで FLASH 1 個 ( ガッツリ赤くしない )
-        if (player instanceof ServerPlayer sp) {
-            sl.sendParticles(sp, ParticleTypes.FLASH, true,
-                    sp.getX() + look.x * 1.0,
-                    sp.getEyeY() - 0.2,
-                    sp.getZ() + look.z * 1.0,
-                    1, 0, 0, 0, 0);
-        }
     }
 }

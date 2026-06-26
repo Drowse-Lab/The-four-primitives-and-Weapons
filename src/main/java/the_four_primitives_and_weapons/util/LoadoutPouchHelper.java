@@ -62,13 +62,22 @@ public final class LoadoutPouchHelper {
         int equipped = 0;
 
         for (int i = 0; i < MaterializedPouchItem.SLOTS; i++) {
-            if (loadout[i].isEmpty()) continue;
             EquipmentSlot slot = MaterializedPouchItem.ARMOR_SLOTS[i];
-            ItemStack mat = MagicalKatanaCrystalHandler.materializeCopy(loadout[i], ownerId);
             ItemStack worn = player.getItemBySlot(slot).copy(); // 元々着ていた防具 ( 空可 )
-            player.setItemSlot(slot, mat);
-            loadout[i] = worn; // 元装備をポーチへ一時退避
-            equipped++;
+            if (!loadout[i].isEmpty()) {
+                // 戦闘防具あり → 具現化装着、 元装備を退避
+                ItemStack mat = MagicalKatanaCrystalHandler.materializeCopy(loadout[i], ownerId);
+                MaterializedPouchItem.stampFromPouch(mat, ownerId); // ポーチ由来の刻印
+                player.setItemSlot(slot, mat);
+                loadout[i] = worn;
+                equipped++;
+            } else if (MaterializedPouchItem.getReplaceAir(pouch, i) && !worn.isEmpty()) {
+                // 空きスロット + 空気置換 ON → 着用防具を空気に置換して退避
+                player.setItemSlot(slot, ItemStack.EMPTY);
+                loadout[i] = worn;
+                equipped++;
+            }
+            // 空き + 置換 OFF → 何もしない
         }
 
         if (equipped <= 0) return 0;
@@ -108,18 +117,25 @@ public final class LoadoutPouchHelper {
                 ? MaterializedPouchItem.getLoadout(pouch) : new ItemStack[MaterializedPouchItem.SLOTS];
         if (pouch == null) java.util.Arrays.fill(loadout, ItemStack.EMPTY);
 
+        boolean wasDeployed = pouch != null && MaterializedPouchItem.isDeployed(pouch);
         int reverted = 0;
 
         // 着用中の具現化防具を破壊 → 元防具を着け直し、 戦闘防具をポーチへ戻す
         for (int i = 0; i < MaterializedPouchItem.SLOTS; i++) {
             EquipmentSlot slot = MaterializedPouchItem.ARMOR_SLOTS[i];
             ItemStack worn = player.getItemBySlot(slot);
-            if (!MagicalKatanaCrystalHandler.isOwnedMaterialized(worn, ownerId)) continue;
-            ItemStack combat = MagicalKatanaCrystalHandler.revertToOriginal(worn); // 戦闘防具 ( 元 )
             ItemStack stashed = loadout[i]; // deploy 時に退避した元装備
-            player.setItemSlot(slot, stashed == null ? ItemStack.EMPTY : stashed);
-            loadout[i] = combat; // 戦闘防具をポーチへ戻す
-            reverted++;
+            if (MagicalKatanaCrystalHandler.isOwnedMaterialized(worn, ownerId)) {
+                ItemStack combat = MagicalKatanaCrystalHandler.revertToOriginal(worn); // 戦闘防具 ( 元 )
+                player.setItemSlot(slot, stashed == null ? ItemStack.EMPTY : stashed);
+                loadout[i] = combat; // 戦闘防具をポーチへ戻す
+                reverted++;
+            } else if (wasDeployed && stashed != null && !stashed.isEmpty() && worn.isEmpty()) {
+                // 空気置換していたスロット: 退避した元装備を着け直す ( 戦闘防具は無いので枠は空に )
+                player.setItemSlot(slot, stashed);
+                loadout[i] = ItemStack.EMPTY;
+                reverted++;
+            }
         }
 
         // インベントリ / 手に残った「自分の具現化版」も破壊回収:
@@ -137,6 +153,33 @@ public final class LoadoutPouchHelper {
             reverted++;
         }
 
+        // 「ポーチ由来」 刻印 ( PouchOwner ) が付いた装備も確実に回収する:
+        //   手動でポーチから取り出した防具など ( 具現化版ではないもの )。 刻印を消してポーチへ戻す。
+        // 着用スロット
+        for (EquipmentSlot slot : MaterializedPouchItem.ARMOR_SLOTS) {
+            ItemStack worn = player.getItemBySlot(slot);
+            if (worn.isEmpty() || MagicalKatanaCrystalHandler.isOwnedMaterialized(worn, ownerId)) continue;
+            if (!MaterializedPouchItem.isFromPouch(worn, ownerId)) continue;
+            ItemStack clean = worn.copy();
+            MaterializedPouchItem.clearFromPouch(clean);
+            int free = firstEmptyArmorSlotFor(loadout, clean);
+            if (free >= 0) loadout[free] = clean; else giveBack(player, clean);
+            player.setItemSlot(slot, ItemStack.EMPTY);
+            reverted++;
+        }
+        // インベントリ / 手
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (s.isEmpty() || MagicalKatanaCrystalHandler.isOwnedMaterialized(s, ownerId)) continue;
+            if (!MaterializedPouchItem.isFromPouch(s, ownerId)) continue;
+            ItemStack clean = s.copy();
+            MaterializedPouchItem.clearFromPouch(clean);
+            int free = firstEmptyArmorSlotFor(loadout, clean);
+            if (free >= 0) loadout[free] = clean; else giveBack(player, clean);
+            inv.setItem(i, ItemStack.EMPTY);
+            reverted++;
+        }
+
         if (pouch != null) {
             MaterializedPouchItem.setLoadout(pouch, loadout);
             MaterializedPouchItem.setDeployed(pouch, false);
@@ -146,6 +189,72 @@ public final class LoadoutPouchHelper {
             MagicalKatanaCrystalHandler.playShatterAt(sl, player.getX(), player.getY() + 1.0, player.getZ());
         }
         return reverted;
+    }
+
+    /**
+     * 具現化防具を「装備スロットから外した」 ( = main インベントリ / オフハンドへ移動した ) ら、
+     * その具現化防具を破壊し、 ポーチに退避していた元装備をその装備スロットへ戻す ( 1 枚ごと )。
+     * 戦闘防具 ( 具現化の元 ) はポーチへ戻す。 武器は対象外 ( 防具だけ )。
+     */
+    public static void sweepLooseArmor(ServerPlayer player) {
+        if (player == null) return;
+        UUID ownerId = player.getUUID();
+        ItemStack pouch = findPouch(player, true);
+        if (pouch == null) pouch = findPouch(player, false);
+        ItemStack[] lo = (pouch != null) ? MaterializedPouchItem.getLoadout(pouch) : null;
+
+        Inventory inv = player.getInventory();
+        boolean changed = false, loChanged = false;
+
+        for (int i = 0; i < inv.items.size(); i++) {
+            ItemStack s = inv.items.get(i);
+            if (!MagicalKatanaCrystalHandler.isOwnedMaterialized(s, ownerId)) continue;
+            int armorIdx = armorIndexOf(s);
+            if (armorIdx < 0) continue; // 防具だけ
+
+            ItemStack combat = MagicalKatanaCrystalHandler.revertToOriginal(s); // 戦闘防具 ( 元 )
+            inv.items.set(i, ItemStack.EMPTY); // 具現化防具を破壊
+            changed = true;
+
+            EquipmentSlot eslot = MaterializedPouchItem.ARMOR_SLOTS[armorIdx];
+            if (lo != null) {
+                ItemStack stashed = lo[armorIdx]; // 退避していた元装備 ( W )
+                if (player.getItemBySlot(eslot).isEmpty()) {
+                    player.setItemSlot(eslot, stashed == null ? ItemStack.EMPTY : stashed);
+                } else if (stashed != null && !stashed.isEmpty()) {
+                    giveBack(player, stashed);
+                }
+                lo[armorIdx] = combat; // 戦闘防具をポーチへ
+                loChanged = true;
+            } else {
+                giveBack(player, combat);
+            }
+        }
+
+        if (loChanged && pouch != null) MaterializedPouchItem.setLoadout(pouch, lo);
+        if (changed && pouch != null && !anyMaterializedArmorEquipped(player, ownerId)) {
+            MaterializedPouchItem.setDeployed(pouch, false);
+        }
+        if (changed && player.level() instanceof ServerLevel sl) {
+            MagicalKatanaCrystalHandler.playShatterAt(sl, player.getX(), player.getY() + 1.0, player.getZ());
+        }
+    }
+
+    /** スタックが どの防具スロット ( 0..3 ) 用か。 防具でなければ -1。 */
+    private static int armorIndexOf(ItemStack s) {
+        EquipmentSlot es = net.minecraft.world.entity.LivingEntity.getEquipmentSlotForItem(s);
+        for (int i = 0; i < MaterializedPouchItem.ARMOR_SLOTS.length; i++) {
+            if (MaterializedPouchItem.ARMOR_SLOTS[i] == es) return i;
+        }
+        return -1;
+    }
+
+    /** 防具スロットのいずれかに 自分の具現化防具が着いているか */
+    private static boolean anyMaterializedArmorEquipped(ServerPlayer player, UUID ownerId) {
+        for (EquipmentSlot es : MaterializedPouchItem.ARMOR_SLOTS) {
+            if (MagicalKatanaCrystalHandler.isOwnedMaterialized(player.getItemBySlot(es), ownerId)) return true;
+        }
+        return false;
     }
 
     /** orig が収納可能な防具なら、 対応する空き枠の index を返す。 不可 / 空き無しは -1。 */

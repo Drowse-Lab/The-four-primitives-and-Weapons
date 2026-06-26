@@ -10,6 +10,7 @@ import net.minecraft.world.entity.EntityType;
 
 import the_four_primitives_and_weapons.entity.TornadoEntity;
 import the_four_primitives_and_weapons.entity.DarkProjectileEntity;
+import the_four_primitives_and_weapons.entity.GiantBoneArmEntity;
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 
 /**
@@ -37,4 +38,15 @@ public class TheFourPrimitivesAndWeaponsModCustomEntities {
                     .setCustomClientFactory((spawnEntity, level) -> new DarkProjectileEntity(spawnEntity, level))
                     .sized(0.5f, 0.5f)
                     .build("dark_projectile"));
+
+    /** 上腕骨刀の特殊技「巨骨の腕」。プレイヤーにアンカーする召喚エンティティ。 */
+    public static final RegistryObject<EntityType<GiantBoneArmEntity>> GIANT_BONE_ARM = REGISTRY.register("giant_bone_arm",
+            () -> EntityType.Builder.<GiantBoneArmEntity>of(GiantBoneArmEntity::new, MobCategory.MISC)
+                    .setShouldReceiveVelocityUpdates(true)
+                    .setTrackingRange(128)
+                    .setUpdateInterval(1)
+                    .fireImmune()
+                    .setCustomClientFactory((spawnEntity, level) -> new GiantBoneArmEntity(spawnEntity, level))
+                    .sized(1.0f, 1.0f)
+                    .build("giant_bone_arm"));
 }

@@ -56,6 +56,18 @@ public class CustomEntityRenderers {
         // Re:Cross Hookshot
         event.registerEntityRenderer(CustomEntityInit.RECROSS_HOOK_ENTITY.get(),
                 the_four_primitives_and_weapons.client.renderer.RecrossHookRenderer::new);
+
+        // 上腕骨刀 特殊技「巨骨の腕」
+        event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModCustomEntities.GIANT_BONE_ARM.get(),
+                the_four_primitives_and_weapons.client.renderer.GiantBoneArmRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        // 「巨骨の腕」モデルのレイヤー定義
+        event.registerLayerDefinition(
+                the_four_primitives_and_weapons.entity.model.GiantBoneArmModel.LAYER_LOCATION,
+                the_four_primitives_and_weapons.entity.model.GiantBoneArmModel::createBodyLayer);
     }
 
     @SubscribeEvent

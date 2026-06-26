@@ -440,6 +440,23 @@ public class MagicalKatanaCrystalHandler {
         return tg != null && tg.hasUUID(MAT_OWNER_KEY) && tg.getUUID(MAT_OWNER_KEY).equals(ownerId);
     }
 
+    /**
+     * 具現化防具を「外した」 ( = 装備スロットから main インベントリ / オフハンドに移動した ) ら、
+     * その防具だけ結晶化を解いて元装備に戻す。 装備中 ( armor slot ) の物はそのまま。
+     * weapon ( Magical Katana 等 ) は対象外 ( 防具だけ )。
+     */
+    @SubscribeEvent
+    public static void onPlayerArmorSweep(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        Player player = event.player;
+        if (player.level().isClientSide()) return;
+        if ((player.tickCount % 5) != 0) return; // 軽量化 ( 5tick おき )
+        if (!(player instanceof net.minecraft.server.level.ServerPlayer sp)) return;
+
+        // 具現化防具を装備スロットから外したら、 破壊してポーチの元装備をそのスロットへ戻す
+        the_four_primitives_and_weapons.util.LoadoutPouchHelper.sweepLooseArmor(sp);
+    }
+
     /** 破壊演出 ( パーティクル + 音 ) を public で公開 ( ローダウト復帰時にも使う ) */
     public static void playShatterAt(ServerLevel sl, double x, double y, double z) {
         spawnShatterParticles(sl, x, y, z);
@@ -455,6 +472,41 @@ public class MagicalKatanaCrystalHandler {
         spawnCrystal(player, ItemStack.EMPTY);
     }
 
+    /** 登録した武器ロードアウト ( PlayerSkillData ) の非 null 枠数 = 具現化できる上限本数。 */
+    public static int countRegisteredWeapons(Player player) {
+        try {
+            the_four_primitives_and_weapons.skill.PlayerSkillData.SkillStorage data =
+                    the_four_primitives_and_weapons.skill.PlayerSkillData.getSkillData(player);
+            int n = 0;
+            for (int i = 0; i < the_four_primitives_and_weapons.skill.PlayerSkillData.MAX_WEAPON_SLOTS; i++) {
+                if (data.getLoadoutAt(i) != null) n++;
+            }
+            return n;
+        } catch (Throwable ignored) {
+            return 0;
+        }
+    }
+
+    /** owner の UUID が刻まれた具現化 Magical Katana の総数 ( 全プレイヤーのインベ + 落下中 )。 */
+    public static int countOwnedMaterialized(net.minecraft.server.MinecraftServer server, UUID ownerId) {
+        if (server == null) return 0;
+        int count = 0;
+        for (ServerLevel sl : server.getAllLevels()) {
+            for (Player p : sl.players()) {
+                var inv = p.getInventory();
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    if (isOwnedMaterialized(inv.getItem(i), ownerId)
+                            && isMagicalKatana(inv.getItem(i))) count++;
+                }
+            }
+            for (Entity e : sl.getAllEntities()) {
+                if (!(e instanceof net.minecraft.world.entity.item.ItemEntity ie)) continue;
+                if (isOwnedMaterialized(ie.getItem(), ownerId) && isMagicalKatana(ie.getItem())) count++;
+            }
+        }
+        return count;
+    }
+
     /**
      * 結晶生成 + 結晶化前の Magical Katana NBT を player に保存。
      * sourceStack の NBT ( = エンチャント / レアリティ等 ) を player.persistentData に保存しておき、
@@ -463,6 +515,17 @@ public class MagicalKatanaCrystalHandler {
     public static void spawnCrystal(Player player, ItemStack sourceStack) {
         if (player == null || player.level().isClientSide()) return;
         ServerLevel sl = (ServerLevel) player.level();
+
+        // 具現化できる本数 = 登録武器ロードアウト数。 既に上限なら結晶を生成しない。
+        if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
+            int max = countRegisteredWeapons(player);
+            int current = countOwnedMaterialized(sp.getServer(), player.getUUID());
+            if (current >= max) {
+                sp.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                        "§c具現化の上限です §7( 登録武器 " + max + " 本 / 現在 " + current + " 本 )"), true);
+                return;
+            }
+        }
 
         // 結晶化前の NBT を player に保存 ( 具現化版に転送するため )
         if (!sourceStack.isEmpty() && isMagicalKatana(sourceStack) && sourceStack.getTag() != null) {
@@ -551,6 +614,14 @@ public class MagicalKatanaCrystalHandler {
                 SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.PLAYERS, 1.2f, 0.8f);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.8f, 1.2f);
+
+        // Magical Katana が砕けたのと同じタイミングで、 結晶ローダウトの具現化防具も破壊して
+        // 元装備に戻す ( 結晶化=装着 / 破壊=解除 を刀と防具で同期させる )。
+        if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
+            try {
+                the_four_primitives_and_weapons.util.LoadoutPouchHelper.returnToPouch(sp);
+            } catch (Throwable ignored) {}
+        }
     }
 
     // ─────────────────────────────────────────────────────────────

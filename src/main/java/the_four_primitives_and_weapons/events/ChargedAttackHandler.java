@@ -88,6 +88,7 @@ public class ChargedAttackHandler {
         boolean isFallingCharge = false; // 落下中のチャージ
         int fallTime = 0; // 落下時間
         int chargeCooldown = 0; // チャージ攻撃後のクールダウン
+        boolean maxChargeNotified = false; // 最大チャージ到達の「ピン」を鳴らしたか ( 1 回だけ )
 
         // Loki the Trickster用フィールド
         int lokiChargeTime = 0;
@@ -100,6 +101,7 @@ public class ChargedAttackHandler {
             chargingItem = ItemStack.EMPTY;
             isFallingCharge = false;
             fallTime = 0;
+            maxChargeNotified = false; // 次のチャージで再び鳴らせるように
             // クールダウンは維持
         }
 
@@ -169,6 +171,14 @@ public class ChargedAttackHandler {
                         player.getX(), player.getY() + 1, player.getZ(),
                         10, 0.5, 0.5, 0.5, 0.1
                     );
+                }
+                // 最大まで貯まった「瞬間」に 1 回だけ「ピン」と鳴らす
+                if (!data.maxChargeNotified) {
+                    data.maxChargeNotified = true;
+                    player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                        SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.PLAYERS, 1.0f, 2.0f);
+                    player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
+                        SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.7f, 2.0f);
                 }
             }
         }

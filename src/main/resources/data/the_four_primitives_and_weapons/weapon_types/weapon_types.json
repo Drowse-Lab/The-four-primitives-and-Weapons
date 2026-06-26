@@ -17,6 +17,7 @@
         "the_four_primitives_and_weapons:prototype_katana",
         "the_four_primitives_and_weapons:my_test_iron_katana",
         "the_four_primitives_and_weapons:rivers_of_blood",
+        "the_four_primitives_and_weapons:katana_nigu_humerus",
         "the_four_primitives_and_weapons:old_katana",
         "the_four_primitives_and_weapons:loki_the_trickster",
         "the_four_primitives_and_weapons:replica_sword_of_light"
@@ -225,6 +226,12 @@
       "enabled": true,
       "special_motions": {
         "right_click": ["rivers_of_blood_special"]
+      }
+    },
+    "the_four_primitives_and_weapons:katana_nigu_humerus": {
+      "enabled": true,
+      "special_motions": {
+        "right_click": ["giant_bone_arm_special"]
       }
     },
     "the_four_primitives_and_weapons:gate": {
