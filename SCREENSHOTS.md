@@ -151,36 +151,15 @@ Magical Katana の「結晶化 → 具現化」と、装備一式を持ち運ぶ
 | 武器 | 特殊技 | 撮影ポイント |
 |---|---|---|
 | **Rivers of Blood** | 血の斬撃・吸血（呪い敵に強化） | 斬撃波／吸血で回復するHUD |
-| **Knife Holder（ナイフランチャー）** | 多重投げナイフ（モード/本数切替・内蔵在庫） | 扇形に多数のナイフ／内蔵GUI（シフト右クリック） |
+| **Knife Holder（ナイフホルダー）** | 多重投げナイフ（モード/本数切替・内蔵在庫） | 扇形に多数のナイフ／内蔵GUI（シフト右クリック） |
 | **Re:Cross Hookshot** | フックショット（グラップル移動） | フックが伸びて引き寄せ/移動する瞬間 |
 | **Wither Katana** | Wither付与（呪い敵に強化） | Witherエフェクトの敵 |
 
-### ✅ 属性アビリティ系（右クリックで発動 / Curios装備可）
-
-魔法書/発動アイテム。**右クリックで属性攻撃を発動** → エフェクトを撮影。
-
-- [ ] **Thunderbolt（雷）** — 落雷/電撃の発動
-- [ ] **Bubbleshot（水・泡）** — 泡弾の発射
-- [ ] **Wind Step（風）** — 風のステップ移動
-- [ ] **Storm（嵐）** — 範囲嵐エフェクト
-- [ ] **Darkness（闇）** — 闇の発動
-- [ ] **Magic Wand（魔法）** — 魔法弾の発射
-
-### ✅ 特殊カタナ（固有挙動あり）
-
-- [ ] **忍者刀 / Ninjatou** — 固有アクションの発動
-- [ ] **蕨手刀 / Warabitetou** — 固有アクションの発動
-- [ ] **Prototype Katana** — 固有アクションの発動
-- [ ] **Darkness Katana** — 闇属性の挙動
 
 ### 📦 カタログ用（特殊技なし・並べて撮ればOK）
 
 - [ ] **レイピア6種** — 木/石/鉄/金/ダイヤ/ネザライト（ティア順に並べる）
 - [ ] **鞘 / Saya 各種** — Katana鞘 / 直刀鞘 / 剣鞘 / レイピア鞘（納刀中の見た目も）
-
-### 防具セット（フル装備の立ち姿を1枚ずつ）
-
-- [ ] **Warden Armor** / **Dragon Armor（赤/青/緑/黒/通常）** / **Illusioner Armor** / **Pillager Armor** / **Stray Outer Armor（＋帽子）** / **Chuzume Husk Armor** / **Das Herz einer Fee Armor** / **Copper Armor**
 
 > **特殊技の確認方法（開発者向けメモ）:** チャージ特殊技は `ChargedAttackHandler#performChargedAttack` の分岐、固有スキルは `isUniqueSkillEnabled(...)` で判定。新武器を足したらここに追記。
 

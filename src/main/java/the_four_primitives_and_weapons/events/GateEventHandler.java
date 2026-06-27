@@ -112,10 +112,16 @@ public class GateEventHandler {
     // ──────────────────────────────────────────────────────────────
 
     private static void tickRitual(ServerLevel level) {
-        // ドロップしている golden_sword を検索 (1秒に1回のみ実行)
-        List<ItemEntity> swords = level.getEntitiesOfClass(ItemEntity.class,
-                new AABB(-30000, -64, -30000, 30000, 320, 30000),
-                e -> e.getItem().getItem() == Items.GOLDEN_SWORD);
+        // 儀式成立には sword 付近にプレイヤーが必須 ( 下の nearPlayers チェック ) なので、
+        // ワールド全体 (±30000) を走査せず、 プレイヤー周辺の golden_sword のみ検索する
+        // ( 結果は同一で、 全チャンク走査の無駄を排除 )。
+        if (level.players().isEmpty()) return;
+        java.util.Set<ItemEntity> swords = new java.util.HashSet<>();
+        for (Player p : level.players()) {
+            swords.addAll(level.getEntitiesOfClass(ItemEntity.class,
+                    p.getBoundingBox().inflate(RITUAL_RANGE + 12),
+                    e -> e.getItem().getItem() == Items.GOLDEN_SWORD));
+        }
         if (swords.isEmpty()) return;
 
         for (ItemEntity swordEntity : swords) {
@@ -181,7 +187,7 @@ public class GateEventHandler {
             // frマーカーをプレイヤーの前方50ブロックに移動 (200半径から100半径に縮小、5tickおき)
             if (level.getGameTime() % 5 == 0) {
                 level.getEntitiesOfClass(ArmorStand.class,
-                        new AABB(pos, pos).inflate(100),
+                        new AABB(pos, pos).inflate(64), // fr マーカーは常に 50 ブロック以内に再配置されるので 64 で十分
                         e -> hasTag(e, TAG_FR)
                 ).forEach(fr -> {
                     Vec3 look = player.getLookAngle();

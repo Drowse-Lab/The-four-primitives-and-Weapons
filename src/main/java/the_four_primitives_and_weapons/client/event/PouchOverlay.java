@@ -216,7 +216,12 @@ public class PouchOverlay {
                 // 空きスロットはバニラ防具インベントリと同じアイコンを表示 ( 何用か分かりやすく )
                 TextureAtlasSprite sprite = mc.getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ARMOR_ICONS[i]);
                 g.blit(sx, sy, 0, 16, 16, sprite);
+            } else if (i == MaterializedPouchItem.SLOT_OFFHAND) {
+                // オフハンド枠はバニラのオフハンド ( 盾 ) アイコン
+                TextureAtlasSprite sprite = mc.getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD);
+                g.blit(sx, sy, 0, 16, 16, sprite);
             }
+            // メインハンド枠は何も表示しない
             if (hovered == i) {
                 g.fill(sx, sy, sx + 16, sy + 16, SLOT_HOVER);
             }
@@ -304,16 +309,20 @@ public class PouchOverlay {
                     new PouchToggleAirMessage(pouchSlot, i));
                 return;
             }
-            // 取り出し: ポーチ由来の刻印を付けておく ( Magical Katana 破壊で確実に回収できる )
+            // 取り出し: 手動で取り出したアイテムは刻印しない ( 普通に使うので破壊対象にしない )
             newSlot = ItemStack.EMPTY;
             newCursor = current.copy();
-            MaterializedPouchItem.stampFromPouch(newCursor, player.getUUID());
         } else {
             if (MaterializedPouchItem.isInsertLocked(player)) return;     // 結晶化中は収納不可
             if (!MaterializedPouchItem.canStore(cursor, i)) return;        // スロット別の種別制限
             if (current.isEmpty()) {
-                newSlot = cursor.copy();
-                newSlot.setCount(1);
+                // 武器スロットは具現化版を通常版へ戻して収納 ( ポーチに具現化品を貯めない )
+                if (MaterializedPouchItem.isWeaponSlot(i)) {
+                    newSlot = MaterializedPouchItem.normalizeForWeaponSlot(cursor);
+                } else {
+                    newSlot = cursor.copy();
+                    newSlot.setCount(1);
+                }
                 ItemStack c = cursor.copy();
                 c.shrink(1);
                 newCursor = c.isEmpty() ? ItemStack.EMPTY : c;

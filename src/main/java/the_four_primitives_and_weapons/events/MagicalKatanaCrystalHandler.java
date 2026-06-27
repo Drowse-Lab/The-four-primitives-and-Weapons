@@ -82,6 +82,18 @@ public class MagicalKatanaCrystalHandler {
     /** owner UUID → 既存結晶があるなら entity UUID ( 同時に複数生やさない ) */
     private static final Map<UUID, UUID> existingCrystal = new ConcurrentHashMap<>();
 
+    // --- ポーチ破壊→回収結晶 ---
+    /** 回収結晶 ArmorStand に埋め込むポーチ ItemStack の NBT。 */
+    private static final String POUCH_RECOVERY_NBT  = "PouchRecoveryNBT";
+    private static final String POUCH_RECOVERY_LIFE = "PouchRecoveryLife";
+    /** 回収結晶の寿命 = 10 分 ( 12000 tick )。 */
+    private static final int    POUCH_RECOVERY_TICKS = 12000;
+    /** 生成済みの回収結晶 ( standUUID → stand )。 寿命/演出管理用。 */
+    private static final Map<UUID, ArmorStand> recoveryCrystals = new ConcurrentHashMap<>();
+    /** 監視中のポーチ ItemEntity ( マグマ/炎/サボテン等での破壊を検知して回収結晶へ変換 )。 */
+    private static final java.util.Set<net.minecraft.world.entity.item.ItemEntity> trackedPouches =
+            java.util.Collections.newSetFromMap(new ConcurrentHashMap<>());
+
     // ─────────────────────────────────────────────────────────────
     // 公開 API
     // ─────────────────────────────────────────────────────────────
@@ -167,23 +179,46 @@ public class MagicalKatanaCrystalHandler {
      */
     public static int destroyAllOwnedMaterialized(net.minecraft.server.MinecraftServer server, Player owner) {
         if (server == null || owner == null) return 0;
+        // 増殖対策: 結晶ポーチが無ければ破壊できない
+        if (the_four_primitives_and_weapons.item.MaterializedPouchItem.findFirst(owner).isEmpty()) {
+            if (owner instanceof net.minecraft.server.level.ServerPlayer sp)
+                sp.displayClientMessage(Component.literal("§c結晶ポーチが無いため破壊できません"), true);
+            return 0;
+        }
         UUID ownerId = owner.getUUID();
         int destroyed = 0;
+        // 自分の具現化「防具」と「武器」は returnToPouch で確実に解除する
+        //   ( 防具 → 元装備に復元してポーチへ / 武器 → ポーチへ )。 これで R の破壊で防具も壊せる。
+        if (owner instanceof net.minecraft.server.level.ServerPlayer ownerSp) {
+            destroyed += the_four_primitives_and_weapons.util.LoadoutPouchHelper.returnToPouch(ownerSp);
+        }
         for (ServerLevel sl : server.getAllLevels()) {
             for (Player p : sl.players()) {
                 var inv = p.getInventory();
                 int destroyedInThisInv = 0;
                 for (int i = 0; i < inv.getContainerSize(); i++) {
                     ItemStack s = inv.getItem(i);
-                    if (!isMaterialized(s)) continue;
-                    CompoundTag tg = s.getTag();
-                    if (tg == null || !tg.hasUUID(MAT_OWNER_KEY)) continue;
-                    if (!tg.getUUID(MAT_OWNER_KEY).equals(ownerId)) continue;
+                    if (!isOwnedMaterialized(s, ownerId)) continue; // UUID基準: 具現化武器・防具を全種類対象に
                     // 破壊 = 完全消滅 ( 残骸の Magical Katana は残さない )
                     inv.setItem(i, ItemStack.EMPTY);
                     destroyed++;
                     destroyedInThisInv++;
                     // 演出 — 侵食属性のイメージカラー ( 赤紫 + ピンク寄り赤紫 )
+                    spawnShatterParticles(sl, p.getX(), p.getY() + 1.0, p.getZ());
+                    sl.playSound(null, p.getX(), p.getY(), p.getZ(),
+                            SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.8f, 1.2f);
+                }
+                // 鞘 ( saya ) に納刀された具現化武器も破壊対象にする ( 「破壊で出てこない」 対策 )
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    ItemStack sc = inv.getItem(i);
+                    if (!the_four_primitives_and_weapons.util.CuriosScabbardHelper.isScabbard(sc)) continue;
+                    if (!the_four_primitives_and_weapons.util.CuriosScabbardHelper.hasStoredWeapon(sc)) continue;
+                    ItemStack stored = the_four_primitives_and_weapons.util.CuriosScabbardHelper.extractWeaponFromScabbard(sc);
+                    if (!isOwnedMaterialized(stored, ownerId)) continue;
+                    the_four_primitives_and_weapons.util.CuriosScabbardHelper.clearWeaponFromScabbard(sc);
+                    inv.setItem(i, sc);
+                    destroyed++;
+                    destroyedInThisInv++;
                     spawnShatterParticles(sl, p.getX(), p.getY() + 1.0, p.getZ());
                     sl.playSound(null, p.getX(), p.getY(), p.getZ(),
                             SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.8f, 1.2f);
@@ -202,10 +237,7 @@ public class MagicalKatanaCrystalHandler {
             for (Entity e : sl.getAllEntities()) {
                 if (!(e instanceof net.minecraft.world.entity.item.ItemEntity ie)) continue;
                 ItemStack s = ie.getItem();
-                if (!isMaterialized(s)) continue;
-                CompoundTag tg = s.getTag();
-                if (tg == null || !tg.hasUUID(MAT_OWNER_KEY)) continue;
-                if (!tg.getUUID(MAT_OWNER_KEY).equals(ownerId)) continue;
+                if (!isOwnedMaterialized(s, ownerId)) continue; // UUID基準: 落下中の具現化品を全種類対象に
 
                 // ドロップ位置で AoE 侵食ダメージ
                 //   ItemEntity の getBoundingBox() は ~0.25 cube なので inflate で 中心から
@@ -451,6 +483,7 @@ public class MagicalKatanaCrystalHandler {
         return tg != null && tg.hasUUID(MAT_OWNER_KEY) && tg.getUUID(MAT_OWNER_KEY).equals(ownerId);
     }
 
+
     /**
      * 具現化防具を「外した」 ( = 装備スロットから main インベントリ / オフハンドに移動した ) ら、
      * その防具だけ結晶化を解いて元装備に戻す。 装備中 ( armor slot ) の物はそのまま。
@@ -526,6 +559,15 @@ public class MagicalKatanaCrystalHandler {
     public static void spawnCrystal(Player player, ItemStack sourceStack) {
         if (player == null || player.level().isClientSide()) return;
         ServerLevel sl = (ServerLevel) player.level();
+
+        // 利き手に結晶ポーチを持っている間は結晶化不可 ( 具現化武器でポーチを押し出さないため )
+        if (player.getMainHandItem().getItem() instanceof the_four_primitives_and_weapons.item.MaterializedPouchItem) {
+            if (player instanceof net.minecraft.server.level.ServerPlayer sp0) {
+                sp0.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                        "§c結晶ポーチを持っている間は結晶化できません"), true);
+            }
+            return;
+        }
 
         // 具現化できる本数 = 登録武器ロードアウト数。 既に上限なら結晶を生成しない。
         if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
@@ -616,8 +658,17 @@ public class MagicalKatanaCrystalHandler {
      */
     public static void shatterOnSheathe(Player player, ItemStack stack, InteractionHand hand) {
         if (!isMaterialized(stack)) return;
-        // 破壊 = 完全消滅 ( 残骸の Magical Katana は残さない )
-        player.setItemInHand(hand, ItemStack.EMPTY);
+        // 増殖対策: 結晶ポーチが無ければ破壊できない
+        if (the_four_primitives_and_weapons.item.MaterializedPouchItem.findFirst(player).isEmpty()) {
+            if (player instanceof net.minecraft.server.level.ServerPlayer sp)
+                sp.displayClientMessage(Component.literal("§c結晶ポーチが無いため破壊できません"), true);
+            return;
+        }
+        // ポーチ由来 ( deploy コピー ) は ここで消さず returnToPouch に任せる ( 原本をポーチへ戻すため )。
+        //   虚空由来 ( 結晶割りデフォルト等 ) のみ即完全消去。
+        if (!the_four_primitives_and_weapons.item.MaterializedPouchItem.isFromPouch(stack, player.getUUID())) {
+            player.setItemInHand(hand, ItemStack.EMPTY);
+        }
         // 破壊演出 — 侵食属性のイメージカラー ( 赤紫 + ピンク寄り赤紫 )
         if (player.level() instanceof ServerLevel sl) {
             spawnShatterParticles(sl, player.getX(), player.getY() + 1.0, player.getZ());
@@ -642,6 +693,11 @@ public class MagicalKatanaCrystalHandler {
 
     /** 具現化武器を作って指定 player の手に入れる ( 入らなければ落下 ItemEntity ) */
     private static void materializeFor(ServerLevel sl, Vec3 pos, UUID ownerId, ItemStack templateForEnchants) {
+        Player owner = sl.getServer().getPlayerList().getPlayer(ownerId);
+        // 武器スロットに中身があれば、 デフォルトの具現化 Magical Katana 手渡しは置き換える ( 武器スロットを手に装着 )
+        boolean replaceWithLoadout = (owner instanceof net.minecraft.server.level.ServerPlayer sp0)
+                && the_four_primitives_and_weapons.util.LoadoutPouchHelper.hasWeaponLoadout(sp0);
+        if (!replaceWithLoadout) {
         ItemStack weapon = new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get());
         CompoundTag tag = weapon.getOrCreateTag();
         tag.putBoolean(MAT_TAG_KEY, true);
@@ -699,19 +755,20 @@ public class MagicalKatanaCrystalHandler {
         embedOriginal(weapon, original);
 
         // owner に渡す ( 居なければ落下 )
-        Player owner = sl.getServer().getPlayerList().getPlayer(ownerId);
         if (owner != null && owner.isAlive()) {
-            // 手に持たせたい — main hand が空ならそこへ、 そうでなければ inventory.add
-            if (owner.getMainHandItem().isEmpty()) {
-                owner.setItemInHand(InteractionHand.MAIN_HAND, weapon);
-            } else if (!owner.getInventory().add(weapon)) {
-                owner.drop(weapon, false);
+            // 利き手に他のアイテムがあっても、 具現化武器を利き手に装着する。
+            //   持っていたものはインベントリへ退避 ( 入らなければ落下 )。
+            ItemStack prevHeld = owner.getMainHandItem().copy();
+            owner.setItemInHand(InteractionHand.MAIN_HAND, weapon);
+            if (!prevHeld.isEmpty()) {
+                if (!owner.getInventory().add(prevHeld)) owner.drop(prevHeld, false);
             }
         } else {
             net.minecraft.world.entity.item.ItemEntity ie =
                     new net.minecraft.world.entity.item.ItemEntity(sl, pos.x, pos.y, pos.z, weapon);
             sl.addFreshEntity(ie);
         }
+        } // end if(!replaceWithLoadout): デフォルトの具現化 Magical Katana 手渡し
 
         // 演出
         DustParticleOptions burst = new DustParticleOptions(
@@ -785,6 +842,7 @@ public class MagicalKatanaCrystalHandler {
     public static void onLivingDeath(LivingDeathEvent event) {
         if (!(event.getEntity() instanceof ArmorStand stand)) return;
         CompoundTag pd = stand.getPersistentData();
+        if (handlePouchRecoveryHit(stand, null)) return; // ポーチ回収結晶
         if (!pd.contains(CRYSTAL_OWNER_KEY)) return;
         UUID ownerId = pd.getUUID(CRYSTAL_OWNER_KEY);
         existingCrystal.remove(ownerId);
@@ -811,6 +869,13 @@ public class MagicalKatanaCrystalHandler {
         Entity target = ehr.getEntity();
         if (!(target instanceof ArmorStand stand)) return;
         CompoundTag pd = stand.getPersistentData();
+        if (pd.contains(POUCH_RECOVERY_NBT, 10)) { // ポーチ回収結晶
+            Entity shooter = event.getProjectile().getOwner();
+            handlePouchRecoveryHit(stand, shooter instanceof Player pp ? pp : null);
+            event.setCanceled(true);
+            try { event.getProjectile().discard(); } catch (Throwable ignored) {}
+            return;
+        }
         if (!pd.contains(CRYSTAL_OWNER_KEY)) return;
         if (!(stand.level() instanceof ServerLevel sl)) return;
 
@@ -843,6 +908,7 @@ public class MagicalKatanaCrystalHandler {
         Entity target = event.getTarget();
         if (!(target instanceof ArmorStand stand)) return;
         CompoundTag pd = stand.getPersistentData();
+        if (handlePouchRecoveryHit(stand, event.getEntity())) { event.setCanceled(true); return; } // ポーチ回収結晶
         if (!pd.contains(CRYSTAL_OWNER_KEY)) return;
         Player attacker = event.getEntity();
         if (attacker.level().isClientSide()) return;
@@ -866,6 +932,117 @@ public class MagicalKatanaCrystalHandler {
         event.setCanceled(true);
 
         materializeFor(sl, spawnPos, ownerId, template);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // ポーチ破壊 → 回収結晶 ( 10 分 )
+    // ─────────────────────────────────────────────────────────────
+
+    /** 結晶ポーチの ItemEntity を監視対象に登録 ( マグマ/炎/サボテン等での破壊検知用 )。 */
+    @SubscribeEvent
+    public static void onPouchItemJoin(net.minecraftforge.event.entity.EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide()) return;
+        if (event.getEntity() instanceof net.minecraft.world.entity.item.ItemEntity ie
+                && ie.getItem().getItem() instanceof the_four_primitives_and_weapons.item.MaterializedPouchItem) {
+            trackedPouches.add(ie);
+        }
+    }
+
+    /** 監視中ポーチが危険 ( マグマ/炎/サボテン/奈落 ) なら、 破壊される前に回収結晶へ変換。 */
+    private static void tickPouchDanger() {
+        if (trackedPouches.isEmpty()) return;
+        java.util.Iterator<net.minecraft.world.entity.item.ItemEntity> it = trackedPouches.iterator();
+        while (it.hasNext()) {
+            net.minecraft.world.entity.item.ItemEntity ie = it.next();
+            if (ie == null || ie.isRemoved() || !(ie.level() instanceof ServerLevel sl)) { it.remove(); continue; }
+            boolean cactus = sl.getBlockState(ie.blockPosition()).is(net.minecraft.world.level.block.Blocks.CACTUS);
+            boolean danger = ie.isInLava() || ie.isOnFire() || cactus || ie.getY() < sl.getMinBuildHeight() - 8;
+            if (!danger) continue;
+            ItemStack pouch = ie.getItem().copy();
+            // 安全な ( 空気の ) 位置を上方に探す
+            net.minecraft.core.BlockPos bp = ie.blockPosition();
+            Vec3 spawn = ie.position().add(0, 1.0, 0);
+            for (int dy = 0; dy < 8; dy++) {
+                net.minecraft.core.BlockPos up = bp.above(dy + 1);
+                if (sl.getBlockState(up).isAir() && sl.getFluidState(up).isEmpty()) {
+                    spawn = new Vec3(up.getX() + 0.5, up.getY(), up.getZ() + 0.5); break;
+                }
+            }
+            ie.discard();
+            it.remove();
+            spawnPouchRecoveryCrystal(sl, spawn, pouch);
+        }
+    }
+
+    /** 回収結晶の寿命/演出 ( 5tick 毎 )。 10 分で消滅。 */
+    private static void tickRecoveryCrystals() {
+        if (recoveryCrystals.isEmpty()) return;
+        java.util.Iterator<Map.Entry<UUID, ArmorStand>> it = recoveryCrystals.entrySet().iterator();
+        while (it.hasNext()) {
+            ArmorStand stand = it.next().getValue();
+            if (stand == null || stand.isRemoved() || !(stand.level() instanceof ServerLevel sl)) { it.remove(); continue; }
+            CompoundTag pd = stand.getPersistentData();
+            int life = pd.getInt(POUCH_RECOVERY_LIFE) - 5;
+            if (life <= 0) {
+                DustParticleOptions smoke = new DustParticleOptions(new Vector3f(0.4f, 0.4f, 0.4f), 1.2f);
+                sl.sendParticles(smoke, stand.getX(), stand.getY() + 0.5, stand.getZ(), 20, 0.3, 0.3, 0.3, 0.05);
+                stand.discard(); it.remove(); continue;
+            }
+            pd.putInt(POUCH_RECOVERY_LIFE, life);
+            applyCrystalBoundingBox(stand, stand.position().add(0, 0.5, 0));
+            sl.sendParticles(new DustParticleOptions(new Vector3f(0.85f, 0.2f, 0.6f), 1.0f),
+                    stand.getX(), stand.getY() + 0.6, stand.getZ(), 3, 0.2, 0.3, 0.2, 0.005);
+            sl.sendParticles(ParticleTypes.ENCHANT, stand.getX(), stand.getY() + 1.2, stand.getZ(), 2, 0.2, 0.2, 0.2, 0.01);
+        }
+    }
+
+    /** ポーチ回収結晶を生成 ( 無敵 ArmorStand。 マグマ等で壊れない )。 */
+    private static void spawnPouchRecoveryCrystal(ServerLevel sl, Vec3 pos, ItemStack pouch) {
+        ArmorStand stand = new ArmorStand(sl, pos.x, pos.y - 0.5, pos.z);
+        stand.setInvisible(true);
+        stand.setNoGravity(true);
+        stand.setInvulnerable(true);
+        CompoundTag prelim = new CompoundTag();
+        stand.addAdditionalSaveData(prelim);
+        prelim.putBoolean("Small", false);
+        prelim.putBoolean("ShowArms", false);
+        prelim.putBoolean("Marker", false);
+        prelim.putBoolean("NoBasePlate", true);
+        stand.readAdditionalSaveData(prelim);
+        stand.setCustomName(Component.literal("§d結晶ポーチの残響 §7( 叩いて回収 )"));
+        stand.setCustomNameVisible(true);
+        CompoundTag pd = stand.getPersistentData();
+        pd.put(POUCH_RECOVERY_NBT, pouch.save(new CompoundTag()));
+        pd.putInt(POUCH_RECOVERY_LIFE, POUCH_RECOVERY_TICKS);
+        sl.addFreshEntity(stand);
+        applyCrystalBoundingBox(stand, pos);
+        recoveryCrystals.put(stand.getUUID(), stand);
+        sl.sendParticles(new DustParticleOptions(new Vector3f(0.85f, 0.2f, 0.6f), 1.5f),
+                pos.x, pos.y, pos.z, 40, 0.4, 0.5, 0.4, 0.05);
+        sl.playSound(null, pos.x, pos.y, pos.z, SoundEvents.AMETHYST_BLOCK_PLACE, SoundSource.PLAYERS, 1.0f, 0.6f);
+    }
+
+    /** 回収結晶が叩かれたらポーチを返す。 回収結晶でなければ false。 */
+    private static boolean handlePouchRecoveryHit(ArmorStand stand, Player recipient) {
+        CompoundTag pd = stand.getPersistentData();
+        if (!pd.contains(POUCH_RECOVERY_NBT, 10)) return false;
+        ItemStack pouch = ItemStack.of(pd.getCompound(POUCH_RECOVERY_NBT));
+        if (stand.level() instanceof ServerLevel sl) {
+            spawnShatterParticles(sl, stand.getX(), stand.getY() + 0.5, stand.getZ());
+            sl.playSound(null, stand.getX(), stand.getY(), stand.getZ(),
+                    SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.PLAYERS, 1.0f, 1.2f);
+            if (!pouch.isEmpty()) {
+                if (recipient != null) {
+                    if (!recipient.getInventory().add(pouch)) recipient.drop(pouch, false);
+                } else {
+                    sl.addFreshEntity(new net.minecraft.world.entity.item.ItemEntity(
+                            sl, stand.getX(), stand.getY(), stand.getZ(), pouch));
+                }
+            }
+        }
+        recoveryCrystals.remove(stand.getUUID());
+        stand.discard();
+        return true;
     }
 
     /**
@@ -956,6 +1133,9 @@ public class MagicalKatanaCrystalHandler {
         if (event.phase != TickEvent.Phase.END) return;
         if (event.getServer() == null) return;
 
+        // ポーチ ItemEntity の危険検知 ( マグマ/炎/サボテン等 → 回収結晶へ変換 )
+        tickPouchDanger();
+
         // === 毎 tick: 当たり判定 ( AABB ) を block 相当に再設定 + 周辺エンティティを押し出す ===
         //   ArmorStand 既定 hitbox は refreshDimensions でリセットされうるので毎 tick 再適用。
         //   かつ AABB 内に居る非味方を外側へ押し出して通り抜けを物理的に防ぐ。
@@ -1010,6 +1190,9 @@ public class MagicalKatanaCrystalHandler {
 
         if ((event.getServer().getTickCount() % 5) != 0) return; // 以下は 5tick おきの軽量化
 
+        // ポーチ回収結晶の寿命/演出
+        tickRecoveryCrystals();
+
         // オーナーが Sneak している間に結晶を「ガード解除」 → 武器発行
         for (Map.Entry<UUID, UUID> entry : existingCrystal.entrySet()) {
             UUID ownerId = entry.getKey();
@@ -1029,37 +1212,57 @@ public class MagicalKatanaCrystalHandler {
             break; // 一度に複数処理せず次 tick で
         }
 
-        for (ServerLevel sl : event.getServer().getAllLevels()) {
-            for (Entity e : sl.getAllEntities()) {
-                if (!(e instanceof ArmorStand stand)) continue;
-                CompoundTag pd = stand.getPersistentData();
-                if (!pd.contains(CRYSTAL_OWNER_KEY)) continue;
+        // 寿命減算 + hover パーティクル。
+        // existingCrystal マップが全結晶を追跡しているので、 全ワールドの全エンティティ走査
+        // ( 旧 getAllEntities ) はせず、 マップから直接 結晶スタンドを引く ( 毎 5tick の重い全走査を排除 )。
+        java.util.Iterator<Map.Entry<UUID, UUID>> it = existingCrystal.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<UUID, UUID> entry = it.next();
+            Player owner = event.getServer().getPlayerList().getPlayer(entry.getKey());
+            if (owner == null || !(owner.level() instanceof ServerLevel sl)) continue; // オーナー不在時は据え置き
+            Entity e = sl.getEntity(entry.getValue());
+            if (!(e instanceof ArmorStand stand) || !stand.isAlive()) continue;
+            CompoundTag pd = stand.getPersistentData();
+            if (!pd.contains(CRYSTAL_OWNER_KEY)) continue;
 
-                int life = pd.getInt(CRYSTAL_LIFE_KEY);
-                life -= 5;
-                if (life <= 0) {
+            int life = pd.getInt(CRYSTAL_LIFE_KEY) - 5;
+            if (life <= 0) {
+                it.remove();
+                stand.discard();
+                // 期限切れ — 物理的に壊れただけなので武器は出ない (= 殴って壊さないと武器が出ない)
+                DustParticleOptions smoke = new DustParticleOptions(
+                        new Vector3f(0.4f, 0.4f, 0.4f), 1.2f);
+                sl.sendParticles(smoke,
+                        stand.getX(), stand.getY() + 0.5, stand.getZ(),
+                        20, 0.3, 0.3, 0.3, 0.05);
+                continue;
+            }
+            pd.putInt(CRYSTAL_LIFE_KEY, life);
+
+            // 周囲に常時 hover パーティクル
+            DustParticleOptions magenta = new DustParticleOptions(
+                    new Vector3f(0.75f, 0.1f, 0.55f), 1.0f);
+            sl.sendParticles(magenta,
+                    stand.getX(), stand.getY() + 0.6, stand.getZ(),
+                    3, 0.2, 0.3, 0.2, 0.005);
+            sl.sendParticles(ParticleTypes.ENCHANT,
+                    stand.getX(), stand.getY() + 1.2, stand.getZ(),
+                    2, 0.2, 0.2, 0.2, 0.01);
+        }
+
+        // 孤立した結晶スタンドの掃除はまれ ( 200tick = 10秒毎 ) でよい。
+        // ( サーバー再起動で existingCrystal が空になった後に残るスタンド等を回収する )
+        if ((event.getServer().getTickCount() % 200) == 0) {
+            for (ServerLevel sl : event.getServer().getAllLevels()) {
+                for (Entity e : sl.getAllEntities()) {
+                    if (!(e instanceof ArmorStand stand)) continue;
+                    CompoundTag pd = stand.getPersistentData();
+                    if (!pd.contains(CRYSTAL_OWNER_KEY)) continue;
                     UUID ownerId = pd.getUUID(CRYSTAL_OWNER_KEY);
-                    existingCrystal.remove(ownerId);
+                    // existingCrystal が追跡している現役の結晶は上のループに任せ、 孤立分だけ破棄
+                    if (stand.getUUID().equals(existingCrystal.get(ownerId))) continue;
                     stand.discard();
-                    // 期限切れ — 物理的に壊れただけなので武器は出ない (= 殴って壊さないと武器が出ない)
-                    DustParticleOptions smoke = new DustParticleOptions(
-                            new Vector3f(0.4f, 0.4f, 0.4f), 1.2f);
-                    sl.sendParticles(smoke,
-                            stand.getX(), stand.getY() + 0.5, stand.getZ(),
-                            20, 0.3, 0.3, 0.3, 0.05);
-                    continue;
                 }
-                pd.putInt(CRYSTAL_LIFE_KEY, life);
-
-                // 周囲に常時 hover パーティクル
-                DustParticleOptions magenta = new DustParticleOptions(
-                        new Vector3f(0.75f, 0.1f, 0.55f), 1.0f);
-                sl.sendParticles(magenta,
-                        stand.getX(), stand.getY() + 0.6, stand.getZ(),
-                        3, 0.2, 0.3, 0.2, 0.005);
-                sl.sendParticles(ParticleTypes.ENCHANT,
-                        stand.getX(), stand.getY() + 1.2, stand.getZ(),
-                        2, 0.2, 0.2, 0.2, 0.01);
             }
         }
     }

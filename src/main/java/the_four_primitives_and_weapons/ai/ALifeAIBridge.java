@@ -113,8 +113,8 @@ public class ALifeAIBridge {
                 .filter(e -> e != null && entity.distanceTo(e) <= 5.0)
                 .count();
 
-            // 最も近い敵を探す
-            Optional<LivingEntity> nearestEnemy = findNearestEnemy();
+            // 最も近い敵を探す ( 上で取得済みの nearbyEnemies を再利用し、 再スキャンしない )
+            Optional<LivingEntity> nearestEnemy = findNearestEnemy(data.nearbyEnemies);
             if (nearestEnemy.isPresent()) {
                 LivingEntity enemy = nearestEnemy.get();
                 if (enemy != null && enemy.isAlive()) {
@@ -149,7 +149,7 @@ public class ALifeAIBridge {
      * 最も近い敵を探す（優先度: entity.getTarget() → 最も近い敵）
      * クリエイティブ/スペクテーターモードのプレイヤーは除外
      */
-    private Optional<LivingEntity> findNearestEnemy() {
+    private Optional<LivingEntity> findNearestEnemy(java.util.List<LivingEntity> nearbyEnemies) {
         // 優先度1: entity.getTarget()（攻撃されたMobを追いかける）
         LivingEntity target = entity.getTarget();
         if (target != null && target.isAlive() && entity.distanceTo(target) < 64.0) {
@@ -163,18 +163,11 @@ public class ALifeAIBridge {
             return Optional.of(target);
         }
 
-        // 優先度2: 最も近い有効な敵（クリエイティブ/スペクテーターを除外）
-        // FOLLOW_RANGE分の範囲で敵を探す（64ブロック）
-        return entity.level().getEntitiesOfClass(
-            LivingEntity.class,
-            entity.getBoundingBox().inflate(64.0),
-            e -> e != entity &&
-                 e.isAlive() &&
-                 !e.isAlliedTo(entity) &&
-                 entity.canAttack(e) &&
-                 (!(e instanceof Player player) || (!player.isCreative() && !player.isSpectator()))
-        ).stream()
-        .min((e1, e2) -> Double.compare(entity.distanceTo(e1), entity.distanceTo(e2)));
+        // 優先度2: 最も近い有効な敵。
+        // collectWorldData が同条件で取得済みの nearbyEnemies を再利用する ( 64 ブロック再スキャンを排除 )。
+        if (nearbyEnemies == null || nearbyEnemies.isEmpty()) return Optional.empty();
+        return nearbyEnemies.stream()
+            .min((e1, e2) -> Double.compare(entity.distanceTo(e1), entity.distanceTo(e2)));
     }
 
     /**

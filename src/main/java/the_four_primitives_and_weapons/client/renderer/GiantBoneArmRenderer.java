@@ -45,20 +45,60 @@ public class GiantBoneArmRenderer extends EntityRenderer<GiantBoneArmEntity> {
 		this.model = new GiantBoneArmModel(context.bakeLayer(GiantBoneArmModel.LAYER_LOCATION));
 	}
 
+	// ===== ガード(左右2本の腕で抱きしめて守る)用の配置 — 実機で調整しやすいよう定数化 =====
+	/** ガード時の倍率。 */
+	private static final float GUARD_SCALE = 0.55f;
+	/** ガード時の高さ (胸の高さ, ブロック)。 */
+	private static final float GUARD_Y = 1.2f;
+	/** ガード時、手を左右へずらす量 (ブロック)。左右の手を胸に並べる。 */
+	private static final float GUARD_SIDE_X = 0.3f;
+	/** ガード時、手を前方へ出す距離 (ブロック)。手を胸の前面に。 */
+	private static final float GUARD_DEPTH = 0.45f;
+	/** ガード時、手の傾き (度)。スラムの向き規則から導出: −90 で
+	 *  手のひらがプレイヤー側・指は胸に沿って下・前腕は上に逃げる。 */
+	private static final float GUARD_PITCH_DEG = -90f;
+	/** ガード時、手のひらの向き(指の軸まわりのロール, 度)。
+	 *  指は上のまま手のひらの向きだけ回る。プレイヤーと逆を向いたら -90 へ。 */
+	private static final float GUARD_ROLL_DEG = 90f;
+	/** 手(手のひら)を胸アンカーへ寄せる前後オフセット (モデル単位)。 */
+	private static final float GUARD_HAND_Z = 3.6f;
+
 	@Override
 	public void render(GiantBoneArmEntity entity, float entityYaw, float partialTicks,
 					   PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+		float age = entity.tickCount + partialTicks;
 		poseStack.pushPose();
 
-		// cast 方向へ向ける
-		poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getCastYaw() + YAW_OFFSET));
-		// 巨大化 + モデル空間へ反転
-		poseStack.scale(RENDER_SCALE, RENDER_SCALE, RENDER_SCALE);
-		poseStack.scale(-1.0f, -1.0f, 1.0f);
+		if (entity.isGuard()) {
+			// ガード: 手だけを胸の前に置き、前腕は上へ逃がす。左右の手の指の骨が
+			// 胸の前で扇状に広がって肋骨(あばら)のように見える。
+			int side = entity.getGuardSide(); // -1=左手 / +1=右手
+			poseStack.translate(0.0, GUARD_Y, 0.0);
+			poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getCastYaw() + YAW_OFFSET));
+			poseStack.translate(side * GUARD_SIDE_X, 0.0, GUARD_DEPTH); // 左右に並べて胸前へ
+			poseStack.scale(GUARD_SCALE, GUARD_SCALE, GUARD_SCALE);
+			poseStack.scale(-1.0f, -1.0f, 1.0f);
+			poseStack.mulPose(Axis.XP.rotationDegrees(GUARD_PITCH_DEG)); // 手の傾き
+			poseStack.mulPose(Axis.ZP.rotationDegrees(GUARD_ROLL_DEG));  // 手のひらの向き(ロール)
+			poseStack.translate(0.0, 0.0, -GUARD_HAND_Z);                // 手を胸アンカーへ
+			if (side < 0)
+				poseStack.scale(-1.0f, 1.0f, 1.0f); // 左手にミラー
+		} else {
+			// 通常 (薙ぎ→叩き): cast 方向へ向けて巨大化。
+			poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getCastYaw() + YAW_OFFSET));
+			poseStack.scale(RENDER_SCALE, RENDER_SCALE, RENDER_SCALE);
+			poseStack.scale(-1.0f, -1.0f, 1.0f);
+		}
 
-		float age = entity.tickCount + partialTicks;
 		this.model.setupAnim(entity, 0f, 0f, age, 0f, 0f);
+		renderModel(entity, poseStack, buffer, packedLight);
 
+		poseStack.popPose();
+		super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
+	}
+
+	/** 骨本体 + (侵食属性なら) ガラス結晶/被膜 の2パス描画。 */
+	private void renderModel(GiantBoneArmEntity entity, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
 		// 骨本体 (ガラス結晶は骨パスでは隠す)
 		this.model.setShardsVisible(false);
 		VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
@@ -66,8 +106,9 @@ public class GiantBoneArmRenderer extends EntityRenderer<GiantBoneArmEntity> {
 				1.0f, 1.0f, 1.0f, 1.0f);
 
 		// 侵食属性: 骨から生えるピンク〜紫のガラス結晶 + 表面の薄い被膜
+		// (ガードは手＋指だけを見せるので結晶は描かない)
 		int level = entity.getCorrosionLevel();
-		if (level > 0) {
+		if (level > 0 && !entity.isGuard()) {
 			this.model.setShardsVisible(true);
 			float cov = Math.min(level / GLASS_MAX_LEVEL, 1.0f);
 			float r = Mth.lerp(cov, 1.0f, 0.62f);   // ピンク → 紫
@@ -84,9 +125,6 @@ public class GiantBoneArmRenderer extends EntityRenderer<GiantBoneArmEntity> {
 					r, g, b, alpha);
 			poseStack.popPose();
 		}
-
-		poseStack.popPose();
-		super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
 	}
 
 	@Override

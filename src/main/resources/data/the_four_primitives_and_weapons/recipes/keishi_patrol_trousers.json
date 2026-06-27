@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "*##",
+    "# #",
+    "# #"
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:blue_wool"
+    },
+    "*": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "the_four_primitives_and_weapons:keishi_patrol_trousers",
+    "count": 1
+  }
+}

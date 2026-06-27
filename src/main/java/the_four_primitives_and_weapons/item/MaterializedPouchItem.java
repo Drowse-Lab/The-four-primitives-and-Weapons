@@ -35,12 +35,16 @@ import java.util.List;
  */
 public class MaterializedPouchItem extends Item {
 
-    /** 収納枠数 ( 防具一式 = 4 ) */
-    public static final int SLOTS = 4;
-    /** 各枠を装着する EquipmentSlot ( deploy 時に index 順で着用 ) */
+    /** パネルのスロット総数 ( 防具4 + 武器2: メイン/オフ )。 */
+    public static final int SLOTS = 6;
+    /** 防具スロット ( index 0-3 )。 */
     public static final EquipmentSlot[] ARMOR_SLOTS = {
         EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
     };
+    /** 武器スロット index ( メインハンド / オフハンド )。 */
+    public static final int SLOT_MAINHAND = 4;
+    public static final int SLOT_OFFHAND  = 5;
+    public static boolean isWeaponSlot(int i) { return i == SLOT_MAINHAND || i == SLOT_OFFHAND; }
 
     public static final String TAG_LOADOUT  = "Loadout";
     public static final String TAG_DEPLOYED = "Deployed";
@@ -68,6 +72,7 @@ public class MaterializedPouchItem extends Item {
             ItemStack[] lo = getLoadout(pouch);
             for (int i = 0; i < SLOTS; i++) {
                 if (lo[i].isEmpty()) continue;
+                // 手動取り出しは刻印しない ( 普通に使うアイテムなので 破壊対象にしない )
                 if (!player.getInventory().add(lo[i])) player.drop(lo[i], false);
                 lo[i] = ItemStack.EMPTY;
                 out++;
@@ -84,12 +89,12 @@ public class MaterializedPouchItem extends Item {
         }
         int stored = 0;
         ItemStack[] lo = getLoadout(pouch);
-        for (EquipmentSlot slot : ARMOR_SLOTS) {
+        for (int idx = 0; idx < ARMOR_SLOTS.length; idx++) {
+            EquipmentSlot slot = ARMOR_SLOTS[idx];
             ItemStack worn = player.getItemBySlot(slot);
             if (worn.isEmpty() || !canStore(worn)) continue;
-            int empty = firstEmpty(lo);
-            if (empty < 0) break;
-            lo[empty] = worn.copy();
+            if (!lo[idx].isEmpty()) continue;     // その部位スロットが既に埋まっている
+            lo[idx] = worn.copy();                // 対応部位スロットに収納 ( 装着時に正しく戻る )
             player.setItemSlot(slot, ItemStack.EMPTY);
             stored++;
         }
@@ -125,13 +130,33 @@ public class MaterializedPouchItem extends Item {
      * スロット番号別の収納可否。
      *   - slot 0 ( 兜 ) : 基本的に何でも可 ( 防具でなくても可 )
      *   - slot 1..3 ( 胴/脚/靴 ) : その部位の防具のみ
+     *   - slot 4/5 ( メイン/オフ武器 ) : 武器 or 納刀した鞘 ( magical katana も可 )
      */
     public static boolean canStore(ItemStack stack, int slotIndex) {
         if (stack.isEmpty()) return true;
         if (slotIndex < 0 || slotIndex >= SLOTS) return false;
-        if (!canStore(stack)) return false; // ポーチ自身 / 具現化版 / Magical Katana は不可
+        if (stack.getItem() instanceof MaterializedPouchItem) return false;       // 入れ子防止
+        if (isWeaponSlot(slotIndex)) {
+            // 武器スロット: 武器 / 納刀した鞘 / magical katana ( 具現化版でも可。 収納時に通常版へ戻す )
+            return the_four_primitives_and_weapons.events.DodgeAndBattouHandler.isWeapon(stack)
+                || the_four_primitives_and_weapons.util.CuriosScabbardHelper.isScabbard(stack)
+                || MagicalKatanaCrystalHandler.isMagicalKatana(stack);
+        }
+        // 防具スロット
+        if (MagicalKatanaCrystalHandler.isAnyMaterialized(stack)) return false;    // 防具スロットは具現化版不可
+        if (!canStore(stack)) return false;  // ポーチ自身 / 具現化版 / Magical Katana は不可
         if (slotIndex == 0) return true;     // 兜スロットは何でも可
         return net.minecraft.world.entity.LivingEntity.getEquipmentSlotForItem(stack) == ARMOR_SLOTS[slotIndex];
+    }
+
+    /** 武器スロット収納用に正規化: 具現化版なら通常版へ戻す ( 結晶ポーチに具現化品を貯めない )。 */
+    public static ItemStack normalizeForWeaponSlot(ItemStack stack) {
+        if (stack.isEmpty()) return ItemStack.EMPTY;
+        ItemStack out = MagicalKatanaCrystalHandler.isAnyMaterialized(stack)
+                ? MagicalKatanaCrystalHandler.revertToOriginal(stack)
+                : stack.copy();
+        out.setCount(1);
+        return out;
     }
 
     // --- バンドル操作 ( 右クリック出し入れ ) -------------------------------
@@ -144,14 +169,15 @@ public class MaterializedPouchItem extends Item {
             // 取り出し — 結晶化中でも常に許可
             ItemStack popped = popOne(pouch);
             if (popped.isEmpty()) return false;
+            // 手動取り出しは刻印しない
             ItemStack rem = slot.safeInsert(popped);
             if (!rem.isEmpty()) pushOne(pouch, rem); // 入りきらない分は戻す
             playRemove(player);
             return true;
         }
-        // 収納 — 結晶化アイテムがインベントリにある間は不可
+        // 収納 — 結晶化アイテムがインベントリにある間は不可。
+        //   可否は pushOne 内の canStore( stack, slot ) で判定 ( 武器スロットは magical katana も可 )。
         if (isInsertLocked(pouch, player)) return false;
-        if (!canStore(target)) return false;
         if (!pushOne(pouch, target)) return false;
         target.shrink(1);
         playInsert(player);
@@ -166,13 +192,13 @@ public class MaterializedPouchItem extends Item {
             // 取り出し — 結晶化中でも常に許可
             ItemStack popped = popOne(pouch);
             if (popped.isEmpty()) return false;
+            // 手動取り出しは刻印しない
             access.set(popped);
             playRemove(player);
             return true;
         }
-        // 収納 — 結晶化アイテムがインベントリにある間は不可
+        // 収納 — 可否は pushOne 内の canStore( stack, slot ) で判定 ( 武器スロットは magical katana も可 )
         if (isInsertLocked(pouch, player)) return false;
-        if (!canStore(cursor)) return false;
         if (!pushOne(pouch, cursor)) return false;
         cursor.shrink(1);
         playInsert(player);
@@ -199,30 +225,62 @@ public class MaterializedPouchItem extends Item {
         for (EquipmentSlot slot : ARMOR_SLOTS) {
             if (MagicalKatanaCrystalHandler.isOwnedMaterialized(player.getItemBySlot(slot), id)) return true;
         }
+        // 武器装着中はロックしない: 他の刀を持っていても武器スロットを置換できるようにする。
         return false;
     }
 
     private static void playInsert(Player p) {
         p.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + p.getRandom().nextFloat() * 0.4f);
+        crystalPuff(p);
+    }
+
+    /** 収納時の「結晶化」マゼンタ演出（サーバー側）。 全ての収納経路から呼ぶ。 */
+    public static void crystalPuff(Player p) {
+        if (p.level() instanceof net.minecraft.server.level.ServerLevel sl) {
+            sl.sendParticles(new net.minecraft.core.particles.DustParticleOptions(
+                    new org.joml.Vector3f(0.75f, 0.1f, 0.55f), 1.2f),
+                    p.getX(), p.getY() + 1.0, p.getZ(), 12, 0.3, 0.4, 0.3, 0.02);
+        }
     }
 
     private static void playRemove(Player p) {
         p.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8f, 0.8f + p.getRandom().nextFloat() * 0.4f);
     }
 
-    /** 最初の空き枠に 1 個収納 ( 成功で true、 満杯で false )。 */
-    private static boolean pushOne(ItemStack pouch, ItemStack incoming) {
-        ItemStack[] lo = getLoadout(pouch);
-        for (int i = 0; i < SLOTS; i++) {
-            if (lo[i].isEmpty()) {
-                ItemStack one = incoming.copy();
-                one.setCount(1);
-                lo[i] = one;
-                setLoadout(pouch, lo);
-                return true;
+    /** 防具→その部位スロット、 武器/鞘→武器スロット、 それ以外→兜スロット(0)。 */
+    private static int targetSlot(ItemStack s) {
+        EquipmentSlot es = net.minecraft.world.entity.LivingEntity.getEquipmentSlotForItem(s);
+        if (es.getType() == EquipmentSlot.Type.ARMOR) {
+            for (int i = 0; i < ARMOR_SLOTS.length; i++) {
+                if (ARMOR_SLOTS[i] == es) return i;
             }
         }
-        return false;
+        if (the_four_primitives_and_weapons.events.DodgeAndBattouHandler.isWeapon(s)
+                || the_four_primitives_and_weapons.util.CuriosScabbardHelper.isScabbard(s)) {
+            return SLOT_MAINHAND; // 武器/鞘 → メイン優先 ( pushOne が空きを main→off で探す )
+        }
+        return 0; // その他 → 兜スロット ( 何でも可 )
+    }
+
+    /** 対応するスロットへ 1 個収納 ( 成功で true )。 武器はメイン→オフの順で空きを探す。 */
+    private static boolean pushOne(ItemStack pouch, ItemStack incoming) {
+        int t = targetSlot(incoming);
+        ItemStack[] lo = getLoadout(pouch);
+        if (isWeaponSlot(t)) {
+            for (int i : new int[]{SLOT_MAINHAND, SLOT_OFFHAND}) {
+                if (lo[i].isEmpty() && canStore(incoming, i)) {
+                    lo[i] = normalizeForWeaponSlot(incoming); // 具現化版なら通常版へ戻して収納
+                    setLoadout(pouch, lo); return true;
+                }
+            }
+            return false;
+        }
+        if (!canStore(incoming, t) || !lo[t].isEmpty()) return false;
+        ItemStack one = incoming.copy();
+        one.setCount(1);
+        lo[t] = one;
+        setLoadout(pouch, lo);
+        return true;
     }
 
     /** 最後の収納物を 1 個取り出す ( LIFO )。 空なら EMPTY。 */
@@ -304,6 +362,37 @@ public class MaterializedPouchItem extends Item {
 
     public static void toggleReplaceAir(ItemStack pouch, int i) {
         setReplaceAir(pouch, i, !getReplaceAir(pouch, i));
+    }
+
+    // --- 武器スロット ( メイン/オフ ) の deploy 用 ---------------------------
+
+    /** 武器スロットに 1 つでも中身があるか ( = 結晶化で手に装着する内容がある )。 */
+    public static boolean hasWeaponLoadout(ItemStack pouch) {
+        ItemStack[] lo = getLoadout(pouch);
+        return !lo[SLOT_MAINHAND].isEmpty() || !lo[SLOT_OFFHAND].isEmpty();
+    }
+
+    private static final String TAG_STASH_MAIN = "StashMain";
+    private static final String TAG_STASH_OFF  = "StashOff";
+
+    /** deploy 時に手から退避した元武器を保存 ( main=true: メイン手 )。 */
+    public static void setStash(ItemStack pouch, boolean main, ItemStack stack) {
+        CompoundTag tag = pouch.getOrCreateTag();
+        String key = main ? TAG_STASH_MAIN : TAG_STASH_OFF;
+        if (stack == null || stack.isEmpty()) tag.remove(key);
+        else tag.put(key, stack.save(new CompoundTag()));
+    }
+
+    public static ItemStack getStash(ItemStack pouch, boolean main) {
+        CompoundTag tag = pouch.getTag();
+        String key = main ? TAG_STASH_MAIN : TAG_STASH_OFF;
+        if (tag == null || !tag.contains(key, 10)) return ItemStack.EMPTY;
+        return ItemStack.of(tag.getCompound(key));
+    }
+
+    public static void clearStash(ItemStack pouch, boolean main) {
+        CompoundTag tag = pouch.getTag();
+        if (tag != null) tag.remove(main ? TAG_STASH_MAIN : TAG_STASH_OFF);
     }
 
     /**

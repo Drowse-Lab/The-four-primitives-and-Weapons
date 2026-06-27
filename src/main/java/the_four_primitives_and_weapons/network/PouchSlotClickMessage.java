@@ -101,8 +101,17 @@ public class PouchSlotClickMessage {
                 if (!MaterializedPouchItem.canStore(m.newSlot, m.slotIndex)) return;
             }
 
-            lo[m.slotIndex] = m.newSlot.copy();
+            // 武器スロットは具現化版を通常版へ戻して収納 ( クライアントと一致させる )
+            lo[m.slotIndex] = (!m.newSlot.isEmpty() && MaterializedPouchItem.isWeaponSlot(m.slotIndex))
+                    ? MaterializedPouchItem.normalizeForWeaponSlot(m.newSlot)
+                    : m.newSlot.copy();
             MaterializedPouchItem.setLoadout(pouch, lo);
+
+            // 収納時は「結晶化」マゼンタ演出 + 音（他の収納経路と統一）
+            if (inserting) {
+                MaterializedPouchItem.crystalPuff(player);
+                player.playSound(net.minecraft.sounds.SoundEvents.BUNDLE_INSERT, 0.8f, 1.0f);
+            }
 
             // カーソルをサーバー側にも反映 ( サバイバルの権威同期用 ) + クライアントへ送る
             AbstractContainerMenu menu = player.containerMenu;

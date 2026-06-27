@@ -251,8 +251,18 @@ public class GiantBoneArmModel extends HierarchicalModel<GiantBoneArmEntity> {
 	public void setupAnim(GiantBoneArmEntity entity, float limbSwing, float limbSwingAmount,
 						  float ageInTicks, float netHeadYaw, float headPitch) {
 		this.root().getAllParts().forEach(ModelPart::resetPose);
+		// 通常は上腕骨・前腕も描画する (ガードで切り替えるため毎回戻す)。
+		humerus.skipDraw = false;
+		forearm.skipDraw = false;
 
 		float age = ageInTicks; // = tickCount + partialTick
+
+		// ガードモード: 包み込み姿勢だけ駆動して終了 (薙ぎ/叩きは無し)。
+		if (entity.isGuard()) {
+			setupGuardPose(entity, age);
+			return;
+		}
+
 		float slamTilt = entity.getSlamTilt(); // 地形に合わせた接地角 (− が下)。手が地表に乗る。
 
 		// --- フェーズ判定 ---
@@ -341,8 +351,11 @@ public class GiantBoneArmModel extends HierarchicalModel<GiantBoneArmEntity> {
 			fingerClaw[i].xRot = Mth.lerp(flatten, CURL_SIGN * (0.1f + 0.5f * c), -CURL_SIGN * 0.15f); // 鉤爪をわずかに上へ
 		}
 
-		// ガラス結晶: Lv12 で base サイズ (びっしり)、それ以降はサイズが増す。
-		// 腕の出現に合わせて生えてくる (grow)。
+		applyShardScale(entity, grow);
+	}
+
+	/** ガラス結晶: Lv12 で base サイズ (びっしり)、以降サイズ増。出現(grow)に合わせて生える。 */
+	private void applyShardScale(GiantBoneArmEntity entity, float grow) {
 		int lv = entity.getCorrosionLevel();
 		float baseFrac = Mth.clamp(lv / GLASS_MAX_LEVEL_MODEL, 0f, 1f);          // 0..1 (12で1)
 		float extra = Math.min(Math.max(0f, lv - GLASS_MAX_LEVEL_MODEL) * GLASS_GROWTH_PER_LV,
@@ -353,6 +366,51 @@ public class GiantBoneArmModel extends HierarchicalModel<GiantBoneArmEntity> {
 			sh.yScale = shardScale;
 			sh.zScale = shardScale;
 		}
+	}
+
+	/**
+	 * ガード姿勢: プレイヤーを上から包み、指を大きく広げて囲い込んでから握る。
+	 * 全体の向き(腕を下へ向ける等)は描画側で行い、ここは関節と握りだけを駆動する。
+	 */
+	private void setupGuardPose(GiantBoneArmEntity entity, float age) {
+		float life = GiantBoneArmEntity.GUARD_LIFETIME;
+		float appear = Mth.clamp(age / 5f, 0f, 1f);                 // 出現
+		float retract = Mth.clamp((age - (life - 5f)) / 5f, 0f, 1f); // 終盤に開いて消える
+		float grow = appear * (1f - retract);
+		float grip = Mth.clamp((age - 3f) / 5f, 0f, 1f) * (1f - retract); // 棒を握るように握り込む
+
+		// 上腕骨・前腕は描かず、手＋指だけを見せる (指の骨が肋骨に見えるように)。
+		humerus.skipDraw = true;
+		forearm.skipDraw = true;
+
+		root.xRot = 0f;
+		root.yRot = 0f;
+		root.zRot = 0f;
+		float s = 0.05f + 0.95f * grow;
+		root.xScale = s;
+		root.yScale = s;
+		root.zScale = s;
+
+		// 肋骨(あばら): 前腕は前面中央へ向け、指を扇状に広げて各指を緩やかな弧に。
+		// 左右の手の指が中央で合わさり、湾曲した骨が肋骨のように並ぶ。
+		forearm.xRot = -0.05f;
+		forearm.yRot = 0.25f;          // 手を前面中央へ少し向ける
+		hand.xRot = CURL_SIGN * 0.2f;  // 手のひらをプレイヤーへ
+		hand.yRot = 0f;
+		hand.zRot = 0f;
+
+		// 指を扇状に広げ(肋骨の間隔)、各節を一定量曲げて弧(=肋骨)を作る。
+		float[] ribFan = {1.4f, 0.6f, 0.2f, -0.2f, -0.6f};
+		for (int i = 0; i < 5; i++) {
+			float c = grip;
+			fingerBase[i].yRot = ribFan[i];
+			fingerBase[i].xRot = CURL_SIGN * (0.35f + 0.25f * c);
+			fingerMid[i].xRot = CURL_SIGN * (0.40f + 0.30f * c);
+			fingerTip[i].xRot = CURL_SIGN * (0.40f + 0.30f * c);
+			fingerClaw[i].xRot = CURL_SIGN * (0.35f + 0.25f * c);
+		}
+
+		applyShardScale(entity, grow);
 	}
 
 	private static float easeOut(float t) {

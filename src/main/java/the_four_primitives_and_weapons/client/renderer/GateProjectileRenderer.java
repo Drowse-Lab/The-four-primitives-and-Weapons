@@ -62,7 +62,11 @@ public class GateProjectileRenderer extends EntityRenderer<GateProjectileEntity>
 
         poseStack.scale(SCALE_X, SCALE_Y, SCALE_Z);
 
-        ItemStack displayStack = new ItemStack(TheFourPrimitivesAndWeaponsModItems.GOLD_TYOKUTO.get());
+        // 毎フレームの new ItemStack を避けて使い回す ( 表示専用で内容は不変 )
+        if (sharedStack == null) {
+            sharedStack = new ItemStack(TheFourPrimitivesAndWeaponsModItems.GOLD_TYOKUTO.get());
+        }
+        ItemStack displayStack = sharedStack;
         Minecraft.getInstance().getItemRenderer().renderStatic(
                 displayStack, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
                 packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, entity.level(), entity.getId());

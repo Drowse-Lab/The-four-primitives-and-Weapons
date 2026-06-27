@@ -61,7 +61,7 @@ public final class LoadoutPouchHelper {
         ItemStack[] loadout = MaterializedPouchItem.getLoadout(pouch); // 戦闘防具
         int equipped = 0;
 
-        for (int i = 0; i < MaterializedPouchItem.SLOTS; i++) {
+        for (int i = 0; i < MaterializedPouchItem.ARMOR_SLOTS.length; i++) { // 防具スロット(0-3)のみ。 武器スロット(4/5)は収納専用
             EquipmentSlot slot = MaterializedPouchItem.ARMOR_SLOTS[i];
             ItemStack worn = player.getItemBySlot(slot).copy(); // 元々着ていた防具 ( 空可 )
             if (!loadout[i].isEmpty()) {
@@ -80,6 +80,10 @@ public final class LoadoutPouchHelper {
             // 空き + 置換 OFF → 何もしない
         }
 
+        // 武器スロット → 手に具現化装着 ( 元の手持ちはポーチへ退避。 原本はスロットに残す )
+        equipped += deployHand(player, pouch, loadout, MaterializedPouchItem.SLOT_MAINHAND, net.minecraft.world.InteractionHand.MAIN_HAND, ownerId);
+        equipped += deployHand(player, pouch, loadout, MaterializedPouchItem.SLOT_OFFHAND, net.minecraft.world.InteractionHand.OFF_HAND, ownerId);
+
         if (equipped <= 0) return 0;
 
         MaterializedPouchItem.setLoadout(pouch, loadout);
@@ -91,6 +95,34 @@ public final class LoadoutPouchHelper {
         player.displayClientMessage(Component.literal(
                 "§d結晶防具を §f" + equipped + " §d点 具現化装着しました"), true);
         return equipped;
+    }
+
+    /**
+     * 武器スロット idx の中身を具現化コピーして hand に装着。 元の手持ちはスロットへ退避する
+     * ( = 防具と同じ方式。 ポーチから武器が出るので「ポーチに残ったまま」 にならない )。
+     */
+    private static int deployHand(ServerPlayer player, ItemStack pouch, ItemStack[] loadout, int idx,
+                                  net.minecraft.world.InteractionHand hand, UUID ownerId) {
+        if (loadout[idx] == null || loadout[idx].isEmpty()) return 0;
+        ItemStack held = player.getItemInHand(hand).copy();
+        ItemStack mat = MagicalKatanaCrystalHandler.materializeCopy(loadout[idx], ownerId);
+        MaterializedPouchItem.stampFromPouch(mat, ownerId);
+        player.setItemInHand(hand, mat);
+        // 原本は loadout[idx] に残したまま ( ポーチに常に在る = 絶対に消えない )。
+        // 元の手持ちは退避スタッシュへ ( 破壊時に手へ戻す )。
+        boolean storable = !held.isEmpty()
+                && !MagicalKatanaCrystalHandler.isAnyMaterialized(held)
+                && !(held.getItem() instanceof MaterializedPouchItem);
+        MaterializedPouchItem.setStash(pouch, hand == net.minecraft.world.InteractionHand.MAIN_HAND,
+                storable ? held : ItemStack.EMPTY);
+        return 1;
+    }
+
+    /** 結晶化時にポーチの武器スロットを手に装着する内容があるか ( materializeFor のデフォルト刀置換判定 )。 */
+    public static boolean hasWeaponLoadout(ServerPlayer player) {
+        ItemStack pouch = findPouch(player, false);
+        if (pouch == null) pouch = findPouch(player, true);
+        return pouch != null && MaterializedPouchItem.hasWeaponLoadout(pouch);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -109,6 +141,11 @@ public final class LoadoutPouchHelper {
      */
     public static int returnToPouch(ServerPlayer player) {
         if (player == null) return 0;
+        // 増殖対策: 結晶ポーチがインベントリに無ければ破壊できない
+        if (MaterializedPouchItem.findFirst(player).isEmpty()) {
+            player.displayClientMessage(Component.literal("§c結晶ポーチが無いため破壊できません"), true);
+            return 0;
+        }
         ItemStack pouch = findPouch(player, true);
         if (pouch == null) pouch = findPouch(player, false); // フラグが消えていても受け皿に使う
         UUID ownerId = player.getUUID();
@@ -121,7 +158,7 @@ public final class LoadoutPouchHelper {
         int reverted = 0;
 
         // 着用中の具現化防具を破壊 → 元防具を着け直し、 戦闘防具をポーチへ戻す
-        for (int i = 0; i < MaterializedPouchItem.SLOTS; i++) {
+        for (int i = 0; i < MaterializedPouchItem.ARMOR_SLOTS.length; i++) { // 防具スロット(0-3)のみ
             EquipmentSlot slot = MaterializedPouchItem.ARMOR_SLOTS[i];
             ItemStack worn = player.getItemBySlot(slot);
             ItemStack stashed = loadout[i]; // deploy 時に退避した元装備
@@ -138,17 +175,40 @@ public final class LoadoutPouchHelper {
             }
         }
 
+        // 武器スロットの解除: 手の具現化武器を破壊し、 退避していた元の手持ちを戻す。
+        //   ( 原本は loadout[4/5] に残っているのでポーチに保持されたまま = 増殖しない )
+        for (net.minecraft.world.InteractionHand hand : net.minecraft.world.InteractionHand.values()) {
+            ItemStack worn = player.getItemInHand(hand);
+            if (!MagicalKatanaCrystalHandler.isOwnedMaterialized(worn, ownerId)) continue;
+            boolean main = hand == net.minecraft.world.InteractionHand.MAIN_HAND;
+            if (MaterializedPouchItem.isFromPouch(worn, ownerId)) {
+                // deploy コピーを外し、 退避していた手持ちを手に復元。 原本はポーチ ( loadout[idx] ) に在るので消えない。
+                ItemStack stash = (pouch != null) ? MaterializedPouchItem.getStash(pouch, main) : ItemStack.EMPTY;
+                player.setItemInHand(hand, stash);
+                if (pouch != null) MaterializedPouchItem.clearStash(pouch, main);
+            } else {
+                // 虚空由来 ( 結晶割りのデフォルト刀等 ) → 完全消去
+                player.setItemInHand(hand, ItemStack.EMPTY);
+            }
+            reverted++;
+        }
+
         // インベントリ / 手に残った「自分の具現化版」も破壊回収:
-        //   - 具現化防具 → 元に戻してポーチの空き枠へ ( 無ければインベントリ )
-        //   - 具現化武器 ( Magical Katana 等 ) → ポーチ対象外なので元に戻してインベントリへ
+        //   - 具現化防具 → 元装備をポーチの空き枠へ ( 無ければインベントリ )
+        //   - ポーチ由来の具現化武器 ( deploy したコピー ) → 原本はポーチに在るのでコピーのみ消す ( 増殖防止 )
+        //   - ポーチ外の具現化武器 → 虚無に飛ばさずポーチの武器スロットへ戻す ( 満杯ならインベントリ )
         Inventory inv = player.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack s = inv.getItem(i);
             if (!MagicalKatanaCrystalHandler.isOwnedMaterialized(s, ownerId)) continue;
-            ItemStack orig = MagicalKatanaCrystalHandler.revertToOriginal(s);
-            int free = firstEmptyArmorSlotFor(loadout, orig);
-            if (free >= 0) loadout[free] = orig;
-            else giveBack(player, orig);
+            if (armorIndexOf(s) >= 0) {
+                // 具現化防具 → 元装備を回収
+                ItemStack orig = MagicalKatanaCrystalHandler.revertToOriginal(s);
+                int free = firstEmptyArmorSlotFor(loadout, orig);
+                if (free >= 0) loadout[free] = orig;
+                else giveBack(player, orig);
+            }
+            // 具現化武器コピーは削除 ( deploy 由来は原本がポーチの武器スロットに在る / 虚空由来は完全消去 )
             inv.setItem(i, ItemStack.EMPTY);
             reverted++;
         }

@@ -1,0 +1,789 @@
+{
+ "meta": {
+  "format_version": "4.5",
+  "model_format": "modded_entity",
+  "box_uv": true
+ },
+ "name": "meiji_uniform_meiji_police",
+ "modded_entity_version": "1.17",
+ "modded_entity_flip_y": true,
+ "resolution": {
+  "width": 128,
+  "height": 128
+ },
+ "elements": [
+  {
+   "name": "crown",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    0,
+    34
+   ],
+   "inflate": 0.0,
+   "mirror_uv": false,
+   "from": [
+    -4.5,
+    30.2,
+    -4.5
+   ],
+   "to": [
+    4.5,
+    33.2,
+    4.5
+   ],
+   "origin": [
+    0.0,
+    24.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "9177afa1-3a74-430a-bb87-d02f9dc536d7"
+  },
+  {
+   "name": "band",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    28,
+    50
+   ],
+   "inflate": 0.2,
+   "mirror_uv": false,
+   "from": [
+    -4.6,
+    28.7,
+    -4.6
+   ],
+   "to": [
+    4.4,
+    30.2,
+    4.4
+   ],
+   "origin": [
+    0.0,
+    24.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "bb21d258-9c90-46da-b964-747e4cc86dc5"
+  },
+  {
+   "name": "visor",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    0,
+    50
+   ],
+   "inflate": 0.0,
+   "mirror_uv": false,
+   "from": [
+    -4.5,
+    28.3,
+    -6.3
+   ],
+   "to": [
+    4.5,
+    29.3,
+    -4.0
+   ],
+   "origin": [
+    0.0,
+    24.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "e5e1ad51-3930-4535-b9b7-65159be6947b"
+  },
+  {
+   "name": "button",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    40,
+    76
+   ],
+   "inflate": 0.0,
+   "mirror_uv": false,
+   "from": [
+    -1.0,
+    32.7,
+    -1.0
+   ],
+   "to": [
+    1.0,
+    33.7,
+    1.0
+   ],
+   "origin": [
+    0.0,
+    24.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "d88b880e-f7f7-4d97-82c1-7452882bc160"
+  },
+  {
+   "name": "tunic",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    16,
+    16
+   ],
+   "inflate": 0.5,
+   "mirror_uv": false,
+   "from": [
+    -4.0,
+    12.0,
+    -2.0
+   ],
+   "to": [
+    4.0,
+    24.0,
+    2.0
+   ],
+   "origin": [
+    0.0,
+    24.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "72e2caf1-ddbc-40f5-bff3-001b88ad71d0"
+  },
+  {
+   "name": "collar",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    36,
+    34
+   ],
+   "inflate": 0.3,
+   "mirror_uv": false,
+   "from": [
+    -4.5,
+    21.5,
+    -2.5
+   ],
+   "to": [
+    4.5,
+    24.5,
+    2.5
+   ],
+   "origin": [
+    0.0,
+    24.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "4f616b1f-75a1-4f18-9d09-e894fe2498b8"
+  },
+  {
+   "name": "belt",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    36,
+    42
+   ],
+   "inflate": 0.3,
+   "mirror_uv": false,
+   "from": [
+    -4.5,
+    13.5,
+    -2.5
+   ],
+   "to": [
+    4.5,
+    15.5,
+    2.5
+   ],
+   "origin": [
+    0.0,
+    24.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "0c03a62e-9f23-438b-ad49-41855742e8f9"
+  },
+  {
+   "name": "placket",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    48,
+    76
+   ],
+   "inflate": 0.0,
+   "mirror_uv": false,
+   "from": [
+    -0.5,
+    13.0,
+    -2.95
+   ],
+   "to": [
+    0.5,
+    23.0,
+    -1.9500000000000002
+   ],
+   "origin": [
+    0.0,
+    24.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "fd65193e-c3fd-4b31-8e80-005337e327c4"
+  },
+  {
+   "name": "sleeve_r",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    40,
+    16
+   ],
+   "inflate": 0.45,
+   "mirror_uv": false,
+   "from": [
+    -8.0,
+    16.0,
+    -2.0
+   ],
+   "to": [
+    -4.0,
+    24.0,
+    2.0
+   ],
+   "origin": [
+    -5.0,
+    22.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "36bad609-8b80-4f2c-b692-4fd642e77391"
+  },
+  {
+   "name": "epaulette_r",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    0,
+    92
+   ],
+   "inflate": 0.18,
+   "mirror_uv": false,
+   "from": [
+    -8.5,
+    23.8,
+    -2.5
+   ],
+   "to": [
+    -3.5,
+    24.8,
+    2.5
+   ],
+   "origin": [
+    -5.0,
+    22.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "97408573-4fa0-49b2-b091-acc8e4e0c8ce"
+  },
+  {
+   "name": "cuff_r",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    0,
+    76
+   ],
+   "inflate": 0.18,
+   "mirror_uv": false,
+   "from": [
+    -8.4,
+    16.0,
+    -2.4
+   ],
+   "to": [
+    -3.4000000000000004,
+    18.0,
+    2.6
+   ],
+   "origin": [
+    -5.0,
+    22.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "0c7ab083-8ece-41d1-acf4-d8f4c30cddff"
+  },
+  {
+   "name": "glove_r",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    60,
+    64
+   ],
+   "inflate": 0.4,
+   "mirror_uv": false,
+   "from": [
+    -8.0,
+    12.0,
+    -2.0
+   ],
+   "to": [
+    -4.0,
+    16.0,
+    2.0
+   ],
+   "origin": [
+    -5.0,
+    22.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "53e8f844-8997-4a13-b1f9-ab5991f6c5ae"
+  },
+  {
+   "name": "sleeve_l",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    40,
+    16
+   ],
+   "inflate": 0.45,
+   "mirror_uv": true,
+   "from": [
+    4.0,
+    16.0,
+    -2.0
+   ],
+   "to": [
+    8.0,
+    24.0,
+    2.0
+   ],
+   "origin": [
+    5.0,
+    22.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "0d181e85-cda1-4790-9d22-cdb67b8fda33"
+  },
+  {
+   "name": "epaulette_l",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    20,
+    92
+   ],
+   "inflate": 0.18,
+   "mirror_uv": true,
+   "from": [
+    3.5,
+    23.8,
+    -2.5
+   ],
+   "to": [
+    8.5,
+    24.8,
+    2.5
+   ],
+   "origin": [
+    5.0,
+    22.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "e7feeed9-1b9a-41e7-8f6e-de2aa9f65938"
+  },
+  {
+   "name": "cuff_l",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    20,
+    76
+   ],
+   "inflate": 0.18,
+   "mirror_uv": true,
+   "from": [
+    3.4,
+    16.0,
+    -2.4
+   ],
+   "to": [
+    8.4,
+    18.0,
+    2.6
+   ],
+   "origin": [
+    5.0,
+    22.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "c84a02d4-fe38-4fb1-9f33-d60655916529"
+  },
+  {
+   "name": "glove_l",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    76,
+    64
+   ],
+   "inflate": 0.4,
+   "mirror_uv": true,
+   "from": [
+    4.0,
+    12.0,
+    -2.0
+   ],
+   "to": [
+    8.0,
+    16.0,
+    2.0
+   ],
+   "origin": [
+    5.0,
+    22.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "2cc2bbcf-e96a-4393-b57c-6cd81faf169b"
+  },
+  {
+   "name": "trousers_r",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    0,
+    16
+   ],
+   "inflate": 0.4,
+   "mirror_uv": false,
+   "from": [
+    -3.9,
+    0.0,
+    -2.0
+   ],
+   "to": [
+    0.10000000000000009,
+    12.0,
+    2.0
+   ],
+   "origin": [
+    -1.9,
+    12.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "0a317eb5-3d5d-47db-9f52-f1c39528615c"
+  },
+  {
+   "name": "trousers_l",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    0,
+    16
+   ],
+   "inflate": 0.4,
+   "mirror_uv": true,
+   "from": [
+    -0.10000000000000009,
+    0.0,
+    -2.0
+   ],
+   "to": [
+    3.9,
+    12.0,
+    2.0
+   ],
+   "origin": [
+    1.9,
+    12.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "9eb0e587-b8b8-40c3-8daa-692260f01ae4"
+  },
+  {
+   "name": "boot_r",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    0,
+    64
+   ],
+   "inflate": 0.85,
+   "mirror_uv": false,
+   "from": [
+    -3.9,
+    0.0,
+    -2.0
+   ],
+   "to": [
+    0.10000000000000009,
+    6.0,
+    2.0
+   ],
+   "origin": [
+    -1.9,
+    12.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "d453fa8b-2602-48ae-8693-26d9626885b3"
+  },
+  {
+   "name": "boot_l",
+   "box_uv": true,
+   "rescale": false,
+   "locked": false,
+   "uv_offset": [
+    16,
+    64
+   ],
+   "inflate": 0.85,
+   "mirror_uv": true,
+   "from": [
+    -0.10000000000000009,
+    0.0,
+    -2.0
+   ],
+   "to": [
+    3.9,
+    6.0,
+    2.0
+   ],
+   "origin": [
+    1.9,
+    12.0,
+    0.0
+   ],
+   "faces": {},
+   "uuid": "8884b80a-e963-4387-ad39-033a5cc02f9f"
+  }
+ ],
+ "outliner": [
+  {
+   "name": "head",
+   "origin": [
+    0.0,
+    24.0,
+    0.0
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "uuid": "3ff991fc-d05c-442b-af04-40700294f354",
+   "export": true,
+   "isOpen": false,
+   "visibility": true,
+   "children": [
+    "9177afa1-3a74-430a-bb87-d02f9dc536d7",
+    "bb21d258-9c90-46da-b964-747e4cc86dc5",
+    "e5e1ad51-3930-4535-b9b7-65159be6947b",
+    "d88b880e-f7f7-4d97-82c1-7452882bc160"
+   ]
+  },
+  {
+   "name": "body",
+   "origin": [
+    0.0,
+    24.0,
+    0.0
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "uuid": "ed4daee1-b8f6-4cdc-8d86-5ac1abed7b06",
+   "export": true,
+   "isOpen": false,
+   "visibility": true,
+   "children": [
+    "72e2caf1-ddbc-40f5-bff3-001b88ad71d0",
+    "4f616b1f-75a1-4f18-9d09-e894fe2498b8",
+    "0c03a62e-9f23-438b-ad49-41855742e8f9",
+    "fd65193e-c3fd-4b31-8e80-005337e327c4"
+   ]
+  },
+  {
+   "name": "right_arm",
+   "origin": [
+    -5.0,
+    22.0,
+    0.0
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "uuid": "789200d7-37d6-4c2e-9595-30634997bc0b",
+   "export": true,
+   "isOpen": false,
+   "visibility": true,
+   "children": [
+    "36bad609-8b80-4f2c-b692-4fd642e77391",
+    "97408573-4fa0-49b2-b091-acc8e4e0c8ce",
+    "0c7ab083-8ece-41d1-acf4-d8f4c30cddff",
+    "53e8f844-8997-4a13-b1f9-ab5991f6c5ae"
+   ]
+  },
+  {
+   "name": "left_arm",
+   "origin": [
+    5.0,
+    22.0,
+    0.0
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "uuid": "9833061e-1b33-4057-9541-0fec9b8e9b7e",
+   "export": true,
+   "isOpen": false,
+   "visibility": true,
+   "children": [
+    "0d181e85-cda1-4790-9d22-cdb67b8fda33",
+    "e7feeed9-1b9a-41e7-8f6e-de2aa9f65938",
+    "c84a02d4-fe38-4fb1-9f33-d60655916529",
+    "2cc2bbcf-e96a-4393-b57c-6cd81faf169b"
+   ]
+  },
+  {
+   "name": "right_leg",
+   "origin": [
+    -1.9,
+    12.0,
+    0.0
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "uuid": "7d3ea94c-030c-4532-b7a0-18ceb93544d6",
+   "export": true,
+   "isOpen": false,
+   "visibility": true,
+   "children": [
+    "0a317eb5-3d5d-47db-9f52-f1c39528615c"
+   ]
+  },
+  {
+   "name": "left_leg",
+   "origin": [
+    1.9,
+    12.0,
+    0.0
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "uuid": "5ce1d55b-3aad-470f-b2a0-9bf9fce54717",
+   "export": true,
+   "isOpen": false,
+   "visibility": true,
+   "children": [
+    "9eb0e587-b8b8-40c3-8daa-692260f01ae4"
+   ]
+  },
+  {
+   "name": "right_boot",
+   "origin": [
+    -1.9,
+    12.0,
+    0.0
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "uuid": "0ced608a-2faa-418d-b00b-115833fc947e",
+   "export": true,
+   "isOpen": false,
+   "visibility": true,
+   "children": [
+    "d453fa8b-2602-48ae-8693-26d9626885b3"
+   ]
+  },
+  {
+   "name": "left_boot",
+   "origin": [
+    1.9,
+    12.0,
+    0.0
+   ],
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "uuid": "43909231-8046-4b71-915c-828458b8a52d",
+   "export": true,
+   "isOpen": false,
+   "visibility": true,
+   "children": [
+    "8884b80a-e963-4387-ad39-033a5cc02f9f"
+   ]
+  }
+ ],
+ "textures": [
+  {
+   "name": "meiji_police_uniform.png",
+   "folder": "",
+   "namespace": "the_four_primitives_and_weapons",
+   "id": "0",
+   "width": 128,
+   "height": 128,
+   "uv_width": 128,
+   "uv_height": 128,
+   "particle": false,
+   "render_mode": "default",
+   "visible": true,
+   "mode": "bitmap",
+   "saved": false,
+   "uuid": "b61ad0c4-bd6d-40bd-b2a3-53d585163ab1",
+   "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAADbklEQVR4nO3dTWsTQRjA8Zl20jc96cU3KrVKEVtREMGTB62KH8EXlPpBxO/gUW/6CTx40JMXwZOWSlGppbXYUvCiZpPdNFlpSsCK3d0ws5vZPP/fJTRNZ7bk2eeZmcxulAIAAAAAAAAAAAAAAP1GT05djm0aGB09oPLUbG1Z/f3i/Avt7GD6kIljq/dfNZuRs4NB8YxSdgFgG0AoeQYgAKQHgGrt+btGGLQfK8NjVn3A4xKgEgLo1bOp9uPNuVW7PlDOEjB759NOJ5URqz6QH5N0BmcRx63UDHDj/rJVH8iPiXMsAZ0MMDhYsesDPg8C08cA1+8tWfWB/BiVkMJtS0AnA+iBAas+4HEJSMognQwwe/ezVR/weBCYZQyAvp4G7l0CXj8/3X68envRqg/4XAJUegawnmmgnCVAdT6I5fMCAPCQnjiVYUeQTt9UE9V/q6HhfdYH9OXljCqSOflY9I6hTLMAnSEAXO0N+Lb+y7oNZGeSpnEdWmVbycvSVpp62LRuAwWuA/zNRVv10G4TKIreELKLiwAgA3hXArKiBJSPfyUgogQUiQwgnD46fiH1tB0a2Z9pHcCFtZU3qkhaj0lfB0g/a8Paz9TXaD3gJANEwc5WcpRsDLC9VuSirSCoZX7tj6VH/33+4ORD6+OQwiRd2NGdwcSLRLIKHGQAF21IYTbWPnhVA4OgljmNaAdZRDqjPNPV2VuZ26sRZ8fT77wLgCpvHlAcPT19rpD9WgsL79sl+9CRs17tD9v4Pu/VGKhoZnNzo9AOuZ+Akj4GcLf0jBIGABnALwSAcNtjgIIHQQSAT8gAwhU/CCQAhGcASoD0EsA00CeUAAAAZNLjxyZ6WpRX15YLXYiK462e/r9aG923F4aUQaPB9xvkeG2g/8Iw7PUheEVcBogiMoDoACADCA8AMoDwAAhDAsDt7eJLJoooAW5vFFkyMzPnvZqH95q4EgAA6NDr7x54XQOqreSSfeXWx10/r3x9S43vgqnVPb8p0xBfOCU6AIYJANkBcObak8SUfvzEJa9LmO+8DwDkiwAQztS4ObNopZ8y/TsGYBrYHb7SUzgCQDgCAAAAAJDG+/0Ahy8+ZWEnR6Zaa+TZPjxnghqfBUhmqgEZQDIygHCMAQAAAAAAAAAAAAAAAAAAAAAAAAAAAACgFP4AVKJ0YaQAMh4AAAAASUVORK5CYII="
+  }
+ ]
+}

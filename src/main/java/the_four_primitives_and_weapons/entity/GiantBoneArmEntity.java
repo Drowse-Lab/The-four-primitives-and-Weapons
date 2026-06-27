@@ -62,6 +62,17 @@ public class GiantBoneArmEntity extends Entity {
 	private static final float SLAM_TILT_MIN = -0.45f; // 最大の下げ
 	private static final float SLAM_TILT_MAX = 0.25f;  // 最大の上げ
 
+	/** 動作モード。0=薙ぎ→叩き コンボ / 1=ガード(両腕で抱きしめて守る)。 */
+	private static final EntityDataAccessor<Integer> MODE =
+			SynchedEntityData.defineId(GiantBoneArmEntity.class, EntityDataSerializers.INT);
+	/** ガードの左右。-1=左腕 / +1=右腕。 */
+	private static final EntityDataAccessor<Integer> GUARD_SIDE =
+			SynchedEntityData.defineId(GiantBoneArmEntity.class, EntityDataSerializers.INT);
+	public static final int MODE_SLAM = 0;
+	public static final int MODE_GUARD = 1;
+	/** ガードの表示寿命 (tick)。抱え込み→保持→開いて消える。 */
+	public static final int GUARD_LIFETIME = 30;
+
 	// ===== タイムライン (tick) =====
 	public static final int GROW_END = 12;     // 腕が生え出る
 	public static final int SWEEP_END = 34;    // 薙ぎ払い
@@ -96,7 +107,7 @@ public class GiantBoneArmEntity extends Entity {
 		this(TheFourPrimitivesAndWeaponsModCustomEntities.GIANT_BONE_ARM.get(), world);
 	}
 
-	/** サーバー側召喚用。 */
+	/** サーバー側召喚用 (薙ぎ→叩き コンボ)。 */
 	public GiantBoneArmEntity(Level world, Player owner, float castYaw, int corrosionLevel) {
 		this(TheFourPrimitivesAndWeaponsModCustomEntities.GIANT_BONE_ARM.get(), world);
 		this.entityData.set(OWNER_ID, owner.getId());
@@ -106,12 +117,40 @@ public class GiantBoneArmEntity extends Entity {
 		anchorToOwner(owner);
 	}
 
+	/** ガードの骨腕を召喚 (左右2本で抱きしめて守る。side: -1=左, +1=右)。 */
+	public static GiantBoneArmEntity spawnGuard(Level world, Player owner, int corrosionLevel, int side) {
+		GiantBoneArmEntity e = new GiantBoneArmEntity(
+				TheFourPrimitivesAndWeaponsModCustomEntities.GIANT_BONE_ARM.get(), world);
+		e.entityData.set(OWNER_ID, owner.getId());
+		e.entityData.set(CAST_YAW, owner.getYRot());
+		e.entityData.set(CORROSION_LEVEL, Math.max(0, corrosionLevel));
+		e.entityData.set(MODE, MODE_GUARD);
+		e.entityData.set(GUARD_SIDE, side);
+		e.anchorToOwner(owner);
+		return e;
+	}
+
 	@Override
 	protected void defineSynchedData() {
 		this.entityData.define(OWNER_ID, -1);
 		this.entityData.define(CAST_YAW, 0.0f);
 		this.entityData.define(CORROSION_LEVEL, 0);
 		this.entityData.define(SLAM_TILT, -0.18f);
+		this.entityData.define(MODE, MODE_SLAM);
+		this.entityData.define(GUARD_SIDE, 1);
+	}
+
+	public int getMode() {
+		return this.entityData.get(MODE);
+	}
+
+	public boolean isGuard() {
+		return getMode() == MODE_GUARD;
+	}
+
+	/** ガードの左右 (-1=左腕 / +1=右腕)。 */
+	public int getGuardSide() {
+		return this.entityData.get(GUARD_SIDE);
 	}
 
 	/** 地叩き終端の腕ピッチ (− が下)。手が地表に乗る角度。 */
@@ -162,6 +201,11 @@ public class GiantBoneArmEntity extends Entity {
 	}
 
 	private void anchorToOwner(Player owner) {
+		if (isGuard()) {
+			// ガード: プレイヤーの足元中心にアンカー (描画側で頭上へ持ち上げて包む)。
+			setPos(owner.getX(), owner.getY(), owner.getZ());
+			return;
+		}
 		// プレイヤーの右肩から前方へ生やす。
 		Vec3 fwd = forward();
 		Vec3 right = rightVec();
@@ -190,6 +234,20 @@ public class GiantBoneArmEntity extends Entity {
 		}
 
 		anchorToOwner(owner);
+
+		// ガード: 攻撃判定なし。寿命で消えるだけ (ダメージ軽減は SwordGuardHandler 側)。
+		if (isGuard()) {
+			if (!level().isClientSide) {
+				if (tickCount == 1) {
+					level().playSound(null, getX(), getY(), getZ(),
+							SoundEvents.WITHER_AMBIENT, SoundSource.PLAYERS, 1.2f, 1.6f);
+				}
+				if (tickCount >= GUARD_LIFETIME) {
+					discard();
+				}
+			}
+			return;
+		}
 
 		if (!level().isClientSide) {
 			if (tickCount == 1) {

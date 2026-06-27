@@ -5,7 +5,7 @@
 	"texture_size": [32, 32],
 	"textures": {
 		"0": "the_four_primitives_and_weapons:item/saya",
-		"1": "the_four_primitives_and_weapons:block/witherkatana3d",
+		"1": "the_four_primitives_and_weapons:block/katanastone3dtest",
 		"particle": "the_four_primitives_and_weapons:item/saya"
 	},
 	"elements": [

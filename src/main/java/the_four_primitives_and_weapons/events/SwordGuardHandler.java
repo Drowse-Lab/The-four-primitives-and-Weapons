@@ -109,6 +109,17 @@ public class SwordGuardHandler {
             serverLevel.playSound(null, player.blockPosition(),
                     SoundEvents.ARMOR_EQUIP_GOLD, SoundSource.PLAYERS, 1f, 1f);
 
+            // 上腕骨刀: 左右2本の骨腕がプレイヤーを抱きしめて守るガード
+            if (mainHand.getItem() instanceof the_four_primitives_and_weapons.item.KatanaNiguHumerusItem) {
+                int corrosion = the_four_primitives_and_weapons.damage.ElementalDamageUtils.getElementType(mainHand)
+                        == the_four_primitives_and_weapons.damage.ElementType.CORROSION
+                        ? the_four_primitives_and_weapons.damage.ElementalDamageUtils.getElementLevel(mainHand) : 0;
+                serverLevel.addFreshEntity(
+                        the_four_primitives_and_weapons.entity.GiantBoneArmEntity.spawnGuard(serverLevel, player, corrosion, -1));
+                serverLevel.addFreshEntity(
+                        the_four_primitives_and_weapons.entity.GiantBoneArmEntity.spawnGuard(serverLevel, player, corrosion, +1));
+            }
+
             // ガラスパネArmorStandはReplica Sword of Lightのみ生成
             // その他の武器はプレイヤーが武器を目の前に構えるだけ（GuardArmPoseHandlerでBLOCKポーズ）
             if (isReplica) {
@@ -169,14 +180,13 @@ public class SwordGuardHandler {
                     player.getX(), player.getY() + 1, player.getZ(),
                     5, 0.3, 0.5, 0.3, 0.01);
 
-            // ArmorStandを回転させる
-            for (Entity e : serverLevel.getAllEntities()) {
-                if (e instanceof ArmorStand stand && stand.getTags().contains("the_four_primitives_and_weapons_guard_bind")
-                        && stand.distanceToSqr(player) < 4.0) {
-                    stand.setYRot(stand.getYRot() + 15f);
-                    stand.setPos(player.getX(), player.getY(), player.getZ());
-                    break;
-                }
+            // ArmorStandを回転させる ( 全エンティティ走査ではなく プレイヤー周辺の局所 AABB クエリ )
+            for (ArmorStand stand : serverLevel.getEntitiesOfClass(ArmorStand.class,
+                    player.getBoundingBox().inflate(2.0),
+                    s -> s.getTags().contains("the_four_primitives_and_weapons_guard_bind"))) {
+                stand.setYRot(stand.getYRot() + 15f);
+                stand.setPos(player.getX(), player.getY(), player.getZ());
+                break;
             }
         }
 
@@ -207,14 +217,13 @@ public class SwordGuardHandler {
             TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> serverPlayer), packet);
         }
 
-        // ArmorStandを削除
+        // ArmorStandを削除 ( プレイヤー周辺の局所 AABB クエリ )
         if (player.level() instanceof ServerLevel serverLevel) {
-            for (Entity e : serverLevel.getAllEntities()) {
-                if (e instanceof ArmorStand stand && stand.getTags().contains("the_four_primitives_and_weapons_guard_bind")
-                        && stand.distanceToSqr(player) < 16.0) {
-                    stand.discard();
-                    break;
-                }
+            for (ArmorStand stand : serverLevel.getEntitiesOfClass(ArmorStand.class,
+                    player.getBoundingBox().inflate(4.0),
+                    s -> s.getTags().contains("the_four_primitives_and_weapons_guard_bind"))) {
+                stand.discard();
+                break;
             }
         }
 
