@@ -109,15 +109,13 @@ public class SwordGuardHandler {
             serverLevel.playSound(null, player.blockPosition(),
                     SoundEvents.ARMOR_EQUIP_GOLD, SoundSource.PLAYERS, 1f, 1f);
 
-            // 上腕骨刀: 左右2本の骨腕がプレイヤーを抱きしめて守るガード
+            // 上腕骨刀: 肋骨の籠がプレイヤーを囲って守るガード (1体で籠全体)
             if (mainHand.getItem() instanceof the_four_primitives_and_weapons.item.KatanaNiguHumerusItem) {
                 int corrosion = the_four_primitives_and_weapons.damage.ElementalDamageUtils.getElementType(mainHand)
                         == the_four_primitives_and_weapons.damage.ElementType.CORROSION
                         ? the_four_primitives_and_weapons.damage.ElementalDamageUtils.getElementLevel(mainHand) : 0;
                 serverLevel.addFreshEntity(
-                        the_four_primitives_and_weapons.entity.GiantBoneArmEntity.spawnGuard(serverLevel, player, corrosion, -1));
-                serverLevel.addFreshEntity(
-                        the_four_primitives_and_weapons.entity.GiantBoneArmEntity.spawnGuard(serverLevel, player, corrosion, +1));
+                        the_four_primitives_and_weapons.entity.GiantBoneArmEntity.spawnGuard(serverLevel, player, corrosion, 0));
             }
 
             // ガラスパネArmorStandはReplica Sword of Lightのみ生成

@@ -68,6 +68,10 @@ public class CustomEntityRenderers {
         event.registerLayerDefinition(
                 the_four_primitives_and_weapons.entity.model.GiantBoneArmModel.LAYER_LOCATION,
                 the_four_primitives_and_weapons.entity.model.GiantBoneArmModel::createBodyLayer);
+        // ガード専用「肋骨の籠」モデルのレイヤー定義 (籠の bakeLayer に必須)
+        event.registerLayerDefinition(
+                the_four_primitives_and_weapons.entity.model.BoneCageModel.LAYER_LOCATION,
+                the_four_primitives_and_weapons.entity.model.BoneCageModel::createBodyLayer);
     }
 
     @SubscribeEvent

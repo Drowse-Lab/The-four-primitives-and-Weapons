@@ -14,6 +14,7 @@ import net.minecraft.util.Mth;
 
 import the_four_primitives_and_weapons.entity.GiantBoneArmEntity;
 import the_four_primitives_and_weapons.entity.model.GiantBoneArmModel;
+import the_four_primitives_and_weapons.entity.model.BoneCageModel;
 
 /**
  * 「巨骨の腕」レンダラー。
@@ -38,30 +39,20 @@ public class GiantBoneArmRenderer extends EntityRenderer<GiantBoneArmEntity> {
 	private static final float GLASS_MAX_LEVEL = 12f;
 
 	private final GiantBoneArmModel model;
+	private final BoneCageModel cageModel;
 
 	public GiantBoneArmRenderer(EntityRendererProvider.Context context) {
 		super(context);
 		this.shadowRadius = 0.0f;
 		this.model = new GiantBoneArmModel(context.bakeLayer(GiantBoneArmModel.LAYER_LOCATION));
+		this.cageModel = new BoneCageModel(context.bakeLayer(BoneCageModel.LAYER_LOCATION));
 	}
 
-	// ===== ガード(左右2本の腕で抱きしめて守る)用の配置 — 実機で調整しやすいよう定数化 =====
-	/** ガード時の倍率。 */
-	private static final float GUARD_SCALE = 0.55f;
-	/** ガード時の高さ (胸の高さ, ブロック)。 */
-	private static final float GUARD_Y = 1.2f;
-	/** ガード時、手を左右へずらす量 (ブロック)。左右の手を胸に並べる。 */
-	private static final float GUARD_SIDE_X = 0.3f;
-	/** ガード時、手を前方へ出す距離 (ブロック)。手を胸の前面に。 */
-	private static final float GUARD_DEPTH = 0.45f;
-	/** ガード時、手の傾き (度)。スラムの向き規則から導出: −90 で
-	 *  手のひらがプレイヤー側・指は胸に沿って下・前腕は上に逃げる。 */
-	private static final float GUARD_PITCH_DEG = -90f;
-	/** ガード時、手のひらの向き(指の軸まわりのロール, 度)。
-	 *  指は上のまま手のひらの向きだけ回る。プレイヤーと逆を向いたら -90 へ。 */
-	private static final float GUARD_ROLL_DEG = 90f;
-	/** 手(手のひら)を胸アンカーへ寄せる前後オフセット (モデル単位)。 */
-	private static final float GUARD_HAND_Z = 3.6f;
+	// ===== ガード(肋骨の籠でプレイヤーを囲う)用の配置 — 実機調整しやすいよう定数化 =====
+	/** ガード(籠)の倍率。 */
+	private static final float GUARD_CAGE_SCALE = 1.1f;
+	/** ガード(籠)の中心高さ (プレイヤー中心, ブロック)。 */
+	private static final float GUARD_CAGE_Y = 1.0f;
 
 	@Override
 	public void render(GiantBoneArmEntity entity, float entityYaw, float partialTicks,
@@ -70,28 +61,23 @@ public class GiantBoneArmRenderer extends EntityRenderer<GiantBoneArmEntity> {
 		poseStack.pushPose();
 
 		if (entity.isGuard()) {
-			// ガード: 手だけを胸の前に置き、前腕は上へ逃がす。左右の手の指の骨が
-			// 胸の前で扇状に広がって肋骨(あばら)のように見える。
-			int side = entity.getGuardSide(); // -1=左手 / +1=右手
-			poseStack.translate(0.0, GUARD_Y, 0.0);
+			// ガード: 肋骨の籠でプレイヤーを囲う。籠はプレイヤー中心に配置。
+			poseStack.translate(0.0, GUARD_CAGE_Y, 0.0);
 			poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getCastYaw() + YAW_OFFSET));
-			poseStack.translate(side * GUARD_SIDE_X, 0.0, GUARD_DEPTH); // 左右に並べて胸前へ
-			poseStack.scale(GUARD_SCALE, GUARD_SCALE, GUARD_SCALE);
+			poseStack.scale(GUARD_CAGE_SCALE, GUARD_CAGE_SCALE, GUARD_CAGE_SCALE);
 			poseStack.scale(-1.0f, -1.0f, 1.0f);
-			poseStack.mulPose(Axis.XP.rotationDegrees(GUARD_PITCH_DEG)); // 手の傾き
-			poseStack.mulPose(Axis.ZP.rotationDegrees(GUARD_ROLL_DEG));  // 手のひらの向き(ロール)
-			poseStack.translate(0.0, 0.0, -GUARD_HAND_Z);                // 手を胸アンカーへ
-			if (side < 0)
-				poseStack.scale(-1.0f, 1.0f, 1.0f); // 左手にミラー
+			this.cageModel.setupAnim(entity, 0f, 0f, age, 0f, 0f);
+			VertexConsumer vc = buffer.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
+			this.cageModel.renderToBuffer(poseStack, vc, packedLight, OverlayTexture.NO_OVERLAY,
+					1.0f, 1.0f, 1.0f, 1.0f);
 		} else {
 			// 通常 (薙ぎ→叩き): cast 方向へ向けて巨大化。
 			poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getCastYaw() + YAW_OFFSET));
 			poseStack.scale(RENDER_SCALE, RENDER_SCALE, RENDER_SCALE);
 			poseStack.scale(-1.0f, -1.0f, 1.0f);
+			this.model.setupAnim(entity, 0f, 0f, age, 0f, 0f);
+			renderModel(entity, poseStack, buffer, packedLight);
 		}
-
-		this.model.setupAnim(entity, 0f, 0f, age, 0f, 0f);
-		renderModel(entity, poseStack, buffer, packedLight);
 
 		poseStack.popPose();
 		super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
