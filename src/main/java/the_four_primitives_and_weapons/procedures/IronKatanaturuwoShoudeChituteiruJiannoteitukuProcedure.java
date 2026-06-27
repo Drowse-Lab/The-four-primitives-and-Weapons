@@ -40,9 +40,8 @@ public class IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure {
 				living.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.SLICE_GUARD.get(), 60, 1, true, false));
 		}
 
-		// LONG_RANGE_WEAPON_CUT 共通付与 (LOKI/WITHER/REPLICA/NINJATOU/KATANA_NIGU/SMALL_SWORD/PROTOTYPE)
-		if (heldItem == TheFourPrimitivesAndWeaponsModItems.LOKI_THE_TRICKSTER.get()
-				|| heldItem == TheFourPrimitivesAndWeaponsModItems.WITHER_KATANA.get()
+		// LONG_RANGE_WEAPON_CUT 共通付与 (WITHER/REPLICA/NINJATOU/KATANA_NIGU/SMALL_SWORD/PROTOTYPE)
+		if (heldItem == TheFourPrimitivesAndWeaponsModItems.WITHER_KATANA.get()
 				|| heldItem == TheFourPrimitivesAndWeaponsModItems.NINJATOU.get()
 				|| heldItem == TheFourPrimitivesAndWeaponsModItems.KATANA_NIGU_HUMERUS.get()
 				|| heldItem == TheFourPrimitivesAndWeaponsModItems.SMALL_SWORD.get()

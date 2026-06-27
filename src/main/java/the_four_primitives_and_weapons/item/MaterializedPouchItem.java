@@ -121,11 +121,17 @@ public class MaterializedPouchItem extends Item {
         return true;
     }
 
-    /** ( LoadoutPouchHelper 互換 ) スロット番号指定版。 種別は問わず収納可。 */
+    /**
+     * スロット番号別の収納可否。
+     *   - slot 0 ( 兜 ) : 基本的に何でも可 ( 防具でなくても可 )
+     *   - slot 1..3 ( 胴/脚/靴 ) : その部位の防具のみ
+     */
     public static boolean canStore(ItemStack stack, int slotIndex) {
         if (stack.isEmpty()) return true;
         if (slotIndex < 0 || slotIndex >= SLOTS) return false;
-        return canStore(stack);
+        if (!canStore(stack)) return false; // ポーチ自身 / 具現化版 / Magical Katana は不可
+        if (slotIndex == 0) return true;     // 兜スロットは何でも可
+        return net.minecraft.world.entity.LivingEntity.getEquipmentSlotForItem(stack) == ARMOR_SLOTS[slotIndex];
     }
 
     // --- バンドル操作 ( 右クリック出し入れ ) -------------------------------

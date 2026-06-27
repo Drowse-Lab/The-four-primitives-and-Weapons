@@ -19,7 +19,6 @@
         "the_four_primitives_and_weapons:rivers_of_blood",
         "the_four_primitives_and_weapons:katana_nigu_humerus",
         "the_four_primitives_and_weapons:old_katana",
-        "the_four_primitives_and_weapons:loki_the_trickster",
         "the_four_primitives_and_weapons:replica_sword_of_light"
       ],
       "motions": {
@@ -54,7 +53,6 @@
       "display_name": "直刀",
       "items": [
         "the_four_primitives_and_weapons:luna",
-        "the_four_primitives_and_weapons:bluepurge_tyokutou",
         "the_four_primitives_and_weapons:kaminari_kurikaraken_tyokutou",
         "the_four_primitives_and_weapons:kurikarakenutigatana",
         "the_four_primitives_and_weapons:kurikarakensword",

@@ -35,9 +35,7 @@ public class GuardposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 			} else {
 				// Replica以外: アーマースタンドはスポーンせず、パーティクル/サウンドのみ（武器はBLOCKポーズで構える）
 				float r = 0.8f, g = 0.8f, b = 0.8f;
-				if (mainHandItem == TheFourPrimitivesAndWeaponsModItems.LOKI_THE_TRICKSTER.get()) {
-					r = 1f; g = 1f; b = 0.5f;
-				} else if (mainHandItem == TheFourPrimitivesAndWeaponsModItems.PROTOTYPE_KATANA.get()) {
+				if (mainHandItem == TheFourPrimitivesAndWeaponsModItems.PROTOTYPE_KATANA.get()) {
 					r = 0.5f; g = 0.5f; b = 0.5f;
 				}
 				_level.playSound(null, x, y, z, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.PLAYERS, 2, 2);

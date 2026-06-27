@@ -49,12 +49,6 @@ public class AttackPacket {
                 } else if (msg.attackType == 2) {
                     // 落下攻撃（特定アイテム専用のため一時的にコメントアウト）
                     // the_four_primitives_and_weapons.events.ChargedAttackHandler.performFallingAttack(player, msg.chargePercent);
-                } else if (msg.attackType == 3) {
-                    // Loki Decoy
-                    the_four_primitives_and_weapons.events.ChargedAttackHandler.executeLokiDecoy(player);
-                } else if (msg.attackType == 4) {
-                    // Loki Disarm
-                    the_four_primitives_and_weapons.events.ChargedAttackHandler.executeLokiDisarm(player);
                 }
             }
         });

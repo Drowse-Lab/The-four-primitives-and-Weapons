@@ -41,7 +41,6 @@ public class TheFourPrimitivesAndWeaponsModEntityRenderers {
 		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.KILLOTIRU.get(), KillotiruRenderer::new);
 		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.KATANA_TOBU.get(), KatanaTobuRenderer::new);
 		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.BLACKHOLE.get(), BlackholeRenderer::new);
-		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.LOKI_DECOYDASU.get(), ThrownItemRenderer::new);
 		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.COMET.get(), CometRenderer::new);
 		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.COMET_KILL.get(), CometKillRenderer::new);
 		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.METEOR_ARROW.get(), MeteorArrowRenderer::new);

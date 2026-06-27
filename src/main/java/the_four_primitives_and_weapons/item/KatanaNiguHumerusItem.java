@@ -77,7 +77,9 @@ public class KatanaNiguHumerusItem extends SwordItem {
 
 	@Override
 	public UseAnim getUseAnimation(ItemStack stack) {
-		return UseAnim.SPEAR;
+		// CROSSBOW は一人称レンダラに case が無く溜め中に見えなくなるため使わない。
+		// BOW は弓を引く動作で「溜め」感が出て、かつ一人称でちゃんと表示される。
+		return UseAnim.BOW;
 	}
 
 	@Override

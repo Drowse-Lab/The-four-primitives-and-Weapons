@@ -122,8 +122,7 @@ public class MobWeaponAIHandler {
 
         // ティア7: 神聖級（最強）
         if (weapon.getItem() == TheFourPrimitivesAndWeaponsModItems.SWORD_OF_NIGHT.get() ||
-            weapon.getItem() == TheFourPrimitivesAndWeaponsModItems.LUNA.get() ||
-            weapon.getItem() == TheFourPrimitivesAndWeaponsModItems.LOKI_THE_TRICKSTER.get()) {
+            weapon.getItem() == TheFourPrimitivesAndWeaponsModItems.LUNA.get()) {
             return 7;
         }
 

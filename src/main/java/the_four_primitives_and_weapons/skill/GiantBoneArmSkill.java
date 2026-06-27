@@ -29,8 +29,16 @@ public class GiantBoneArmSkill {
 		if (already)
 			return;
 
+		// 武器に侵食(CORROSION)属性が付いていればレベルを渡す → 骨表面にガラス被膜
+		ItemStack weapon = player.getMainHandItem();
+		int corrosionLevel = 0;
+		if (the_four_primitives_and_weapons.damage.ElementalDamageUtils.getElementType(weapon)
+				== the_four_primitives_and_weapons.damage.ElementType.CORROSION) {
+			corrosionLevel = the_four_primitives_and_weapons.damage.ElementalDamageUtils.getElementLevel(weapon);
+		}
+
 		float castYaw = player.getYRot();
-		GiantBoneArmEntity arm = new GiantBoneArmEntity(level, player, castYaw);
+		GiantBoneArmEntity arm = new GiantBoneArmEntity(level, player, castYaw, corrosionLevel);
 		level.addFreshEntity(arm);
 
 		level.playSound(null, player.getX(), player.getY(), player.getZ(),

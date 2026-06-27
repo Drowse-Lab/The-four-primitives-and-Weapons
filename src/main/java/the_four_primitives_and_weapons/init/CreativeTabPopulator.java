@@ -54,9 +54,6 @@ public class CreativeTabPopulator {
 			event.accept(CustomEntityInit.WEAPON_RACK_BAMBOO);
 			event.accept(CustomEntityInit.WEAPON_RACK_CRIMSON);
 			event.accept(CustomEntityInit.WEAPON_RACK_WARPED);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.BLUEPURGE);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.BLUEPURGE_UTIGATANA);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.BLUEPURGE_TYOKUTOU);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.WOODEN_TYOKUTO);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.IRON_TYOKUTO);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.GOLD_TYOKUTO);
@@ -207,7 +204,6 @@ public class CreativeTabPopulator {
 		// === TAB_CHUZUME_TAB ===
 		if (event.getTab() == TheFourPrimitivesAndWeaponsModTabs.TAB_CHUZUME_TAB.get()) {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.SWORD_OF_NIGHT);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.LOKI_THE_TRICKSTER);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.REPLICA_SWORD_OF_LIGHT);
 		}
 
@@ -225,7 +221,6 @@ public class CreativeTabPopulator {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.WARDEN_ARMOR_CHESTPLATE);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.WARDEN_ARMOR_LEGGINGS);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.KATANA_TOBU);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.LOKI_DECOYDASU);
 		}
 
 		if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {

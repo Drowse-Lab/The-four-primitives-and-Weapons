@@ -187,4 +187,11 @@ public class RarityForgeJEIPlugin implements IModPlugin {
         registration.addRecipeTransferHandler(
                 new RarityForgeRecipeTransferInfo());
     }
+
+    @Override
+    public void registerGuiHandlers(mezz.jei.api.registration.IGuiHandlerRegistration registration) {
+        // 結晶ポーチのフローティングパネル領域を JEI の占有域として登録
+        // ( パネル越しに背後のアイテム名が出るのを防ぐ )
+        registration.addGlobalGuiHandler(new PouchPanelGuiHandler());
+    }
 }

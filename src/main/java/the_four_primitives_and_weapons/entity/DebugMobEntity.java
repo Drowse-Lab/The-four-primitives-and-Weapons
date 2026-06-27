@@ -32,6 +32,9 @@ import the_four_primitives_and_weapons.damage.IElementalDamageSource;
  */
 public class DebugMobEntity extends PathfinderMob {
 
+    /** true の間、被弾/死亡サウンドを鳴らさない (kill時の静音消滅・再スポーン用)。 */
+    public boolean silentSound = false;
+
     public DebugMobEntity(EntityType<? extends PathfinderMob> type, Level world) {
         super(type, world);
         this.setCustomNameVisible(true);
@@ -194,12 +197,12 @@ public class DebugMobEntity extends PathfinderMob {
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.NOTE_BLOCK_PLING.value();
+        return silentSound ? null : SoundEvents.NOTE_BLOCK_PLING.value();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.NOTE_BLOCK_BASS.value();
+        return silentSound ? null : SoundEvents.NOTE_BLOCK_BASS.value();
     }
 
     @Override

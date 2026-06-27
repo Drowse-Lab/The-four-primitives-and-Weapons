@@ -42,7 +42,6 @@ import the_four_primitives_and_weapons.potion.NgsMobEffect;
 import the_four_primitives_and_weapons.potion.NagiharaiMobEffect;
 import the_four_primitives_and_weapons.potion.Nagiharai2MobEffect;
 import the_four_primitives_and_weapons.potion.LongRangeWeaponCutMobEffect;
-import the_four_primitives_and_weapons.potion.LokidecoyeffectMobEffect;
 import the_four_primitives_and_weapons.potion.KurutimenasiMobEffect;
 import the_four_primitives_and_weapons.potion.KougekiMobEffect;
 import the_four_primitives_and_weapons.potion.KitterukitteruMobEffect;
@@ -137,7 +136,6 @@ public class TheFourPrimitivesAndWeaponsModMobEffects {
 	public static final RegistryObject<MobEffect> CHUZUME_HUSK_ARMOR_KNOCK_BACK = REGISTRY.register("chuzume_husk_armor_knock_back", () -> new ChuzumeHuskArmorKnockBackMobEffect());
 	public static final RegistryObject<MobEffect> HARDENTITY = REGISTRY.register("hardentity", () -> new HardentityMobEffect());
 	public static final RegistryObject<MobEffect> CUSTOMSMITHINGTABLECRAFTING = REGISTRY.register("customsmithingtablecrafting", () -> new CustomsmithingtablecraftingMobEffect());
-	public static final RegistryObject<MobEffect> LOKIDECOYEFFECT = REGISTRY.register("lokidecoyeffect", () -> new LokidecoyeffectMobEffect());
 	public static final RegistryObject<MobEffect> ARMOR_STAND_TOBASU_EFFECT = REGISTRY.register("armor_stand_tobasu_effect", () -> new ArmorStandTobasuEffectMobEffect());
 	public static final RegistryObject<MobEffect> ARMORSTANDTOBASUEFFECTKILL = REGISTRY.register("armorstandtobasueffectkill", () -> new ArmorstandtobasueffectkillMobEffect());
 	public static final RegistryObject<MobEffect> PLAYER_SCORE_ID = REGISTRY.register("player_score_id", () -> new PlayerScoreIdMobEffect());

@@ -87,12 +87,6 @@
 		},
 		{
 			"predicate": {
-				"custom_model_data": 15
-			},
-			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_loki_the_trick_ster_katana"
-		},
-		{
-			"predicate": {
 				"custom_model_data": 19
 			},
 			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_replica_sword_of_light"

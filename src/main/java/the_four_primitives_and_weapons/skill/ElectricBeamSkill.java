@@ -5,103 +5,121 @@ import the_four_primitives_and_weapons.damage.ElectricElementDamageHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * ELECTRIC ビームスキル（瞬間到達）
+ * ELECTRIC 地走り放電スキル
+ * プレイヤーの正面方向へ、地面の起伏に沿って電撃を走らせ、経路上のエンティティを感電させる。
  */
 public final class ElectricBeamSkill {
 
     private ElectricBeamSkill() {}
 
-    private static final double MAX_DISTANCE = 50.0;
+    private static final double MAX_DISTANCE = 24.0; // 最大到達距離
+    private static final double STEP = 0.75;         // 1ステップの前進量
     private static final float DAMAGE = 8.0f;
+    private static final double HIT_RADIUS = 1.2;    // 地面ポイント周辺の当たり判定半径
+    private static final int SCAN_UP = 2;            // 地面探索: 上方向
+    private static final int SCAN_DOWN = 4;          // 地面探索: 下方向
 
     public static void fire(Player player) {
         if (player.level().isClientSide()) return;
 
         ServerLevel level = (ServerLevel) player.level();
-        Vec3 start = player.getEyePosition();
-        Vec3 direction = player.getLookAngle().normalize();
-        Vec3 end = start.add(direction.scale(MAX_DISTANCE));
+        RandomSource rng = level.random;
 
-        // ブロックへのレイトレース
-        BlockHitResult blockHit = level.clip(new ClipContext(
-                start, end,
-                ClipContext.Block.COLLIDER,
-                ClipContext.Fluid.NONE,
-                player
-        ));
+        Vec3 look = player.getLookAngle();
+        Vec3 horiz = new Vec3(look.x, 0, look.z);
+        if (horiz.lengthSqr() < 1.0e-4) {
+            horiz = new Vec3(1, 0, 0);
+        }
+        horiz = horiz.normalize();
 
-        Vec3 hitPos = (blockHit.getType() != HitResult.Type.MISS)
-                ? blockHit.getLocation()
-                : end;
+        Vec3 cur = player.position(); // 足元
+        double groundY = cur.y;
 
-        // ビーム経路上のエンティティをチェック
-        AABB beamBox = new AABB(start, hitPos).inflate(0.3);
-        List<LivingEntity> entities = level.getEntitiesOfClass(
-                LivingEntity.class, beamBox,
-                e -> e != player && e.isAlive()
-        );
+        Set<Integer> damaged = new HashSet<>();
 
-        LivingEntity closestTarget = null;
-        double closestDist = Double.MAX_VALUE;
+        level.playSound(null, cur.x, cur.y, cur.z,
+                SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 0.8f, 1.5f);
 
-        for (LivingEntity entity : entities) {
-            // エンティティがビームの経路上にあるか簡易チェック
-            Vec3 toEntity = entity.position().add(0, entity.getBbHeight() / 2, 0).subtract(start);
-            double proj = toEntity.dot(direction);
-            if (proj < 0 || proj > start.distanceTo(hitPos)) continue;
+        int steps = (int) (MAX_DISTANCE / STEP);
+        for (int i = 0; i < steps; i++) {
+            // 横にわずかに蛇行させて電撃らしさを出す
+            double wobble = (rng.nextDouble() - 0.5) * 0.3;
+            Vec3 side = new Vec3(-horiz.z, 0, horiz.x).scale(wobble);
+            Vec3 flat = cur.add(horiz.scale(STEP)).add(side);
 
-            Vec3 closest = start.add(direction.scale(proj));
-            double dist = closest.distanceTo(entity.position().add(0, entity.getBbHeight() / 2, 0));
-            if (dist < 1.0 && proj < closestDist) {
-                closestDist = proj;
-                closestTarget = entity;
+            // 地面の高さを探す（見つからなければ前の高さを維持）
+            Double surface = findGroundY(level, flat.x, flat.z, groundY);
+            if (surface == null) {
+                // 大きな崖や空中 → そこで終了
+                break;
             }
-        }
+            groundY = surface;
 
-        // 終点を調整（エンティティの方がブロックより近い場合）
-        if (closestTarget != null) {
-            hitPos = closestTarget.position().add(0, closestTarget.getBbHeight() / 2, 0);
-        }
+            Vec3 point = new Vec3(flat.x, groundY + 0.1, flat.z);
 
-        // パーティクルでビームを描画
-        renderBeamParticles(level, start, hitPos);
+            renderGroundSpark(level, cur, point);
+            damageAround(level, player, point, damaged);
 
-        // エンティティ命中
-        if (closestTarget != null) {
-            ElectricElementDamageHandler.applyElectricDamage(
-                    closestTarget, DAMAGE, player, 1
-            );
-        }
+            // 導体ブロックがあればさらに通電
+            BlockPos groundBlock = BlockPos.containing(point.x, groundY - 0.5, point.z);
+            ElectricConductBlock.conduct(level, groundBlock, DAMAGE);
 
-        // ブロック命中 → 通電
-        if (blockHit.getType() != HitResult.Type.MISS && closestTarget == null) {
-            BlockPos blockPos = blockHit.getBlockPos();
-            ElectricConductBlock.conduct(level, blockPos, DAMAGE);
+            cur = point;
         }
     }
 
-    private static void renderBeamParticles(ServerLevel level, Vec3 start, Vec3 end) {
-        Vec3 diff = end.subtract(start);
-        double length = diff.length();
-        Vec3 step = diff.normalize().scale(0.5);
-        Vec3 pos = start;
+    /** (x,z) 付近で refY を基準に最寄りの地面の上面 Y を探す。見つからなければ null。 */
+    private static Double findGroundY(ServerLevel level, double x, double z, double refY) {
+        int bx = (int) Math.floor(x);
+        int bz = (int) Math.floor(z);
+        int baseY = (int) Math.floor(refY);
 
-        for (double d = 0; d < length; d += 0.5) {
-            level.sendParticles(ParticleTypes.ELECTRIC_SPARK,
-                    pos.x, pos.y, pos.z,
-                    2, 0.05, 0.05, 0.05, 0.01);
-            pos = pos.add(step);
+        for (int dy = SCAN_UP; dy >= -SCAN_DOWN; dy--) {
+            BlockPos solid = new BlockPos(bx, baseY + dy, bz);
+            BlockPos above = solid.above();
+            boolean solidHere = !level.getBlockState(solid).getCollisionShape(level, solid).isEmpty();
+            boolean openAbove = level.getBlockState(above).getCollisionShape(level, above).isEmpty();
+            if (solidHere && openAbove) {
+                return (double) (solid.getY() + 1);
+            }
         }
+        return null;
+    }
+
+    private static void damageAround(ServerLevel level, Player player, Vec3 point, Set<Integer> damaged) {
+        AABB box = new AABB(point, point).inflate(HIT_RADIUS, HIT_RADIUS + 0.6, HIT_RADIUS);
+        for (LivingEntity entity : level.getEntitiesOfClass(
+                LivingEntity.class, box,
+                e -> e != player && e.isAlive()
+        )) {
+            if (damaged.add(entity.getId())) {
+                ElectricElementDamageHandler.applyElectricDamage(entity, DAMAGE, player, 1);
+            }
+        }
+    }
+
+    private static void renderGroundSpark(ServerLevel level, Vec3 from, Vec3 to) {
+        Vec3 diff = to.subtract(from);
+        int sub = 2;
+        for (int i = 1; i <= sub; i++) {
+            double t = (double) i / sub;
+            double x = from.x + diff.x * t;
+            double y = from.y + diff.y * t;
+            double z = from.z + diff.z * t;
+            level.sendParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, 2, 0.1, 0.05, 0.1, 0.02);
+        }
+        level.sendParticles(ParticleTypes.END_ROD, to.x, to.y + 0.05, to.z, 1, 0.05, 0.02, 0.05, 0.0);
     }
 }

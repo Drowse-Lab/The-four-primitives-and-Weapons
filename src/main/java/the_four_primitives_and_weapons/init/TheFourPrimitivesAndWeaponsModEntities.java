@@ -19,7 +19,6 @@ import net.minecraft.world.entity.Entity;
 import the_four_primitives_and_weapons.entity.SkeltonMobEntity;
 import the_four_primitives_and_weapons.entity.OtiruyoEntity;
 import the_four_primitives_and_weapons.entity.MeteorArrowEntity;
-import the_four_primitives_and_weapons.entity.LokiDecoydasuEntity;
 import the_four_primitives_and_weapons.entity.KillotiruEntity;
 import the_four_primitives_and_weapons.entity.KatanaTobuEntity;
 import the_four_primitives_and_weapons.entity.FlyingAttackerEntity;
@@ -45,8 +44,6 @@ public class TheFourPrimitivesAndWeaponsModEntities {
 			EntityType.Builder.<KatanaTobuEntity>of(KatanaTobuEntity::new, MobCategory.MISC).setCustomClientFactory(KatanaTobuEntity::new).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(1).sized(0.5f, 0.5f));
 	public static final RegistryObject<EntityType<BlackholeEntity>> BLACKHOLE = register("blackhole",
 			EntityType.Builder.<BlackholeEntity>of(BlackholeEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(1).setUpdateInterval(3).setCustomClientFactory(BlackholeEntity::new).fireImmune().sized(0.8f, 0.8f));
-	public static final RegistryObject<EntityType<LokiDecoydasuEntity>> LOKI_DECOYDASU = register("projectile_loki_decoydasu",
-			EntityType.Builder.<LokiDecoydasuEntity>of(LokiDecoydasuEntity::new, MobCategory.MISC).setCustomClientFactory(LokiDecoydasuEntity::new).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(1).sized(0.5f, 0.5f));
 	public static final RegistryObject<EntityType<CometEntity>> COMET = register("comet",
 			EntityType.Builder.<CometEntity>of(CometEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(0).setUpdateInterval(3).setCustomClientFactory(CometEntity::new).fireImmune().sized(0.6f, 1.8f));
 	public static final RegistryObject<EntityType<CometKillEntity>> COMET_KILL = register("comet_kill",

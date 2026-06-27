@@ -50,6 +50,14 @@ public class ClientSetup {
                     (stack, lvl, entity, seed) ->
                         net.minecraft.world.item.CrossbowItem.isCharged(stack) ? 1f : 0f);
             }
+
+            // 上腕骨刀: 溜め中(使用中)だけ別モデルに切替えるための "charging" predicate。
+            // item/katana_nigu_humerus.json の overrides で溜め専用モデルを参照する。
+            ItemProperties.register(
+                TheFourPrimitivesAndWeaponsModItems.KATANA_NIGU_HUMERUS.get(),
+                new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "charging"),
+                (stack, lvl, entity, seed) ->
+                    entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1f : 0f);
         });
     }
 }

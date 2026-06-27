@@ -9,7 +9,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import the_four_primitives_and_weapons.item.base.Base3DModelItem;
 import the_four_primitives_and_weapons.item.base.Base3DModelSwordItem;
-import the_four_primitives_and_weapons.item.BluepurgeItem;
 import the_four_primitives_and_weapons.item.SayaItem;
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 
@@ -58,43 +57,6 @@ public class ItemPropertyInit {
                 });
         }
 
-        // Register glowing property for Bluepurge items
-        if (item instanceof BluepurgeItem) {
-            ItemProperties.register(item, new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "glowing"),
-                (stack, world, entity, seed) -> {
-                    CompoundTag tag = stack.getOrCreateTag();
-
-                    // If no BluepurgeState tag exists, return 0.0f (normal state)
-                    if (!tag.contains("BluepurgeState")) {
-                        return 0.0f;
-                    }
-
-                    int state = tag.getInt("BluepurgeState"); // 0=normal, 1=disappeared, 2=disappearing, 3=reappearing
-                    int timer = tag.getInt("BluepurgeTimer");
-
-                    if (state == 0) {
-                        return 0.0f; // Normal state - normal model
-                    } else if (state == 1) {
-                        return 2.0f; // Disappeared state - bluepurgeair model
-                    } else if (state == 2) {
-                        // Disappearing animation (light -> air)
-                        if (timer > 40) {
-                            return 1.0f; // bluepurgelight model (glowing)
-                        } else {
-                            return 2.0f; // bluepurgeair model (disappearing)
-                        }
-                    } else if (state == 3) {
-                        // Reappearing animation (air -> light -> normal)
-                        if (timer > 40) {
-                            return 2.0f; // bluepurgeair model (still disappeared)
-                        } else {
-                            return 1.0f; // bluepurgelight model (reappearing with glow)
-                        }
-                    }
-
-                    return 0.0f; // Default to normal state
-                });
-        }
     }
 
     private static String getTextureVariant(ItemStack stack) {

@@ -1,7 +1,0 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/lokithetricksterkatana3",
-  "textures": {
-    "1": "the_four_primitives_and_weapons:block/lokithetricksterkatana3",
-    "particle": "the_four_primitives_and_weapons:item/aaaaa"
-  }
-}

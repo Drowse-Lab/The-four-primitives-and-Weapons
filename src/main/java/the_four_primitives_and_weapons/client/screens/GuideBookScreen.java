@@ -211,7 +211,6 @@ public class GuideBookScreen extends Screen {
     private static final List<WeaponEntry> WEAPONS = List.of(
         new WeaponEntry("achromatic_shield",     () -> new ItemStack(TheFourPrimitivesAndWeaponsModItems.ACHROMATIC_SHIELD.get())),
         new WeaponEntry("anti_gravity_bracelet", () -> new ItemStack(KnifeExtrasRegistrar.ANTI_GRAVITY_BRACELET.get())),
-        new WeaponEntry("bluepurge",             () -> new ItemStack(TheFourPrimitivesAndWeaponsModItems.BLUEPURGE.get())),
         new WeaponEntry("bow",                   () -> new ItemStack(Items.BOW)),
         new WeaponEntry("crossbow",              () -> new ItemStack(Items.CROSSBOW)),
         new WeaponEntry("convergent_gate",       () -> new ItemStack(TheFourPrimitivesAndWeaponsModItems.CONVERGENT_GATE.get())),
@@ -227,7 +226,6 @@ public class GuideBookScreen extends Screen {
         new WeaponEntry("katana_tobu",           () -> new ItemStack(TheFourPrimitivesAndWeaponsModItems.KATANA_TOBU.get())),
         new WeaponEntry("knife_launcher",        () -> new ItemStack(CustomEntityInit.KNIFE_LAUNCHER.get())),
         new WeaponEntry("kurikaraken",           () -> new ItemStack(TheFourPrimitivesAndWeaponsModItems.KURIKARAKEN.get())),
-        new WeaponEntry("loki_the_trickster",    () -> new ItemStack(TheFourPrimitivesAndWeaponsModItems.LOKI_THE_TRICKSTER.get())),
         new WeaponEntry("luna",                  () -> new ItemStack(TheFourPrimitivesAndWeaponsModItems.LUNA.get())),
         new WeaponEntry("machete",               () -> new ItemStack(TheFourPrimitivesAndWeaponsModItems.MACHETE.get())),
         new WeaponEntry("magical_katana",        () -> new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get())),

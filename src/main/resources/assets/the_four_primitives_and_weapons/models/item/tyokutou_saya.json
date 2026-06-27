@@ -15,12 +15,6 @@
 		},
 		{
 			"predicate": {
-				"custom_model_data": 2
-			},
-			"model": "the_four_primitives_and_weapons:custom/tyokutoutousiniri_bluepurge"
-		},
-		{
-			"predicate": {
 				"custom_model_data": 3
 			},
 			"model": "the_four_primitives_and_weapons:custom/tyokutoutousiniri_kurikara"

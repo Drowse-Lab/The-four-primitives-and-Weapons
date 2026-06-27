@@ -174,11 +174,7 @@ public class CustomCrafterCraftingburotukugaYoukuritukusaretatokiProcedure {
 					((Slot) _slots.get(8)).remove(1);
 					_player.containerMenu.broadcastChanges();
 				}
-				if (entity instanceof Player _player) {
-					ItemStack _setstack = new ItemStack(TheFourPrimitivesAndWeaponsModItems.LOKI_THE_TRICKSTER.get());
-					_setstack.setCount(1);
-					ItemHandlerHelper.giveItemToPlayer(_player, _setstack);
-				}
+				// (Loki the Trickster は削除済み — レシピ結果なし)
 			}
 			if (entity instanceof Player _player)
 				_player.closeContainer();

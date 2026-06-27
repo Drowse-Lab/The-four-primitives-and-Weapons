@@ -5,6 +5,9 @@ import the_four_primitives_and_weapons.damage.ElectricElementDamageHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
@@ -14,90 +17,110 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * ELECTRIC 斬撃波スキル
- * プレイヤーの正面に扇形の電撃斬撃波を放つ
+ * ELECTRIC 根状放電スキル
+ * プレイヤーを基準に、ランダムな方向へ根っこ状に枝分かれする電撃を放電する。
  */
 public final class ElectricSlashSkill {
 
     private ElectricSlashSkill() {}
 
-    private static final double RANGE = 8.0;
+    private static final int ROOT_COUNT = 14;        // 主根の本数
+    private static final int MAX_STEP = 16;          // 1本あたりの最大ステップ数
+    private static final double STEP_LENGTH = 0.55;  // 1ステップの長さ
+    private static final double WANDER = 0.5;        // 進行方向のふらつき量
+    private static final double BRANCH_CHANCE = 0.22;// 枝分かれ確率
+    private static final int MAX_DEPTH = 2;          // 枝分かれの最大深さ
     private static final float DAMAGE = 10.0f;
-    private static final double HALF_ANGLE = Math.toRadians(45);
+    private static final double HIT_RADIUS = 0.8;
 
     public static void fire(Player player) {
         if (player.level().isClientSide()) return;
 
         ServerLevel level = (ServerLevel) player.level();
-        Vec3 origin = player.position().add(0, 1.0, 0);
-        Vec3 look = player.getLookAngle().normalize();
-        Vec3 lookHorizontal = new Vec3(look.x, 0, look.z).normalize();
+        RandomSource rng = level.random;
+        // プレイヤーの足元付近を放電の基準点にする
+        Vec3 origin = player.position().add(0, 0.3, 0);
 
-        Set<Integer> damagedEntities = new HashSet<>();
+        Set<Integer> damaged = new HashSet<>();
 
-        // 扇形の斬撃波パーティクル描画
-        renderSlashWave(level, origin, look, lookHorizontal);
+        level.playSound(null, origin.x, origin.y, origin.z,
+                SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 0.7f, 1.7f);
 
-        // 扇形範囲内のエンティティにダメージ
-        AABB searchBox = new AABB(origin, origin).inflate(RANGE);
-        for (LivingEntity entity : level.getEntitiesOfClass(
-                LivingEntity.class, searchBox,
-                e -> e != player && e.isAlive()
-        )) {
-            Vec3 toEntity = entity.position().add(0, entity.getBbHeight() / 2, 0).subtract(origin);
-            double dist = toEntity.length();
-            if (dist > RANGE || dist < 0.5) continue;
-
-            // 扇形の角度チェック
-            Vec3 toEntityNorm = toEntity.normalize();
-            double dot = lookHorizontal.x * toEntityNorm.x + lookHorizontal.z * toEntityNorm.z;
-            double angle = Math.acos(Math.min(1.0, Math.max(-1.0, dot)));
-            if (angle > HALF_ANGLE) continue;
-
-            // 高さチェック（上下3ブロック以内）
-            if (Math.abs(toEntity.y) > 3.0) continue;
-
-            if (damagedEntities.add(entity.getId())) {
-                ElectricElementDamageHandler.applyElectricDamage(
-                        entity, DAMAGE, player, 2
-                );
-            }
-        }
-
-        // 斬撃波の先端付近のブロック通電
-        for (double d = RANGE - 1; d <= RANGE; d += 0.5) {
-            Vec3 pos = origin.add(look.scale(d));
-            BlockPos blockPos = new BlockPos((int) pos.x, (int) pos.y, (int) pos.z);
-            ElectricConductBlock.conduct(level, blockPos, DAMAGE);
+        for (int i = 0; i < ROOT_COUNT; i++) {
+            // 全方位ランダム（やや外側へ広がるよう垂直成分を抑える）
+            Vec3 dir = randomDirection(rng);
+            growBranch(level, player, origin, dir, MAX_STEP, damaged, rng, 0);
         }
     }
 
-    private static void renderSlashWave(ServerLevel level, Vec3 origin, Vec3 look, Vec3 lookH) {
-        // 斬撃波の弧を描く
-        double perpX = -lookH.z;
-        double perpZ = lookH.x;
+    private static void growBranch(ServerLevel level, Player player, Vec3 start, Vec3 dir,
+                                   int steps, Set<Integer> damaged, RandomSource rng, int depth) {
+        Vec3 pos = start;
+        Vec3 d = dir.lengthSqr() < 1.0e-6 ? new Vec3(1, 0, 0) : dir.normalize();
 
-        for (double dist = 1.0; dist <= RANGE; dist += 0.4) {
-            int arcSteps = (int) (8 * (dist / RANGE));
-            for (int i = -arcSteps; i <= arcSteps; i++) {
-                double t = (double) i / arcSteps;
-                double spreadAngle = t * HALF_ANGLE;
+        for (int s = 0; s < steps; s++) {
+            // 進行方向をふらつかせて根っこらしい不規則な伸び方にする
+            d = d.add(randomVec(rng).scale(WANDER)).normalize();
+            Vec3 next = pos.add(d.scale(STEP_LENGTH));
 
-                double dx = lookH.x * Math.cos(spreadAngle) - perpX * Math.sin(spreadAngle);
-                double dz = lookH.z * Math.cos(spreadAngle) - perpZ * Math.sin(spreadAngle);
+            spawnLine(level, pos, next);
+            damageAround(level, player, next, damaged);
 
-                double x = origin.x + dx * dist;
-                double y = origin.y + look.y * dist * 0.3;
-                double z = origin.z + dz * dist;
+            pos = next;
 
-                // 外側は密に、内側は疎に
-                if (dist > RANGE * 0.6) {
-                    level.sendParticles(ParticleTypes.ELECTRIC_SPARK,
-                            x, y, z, 2, 0.05, 0.1, 0.05, 0.02);
-                }
-                level.sendParticles(ParticleTypes.END_ROD,
-                        x, y, z, 1, 0.02, 0.05, 0.02, 0.005);
+            // 枝分かれ
+            if (depth < MAX_DEPTH && rng.nextDouble() < BRANCH_CHANCE) {
+                Vec3 branchDir = d.add(randomVec(rng).scale(0.9)).normalize();
+                int remaining = Math.max(3, steps - s - 2);
+                growBranch(level, player, pos, branchDir, remaining, damaged, rng, depth + 1);
             }
         }
+
+        // 根の先端で導体ブロックがあれば通電
+        BlockPos endBlock = BlockPos.containing(pos.x, pos.y, pos.z);
+        ElectricConductBlock.conduct(level, endBlock, DAMAGE);
+    }
+
+    private static void damageAround(ServerLevel level, Player player, Vec3 point, Set<Integer> damaged) {
+        AABB box = new AABB(point, point).inflate(HIT_RADIUS);
+        for (LivingEntity entity : level.getEntitiesOfClass(
+                LivingEntity.class, box,
+                e -> e != player && e.isAlive()
+        )) {
+            if (damaged.add(entity.getId())) {
+                ElectricElementDamageHandler.applyElectricDamage(entity, DAMAGE, player, 2);
+            }
+        }
+    }
+
+    private static void spawnLine(ServerLevel level, Vec3 from, Vec3 to) {
+        Vec3 diff = to.subtract(from);
+        int sub = 2;
+        for (int i = 1; i <= sub; i++) {
+            double t = (double) i / sub;
+            double x = from.x + diff.x * t;
+            double y = from.y + diff.y * t;
+            double z = from.z + diff.z * t;
+            level.sendParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, 1, 0.02, 0.02, 0.02, 0.01);
+        }
+        level.sendParticles(ParticleTypes.END_ROD, to.x, to.y, to.z, 1, 0.01, 0.01, 0.01, 0.0);
+    }
+
+    /** 全方位のランダムな単位ベクトル（やや水平寄り） */
+    private static Vec3 randomDirection(RandomSource rng) {
+        double x = rng.nextDouble() * 2 - 1;
+        double y = (rng.nextDouble() * 2 - 1) * 0.6; // 垂直成分を抑えて外へ広げる
+        double z = rng.nextDouble() * 2 - 1;
+        Vec3 v = new Vec3(x, y, z);
+        return v.lengthSqr() < 1.0e-6 ? new Vec3(1, 0, 0) : v.normalize();
+    }
+
+    /** ふらつき用のランダムベクトル */
+    private static Vec3 randomVec(RandomSource rng) {
+        return new Vec3(
+                rng.nextDouble() * 2 - 1,
+                rng.nextDouble() * 2 - 1,
+                rng.nextDouble() * 2 - 1
+        );
     }
 }

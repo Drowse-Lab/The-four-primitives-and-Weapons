@@ -98,7 +98,7 @@ public class PouchSlotClickMessage {
                     && !ItemStack.matches(m.newSlot, current);
             if (inserting) {
                 if (MaterializedPouchItem.isInsertLocked(player)) return;
-                if (!MaterializedPouchItem.canStore(m.newSlot)) return;
+                if (!MaterializedPouchItem.canStore(m.newSlot, m.slotIndex)) return;
             }
 
             lo[m.slotIndex] = m.newSlot.copy();

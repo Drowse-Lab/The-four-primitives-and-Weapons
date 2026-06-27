@@ -58,11 +58,10 @@ public class RMessage {
 			ItemStack offHand = entity.getItemInHand(InteractionHand.OFF_HAND);
 
 			// 具現化装備の R 短押し動作:
-			//   手に具現化版を持っている / 結晶ローダウトを呼び出し中なら、 装着中の具現化版を
-			//   全部破壊して元装備を結晶ポーチに戻す ( 防具 / Curios / 武器 すべて )。
+			//   インベントリ / 装備のどこかに自分の具現化版がある ( 手持ちでなくても OK ) か、
+			//   結晶ローダウトを呼び出し中なら、 具現化版を全部破壊して元装備を結晶ポーチに戻す。
 			if (entity instanceof net.minecraft.server.level.ServerPlayer sp) {
-				boolean hasMat = the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isAnyMaterialized(mainHand)
-						|| the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isAnyMaterialized(offHand);
+				boolean hasMat = the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.hasAnyOwnedMaterialized(sp);
 				if (hasMat || the_four_primitives_and_weapons.util.LoadoutPouchHelper.hasDeployedLoadout(sp)) {
 					int n = the_four_primitives_and_weapons.util.LoadoutPouchHelper.returnToPouch(sp);
 					sp.displayClientMessage(net.minecraft.network.chat.Component.literal(

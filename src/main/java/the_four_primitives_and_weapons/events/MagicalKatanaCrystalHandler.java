@@ -433,6 +433,17 @@ public class MagicalKatanaCrystalHandler {
         return base;
     }
 
+    /** player のインベントリ / 装備のどこかに、 自分の UUID 付き具現化版アイテムがあるか。 */
+    public static boolean hasAnyOwnedMaterialized(Player player) {
+        if (player == null) return false;
+        UUID id = player.getUUID();
+        var inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            if (isOwnedMaterialized(inv.getItem(i), id)) return true;
+        }
+        return false;
+    }
+
     /** owner の UUID が刻まれた具現化版アイテムか ( 防具 / Curios / 武器 すべて対象 ) */
     public static boolean isOwnedMaterialized(ItemStack s, UUID ownerId) {
         if (!isAnyMaterialized(s)) return false;
@@ -518,7 +529,8 @@ public class MagicalKatanaCrystalHandler {
 
         // 具現化できる本数 = 登録武器ロードアウト数。 既に上限なら結晶を生成しない。
         if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
-            int max = countRegisteredWeapons(player);
+            // 登録武器数に応じて増えるが、 未登録 (0本) でも最低 1 本は具現化できるようにする
+            int max = Math.max(1, countRegisteredWeapons(player));
             int current = countOwnedMaterialized(sp.getServer(), player.getUUID());
             if (current >= max) {
                 sp.displayClientMessage(net.minecraft.network.chat.Component.literal(

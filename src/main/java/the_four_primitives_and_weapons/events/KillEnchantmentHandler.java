@@ -91,6 +91,25 @@ public class KillEnchantmentHandler {
             if (resolvedKillLevel > 0) {
                 double killChance = Math.min(resolvedKillLevel * 0.1, 1.0); // Lv1=10%, Lv2=20%, ... Lv10=100%
                 if (Math.random() < killChance) {
+                    // デバッグMob: kill発動を表示し、音なしで消して同じ場所に再スポーン
+                    if (target instanceof the_four_primitives_and_weapons.entity.DebugMobEntity debug) {
+                        debug.silentSound = true;
+                        if (attacker instanceof net.minecraft.world.entity.player.Player p) {
+                            p.displayClientMessage(
+                                net.minecraft.network.chat.Component.literal("kill,data health 0"), false);
+                        }
+                        if (VersionHelper.getLevel(target) instanceof ServerLevel sl) {
+                            the_four_primitives_and_weapons.entity.DebugMobEntity fresh =
+                                new the_four_primitives_and_weapons.entity.DebugMobEntity(
+                                    the_four_primitives_and_weapons.init.CustomEntityInit.DEBUG_MOB.get(), sl);
+                            fresh.moveTo(target.getX(), target.getY(), target.getZ(),
+                                target.getYRot(), target.getXRot());
+                            sl.addFreshEntity(fresh); // 静音スポーン
+                        }
+                        debug.discard(); // 死亡音なしで消滅
+                        return;
+                    }
+
                     // killコマンドを実行
                     if (target.getServer() != null) {
                         target.getServer().getCommands().performPrefixedCommand(

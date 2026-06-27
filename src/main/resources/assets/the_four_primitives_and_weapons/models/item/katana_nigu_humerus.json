@@ -3,5 +3,13 @@
   "textures": {
     "1": "the_four_primitives_and_weapons:block/katananiguzyouwannkotu3d",
     "particle": "the_four_primitives_and_weapons:item/katananiguzyouwankotu3d"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "the_four_primitives_and_weapons:charging": 1.0
+      },
+      "model": "the_four_primitives_and_weapons:item/katana_nigu_humerus_charge"
+    }
+  ]
 }

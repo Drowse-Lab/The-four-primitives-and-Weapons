@@ -44,16 +44,12 @@
 
     "_comment_special": "===== 特殊武器 (耐久無限, 固有エンチャ適性) =====",
     "the_four_primitives_and_weapons:sword_of_night":     { "durability": 0, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:loki_the_trickster": { "durability": 0, "enchantability": 14, "damage_bonus": 2, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:rivers_of_blood":    { "durability": 0, "enchantability": 4,  "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:old_katana":         { "durability": 0, "enchantability": 2,  "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:reitou":             { "durability": 0, "enchantability": 3,  "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:luna":               { "durability": 0, "enchantability": 2,  "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:kurikaraken":        { "durability": 0, "enchantability": 9,  "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:kurikarakensword":   { "durability": 0, "enchantability": 9,  "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:kurikarakenutigatana": { "durability": 0, "enchantability": 9, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:bluepurge":          { "durability": 0, "enchantability": 2,  "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:bluepurge_utigatana": { "durability": 0, "enchantability": 2, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:bluepurge_tyokutou": { "durability": 0, "enchantability": 2,  "damage_bonus": 3, "attack_speed": -2.4 }
+    "the_four_primitives_and_weapons:kurikarakenutigatana": { "durability": 0, "enchantability": 9, "damage_bonus": 3, "attack_speed": -2.4 }
   }
 }

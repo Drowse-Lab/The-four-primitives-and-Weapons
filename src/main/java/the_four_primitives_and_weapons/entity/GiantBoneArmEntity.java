@@ -16,6 +16,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.sounds.SoundEvents;
@@ -48,6 +49,18 @@ public class GiantBoneArmEntity extends Entity {
 			SynchedEntityData.defineId(GiantBoneArmEntity.class, EntityDataSerializers.INT);
 	private static final EntityDataAccessor<Float> CAST_YAW =
 			SynchedEntityData.defineId(GiantBoneArmEntity.class, EntityDataSerializers.FLOAT);
+	/** 武器の侵食(CORROSION)属性レベル。0=無し。骨表面のガラス被膜の強さに使う。 */
+	private static final EntityDataAccessor<Integer> CORROSION_LEVEL =
+			SynchedEntityData.defineId(GiantBoneArmEntity.class, EntityDataSerializers.INT);
+	/**
+	 * 地叩き終端の腕ピッチ(rad)。− が下。手の真下の地面に合わせて算出し、
+	 * 手が地表に乗る角度にする (ブロックへのめり込み防止)。クライアント描画で使用。
+	 */
+	private static final EntityDataAccessor<Float> SLAM_TILT =
+			SynchedEntityData.defineId(GiantBoneArmEntity.class, EntityDataSerializers.FLOAT);
+	/** SLAM_TILT のクランプ範囲 (下げすぎ/上げすぎ防止)。 */
+	private static final float SLAM_TILT_MIN = -0.45f; // 最大の下げ
+	private static final float SLAM_TILT_MAX = 0.25f;  // 最大の上げ
 
 	// ===== タイムライン (tick) =====
 	public static final int GROW_END = 12;     // 腕が生え出る
@@ -59,10 +72,12 @@ public class GiantBoneArmEntity extends Entity {
 	public static final int SLAM_IMPACT = 50;  // 地叩きの当たり判定フレーム
 
 	// ===== 効果パラメータ =====
-	/** 腕の届く距離 (ブロック)。地叩きの着弾点 = オーナー前方この距離。 */
-	public static final double REACH = 6.0;
-	private static final double SWEEP_RADIUS = 7.5;
-	private static final double SLAM_RADIUS = 8.0;
+	/** 腕の届く距離 (ブロック)。指先まで含めた全長。地叩きの着弾点(指先) = オーナー前方この距離。 */
+	public static final double REACH = 10.0;
+	/** 薙ぎ払いの扇の半角 (度)。 */
+	private static final double SWEEP_ANGLE = 80.0;
+	/** 地叩き: 肩→指先の線分まわりの当たり半径 (腕の太さぶん + 余裕)。 */
+	private static final double ARM_HIT_RADIUS = 4.0;
 	private static final float SWEEP_DAMAGE = 14.0f;
 	private static final float SLAM_DAMAGE = 22.0f;
 	public static final double SHAKE_RADIUS = 16.0;
@@ -82,10 +97,12 @@ public class GiantBoneArmEntity extends Entity {
 	}
 
 	/** サーバー側召喚用。 */
-	public GiantBoneArmEntity(Level world, Player owner, float castYaw) {
+	public GiantBoneArmEntity(Level world, Player owner, float castYaw, int corrosionLevel) {
 		this(TheFourPrimitivesAndWeaponsModCustomEntities.GIANT_BONE_ARM.get(), world);
 		this.entityData.set(OWNER_ID, owner.getId());
 		this.entityData.set(CAST_YAW, castYaw);
+		this.entityData.set(CORROSION_LEVEL, Math.max(0, corrosionLevel));
+		this.entityData.set(SLAM_TILT, computeSlamTilt(owner));
 		anchorToOwner(owner);
 	}
 
@@ -93,10 +110,41 @@ public class GiantBoneArmEntity extends Entity {
 	protected void defineSynchedData() {
 		this.entityData.define(OWNER_ID, -1);
 		this.entityData.define(CAST_YAW, 0.0f);
+		this.entityData.define(CORROSION_LEVEL, 0);
+		this.entityData.define(SLAM_TILT, -0.18f);
+	}
+
+	/** 地叩き終端の腕ピッチ (− が下)。手が地表に乗る角度。 */
+	public float getSlamTilt() {
+		return this.entityData.get(SLAM_TILT);
+	}
+
+	/**
+	 * 手の真下 (前方 REACH 地点) の地表高さから、手がその地表に乗る叩き角を算出。
+	 * 腕長 ≒ REACH とみなし、肩から指先までの落差を sin で角度化する。
+	 */
+	private float computeSlamTilt(Player owner) {
+		Vec3 fwd = forward();
+		Vec3 impact = owner.position().add(fwd.scale(REACH));
+		double shoulderY = owner.getY() + owner.getBbHeight() * 0.85;
+		double groundY = shoulderY - REACH; // 取得失敗時の保険 (ほぼ真下扱いにはしない)
+		if (level() instanceof ServerLevel sl) {
+			groundY = sl.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+					Mth.floor(impact.x), Mth.floor(impact.z));
+		}
+		// 指先 worldY = 肩 + REACH*sin(tilt) = 地表 → sin = (地表 - 肩) / REACH
+		double sin = Mth.clamp((groundY - shoulderY) / REACH, -1.0, 1.0);
+		float tilt = (float) Math.asin(sin); // − = 下
+		return Mth.clamp(tilt, SLAM_TILT_MIN, SLAM_TILT_MAX);
 	}
 
 	public float getCastYaw() {
 		return this.entityData.get(CAST_YAW);
+	}
+
+	/** 武器の侵食属性レベル (0=無し)。骨表面のガラス被膜表現に使う。 */
+	public int getCorrosionLevel() {
+		return this.entityData.get(CORROSION_LEVEL);
 	}
 
 	public Player getOwner() {
@@ -162,17 +210,19 @@ public class GiantBoneArmEntity extends Entity {
 		}
 	}
 
-	/** 薙ぎ払い: 前方の扇状範囲を薙ぐ。横向きノックバック。 */
+	/** 薙ぎ払い: 肩から指先 (REACH) までの前方扇状範囲を薙ぐ。横向きノックバック。 */
 	private void doSweep(Player owner) {
 		Vec3 fwd = forward();
-		Vec3 center = owner.position().add(fwd.scale(REACH * 0.6)).add(0, 1.0, 0);
-		AABB box = new AABB(center, center).inflate(SWEEP_RADIUS, 4.0, SWEEP_RADIUS);
+		Vec3 origin = owner.position();
+		// 肩〜指先の全長 + 縦の振れ幅をカバー
+		AABB box = new AABB(origin, origin).inflate(REACH, 5.0, REACH);
+		double minDot = Math.cos(Math.toRadians(SWEEP_ANGLE));
 		for (LivingEntity t : level().getEntitiesOfClass(LivingEntity.class, box, e -> e != owner && e.isAlive())) {
-			Vec3 to = t.position().subtract(owner.position());
-			if (to.horizontalDistance() > SWEEP_RADIUS)
+			Vec3 to = t.position().subtract(origin);
+			if (to.horizontalDistance() > REACH)
 				continue;
 			Vec3 toN = to.lengthSqr() < 1.0e-4 ? fwd : to.normalize();
-			if (fwd.dot(new Vec3(toN.x, 0, toN.z)) < Math.cos(Math.toRadians(75)))
+			if (fwd.dot(new Vec3(toN.x, 0, toN.z)) < minDot)
 				continue;
 			hurt(owner, t, SWEEP_DAMAGE);
 			// 横薙ぎの吹き飛ばし (前方 + 横ぶれ)
@@ -181,29 +231,32 @@ public class GiantBoneArmEntity extends Entity {
 			if (t instanceof ServerPlayer sp)
 				sp.hurtMarked = true;
 		}
-		if (level() instanceof ServerLevel sl) {
-			for (int i = 0; i < 40; i++) {
-				double a = Math.toRadians(-75 + 150.0 * i / 40.0) + Math.atan2(fwd.z, fwd.x);
-				double r = SWEEP_RADIUS * 0.9;
-				sl.sendParticles(ParticleTypes.SWEEP_ATTACK,
-						owner.getX() + Math.cos(a) * r, center.y, owner.getZ() + Math.sin(a) * r,
-						1, 0, 0, 0, 0);
-			}
-		}
 		level().playSound(null, getX(), getY(), getZ(),
 				SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 2.0f, 0.6f);
 	}
 
-	/** 地叩き: 前方着弾点に叩きつけ。強ノックバック + 半径16m 地揺れ。 */
+	/** 地叩き: 肩→指先の腕全体で叩きつけ。強ノックバック + 半径16m 地揺れ。 */
 	private void doSlam(Player owner) {
 		Vec3 fwd = forward();
+		Vec3 shoulder = owner.position().add(0, owner.getBbHeight() * 0.7, 0);
 		Vec3 impact = owner.position().add(fwd.scale(REACH));
-		AABB box = new AABB(impact, impact).inflate(SLAM_RADIUS, 5.0, SLAM_RADIUS);
+		// 着弾点(指先)を地面 (地表) にクランプ — 当たり判定/演出が地中にめり込まないように
+		if (level() instanceof ServerLevel slg) {
+			int gy = slg.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+					Mth.floor(impact.x), Mth.floor(impact.z));
+			impact = new Vec3(impact.x, gy, impact.z);
+		}
+		// 肩→指先 の線分まわり (カプセル) で当たり判定 = 腕全体に判定
+		AABB box = new AABB(
+				Math.min(shoulder.x, impact.x), Math.min(shoulder.y, impact.y), Math.min(shoulder.z, impact.z),
+				Math.max(shoulder.x, impact.x), Math.max(shoulder.y, impact.y), Math.max(shoulder.z, impact.z))
+				.inflate(ARM_HIT_RADIUS);
 		for (LivingEntity t : level().getEntitiesOfClass(LivingEntity.class, box, e -> e != owner && e.isAlive())) {
-			double d = t.position().distanceTo(impact);
-			if (d > SLAM_RADIUS)
+			Vec3 tp = t.position().add(0, t.getBbHeight() * 0.5, 0);
+			double d = distToSegment(tp, shoulder, impact);
+			if (d > ARM_HIT_RADIUS)
 				continue;
-			float dmg = (float) (SLAM_DAMAGE * (1.0 - 0.4 * (d / SLAM_RADIUS)));
+			float dmg = (float) (SLAM_DAMAGE * (1.0 - 0.35 * (d / ARM_HIT_RADIUS)));
 			hurt(owner, t, dmg);
 			Vec3 out = t.position().subtract(impact);
 			Vec3 outN = out.lengthSqr() < 1.0e-4 ? fwd : out.normalize();
@@ -256,6 +309,17 @@ public class GiantBoneArmEntity extends Entity {
 
 	private void hurt(Player owner, LivingEntity target, float amount) {
 		target.hurt(level().damageSources().playerAttack(owner), amount);
+	}
+
+	/** 点 p から線分 a-b までの最短距離。 */
+	private static double distToSegment(Vec3 p, Vec3 a, Vec3 b) {
+		Vec3 ab = b.subtract(a);
+		double len2 = ab.lengthSqr();
+		if (len2 < 1.0e-6)
+			return p.distanceTo(a);
+		double t = p.subtract(a).dot(ab) / len2;
+		t = Math.max(0.0, Math.min(1.0, t));
+		return p.distanceTo(a.add(ab.scale(t)));
 	}
 
 	@Override

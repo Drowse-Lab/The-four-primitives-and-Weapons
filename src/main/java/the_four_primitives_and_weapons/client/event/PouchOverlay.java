@@ -43,6 +43,8 @@ public class PouchOverlay {
     private static boolean posInit = false;
     private static boolean dragging = false;
     private static double dragOffX, dragOffY;
+    /** パネル内で押下を消費したフラグ ( 対応する離上も飲み込んで void ドロップを防ぐ ) */
+    private static boolean consumedPress = false;
     /** 自分のポーチツールチップ描画中は背後抑制をスキップするためのフラグ */
     private static boolean renderingOwn = false;
 
@@ -110,6 +112,15 @@ public class PouchOverlay {
         posInit = false;
     }
 
+    /**
+     * パネルが開いている間の占有領域 ( JEI 等に「ここは GUI が被っている」 と伝える用 )。
+     * 閉じている / 未配置なら null。
+     */
+    public static net.minecraft.client.renderer.Rect2i getPanelArea() {
+        if (!open || !posInit) return null;
+        return new net.minecraft.client.renderer.Rect2i(panelX, panelY, PANEL_W, PANEL_H);
+    }
+
     // --- B: ポーチにカーソルを合わせて開く / 閉じる ---
     @SubscribeEvent
     public static void onKey(ScreenEvent.KeyPressed.Pre event) {
@@ -150,11 +161,18 @@ public class PouchOverlay {
         int mouseX = event.getMouseX();
         int mouseY = event.getMouseY();
 
-        // 初期位置 ( 元インベントリのメイングリッド上あたり ) / ドラッグ追従
+        // 初期位置 ( インベントリ GUI の横の空きスペース。 アイテムに被らないように ) / ドラッグ追従
         if (!posInit) {
             AbstractContainerScreen<?> acs = (AbstractContainerScreen<?>) event.getScreen();
-            panelX = acs.getGuiLeft() + 46;
-            panelY = acs.getGuiTop() + 84;
+            int guiLeft = acs.getGuiLeft();
+            int rightEdge = acs.width - guiLeft; // 中央寄せ GUI の右端
+            int px = rightEdge + 6;
+            if (px + PANEL_W > acs.width) {       // 右に入らなければ左脇へ
+                px = guiLeft - PANEL_W - 6;
+                if (px < 2) px = 2;
+            }
+            panelX = px;
+            panelY = acs.getGuiTop() + 8;
             posInit = true;
         }
         if (dragging) {
@@ -206,10 +224,16 @@ public class PouchOverlay {
 
         g.pose().popPose();
 
-        // ホバー中スロットのツールチップ ( renderTooltip 自身が最前面 z を扱う )
+        // ホバー中スロットのツールチップ。
+        // パネルのアイテムは translate(0,0,300) 内の renderItem で実効 z≈450 になり、
+        // ツールチップ内部の z (≈400) を上回ってアイテムが説明に被る。
+        // ツールチップをさらに高い z へ持ち上げて確実に最前面に描く。
         if (hovered >= 0 && !lo[hovered].isEmpty()) {
             renderingOwn = true;
+            g.pose().pushPose();
+            g.pose().translate(0, 0, 400);
             g.renderTooltip(mc.font, lo[hovered], mouseX, mouseY);
+            g.pose().popPose();
             renderingOwn = false;
         }
     }
@@ -233,6 +257,9 @@ public class PouchOverlay {
         if (!(event.getScreen() instanceof AbstractContainerScreen)) return;
         double mx = event.getMouseX(), my = event.getMouseY();
         if (!inPanel(mx, my)) return; // パネル外は通常のインベントリ操作
+
+        // パネル内の押下は離した時もバニラに渡さない ( カーソルのアイテムが void ドロップされるのを防ぐ )
+        consumedPress = true;
 
         if (event.getButton() == 0 && inClose(mx, my)) {
             close();
@@ -283,7 +310,7 @@ public class PouchOverlay {
             MaterializedPouchItem.stampFromPouch(newCursor, player.getUUID());
         } else {
             if (MaterializedPouchItem.isInsertLocked(player)) return;     // 結晶化中は収納不可
-            if (!MaterializedPouchItem.canStore(cursor)) return;
+            if (!MaterializedPouchItem.canStore(cursor, i)) return;        // スロット別の種別制限
             if (current.isEmpty()) {
                 newSlot = cursor.copy();
                 newSlot.setCount(1);
@@ -297,6 +324,12 @@ public class PouchOverlay {
             }
         }
 
+        // クライアント側のポーチ NBT も即時更新しておく。
+        // ( サーバーから再同期される前に同じスロットを連打すると、 古い中身を見て
+        //   カーソルとポーチの両方に複製されてしまう = 増殖バグの防止 )
+        lo[i] = newSlot.copy();
+        MaterializedPouchItem.setLoadout(pouch, lo);
+
         menu.setCarried(newCursor); // クライアント側カーソル ( クリエイティブで権威 )
         TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(
             new PouchSlotClickMessage(pouchSlot, i, newSlot, newCursor));
@@ -306,7 +339,24 @@ public class PouchOverlay {
     public static void onMouseRelease(ScreenEvent.MouseButtonReleased.Pre event) {
         if (dragging && event.getButton() == 0) {
             dragging = false;
+            consumedPress = false;
             event.setCanceled(true);
+            return;
+        }
+        // パネル内で消費した押下に対応する離上を飲み込む。
+        // これをしないと、 パネルがインベントリ枠の外 ( void ) にある時に
+        // バニラ mouseReleased が「カーソルのアイテムをドロップ」してしまう。
+        if (consumedPress) {
+            consumedPress = false;
+            event.setCanceled(true);
+        }
+    }
+
+    /** インベントリ等の画面を閉じたら、 ポーチパネルも閉じる。 */
+    @SubscribeEvent
+    public static void onScreenClose(ScreenEvent.Closing event) {
+        if (event.getScreen() instanceof AbstractContainerScreen) {
+            close();
         }
     }
 }
