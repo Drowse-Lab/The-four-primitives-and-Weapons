@@ -74,10 +74,18 @@ public final class SayaPatternModel implements BakedModel {
 		}
 	}
 
+	private static final org.apache.logging.log4j.Logger LOGGER =
+			org.apache.logging.log4j.LogManager.getLogger("MAW/SayaPattern");
+	private static final java.util.concurrent.atomic.AtomicBoolean LOGGED =
+			new java.util.concurrent.atomic.AtomicBoolean(false);
+
 	/** ListTag ( 旗フォーマット ) の各レイヤーをブロックアトラス上の旗模様スプライトへ解決。 */
 	private static List<TextureAtlasSprite> resolveSprites(ListTag patterns) {
 		List<TextureAtlasSprite> out = new ArrayList<>();
 		var atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
+		net.minecraft.resources.ResourceLocation missing =
+				net.minecraft.client.renderer.texture.MissingTextureAtlasSprite.getLocation();
+		boolean logOnce = LOGGED.compareAndSet(false, true);
 		for (int i = 0; i < patterns.size(); i++) {
 			CompoundTag c = patterns.getCompound(i);
 			String hash = c.getString("Pattern");
@@ -88,7 +96,17 @@ public final class SayaPatternModel implements BakedModel {
 			ResourceKey<BannerPattern> rk = keyOpt.get();
 			Material mat = Sheets.getBannerMaterial(rk);
 			if (mat == null) continue;
-			out.add(atlas.getSprite(mat.texture()));
+			TextureAtlasSprite sprite = atlas.getSprite(mat.texture());
+			boolean isMissing = sprite == null || sprite.contents().name().equals(missing);
+			if (logOnce) {
+				LOGGER.info("[MAW] saya pattern '{}' -> tex {} : {}",
+						hash, mat.texture(), isMissing ? "MISSING (not on block atlas)" : "ok");
+			}
+			if (isMissing) {
+				// ブロックアトラスに無い → 模様を描くと欠落テクスチャになるので描かない ( 地色のみ )
+				return new ArrayList<>();
+			}
+			out.add(sprite);
 		}
 		return out;
 	}
