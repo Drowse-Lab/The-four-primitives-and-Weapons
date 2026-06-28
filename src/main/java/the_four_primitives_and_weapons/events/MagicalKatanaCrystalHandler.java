@@ -664,8 +664,9 @@ public class MagicalKatanaCrystalHandler {
                 sp.displayClientMessage(Component.literal("§c結晶ポーチが無いため破壊できません"), true);
             return;
         }
-        // ポーチ由来 ( deploy コピー ) は ここで消さず returnToPouch に任せる ( 原本をポーチへ戻すため )。
-        //   虚空由来 ( 結晶割りデフォルト等 ) のみ即完全消去。
+        // ポーチ由来 ( deploy コピー ) は ここで消さず returnToPouch に任せる ( 原本をスロットへ戻すため )。
+        //   虚空由来 ( 結晶割りデフォルト等 ) のみ即完全消去 ( 原本は素体としてインベントリに残る )。
+        //   ※ 虚空由来をポーチへ回収すると素体と二重になり増殖するため、 ここで消す。
         if (!the_four_primitives_and_weapons.item.MaterializedPouchItem.isFromPouch(stack, player.getUUID())) {
             player.setItemInHand(hand, ItemStack.EMPTY);
         }

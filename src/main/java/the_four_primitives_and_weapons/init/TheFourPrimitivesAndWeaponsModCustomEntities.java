@@ -11,6 +11,7 @@ import net.minecraft.world.entity.EntityType;
 import the_four_primitives_and_weapons.entity.TornadoEntity;
 import the_four_primitives_and_weapons.entity.DarkProjectileEntity;
 import the_four_primitives_and_weapons.entity.GiantBoneArmEntity;
+import the_four_primitives_and_weapons.entity.SeedProjectileEntity;
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 
 /**
@@ -49,4 +50,14 @@ public class TheFourPrimitivesAndWeaponsModCustomEntities {
                     .setCustomClientFactory((spawnEntity, level) -> new GiantBoneArmEntity(spawnEntity, level))
                     .sized(1.0f, 1.0f)
                     .build("giant_bone_arm"));
+
+    /** 種の飛び道具 ( 種を耕地/コンポスター以外/空中に右クリックで発射 )。 */
+    public static final RegistryObject<EntityType<SeedProjectileEntity>> SEED_PROJECTILE = REGISTRY.register("seed_projectile",
+            () -> EntityType.Builder.<SeedProjectileEntity>of(SeedProjectileEntity::new, MobCategory.MISC)
+                    .setShouldReceiveVelocityUpdates(true)
+                    .setTrackingRange(64)
+                    .setUpdateInterval(1)
+                    .setCustomClientFactory((spawnEntity, level) -> new SeedProjectileEntity(spawnEntity, level))
+                    .sized(0.25f, 0.25f)
+                    .build("seed_projectile"));
 }

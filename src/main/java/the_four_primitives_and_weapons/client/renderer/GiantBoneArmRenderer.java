@@ -53,6 +53,8 @@ public class GiantBoneArmRenderer extends EntityRenderer<GiantBoneArmEntity> {
 	private static final float GUARD_CAGE_SCALE = 1.1f;
 	/** ガード(籠)の中心高さ (プレイヤー中心, ブロック)。 */
 	private static final float GUARD_CAGE_Y = 1.0f;
+	/** ガード(籠)の前後オフセット (ブロック)。0=中心。+ で前方へずらす。 */
+	private static final float GUARD_CAGE_Z = 0f;
 
 	@Override
 	public void render(GiantBoneArmEntity entity, float entityYaw, float partialTicks,
@@ -64,6 +66,7 @@ public class GiantBoneArmRenderer extends EntityRenderer<GiantBoneArmEntity> {
 			// ガード: 肋骨の籠でプレイヤーを囲う。籠はプレイヤー中心に配置。
 			poseStack.translate(0.0, GUARD_CAGE_Y, 0.0);
 			poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getCastYaw() + YAW_OFFSET));
+			poseStack.translate(0.0, 0.0, GUARD_CAGE_Z); // 奥へ
 			poseStack.scale(GUARD_CAGE_SCALE, GUARD_CAGE_SCALE, GUARD_CAGE_SCALE);
 			poseStack.scale(-1.0f, -1.0f, 1.0f);
 			this.cageModel.setupAnim(entity, 0f, 0f, age, 0f, 0f);

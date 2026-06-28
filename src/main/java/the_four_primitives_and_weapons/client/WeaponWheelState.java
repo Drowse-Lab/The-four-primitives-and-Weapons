@@ -269,7 +269,9 @@ public class WeaponWheelState {
     }
 
     private static boolean isOwnedMaterialized(ItemStack s, java.util.UUID myId) {
-        if (!MagicalKatanaCrystalHandler.isMaterialized(s)) return false;
+        // magical katana 限定の isMaterialized ではなく、 汎用の isAnyMaterialized で判定する。
+        //   → ポーチから具現化した「非カタナ武器・防具」 も「破壊 ( 自分の UUID )」 対象として検出。
+        if (!MagicalKatanaCrystalHandler.isAnyMaterialized(s)) return false;
         net.minecraft.nbt.CompoundTag tag = s.getTag();
         if (tag == null || !tag.hasUUID("MaterializedFor")) return false;
         return tag.getUUID("MaterializedFor").equals(myId);

@@ -60,6 +60,10 @@ public class CustomEntityRenderers {
         // 上腕骨刀 特殊技「巨骨の腕」
         event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModCustomEntities.GIANT_BONE_ARM.get(),
                 the_four_primitives_and_weapons.client.renderer.GiantBoneArmRenderer::new);
+
+        // 種の飛び道具 ( 投げた種アイテムの見た目で描画 )。 未登録だと描画時に NPE クラッシュするので必須。
+        event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModCustomEntities.SEED_PROJECTILE.get(),
+                ctx -> new net.minecraft.client.renderer.entity.ThrownItemRenderer<>(ctx));
     }
 
     @SubscribeEvent

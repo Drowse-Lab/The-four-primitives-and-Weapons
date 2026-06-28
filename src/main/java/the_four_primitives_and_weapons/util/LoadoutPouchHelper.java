@@ -191,7 +191,9 @@ public final class LoadoutPouchHelper {
                 if (idx >= 0 && idx < loadout.length) loadout[idx] = original; // 原本をポーチへ戻す
                 else giveBack(player, original);
             } else {
-                // 虚空由来 ( 結晶割りのデフォルト刀。 原本は別途プレイヤーが保持済み ) → 完全消去
+                // 虚空由来 ( 結晶割りのデフォルト刀 ) → 完全消去。
+                //   原本 ( 結晶化に使った素体 ) はインベントリに残っているので消失はしない。
+                //   ※ ここで「ポーチへ回収」 すると素体と二重になり増殖するため回収しない。
                 player.setItemInHand(hand, ItemStack.EMPTY);
             }
             reverted++;
