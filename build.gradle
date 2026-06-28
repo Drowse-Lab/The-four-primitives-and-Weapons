@@ -272,6 +272,13 @@ dependencies {
 // (Backpack-Arsenal addon が期待する命名規則: <name>-forge-<mc>-<version>.jar)
 jar {
     archiveFileName = "The four primitives and Weapons-forge-1.20.1-${mod_version}.jar"
+    // Mixin 設定を JAR マニフェストに宣言 ( Forge はこれで mixin config を登録する )。
+    //   dev では src/main/resources/META-INF/MANIFEST.MF が展開モッドのマニフェストとして読まれる。
+    manifest {
+        attributes(["MixinConfigs": "the_four_primitives_and_weapons.melon.mixins.json"])
+    }
+    // リソース側 MANIFEST.MF ( dev 用 ) は jar では manifest{} と二重になるため除外。
+    exclude 'META-INF/MANIFEST.MF'
 }
 
 processResources {

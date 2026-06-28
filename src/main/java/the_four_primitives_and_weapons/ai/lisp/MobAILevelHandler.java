@@ -74,7 +74,7 @@ public class MobAILevelHandler {
                 event.getSource().typeHolder().unwrapKey()
                     .map(k -> k.location().toString()).orElse("unknown") + "\"}";
             CombatLogger.logEvent("hurt", srcEnt, event.getEntity(), event.getAmount(), extra);
-        } catch (Exception ignored) {}
+        } catch (Throwable ignored) {} // ログは非必須。 クラス未ロード等(Error)でもゲームを落とさない
 
         // === プレイヤーの攻撃パターン記録 ===
         if (event.getSource().getEntity() instanceof Player player
@@ -141,9 +141,9 @@ public class MobAILevelHandler {
                     AIEvolutionManager.reportDeath(entityTypeId, genome, fitness);
                 }
 
-                // 戦闘ログ記録
+                // 戦闘ログ記録（非必須。 ログ系の失敗でゲームを落とさない）
                 LivingEntity killer = event.getEntity().getKillCredit();
-                CombatLogger.logMobDeath(monster, brain, killer);
+                try { CombatLogger.logMobDeath(monster, brain, killer); } catch (Throwable ignored) {}
 
                 // プレイヤーの勝利を記録
                 if (killer instanceof Player player) {
@@ -158,7 +158,7 @@ public class MobAILevelHandler {
             MobAIBrain brain = brains.get(killerMob.getUUID());
             if (brain != null) {
                 brain.recordKill();
-                CombatLogger.logPlayerDeath(player, killerMob, brain);
+                try { CombatLogger.logPlayerDeath(player, killerMob, brain); } catch (Throwable ignored) {}
             }
             // プレイヤーの敗北を記録
             PlayerBehaviorTracker.getProfile(player.getUUID()).losses++;

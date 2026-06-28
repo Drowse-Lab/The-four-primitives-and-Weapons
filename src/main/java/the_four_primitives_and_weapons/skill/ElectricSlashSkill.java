@@ -46,10 +46,32 @@ public final class ElectricSlashSkill {
         level.playSound(null, origin.x, origin.y, origin.z,
                 SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 0.7f, 1.7f);
 
+        // 確実な命中判定: 根の届く範囲内の生物には必ずダメージ（細い箱だけだと取りこぼすため）。
+        try { sweepDamage(level, player, origin, damaged); } catch (Throwable ignored) {}
+
         for (int i = 0; i < ROOT_COUNT; i++) {
             // 全方位ランダム（やや外側へ広がるよう垂直成分を抑える）
             Vec3 dir = randomDirection(rng);
-            growBranch(level, player, origin, dir, MAX_STEP, damaged, rng, 0);
+            try {
+                growBranch(level, player, origin, dir, MAX_STEP, damaged, rng, 0);
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    /** 放電の届く半径内の生物に確実にダメージ（多段ヒットは damaged で防止）。 */
+    private static void sweepDamage(ServerLevel level, Player player, Vec3 origin, Set<Integer> damaged) {
+        double radius = MAX_STEP * STEP_LENGTH * 0.75; // 根は曲がるので到達距離をやや控えめに
+        for (LivingEntity entity : level.getEntitiesOfClass(
+                LivingEntity.class,
+                new AABB(origin, origin).inflate(radius),
+                e -> e != player && e.isAlive())) {
+            if (entity.position().add(0, entity.getBbHeight() / 2.0, 0).distanceTo(origin) > radius) continue;
+            if (damaged.add(entity.getId())) {
+                ElectricElementDamageHandler.applyElectricDamage(entity, DAMAGE, player, 2);
+                level.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK,
+                        entity.getX(), entity.getY() + entity.getBbHeight() / 2.0, entity.getZ(),
+                        10, 0.3, 0.3, 0.3, 0.05);
+            }
         }
     }
 

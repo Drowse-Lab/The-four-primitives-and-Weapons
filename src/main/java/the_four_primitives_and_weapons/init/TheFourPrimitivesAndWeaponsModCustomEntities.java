@@ -12,6 +12,7 @@ import the_four_primitives_and_weapons.entity.TornadoEntity;
 import the_four_primitives_and_weapons.entity.DarkProjectileEntity;
 import the_four_primitives_and_weapons.entity.GiantBoneArmEntity;
 import the_four_primitives_and_weapons.entity.SeedProjectileEntity;
+import the_four_primitives_and_weapons.entity.StabbedWeaponEntity;
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 
 /**
@@ -60,4 +61,15 @@ public class TheFourPrimitivesAndWeaponsModCustomEntities {
                     .setCustomClientFactory((spawnEntity, level) -> new SeedProjectileEntity(spawnEntity, level))
                     .sized(0.25f, 0.25f)
                     .build("seed_projectile"));
+
+    /** 地面に突き刺さった武器 ( 戦場の建築用 )。 */
+    public static final RegistryObject<EntityType<StabbedWeaponEntity>> STABBED_WEAPON = REGISTRY.register("stabbed_weapon",
+            () -> EntityType.Builder.<StabbedWeaponEntity>of(StabbedWeaponEntity::new, MobCategory.MISC)
+                    .setShouldReceiveVelocityUpdates(false)
+                    .setTrackingRange(128)
+                    .setUpdateInterval(20)
+                    .fireImmune()
+                    .setCustomClientFactory((spawnEntity, level) -> new StabbedWeaponEntity(spawnEntity, level))
+                    .sized(1.5f, 2.0f) // 表示した武器全体を覆う当たり判定 ( クリックで掴み/編集しやすく )
+                    .build("stabbed_weapon"));
 }

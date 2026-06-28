@@ -36,37 +36,31 @@ public final class ElectricDischargeBurstSkill {
         if (player.level().isClientSide()) return;
 
         ServerLevel level = (ServerLevel) player.level();
-        Vec3 origin = player.position().add(0, 1.0, 0);
+        Vec3 origin = player.position().add(0, 1.2, 0);
         Vec3 look = player.getLookAngle().normalize();
 
-        // 右ベクトルと上ベクトルを計算
+        // 放電ビジュアル用の方向: 近接で mob を見下ろした時でも放電が地面に潜って
+        //   見えなくならないよう、 下向き成分を抑える（ダメージ判定は実際の look を使う）。
+        Vec3 visualDir = look.y < -0.25
+                ? new Vec3(look.x, -0.25, look.z).normalize()
+                : look;
+
+        // 右ベクトルと上ベクトルを計算（ビジュアル方向基準）
         Vec3 right;
         Vec3 up;
-        if (Math.abs(look.y) > 0.99) {
+        if (Math.abs(visualDir.y) > 0.99) {
             float yaw = player.getYRot() * 0.017453292F;
             right = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw));
-            up = look.cross(right).normalize();
+            up = visualDir.cross(right).normalize();
         } else {
-            right = new Vec3(-look.z, 0, look.x).normalize();
-            up = look.cross(right).normalize();
+            right = new Vec3(-visualDir.z, 0, visualDir.x).normalize();
+            up = visualDir.cross(right).normalize();
         }
 
         // 多段ヒット防止
         Set<Integer> damagedEntities = new HashSet<>();
 
-        for (int i = 0; i < BRANCH_COUNT; i++) {
-            // 前方円錐内のランダム方向を生成
-            Vec3 direction = randomConeDirection(look, right, up);
-            dischargeBranch(level, origin, direction, damagedEntities, player);
-        }
-
-        // サウンド
-        level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 1.5f, 1.2f);
-        level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS, 0.8f, 1.5f);
-
-        // 発動時の足元エフェクト
+        // 発動時の足元エフェクト（先に出す = branch で何かあっても必ず表示される）
         for (int i = 0; i < 360; i += 30) {
             double rad = Math.toRadians(i);
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK,
@@ -74,6 +68,48 @@ public final class ElectricDischargeBurstSkill {
                     origin.y - 0.5,
                     origin.z + Math.sin(rad) * 1.2,
                     3, 0.05, 0.1, 0.05, 0.02);
+        }
+
+        // 確実な命中判定: 前方コーン内・射程内の生物には必ずダメージ。
+        //   branch の細い当たり判定（箱0.8）だけだと素早く動く対象や少し外れた対象を取りこぼすため、
+        //   ここでコーン判定の確定ヒットを行う（多段ヒットは damagedEntities で防止）。
+        try { coneSweepDamage(level, player, origin, look, damagedEntities); } catch (Throwable ignored) {}
+
+        // 見た目の稲妻（各 branch は隔離して、 1 本の失敗で全体が止まらないように）
+        for (int i = 0; i < BRANCH_COUNT; i++) {
+            Vec3 direction = randomConeDirection(visualDir, right, up);
+            try {
+                dischargeBranch(level, origin, direction, damagedEntities, player);
+            } catch (Throwable ignored) {}
+        }
+
+        // サウンド
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 1.5f, 1.2f);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS, 0.8f, 1.5f);
+    }
+
+    /** 前方コーン内・射程内の生物に確実にダメージを与える。 */
+    private static void coneSweepDamage(ServerLevel level, Player player, Vec3 origin, Vec3 look,
+                                        Set<Integer> damagedEntities) {
+        double range = MAX_STEP * STEP_LENGTH; // 稲妻の到達距離
+        double cosLimit = Math.cos(SPREAD_ANGLE + Math.toRadians(18)); // コーン + 少し余裕
+        for (LivingEntity entity : level.getEntitiesOfClass(
+                LivingEntity.class,
+                player.getBoundingBox().inflate(range),
+                e -> e != player && e.isAlive())) {
+            Vec3 toEntity = entity.position().add(0, entity.getBbHeight() / 2.0, 0).subtract(origin);
+            double dist = toEntity.length();
+            if (dist < 1.0E-3 || dist > range) continue;
+            if (toEntity.normalize().dot(look) < cosLimit) continue; // コーン外
+            if (!damagedEntities.add(entity.getId())) continue;
+            ElectricElementDamageHandler.applyElectricDamage(entity, DAMAGE, player, 2);
+            level.sendParticles(ParticleTypes.ELECTRIC_SPARK,
+                    entity.getX(), entity.getY() + entity.getBbHeight() / 2.0, entity.getZ(),
+                    12, 0.3, 0.3, 0.3, 0.05);
+            level.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+                    SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 0.6f, 1.8f);
         }
     }
 
@@ -133,9 +169,11 @@ public final class ElectricDischargeBurstSkill {
                 }
             }
 
-            // ブロック通電
-            BlockPos blockPos = new BlockPos((int) pos.x, (int) pos.y, (int) pos.z);
-            ElectricConductBlock.conduct(level, blockPos, DAMAGE);
+            // ブロック通電（毎ステップは重い＝ラグ源なので数ステップおきに間引く）
+            if (step % 6 == 0) {
+                BlockPos blockPos = new BlockPos((int) pos.x, (int) pos.y, (int) pos.z);
+                ElectricConductBlock.conduct(level, blockPos, DAMAGE);
+            }
         }
     }
 

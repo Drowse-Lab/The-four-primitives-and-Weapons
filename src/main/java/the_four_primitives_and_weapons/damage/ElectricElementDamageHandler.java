@@ -137,10 +137,17 @@ public class ElectricElementDamageHandler {
     public static void applyElectricDamage(LivingEntity target, float damage, LivingEntity source, int level) {
         // カスタム DamageType: the_four_primitives_and_weapons:electric
         DamageSource ds = ModDamageSources.ofElement(target.level(), ElementType.ELECTRIC, source);
-        IElementalDamageSource elementalSource = (IElementalDamageSource) ds;
-        elementalSource.setElementType(ElementType.ELECTRIC);
-        elementalSource.setElementLevel(level);
+        // ds が IElementalDamageSource を実装していない場合 ( magic フォールバック等 ) に
+        //   ClassCastException で hurt() 前に落ちる ＝ ダメージが入らない / スキルが中断する
+        //   のを防ぐため、 instanceof でガードする。
+        if (ds instanceof IElementalDamageSource elementalSource) {
+            elementalSource.setElementType(ElementType.ELECTRIC);
+            elementalSource.setElementLevel(level);
+        }
 
+        // 直前の被弾による無敵時間で弾かれて「ダメージが入らない」 のを防ぐ
+        //   ( 放電スキルは連続/同時ヒットしうるため )。
+        target.invulnerableTime = 0;
         target.hurt(ds, damage);
     }
 

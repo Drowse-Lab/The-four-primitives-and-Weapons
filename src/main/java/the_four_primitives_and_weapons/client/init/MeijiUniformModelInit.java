@@ -19,5 +19,6 @@ public class MeijiUniformModelInit {
 	@SubscribeEvent
 	public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
 		event.registerLayerDefinition(ModelMeijiUniform.LAYER_LOCATION, ModelMeijiUniform::createBodyLayer);
+		event.registerLayerDefinition(ModelMeijiUniform.LAYER_LOCATION_SLIM, ModelMeijiUniform::createSlimBodyLayer);
 	}
 }

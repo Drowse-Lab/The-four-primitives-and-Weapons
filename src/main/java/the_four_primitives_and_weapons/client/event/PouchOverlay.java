@@ -309,9 +309,13 @@ public class PouchOverlay {
                     new PouchToggleAirMessage(pouchSlot, i));
                 return;
             }
-            // 取り出し: 手動で取り出したアイテムは刻印しない ( 普通に使うので破壊対象にしない )
-            newSlot = ItemStack.EMPTY;
-            newCursor = current.copy();
+            // 取り出し: カーソル ( carried ) を経由せず、 サーバー権威でインベントリへ直接追加する。
+            //   ( クリエイティブはカーソルがサーバー権威でないため、 カーソル経由だと複製する )。
+            lo[i] = ItemStack.EMPTY;
+            MaterializedPouchItem.setLoadout(pouch, lo); // クライアント即時反映
+            TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(
+                new the_four_primitives_and_weapons.network.PouchTakeMessage(pouchSlot, i));
+            return;
         } else {
             if (MaterializedPouchItem.isInsertLocked(player)) return;     // 結晶化中は収納不可
             if (!MaterializedPouchItem.canStore(cursor, i)) return;        // スロット別の種別制限

@@ -26,6 +26,14 @@ public final class MeijiUniformArmorModels {
 				Minecraft.getInstance().getEntityModels().bakeLayer(ModelMeijiUniform.LAYER_LOCATION));
 	}
 
+	/** 着用者が slim ( Alex ) スキンなら slim レイヤー、 そうでなければ wide レイヤーをベイク。 */
+	private static ModelMeijiUniform<?> bakedFor(LivingEntity living) {
+		boolean slim = living instanceof net.minecraft.client.player.AbstractClientPlayer acp
+				&& "slim".equals(acp.getModelName());
+		return new ModelMeijiUniform<>(Minecraft.getInstance().getEntityModels().bakeLayer(
+				slim ? ModelMeijiUniform.LAYER_LOCATION_SLIM : ModelMeijiUniform.LAYER_LOCATION));
+	}
+
 	private static ModelPart empty() {
 		return new ModelPart(Collections.emptyList(), Collections.emptyMap());
 	}
@@ -50,7 +58,7 @@ public final class MeijiUniformArmorModels {
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public static HumanoidModel chest(LivingEntity living, HumanoidModel def) {
-		ModelMeijiUniform<?> m = baked();
+		ModelMeijiUniform<?> m = bakedFor(living); // 上着は袖を含むので slim/wide を切替
 		HumanoidModel model = new HumanoidModel(new ModelPart(Collections.emptyList(), Map.of(
 				"head", empty(), "hat", empty(), "body", m.body,
 				"right_arm", m.right_arm, "left_arm", m.left_arm,

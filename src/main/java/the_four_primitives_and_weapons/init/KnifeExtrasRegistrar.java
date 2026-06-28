@@ -30,5 +30,9 @@ public final class KnifeExtrasRegistrar {
     public static final RegistryObject<Item> MATERIALIZED_POUCH =
         ITEMS.register("materialized_pouch", MaterializedPouchItem::new);
 
+    /** 戦地設営の杭: オフハンドに持つと、 メイン武器をブロック上面右クリックで地面に突き刺せる ( 戦場の建築用 )。 */
+    public static final RegistryObject<Item> BATTLE_STAKE =
+        ITEMS.register("battle_stake", () -> new net.minecraft.world.item.Item(new net.minecraft.world.item.Item.Properties()));
+
     private KnifeExtrasRegistrar() {}
 }

@@ -64,6 +64,10 @@ public class CustomEntityRenderers {
         // 種の飛び道具 ( 投げた種アイテムの見た目で描画 )。 未登録だと描画時に NPE クラッシュするので必須。
         event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModCustomEntities.SEED_PROJECTILE.get(),
                 ctx -> new net.minecraft.client.renderer.entity.ThrownItemRenderer<>(ctx));
+
+        // 地面に突き刺さった武器
+        event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModCustomEntities.STABBED_WEAPON.get(),
+                the_four_primitives_and_weapons.client.renderer.StabbedWeaponRenderer::new);
     }
 
     @SubscribeEvent

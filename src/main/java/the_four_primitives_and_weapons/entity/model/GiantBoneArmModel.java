@@ -39,6 +39,10 @@ public class GiantBoneArmModel extends HierarchicalModel<GiantBoneArmEntity> {
 	private final ModelPart[] fingerClaw = new ModelPart[5];
 	/** 侵食属性で骨から生えるガラス結晶 (ガラスパスのみ描画)。 */
 	private final java.util.List<ModelPart> shards = new java.util.ArrayList<>();
+	/** 上腕骨・前腕の結晶 (ガード時は腕を隠すので、これらも隠す)。 */
+	private final java.util.Set<ModelPart> armShards = new java.util.HashSet<>();
+	/** ガード時、腕(上腕骨/前腕)の結晶を隠すか。 */
+	private boolean guardHideArmShards = false;
 
 	/** ガラス結晶が「びっしり」になる侵食レベル。これ以降は結晶サイズが増す。 */
 	private static final float GLASS_MAX_LEVEL_MODEL = 12f;
@@ -46,8 +50,6 @@ public class GiantBoneArmModel extends HierarchicalModel<GiantBoneArmEntity> {
 	private static final float GLASS_GROWTH_PER_LV = 0.018f;
 	/** 結晶サイズ増加の上限 (Lv100でも大きくなりすぎず見やすく保つ)。 */
 	private static final float GLASS_GROWTH_MAX = 0.9f;
-	/** 全ガラス結晶の配置定義 (骨表面に細かくびっしり)。 */
-	private static final java.util.List<ShardDef> SHARD_DEFS = buildShardDefs();
 
 	private static final float LH = 30f; // 上腕骨 長さ
 	private static final float LF = 26f; // 前腕 長さ
@@ -66,6 +68,9 @@ public class GiantBoneArmModel extends HierarchicalModel<GiantBoneArmEntity> {
 	private static final float[] FX = {-6.5f, -4.5f, -1.5f, 1.5f, 4.5f};
 	// 安静時の指の開き (扇状)
 	private static final float[] SPREAD = {-1.0f, -0.32f, 0f, 0.3f, 0.58f};
+
+	/** 全ガラス結晶の配置定義 (SEG 等を参照するので、それらの後に初期化する)。 */
+	private static final java.util.List<ShardDef> SHARD_DEFS = buildShardDefs();
 
 	/** 指の曲がる向き。-1=下向き / +1=上向き (上下逆ならここを反転)。 */
 	private static final float CURL_SIGN = -1f;
@@ -89,15 +94,21 @@ public class GiantBoneArmModel extends HierarchicalModel<GiantBoneArmEntity> {
 		}
 		for (ShardDef d : SHARD_DEFS) {
 			ModelPart parent = d.parent.equals("humerus") ? humerus
-					: d.parent.equals("forearm") ? forearm : hand;
-			shards.add(parent.getChild(d.name));
+					: d.parent.equals("forearm") ? forearm
+					: d.parent.startsWith("finger") ? hand.getChild(d.parent)
+					: hand;
+			ModelPart sh = parent.getChild(d.name);
+			shards.add(sh);
+			if (d.parent.equals("humerus"))
+				armShards.add(sh); // 上腕骨の結晶だけガードで隠す (前腕/手/指は残す)
 		}
 	}
 
-	/** ガラス結晶の表示切替 (骨パス=false / ガラスパス=true)。 */
+	/** ガラス結晶の表示切替 (骨パス=false / ガラスパス=true)。
+	 *  ガード時は腕(上腕骨/前腕)の結晶は隠す (腕を描かないので浮いて見えないように)。 */
 	public void setShardsVisible(boolean visible) {
 		for (ModelPart s : shards)
-			s.visible = visible;
+			s.visible = visible && !(guardHideArmShards && armShards.contains(s));
 	}
 
 	public static LayerDefinition createBodyLayer() {
@@ -165,7 +176,9 @@ public class GiantBoneArmModel extends HierarchicalModel<GiantBoneArmEntity> {
 		// 侵食属性のガラス結晶 (骨表面から外向きに細かくびっしり生やす)。
 		for (ShardDef d : SHARD_DEFS) {
 			PartDefinition parent = d.parent.equals("humerus") ? humerus
-					: d.parent.equals("forearm") ? forearm : hand;
+					: d.parent.equals("forearm") ? forearm
+					: d.parent.startsWith("finger") ? hand.getChild(d.parent)
+					: hand;
 			addShard(parent, d.name, d.px, d.py, d.pz, d.rx, d.ry, d.rz, d.size, d.len);
 		}
 
@@ -211,7 +224,11 @@ public class GiantBoneArmModel extends HierarchicalModel<GiantBoneArmEntity> {
 		// (parent, z範囲, 半径, 本数, size最小/最大[太さ], len最小/最大[長さ])
 		scatter(defs, rnd, "humerus", 4f, LH - 3f, 3.0f, 26, 1.1f, 2.8f, 2.4f, 5.2f);
 		scatter(defs, rnd, "forearm", 3f, LF - 2f, 3.0f, 20, 1.0f, 2.4f, 2.2f, 4.6f);
-		scatter(defs, rnd, "hand", 2f, LP - 0.5f, 3.0f, 8, 1.0f, 2.2f, 2.0f, 4.0f);
+		scatter(defs, rnd, "hand", 2f, LP - 0.5f, 3.0f, 12, 1.0f, 2.2f, 2.0f, 4.0f);
+		// 指にも結晶 (ガードで主に見える部分。侵食の結晶を手に付ける)。
+		for (int f = 0; f < 5; f++) {
+			scatter(defs, rnd, "finger" + f, 1.5f, SEG[f][0] - 0.5f, 1.7f, 3, 0.8f, 1.6f, 1.6f, 2.8f);
+		}
 		return defs;
 	}
 
@@ -254,6 +271,7 @@ public class GiantBoneArmModel extends HierarchicalModel<GiantBoneArmEntity> {
 		// 通常は上腕骨・前腕も描画する (ガードで切り替えるため毎回戻す)。
 		humerus.skipDraw = false;
 		forearm.skipDraw = false;
+		guardHideArmShards = false;
 
 		float age = ageInTicks; // = tickCount + partialTick
 
@@ -377,37 +395,42 @@ public class GiantBoneArmModel extends HierarchicalModel<GiantBoneArmEntity> {
 		float appear = Mth.clamp(age / 5f, 0f, 1f);                 // 出現
 		float retract = Mth.clamp((age - (life - 5f)) / 5f, 0f, 1f); // 終盤に開いて消える
 		float grow = appear * (1f - retract);
-		float grip = Mth.clamp((age - 3f) / 5f, 0f, 1f) * (1f - retract); // 棒を握るように握り込む
+		float grip = Mth.clamp((age - 4f) / 6f, 0f, 1f) * (1f - retract); // 指を内へ巻き込む
 
-		// 上腕骨・前腕は描かず、手＋指だけを見せる (指の骨が肋骨に見えるように)。
+		// 腕を短く: 上腕骨は隠し、前腕(橈骨/尺骨)〜手だけ見せる。
 		humerus.skipDraw = true;
-		forearm.skipDraw = true;
+		guardHideArmShards = true; // 上腕骨の結晶も隠す (前腕の結晶は残す)
 
+		// 手を横向き＋ロールして、縦の棒(プレイヤー)を握る向きに。
+		// 握りが縦/横ズレる場合は GUARD_GRIP_ROLL を 0 / ±90 / 180 で調整。
+		final float GUARD_GRIP_ROLL = (float) (Math.PI / 2);
 		root.xRot = 0f;
 		root.yRot = 0f;
-		root.zRot = 0f;
+		root.zRot = GUARD_GRIP_ROLL;
 		float s = 0.05f + 0.95f * grow;
 		root.xScale = s;
 		root.yScale = s;
 		root.zScale = s;
 
-		// 肋骨(あばら): 前腕は前面中央へ向け、指を扇状に広げて各指を緩やかな弧に。
-		// 左右の手の指が中央で合わさり、湾曲した骨が肋骨のように並ぶ。
-		forearm.xRot = -0.05f;
-		forearm.yRot = 0.25f;          // 手を前面中央へ少し向ける
-		hand.xRot = CURL_SIGN * 0.2f;  // 手のひらをプレイヤーへ
+		// ガードの指の巻き込み向き (slam とは逆。外へ開いてしまう場合は -1f へ)。
+		final float GUARD_CURL = 1f;
+		forearm.xRot = -0.15f;
+		forearm.yRot = 0f;
+		hand.xRot = GUARD_CURL * 0.25f;
 		hand.yRot = 0f;
 		hand.zRot = 0f;
 
-		// 指を扇状に広げ(肋骨の間隔)、各節を一定量曲げて弧(=肋骨)を作る。
-		float[] ribFan = {1.4f, 0.6f, 0.2f, -0.2f, -0.6f};
+		// 棒(プレイヤー)を握るように: 0=母指は反対側から、1〜4本指はほぼ平行に
+		// 並べて巻き込む。指と指の隙間が肋骨のように見える。
+		float[] guardFan = {-1.35f, -0.2f, -0.07f, 0.07f, 0.2f};
 		for (int i = 0; i < 5; i++) {
 			float c = grip;
-			fingerBase[i].yRot = ribFan[i];
-			fingerBase[i].xRot = CURL_SIGN * (0.35f + 0.25f * c);
-			fingerMid[i].xRot = CURL_SIGN * (0.40f + 0.30f * c);
-			fingerTip[i].xRot = CURL_SIGN * (0.40f + 0.30f * c);
-			fingerClaw[i].xRot = CURL_SIGN * (0.35f + 0.25f * c);
+			// 握りを緩めに → 中にプレイヤーが収まる空間を残す (潰さない)。
+			fingerBase[i].yRot = guardFan[i];
+			fingerBase[i].xRot = GUARD_CURL * (0.25f + 0.4f * c);
+			fingerMid[i].xRot = GUARD_CURL * (0.3f + 0.45f * c);
+			fingerTip[i].xRot = GUARD_CURL * (0.3f + 0.4f * c);
+			fingerClaw[i].xRot = GUARD_CURL * (0.2f + 0.3f * c);
 		}
 
 		applyShardScale(entity, grow);

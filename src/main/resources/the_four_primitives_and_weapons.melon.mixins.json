@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "the_four_primitives_and_weapons.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "GlisteringMelonEdibleMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -55,6 +55,7 @@ public class CauldronDyeHandler {
 			if (!level.isClientSide) {
 				ServerLevel sl = (ServerLevel) level;
 				CauldronColorData.get(sl).removeColor(pos);
+				the_four_primitives_and_weapons.world.CauldronPotionData.get(sl).remove(pos); // ポーションも消す
 				syncRemove(sl, pos);
 			}
 			return;
@@ -79,6 +80,9 @@ public class CauldronDyeHandler {
 		if (level.isClientSide) return;
 
 		ServerLevel sl = (ServerLevel) level;
+		// ポーションが貯まっている大釜は染色に使わない ( 革防具等を右クリックしても何も起きない )。
+		//   イベントは上で既にキャンセル済みなので、 バニラの洗浄も起きずに「無反応」 になる。
+		if (the_four_primitives_and_weapons.world.CauldronPotionData.get(sl).has(pos)) return;
 		Player player = event.getEntity();
 		CauldronColorData data = CauldronColorData.get(sl);
 

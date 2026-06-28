@@ -18,11 +18,12 @@ cd "$(dirname "$0")"
 TASKS="build"
 GRADLE_ARGS=""
 LABEL="Build"
+DO_CLEAN=0
 
 for arg in "$@"; do
     case "$arg" in
         clean)
-            TASKS="clean build"
+            DO_CLEAN=1
             LABEL="Clean Build"
             ;;
         offline)
@@ -37,6 +38,14 @@ for arg in "$@"; do
 done
 
 echo "=== $LABEL ==="
+
+# クリーン: build/ を掃除するが build/fg_cache ( 再コンパイル済み Minecraft 依存 ) は残す。
+#   gradle の `clean` タスクは fg_cache も消すため、 同一実行の compileJava が
+#   "package net.minecraft.* does not exist" で大量に失敗する ( 設定時にマップ済み MC jar が未生成のため )。
+#   依存キャッシュを残せば 1 回の build で通る。 MC を完全再生成したい時のみ手動で `rm -rf build`。
+if [ "$DO_CLEAN" = "1" ] && [ -d build ]; then
+    find build -mindepth 1 -maxdepth 1 ! -name fg_cache -exec rm -rf {} +
+fi
 
 case "$(uname -s)" in
     MINGW*|CYGWIN*|MSYS*)

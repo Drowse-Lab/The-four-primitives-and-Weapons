@@ -32,6 +32,9 @@ public class ModelMeijiUniform<T extends Entity> extends EntityModel<T> {
 
 	public static final ModelLayerLocation LAYER_LOCATION =
 			new ModelLayerLocation(new ResourceLocation("the_four_primitives_and_weapons", "model_meiji_uniform"), "main");
+	/** slim ( Alex ) スキン用 — 腕が 3px のバリアント。 */
+	public static final ModelLayerLocation LAYER_LOCATION_SLIM =
+			new ModelLayerLocation(new ResourceLocation("the_four_primitives_and_weapons", "model_meiji_uniform_slim"), "main");
 
 	public final ModelPart head;
 	public final ModelPart body;
@@ -54,6 +57,15 @@ public class ModelMeijiUniform<T extends Entity> extends EntityModel<T> {
 	}
 
 	public static LayerDefinition createBodyLayer() {
+		return build(false);
+	}
+
+	/** slim ( Alex ) スキン用 — 腕を 3px に。 */
+	public static LayerDefinition createSlimBodyLayer() {
+		return build(true);
+	}
+
+	private static LayerDefinition build(boolean slim) {
 		MeshDefinition mesh = new MeshDefinition();
 		PartDefinition root = mesh.getRoot();
 
@@ -85,18 +97,32 @@ public class ModelMeijiUniform<T extends Entity> extends EntityModel<T> {
 		// 袖は手首(y6)で終わらせ、 手の位置に手袋キューブ。
 		//   袖/肩章/袖口 = uniform テクスチャ（overlay, 非染色）
 		//   手袋(glove)  = gloves テクスチャ（染色される層）  texOffs(60/76,64)
+		// 腕は slim ( Alex = 3px ) と wide ( Steve = 4px ) で形を変える。
+		//   slim: 袖/手袋を 3px に、 ピボット y を +0.5 ( バニラ slim 腕に合わせる )。 外側端は wide と同じ。
+		float armW = slim ? 3.0F : 4.0F;   // 袖/手袋の幅
+		float armPivotY = slim ? 2.5F : 2.0F;
+		// right: wide=x-3..1 / slim=x-2..1 ( 内側を 1px 細く )。 left も同様に内側を細く。
+		float rArmX = slim ? -2.0F : -3.0F;
+		float lArmX = -1.0F; // 内側端は据え置き ( body に密着 )
+		// 肩章/袖口 ( オーバーレイ ) も腕に合わせて幅と位置を変える。
+		//   slim で 5px のまま固定だと細い腕から浮いて見える ＝ それを防ぐ。
+		float ovW = slim ? 4.0F : 5.0F;        // 肩章/袖口の幅 ( 腕幅 +1 )
+		float rEpX = slim ? -2.5F : -3.5F;     // 右 肩章 X ( 腕の外側端に 0.5 はみ出し )
+		float rCuffX = slim ? -2.4F : -3.4F;   // 右 袖口 X
+		float lEpX = -1.5F;                     // 左は内側固定なので X 据え置き ( 幅だけ縮む )
+		float lCuffX = -1.6F;
 		PartDefinition right_arm = root.addOrReplaceChild("right_arm", CubeListBuilder.create()
-						.texOffs(40, 16).addBox(-3.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F, new CubeDeformation(0.45F)) // 袖 y-2..6
-						.texOffs(0, 92).addBox(-3.5F, -2.8F, -2.5F, 5.0F, 1.0F, 5.0F, new CubeDeformation(0.18F))  // 肩章 (net 20x6 @0,92)
-						.texOffs(0, 76).addBox(-3.4F, 4.0F, -2.4F, 5.0F, 2.0F, 5.0F, new CubeDeformation(0.18F))   // 袖口 y4..6
-						.texOffs(60, 64).addBox(-3.0F, 6.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.4F)),  // 手袋 y6..10 (底=腕底に合わせ浮き防止)
-				PartPose.offset(-5.0F, 2.0F, 0.0F));
+						.texOffs(40, 16).addBox(rArmX, -2.0F, -2.0F, armW, 8.0F, 4.0F, new CubeDeformation(0.45F)) // 袖 y-2..6
+						.texOffs(0, 92).addBox(rEpX, -2.8F, -2.5F, ovW, 1.0F, 5.0F, new CubeDeformation(0.18F))  // 肩章 (net 20x6 @0,92)
+						.texOffs(0, 76).addBox(rCuffX, 4.0F, -2.4F, ovW, 2.0F, 5.0F, new CubeDeformation(0.18F))   // 袖口 y4..6
+						.texOffs(60, 64).addBox(rArmX, 6.0F, -2.0F, armW, 4.0F, 4.0F, new CubeDeformation(0.4F)),  // 手袋 y6..10 (底=腕底に合わせ浮き防止)
+				PartPose.offset(-5.0F, armPivotY, 0.0F));
 		PartDefinition left_arm = root.addOrReplaceChild("left_arm", CubeListBuilder.create().mirror()
-						.texOffs(40, 16).addBox(-1.0F, -2.0F, -2.0F, 4.0F, 8.0F, 4.0F, new CubeDeformation(0.45F))
-						.texOffs(20, 92).addBox(-1.5F, -2.8F, -2.5F, 5.0F, 1.0F, 5.0F, new CubeDeformation(0.18F)) // 肩章 (net 20x6 @20,92)
-						.texOffs(20, 76).addBox(-1.6F, 4.0F, -2.4F, 5.0F, 2.0F, 5.0F, new CubeDeformation(0.18F))
-						.texOffs(76, 64).addBox(-1.0F, 6.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(0.4F)),
-				PartPose.offset(5.0F, 2.0F, 0.0F));
+						.texOffs(40, 16).addBox(lArmX, -2.0F, -2.0F, armW, 8.0F, 4.0F, new CubeDeformation(0.45F))
+						.texOffs(20, 92).addBox(lEpX, -2.8F, -2.5F, ovW, 1.0F, 5.0F, new CubeDeformation(0.18F)) // 肩章 (net 20x6 @20,92)
+						.texOffs(20, 76).addBox(lCuffX, 4.0F, -2.4F, ovW, 2.0F, 5.0F, new CubeDeformation(0.18F))
+						.texOffs(76, 64).addBox(lArmX, 6.0F, -2.0F, armW, 4.0F, 4.0F, new CubeDeformation(0.4F)),
+				PartPose.offset(5.0F, armPivotY, 0.0F));
 
 		// === ズボン : スリム ===
 		PartDefinition right_leg = root.addOrReplaceChild("right_leg", CubeListBuilder.create()

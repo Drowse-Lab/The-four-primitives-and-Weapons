@@ -1,0 +1,2 @@
+Manifest-Version: 1.0
+MixinConfigs: the_four_primitives_and_weapons.melon.mixins.json
