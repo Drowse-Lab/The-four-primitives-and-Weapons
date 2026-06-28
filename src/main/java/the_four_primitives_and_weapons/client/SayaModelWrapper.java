@@ -66,6 +66,12 @@ public class SayaModelWrapper implements BakedModel {
         @Override
         public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level,
                                   @Nullable LivingEntity entity, int seed) {
+            return withPattern(resolveBase(stack, level, entity, seed), stack);
+        }
+
+        /** 納刀中の武器 / custom_model_data に応じた「ベース」モデルを解決する。 */
+        private BakedModel resolveBase(ItemStack stack, @Nullable ClientLevel level,
+                                       @Nullable LivingEntity entity, int seed) {
             // 納刀中の武器を取り出して SayaRegistry から Entry を引く
             ItemStack stored = getStoredWeapon(stack, outer.sayaType);
             if (!stored.isEmpty()) {
@@ -91,6 +97,13 @@ public class SayaModelWrapper implements BakedModel {
                 if (resolved != null) return resolved;
             }
             return outer.wrapped;
+        }
+
+        /** ベースモデルに機織り模様 ( 旗模様 ) のオーバーレイを重ねる ( 模様が無ければそのまま )。 */
+        private BakedModel withPattern(BakedModel base, ItemStack stack) {
+            net.minecraft.nbt.ListTag patterns =
+                    net.minecraft.world.level.block.entity.BannerBlockEntity.getItemPatterns(stack);
+            return SayaPatternModel.maybe(base, patterns);
         }
     }
 
