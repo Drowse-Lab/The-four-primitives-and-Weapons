@@ -40,12 +40,15 @@ public class TyokutoSayaItem extends Item implements ICurioItem {
     public void appendHoverText(ItemStack stack, Level world, List<Component> list, net.minecraft.world.item.TooltipFlag flag) {
         super.appendHoverText(stack, world, list, flag);
 
+        String sayaHex = the_four_primitives_and_weapons.util.SayaDesign.getBaseHex(stack);
+        if (sayaHex != null) list.add(Component.translatable("tooltip.the_four_primitives_and_weapons.saya.base", sayaHex));
+
         if (stack.hasTag() && stack.getTag().contains("StoredSword")) {
             ItemStack storedSword = ItemStack.of(stack.getTag().getCompound("StoredSword"));
-            list.add(Component.literal("§7納刀中: §f" + storedSword.getHoverName().getString()));
+            list.add(Component.translatable("tooltip.the_four_primitives_and_weapons.saya.sheathed", storedSword.getHoverName()));
         } else {
-            list.add(Component.literal("§7空の鞘"));
-            list.add(Component.literal("§8Rキーで納刀"));
+            list.add(Component.translatable("tooltip.the_four_primitives_and_weapons.saya.empty"));
+            list.add(Component.translatable("tooltip.the_four_primitives_and_weapons.saya.hint"));
         }
     }
 

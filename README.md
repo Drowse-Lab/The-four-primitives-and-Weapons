@@ -44,3 +44,9 @@ https://youtu.be/i-ItAsrIK7U?si=f5FXomJLYBK7GmQ9
 https://github.com/Chuzume/True-Crafter-Mode  
 https://youtu.be/7oI4bwtSQUQ  
 ***
+
+
+
+新しくも側にもつけられる模様で侵食されているような模様
+雷の模様、サビのような模様を追加して
+で全部ワンポイントじゃなくて大部分を占領する大きさにして

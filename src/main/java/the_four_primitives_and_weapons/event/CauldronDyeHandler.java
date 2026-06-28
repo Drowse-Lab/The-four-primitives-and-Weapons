@@ -65,7 +65,8 @@ public class CauldronDyeHandler {
 
 		boolean isDye = held.getItem() instanceof DyeItem;
 		boolean isDyeable = held.getItem() instanceof DyeableLeatherItem;
-		if (!isDye && !isDyeable) return;
+		boolean isSaya = the_four_primitives_and_weapons.util.SayaDesign.isSaya(held);
+		if (!isDye && !isDyeable && !isSaya) return;
 
 		// 現在色（両サイドで一致するよう、 サイドごとのキャッシュ/データから取得）
 		Integer cur = level.isClientSide
@@ -74,6 +75,8 @@ public class CauldronDyeHandler {
 
 		// 染色可能アイテムで、 まだ色が無い大釜 → バニラの「洗浄」に任せる（キャンセルしない）
 		if (isDyeable && !isDye && cur == null) return;
+		// 未染色の鞘を ただの水大釜に入れても何もしない（水を無駄に減らさない）
+		if (isSaya && !isDye && cur == null && !the_four_primitives_and_weapons.util.SayaDesign.hasBase(held)) return;
 
 		event.setCanceled(true);
 		event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide));
@@ -88,13 +91,27 @@ public class CauldronDyeHandler {
 
 		if (isDye) {
 			int dye = dyeColor((DyeItem) held.getItem());
-			int mixed = (cur == null) ? dye : mix(cur, dye);
-			data.setColor(pos, mixed);
+			int n = data.getCount(pos);
+			// 投入数で重み付け平均: これまでの色を n、 新しい染料を 1 の重みで混ぜる。
+			// 染料が多いほど 1 個の影響が小さくなり、 白を1個入れても一気に白くならない。
+			int mixed = (cur == null || n <= 0) ? dye : mixWeighted(cur, n, dye);
+			data.setColor(pos, mixed, n + 1);
 			syncSet(sl, pos, mixed);
 			if (!player.getAbilities().instabuild) held.shrink(1);
 			sl.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.7f, 1.4f);
 			sl.sendParticles(ParticleTypes.SPLASH, pos.getX() + 0.5, pos.getY() + 0.85, pos.getZ() + 0.5,
 					12, 0.25, 0.05, 0.25, 0.0);
+		} else if (isSaya) {
+			// 鞘を大釜に浸して染色。 色付きならその色、 ただの水なら染色を落とす ( 洗う )。
+			if (cur != null) {
+				the_four_primitives_and_weapons.util.SayaDesign.setBaseColorRgb(held, cur);
+			} else {
+				if (held.hasTag()) held.getTag().remove(the_four_primitives_and_weapons.util.SayaDesign.BASE_KEY);
+			}
+			lowerLevel(sl, pos, state, data);
+			sl.playSound(null, pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 0.7f, 1.1f);
+			sl.sendParticles(ParticleTypes.SPLASH, pos.getX() + 0.5, pos.getY() + 0.85, pos.getZ() + 0.5,
+					16, 0.25, 0.05, 0.25, 0.0);
 		} else {
 			// 色付き大釜に浸して染色。 水位を1減らし、 空になったら色リセット（バニラ準拠）
 			DyeableLeatherItem dye = (DyeableLeatherItem) held.getItem();
@@ -129,6 +146,14 @@ public class CauldronDyeHandler {
 		int r = (((a >> 16) & 255) + ((b >> 16) & 255)) / 2;
 		int g = (((a >> 8) & 255) + ((b >> 8) & 255)) / 2;
 		int bl = ((a & 255) + (b & 255)) / 2;
+		return (r << 16) | (g << 8) | bl;
+	}
+
+	/** これまでの色 a ( 重み wA ) に 新しい色 b ( 重み1 ) を足した加重平均。 */
+	private static int mixWeighted(int a, int wA, int b) {
+		int r = ((((a >> 16) & 255) * wA) + ((b >> 16) & 255)) / (wA + 1);
+		int g = ((((a >> 8) & 255) * wA) + ((b >> 8) & 255)) / (wA + 1);
+		int bl = (((a & 255) * wA) + (b & 255)) / (wA + 1);
 		return (r << 16) | (g << 8) | bl;
 	}
 

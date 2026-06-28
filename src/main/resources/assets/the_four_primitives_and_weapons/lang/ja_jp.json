@@ -846,5 +846,10 @@
   "item.the_four_primitives_and_weapons.keishi_officer_cap": "警視抜刀隊 警部 制帽",
   "item.the_four_primitives_and_weapons.keishi_officer_tunic": "警視抜刀隊 警部 制服（上着）",
   "item.the_four_primitives_and_weapons.keishi_officer_trousers": "警視抜刀隊 警部 袴",
-  "item.the_four_primitives_and_weapons.keishi_officer_boots": "警視抜刀隊 警部 長靴"
+  "item.the_four_primitives_and_weapons.keishi_officer_boots": "警視抜刀隊 警部 長靴",
+  "tooltip.the_four_primitives_and_weapons.saya.base": "§7地色: §f%s",
+  "tooltip.the_four_primitives_and_weapons.saya.sheathed": "§7納刀中: §f%s",
+  "tooltip.the_four_primitives_and_weapons.saya.empty": "§7空の鞘",
+  "tooltip.the_four_primitives_and_weapons.saya.empty_rapier": "§7空のレイピア鞘",
+  "tooltip.the_four_primitives_and_weapons.saya.hint": "§8Rキーで納刀"
 }

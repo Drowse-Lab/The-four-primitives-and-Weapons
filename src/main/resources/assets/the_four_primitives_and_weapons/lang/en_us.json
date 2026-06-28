@@ -846,5 +846,10 @@
   "item.the_four_primitives_and_weapons.keishi_officer_cap": "Keishi Battōtai Officer Cap",
   "item.the_four_primitives_and_weapons.keishi_officer_tunic": "Keishi Battōtai Officer Tunic",
   "item.the_four_primitives_and_weapons.keishi_officer_trousers": "Keishi Battōtai Officer Trousers",
-  "item.the_four_primitives_and_weapons.keishi_officer_boots": "Keishi Battōtai Officer Boots"
+  "item.the_four_primitives_and_weapons.keishi_officer_boots": "Keishi Battōtai Officer Boots",
+  "tooltip.the_four_primitives_and_weapons.saya.base": "§7Base Color: §f%s",
+  "tooltip.the_four_primitives_and_weapons.saya.sheathed": "§7Sheathed: §f%s",
+  "tooltip.the_four_primitives_and_weapons.saya.empty": "§7Empty Scabbard",
+  "tooltip.the_four_primitives_and_weapons.saya.empty_rapier": "§7Empty Rapier Scabbard",
+  "tooltip.the_four_primitives_and_weapons.saya.hint": "§8Press R to Sheathe"
 }
