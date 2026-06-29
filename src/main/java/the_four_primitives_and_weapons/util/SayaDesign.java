@@ -1,6 +1,7 @@
 package the_four_primitives_and_weapons.util;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.BlockItem;
@@ -21,6 +22,54 @@ public final class SayaDesign {
 
 	/** 地の色 ( RGB 0xRRGGBB ) を保存する NBT キー。 */
 	public static final String BASE_KEY = "SayaBase";
+
+	/** 鞘本体の「スタイル」( 塗鞘/木目鞘/着せ鞘/刻鞘 ) を保存する NBT キー。
+	 *  reitou 判定の "SayaStyle" とは別キーにして干渉を避ける。 */
+	public static final String STYLE_KEY = "SayaWrapStyle";
+
+	/** スタイル文字列を返す ( 未設定 = 既定の塗鞘なので "" )。 */
+	public static String getStyle(ItemStack saya) {
+		CompoundTag t = saya.getTag();
+		return (t != null && t.contains(STYLE_KEY)) ? t.getString(STYLE_KEY) : "";
+	}
+
+	/** 既定 ( 塗鞘 ) 以外のスタイルが設定されているか。 */
+	public static boolean hasStyle(ItemStack saya) {
+		String s = getStyle(saya);
+		return !s.isEmpty() && !s.equals("nuri");
+	}
+
+	/** スタイルを設定。 null/空/"nuri" は既定 ( 塗鞘 ) に戻す ( タグ削除 )。 */
+	public static void setStyle(ItemStack saya, String style) {
+		if (style == null || style.isEmpty() || style.equals("nuri")) {
+			if (saya.hasTag()) saya.getTag().remove(STYLE_KEY);
+		} else {
+			saya.getOrCreateTag().putString(STYLE_KEY, style);
+		}
+	}
+
+	/** 漆の上塗り ( 下地 = スタイルとは別レイヤー )。 "black"=漆黒 / "red"=朱。 未塗り = ""。 */
+	public static final String LACQUER_KEY = "SayaLacquer";
+
+	/** 漆の上塗り色を返す ( 未塗り = "" )。 */
+	public static String getLacquer(ItemStack saya) {
+		CompoundTag t = saya.getTag();
+		return (t != null && t.contains(LACQUER_KEY)) ? t.getString(LACQUER_KEY) : "";
+	}
+
+	/** 漆が塗られているか。 */
+	public static boolean hasLacquer(ItemStack saya) {
+		return !getLacquer(saya).isEmpty();
+	}
+
+	/** 漆の上塗りを設定。 null/空 は剥がす ( タグ削除 )。 下地スタイルはそのまま残る。 */
+	public static void setLacquer(ItemStack saya, String lacquer) {
+		if (lacquer == null || lacquer.isEmpty()) {
+			if (saya.hasTag()) saya.getTag().remove(LACQUER_KEY);
+		} else {
+			saya.getOrCreateTag().putString(LACQUER_KEY, lacquer);
+		}
+	}
 
 	/** 鞘かどうか。 */
 	public static boolean isSaya(ItemStack stack) {
@@ -79,6 +128,28 @@ public final class SayaDesign {
 	/** 模様 ( 旗フォーマットのレイヤー数 )。 */
 	public static int patternCount(ItemStack saya) {
 		return BannerBlockEntity.getPatternCount(saya);
+	}
+
+	/**
+	 * 一番上に付けた模様を 1枚だけ剥がす ( 旗を大釜で洗うのと同じ )。
+	 * 剥がせたら true。 模様が無ければ false。 最後の1枚を剥がしたら Patterns タグごと掃除する。
+	 */
+	public static boolean removeLastPattern(ItemStack saya) {
+		CompoundTag tag = saya.getTag();
+		if (tag == null || !tag.contains("BlockEntityTag", 10)) return false;
+		CompoundTag be = tag.getCompound("BlockEntityTag");
+		if (!be.contains("Patterns", 9)) return false;
+		ListTag list = be.getList("Patterns", 10);
+		if (list.isEmpty()) return false;
+		list.remove(list.size() - 1);
+		if (list.isEmpty()) {
+			be.remove("Patterns");
+			if (be.isEmpty()) tag.remove("BlockEntityTag");
+		} else {
+			be.put("Patterns", list);
+		}
+		if (tag.isEmpty()) saya.setTag(null);
+		return true;
 	}
 
 	/** 地色か模様のいずれかが設定されているか。 */

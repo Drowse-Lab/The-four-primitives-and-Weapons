@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "the_four_primitives_and_weapons:saya_wood_craft",
   "pattern": [
     " IL",
     " PL",
@@ -10,7 +10,7 @@
       "item": "minecraft:iron_ingot"
     },
     "P": {
-      "item": "minecraft:oak_planks"
+      "tag": "minecraft:planks"
     },
     "L": {
       "item": "minecraft:leather"

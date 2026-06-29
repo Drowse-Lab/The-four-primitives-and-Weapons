@@ -51,6 +51,22 @@ public class SayaColorClient {
 	/** 鞘本体の地色を 0xFFRRGGBB で返す。 未染色は暗いグレー。 */
 	private static int baseRgb(ItemStack stack) {
 		int rgb = SayaDesign.getBaseRgb(stack);
-		return (rgb < 0) ? UNDYED : (0xFF000000 | rgb);
+		if (rgb >= 0) return 0xFF000000 | rgb;          // 染色済み
+		return isThemedTexture(stack) ? 0xFFFFFFFF : UNDYED; // 未染色
+	}
+
+	/**
+	 * 専用テクスチャ ( 暗いグレー既定tintを掛けてはいけない鞘 ) かどうか。
+	 * 霊刀 ( reitou ) 系、 または スタイル ( 木目/着せ/刻 ) が設定された鞘。
+	 * これらは未染色のとき テクスチャそのままを見せたいので 白tint を返す。
+	 */
+	private static boolean isThemedTexture(ItemStack stack) {
+		if (SayaDesign.hasStyle(stack)) return true;               // 木目/着せ/刻 などのスタイル
+		net.minecraft.nbt.CompoundTag t = stack.getTag();
+		if (t == null) return false;
+		if (t.getInt("SayaNBT") == 1) return true;                 // SayaVisualUpdateHandler が立てる霊刀フラグ
+		if ("reitou".equals(t.getString("SayaStyle"))) return true;
+		return t.contains("StoredKatana")
+				&& t.getCompound("StoredKatana").getString("id").contains("reitou");
 	}
 }

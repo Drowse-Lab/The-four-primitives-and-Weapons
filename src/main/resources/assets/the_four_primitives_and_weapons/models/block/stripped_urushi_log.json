@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "the_four_primitives_and_weapons:block/stripped_urushi_log_top",
+    "side": "the_four_primitives_and_weapons:block/stripped_urushi_log"
+  }
+}

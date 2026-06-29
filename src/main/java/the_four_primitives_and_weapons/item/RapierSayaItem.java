@@ -34,6 +34,11 @@ public class RapierSayaItem extends Item implements ICurioItem {
         super.appendHoverText(stack, world, list, flag);
         String sayaHex = the_four_primitives_and_weapons.util.SayaDesign.getBaseHex(stack);
         if (sayaHex != null) list.add(Component.translatable("tooltip.the_four_primitives_and_weapons.saya.base", sayaHex));
+        Component sayaFinish = the_four_primitives_and_weapons.util.SayaStyles.finishName(
+                the_four_primitives_and_weapons.util.SayaDesign.getStyle(stack),
+                the_four_primitives_and_weapons.util.SayaDesign.getLacquer(stack));
+        if (sayaFinish != null)
+            list.add(Component.translatable("tooltip.the_four_primitives_and_weapons.saya.style", sayaFinish));
         if (stack.hasTag() && stack.getTag().contains("StoredRapier")) {
             ItemStack stored = ItemStack.of(stack.getTag().getCompound("StoredRapier"));
             list.add(Component.translatable("tooltip.the_four_primitives_and_weapons.saya.sheathed", stored.getHoverName()));

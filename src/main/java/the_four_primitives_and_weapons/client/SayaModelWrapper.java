@@ -66,7 +66,8 @@ public class SayaModelWrapper implements BakedModel {
         @Override
         public BakedModel resolve(BakedModel model, ItemStack stack, @Nullable ClientLevel level,
                                   @Nullable LivingEntity entity, int seed) {
-            return withPattern(resolveBase(stack, level, entity, seed), stack);
+            // ベース → スタイル ( wrap テクスチャ差し替え ) → 機織り模様 の順に重ねる。
+            return withPattern(withStyle(resolveBase(stack, level, entity, seed), stack), stack);
         }
 
         /** 納刀中の武器 / custom_model_data に応じた「ベース」モデルを解決する。 */
@@ -99,11 +100,16 @@ public class SayaModelWrapper implements BakedModel {
             return outer.wrapped;
         }
 
+        /** ベースモデルの鞘本体 wrap を 仕立て ( 木目/着せ/刻/石目/鮫/漆系 ) のテクスチャへ差し替える。 */
+        private BakedModel withStyle(BakedModel base, ItemStack stack) {
+            return SayaStyleModel.maybe(base, the_four_primitives_and_weapons.util.SayaDesign.getStyle(stack));
+        }
+
         /** ベースモデルに機織り模様 ( 旗模様 ) のオーバーレイを重ねる ( 模様が無ければそのまま )。 */
         private BakedModel withPattern(BakedModel base, ItemStack stack) {
             net.minecraft.nbt.ListTag patterns =
                     net.minecraft.world.level.block.entity.BannerBlockEntity.getItemPatterns(stack);
-            return SayaPatternModel.maybe(base, patterns);
+            return SayaPatternModel.maybe(base, patterns, outer.sayaType);
         }
     }
 

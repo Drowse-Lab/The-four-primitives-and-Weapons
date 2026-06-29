@@ -73,4 +73,12 @@ public class TheFourPrimitivesAndWeaponsModTabs {
 					.icon(() -> new ItemStack(TheFourPrimitivesAndWeaponsModItems.SWORD_OF_NIGHT.get()))
 					.displayItems((params, output) -> {})
 					.build());
+
+	// 鞘 ( saya ) 専用タブ: 各鞘・漆・仕立て済みの鞘をまとめる。 中身は CreativeTabPopulator で追加。
+	public static final RegistryObject<CreativeModeTab> TAB_SAYA = REGISTRY.register("saya",
+			() -> CreativeModeTab.builder()
+					.title(Component.translatable("itemGroup.tabsaya"))
+					.icon(() -> new ItemStack(TheFourPrimitivesAndWeaponsModItems.SAYA.get()))
+					.displayItems((params, output) -> {})
+					.build());
 }

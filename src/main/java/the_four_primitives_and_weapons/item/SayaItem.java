@@ -45,6 +45,11 @@ public class SayaItem extends Item implements ICurioItem {
 		if (sayaHex != null) {
 			list.add(Component.translatable("tooltip.the_four_primitives_and_weapons.saya.base", sayaHex));
 		}
+		Component sayaFinish = the_four_primitives_and_weapons.util.SayaStyles.finishName(
+				the_four_primitives_and_weapons.util.SayaDesign.getStyle(stack),
+				the_four_primitives_and_weapons.util.SayaDesign.getLacquer(stack));
+		if (sayaFinish != null)
+			list.add(Component.translatable("tooltip.the_four_primitives_and_weapons.saya.style", sayaFinish));
 
 		if (stack.hasTag() && stack.getTag().contains("StoredKatana")) {
 			ItemStack storedKatana = ItemStack.of(stack.getTag().getCompound("StoredKatana"));

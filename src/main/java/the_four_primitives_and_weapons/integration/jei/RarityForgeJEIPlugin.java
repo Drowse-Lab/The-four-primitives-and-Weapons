@@ -38,6 +38,8 @@ public class RarityForgeJEIPlugin implements IModPlugin {
                 new RarityForgeRecipeCategory(registration.getJeiHelpers().getGuiHelper()));
         registration.addRecipeCategories(
                 new RarityForgeLegacyRecipeCategory(registration.getJeiHelpers().getGuiHelper()));
+        registration.addRecipeCategories(
+                new UrushiTapCategory(registration.getJeiHelpers().getGuiHelper()));
     }
 
     @Override
@@ -49,8 +51,88 @@ public class RarityForgeJEIPlugin implements IModPlugin {
         // 鞘クラフトレシピをJEIに登録
         registerSayaCraftingRecipes(registration);
 
+        // 漆の採取 ( 原木 + 火打石/空きビン ) を 3D 表示するカテゴリに登録
+        registration.addRecipes(UrushiTapCategory.RECIPE_TYPE, java.util.List.of(
+                new UrushiTapRecipe(
+                        java.util.List.of(
+                                new ItemStack(Items.FLINT),
+                                new ItemStack(Items.GLASS_BOTTLE)),
+                        new ItemStack(TheFourPrimitivesAndWeaponsModItems.RAW_URUSHI.get()),
+                        net.minecraft.world.level.block.Blocks.OAK_LOG.defaultBlockState())));
+
+        // 漆・鞘の仕立て ( スタイル ) をJEIに登録
+        registerUrushiAndStyleRecipes(registration);
+
         // JEI 情報パネル: アイテム選択時に操作/効果を説明表示
         registerKnifeItemInfo(registration);
+        registerUrushiItemInfo(registration);
+    }
+
+    /** 漆系アイテムの入手/使い方を JEI の情報パネルに表示。 */
+    private void registerUrushiItemInfo(IRecipeRegistration registration) {
+        registration.addIngredientInfo(
+            new ItemStack(TheFourPrimitivesAndWeaponsModItems.RAW_URUSHI.get()),
+            VanillaTypes.ITEM_STACK,
+            Component.translatable("jei.the_four_primitives_and_weapons.info.raw_urushi"));
+        registration.addIngredientInfo(
+            new ItemStack(TheFourPrimitivesAndWeaponsModItems.URUSHI_BLACK.get()),
+            VanillaTypes.ITEM_STACK,
+            Component.translatable("jei.the_four_primitives_and_weapons.info.urushi_black"));
+        registration.addIngredientInfo(
+            new ItemStack(TheFourPrimitivesAndWeaponsModItems.URUSHI_RED.get()),
+            VanillaTypes.ITEM_STACK,
+            Component.translatable("jei.the_four_primitives_and_weapons.info.urushi_red"));
+        registration.addIngredientInfo(
+            new ItemStack(TheFourPrimitivesAndWeaponsModItems.SAYA.get()),
+            VanillaTypes.ITEM_STACK,
+            Component.translatable("jei.the_four_primitives_and_weapons.info.saya"));
+    }
+
+    /** 各仕立てを「鞘 + 素材 → 仕立てた鞘」の crafting レシピとして JEI に表示。 */
+    private void registerUrushiAndStyleRecipes(IRecipeRegistration registration) {
+        java.util.List<net.minecraft.world.item.crafting.CraftingRecipe> list = new java.util.ArrayList<>();
+        // 素地系
+        list.add(styleRecipe("kise_saya",   "kise",     Ingredient.of(Items.LEATHER)));
+        list.add(styleRecipe("kizami_saya", "kizami",   Ingredient.of(Items.FLINT)));
+        // 木目鞘: 木材ごとに別レシピ → JEIで「使った板材 → その木の木目鞘」が木材別に表示される
+        for (String wood : the_four_primitives_and_weapons.util.SayaStyles.WOODS) {
+            net.minecraft.world.item.Item planks = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(
+                    new ResourceLocation("minecraft", wood + "_planks"));
+            if (planks != null) {
+                list.add(styleRecipe("wood_" + wood + "_saya", "wood_" + wood, Ingredient.of(planks)));
+            }
+        }
+        // same ( 鮫鞘 ) は素材mod未確定のため保留 ( rayskin タグが空 → JEI表示しない )
+        list.add(styleRecipe("nuri_saya",   "",         Ingredient.of(Items.HONEYCOMB))); // 塗鞘に戻す
+        // 漆系 ( 既存の漆 + 追加素材で区別 )
+        list.add(styleRecipe("kuroro_saya",  "kuroro",  Ingredient.of(TheFourPrimitivesAndWeaponsModItems.URUSHI_BLACK.get())));
+        list.add(styleRecipe("shunuri_saya", "shunuri", Ingredient.of(TheFourPrimitivesAndWeaponsModItems.URUSHI_RED.get())));
+        list.add(styleRecipe("tame_saya",    "tame",    Ingredient.of(TheFourPrimitivesAndWeaponsModItems.RAW_URUSHI.get())));
+        list.add(styleRecipe2("roiro_saya",  "roiro",
+                Ingredient.of(TheFourPrimitivesAndWeaponsModItems.URUSHI_BLACK.get()), Ingredient.of(Items.GLOWSTONE_DUST)));
+        list.add(styleRecipe2("ishime_saya", "ishime",
+                Ingredient.of(TheFourPrimitivesAndWeaponsModItems.RAW_URUSHI.get()), Ingredient.of(Items.GRAVEL)));
+        registration.addRecipes(RecipeTypes.CRAFTING, list);
+    }
+
+    /** 鞘 + 素材1個 → 指定スタイルの鞘 ( 表示用 )。 style "" は素の鞘。 */
+    private static net.minecraft.world.item.crafting.CraftingRecipe styleRecipe(String id, String style, Ingredient material) {
+        ItemStack result = new ItemStack(TheFourPrimitivesAndWeaponsModItems.SAYA.get());
+        the_four_primitives_and_weapons.util.SayaDesign.setStyle(result, style);
+        NonNullList<Ingredient> inputs = NonNullList.of(Ingredient.EMPTY,
+                Ingredient.of(TheFourPrimitivesAndWeaponsModItems.SAYA.get()), material);
+        return new ShapelessRecipe(new ResourceLocation("the_four_primitives_and_weapons", id + "_jei"),
+                "", CraftingBookCategory.MISC, result, inputs);
+    }
+
+    /** 鞘 + 素材2個 → 指定スタイルの鞘 ( 表示用。 漆+追加素材の仕立て )。 */
+    private static net.minecraft.world.item.crafting.CraftingRecipe styleRecipe2(String id, String style, Ingredient a, Ingredient b) {
+        ItemStack result = new ItemStack(TheFourPrimitivesAndWeaponsModItems.SAYA.get());
+        the_four_primitives_and_weapons.util.SayaDesign.setStyle(result, style);
+        NonNullList<Ingredient> inputs = NonNullList.of(Ingredient.EMPTY,
+                Ingredient.of(TheFourPrimitivesAndWeaponsModItems.SAYA.get()), a, b);
+        return new ShapelessRecipe(new ResourceLocation("the_four_primitives_and_weapons", id + "_jei"),
+                "", CraftingBookCategory.MISC, result, inputs);
     }
 
     // ナイフ系・ガイドブックに "info" パネルを付与。

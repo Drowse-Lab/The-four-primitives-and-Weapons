@@ -67,6 +67,16 @@ public class CreativeTabPopulator {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.DIAMOND_RAPIER);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.NETHERITE_RAPIER);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.RAPIER_SAYA);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.RAW_URUSHI);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.URUSHI_BLACK);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.URUSHI_RED);
+			// 鮫鞘 ( 素材mod未確定でクラフト不可なので、 完成品をクリエイティブで配布 )
+			{
+				net.minecraft.world.item.ItemStack same =
+						new net.minecraft.world.item.ItemStack(TheFourPrimitivesAndWeaponsModItems.SAYA.get());
+				the_four_primitives_and_weapons.util.SayaDesign.setStyle(same, "same");
+				event.accept(same);
+			}
 			event.accept(TheFourPrimitivesAndWeaponsModItems.GATE);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.CONVERGENT_GATE);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.IMMORTAL_CORE);
@@ -140,10 +150,6 @@ public class CreativeTabPopulator {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.BOGGED_OUTER_LEGGINGS);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.BOGGED_OUTER_BOOTS);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.ONINOMEN_HELMET);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.COPPER_ARMOR_HELMET);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.COPPER_ARMOR_CHESTPLATE);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.COPPER_ARMOR_LEGGINGS);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.COPPER_ARMOR_BOOTS);
 		}
 
 		// === TAB_YOPKEINAMONO ===
@@ -222,6 +228,10 @@ public class CreativeTabPopulator {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.WARDEN_ARMOR_CHESTPLATE);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.WARDEN_ARMOR_LEGGINGS);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.KATANA_TOBU);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.COPPER_ARMOR_HELMET);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.COPPER_ARMOR_CHESTPLATE);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.COPPER_ARMOR_LEGGINGS);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.COPPER_ARMOR_BOOTS);
 		}
 
 		if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
@@ -253,5 +263,44 @@ public class CreativeTabPopulator {
 			event.accept(CustomEntityInit.ANGEL_MOCKER1_SPAWN_EGG);
 			event.accept(CustomEntityInit.ANGEL_MOCKER2_SPAWN_EGG);
 		}
+
+		// === TAB_SAYA ( 鞘・漆・仕立て済みの鞘 ) ===
+		if (event.getTab() == TheFourPrimitivesAndWeaponsModTabs.TAB_SAYA.get()) {
+			// 素の鞘
+			event.accept(TheFourPrimitivesAndWeaponsModItems.SAYA);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.TYOKUTO_SAYA);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.SWORD_SAYA);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.RAPIER_SAYA);
+			// 漆素材
+			event.accept(TheFourPrimitivesAndWeaponsModItems.RAW_URUSHI);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.URUSHI_BLACK);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.URUSHI_RED);
+			// 漆の木 ( ブロック一式 )
+			event.accept(UrushiWoodInit.URUSHI_LOG_ITEM);
+			event.accept(UrushiWoodInit.STRIPPED_URUSHI_LOG_ITEM);
+			event.accept(UrushiWoodInit.URUSHI_WOOD_ITEM);
+			event.accept(UrushiWoodInit.STRIPPED_URUSHI_WOOD_ITEM);
+			event.accept(UrushiWoodInit.URUSHI_PLANKS_ITEM);
+			event.accept(UrushiWoodInit.URUSHI_LEAVES_ITEM);
+			event.accept(UrushiWoodInit.URUSHI_SAPLING_ITEM);
+			// 仕立て済みの鞘 ( 刀の鞘ベースで見本を1つずつ )
+			for (String style : new String[]{
+					"kise", "kizami", "ishime", "same",
+					"kuroro", "roiro", "shunuri", "tame"}) {
+				event.accept(styledSaya(style));
+			}
+			// 木目鞘 ( 木材ごと )
+			for (String wood : the_four_primitives_and_weapons.util.SayaStyles.WOODS) {
+				event.accept(styledSaya("wood_" + wood));
+			}
+		}
+	}
+
+	/** 指定スタイルを付けた刀の鞘の ItemStack を作る ( クリエイティブ見本用 )。 */
+	private static net.minecraft.world.item.ItemStack styledSaya(String style) {
+		net.minecraft.world.item.ItemStack s =
+				new net.minecraft.world.item.ItemStack(TheFourPrimitivesAndWeaponsModItems.SAYA.get());
+		the_four_primitives_and_weapons.util.SayaDesign.setStyle(s, style);
+		return s;
 	}
 }

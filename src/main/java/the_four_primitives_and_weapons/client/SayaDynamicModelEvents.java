@@ -66,6 +66,10 @@ public final class SayaDynamicModelEvents {
         DISCOVERED_MODELS.clear();
         ResourceManager rm = Minecraft.getInstance().getResourceManager();
 
+        // 機織り模様用の旗模様テクスチャは assets/minecraft/atlases/blocks.json の
+        //   directory ソース ( entity/banner ) でブロックアトラスへ stitch される
+        //   ( 全名前空間を走査するので外部 mod 追加の模様も含む )。
+
         // 規約フォルダ配下の全 .json をスキャン (_ で始まるテンプレは除外)
         for (String sub : SAYA_SUBDIRS) {
             String prefix = MODELS_PREFIX + sub;

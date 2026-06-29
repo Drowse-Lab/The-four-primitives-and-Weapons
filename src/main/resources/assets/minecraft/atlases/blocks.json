@@ -1,0 +1,19 @@
+{
+  "sources": [
+    {
+      "type": "minecraft:directory",
+      "source": "entity/banner",
+      "prefix": "entity/banner/"
+    },
+    {
+      "type": "minecraft:directory",
+      "source": "saya_pattern",
+      "prefix": "saya_pattern/"
+    },
+    {
+      "type": "minecraft:directory",
+      "source": "saya_style",
+      "prefix": "saya_style/"
+    }
+  ]
+}

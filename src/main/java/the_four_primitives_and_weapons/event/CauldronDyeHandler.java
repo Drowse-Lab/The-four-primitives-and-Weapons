@@ -75,8 +75,10 @@ public class CauldronDyeHandler {
 
 		// 染色可能アイテムで、 まだ色が無い大釜 → バニラの「洗浄」に任せる（キャンセルしない）
 		if (isDyeable && !isDye && cur == null) return;
-		// 未染色の鞘を ただの水大釜に入れても何もしない（水を無駄に減らさない）
-		if (isSaya && !isDye && cur == null && !the_four_primitives_and_weapons.util.SayaDesign.hasBase(held)) return;
+		// 模様も地色も無い鞘を ただの水大釜に入れても何もしない（水を無駄に減らさない）
+		if (isSaya && !isDye && cur == null
+				&& !the_four_primitives_and_weapons.util.SayaDesign.hasBase(held)
+				&& the_four_primitives_and_weapons.util.SayaDesign.patternCount(held) <= 0) return;
 
 		event.setCanceled(true);
 		event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide));
@@ -102,10 +104,12 @@ public class CauldronDyeHandler {
 			sl.sendParticles(ParticleTypes.SPLASH, pos.getX() + 0.5, pos.getY() + 0.85, pos.getZ() + 0.5,
 					12, 0.25, 0.05, 0.25, 0.0);
 		} else if (isSaya) {
-			// 鞘を大釜に浸して染色。 色付きならその色、 ただの水なら染色を落とす ( 洗う )。
+			// 鞘を大釜に浸す。 色付き水なら地色を染める。
+			// ただの水なら「洗う」: 旗のように 上に付けた模様を 1枚ずつ剥がし、
+			// 模様が無くなったら地色を落とす ( = 一個前の染色に戻す )。
 			if (cur != null) {
 				the_four_primitives_and_weapons.util.SayaDesign.setBaseColorRgb(held, cur);
-			} else {
+			} else if (!the_four_primitives_and_weapons.util.SayaDesign.removeLastPattern(held)) {
 				if (held.hasTag()) held.getTag().remove(the_four_primitives_and_weapons.util.SayaDesign.BASE_KEY);
 			}
 			lowerLevel(sl, pos, state, data);

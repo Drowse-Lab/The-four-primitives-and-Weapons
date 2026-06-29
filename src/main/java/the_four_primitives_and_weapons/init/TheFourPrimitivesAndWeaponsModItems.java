@@ -301,6 +301,11 @@ public class TheFourPrimitivesAndWeaponsModItems {
 	public static final RegistryObject<Item> RAPIER_SAYA = REGISTRY.register("rapier_saya", () -> new RapierSayaItem());
 	public static final RegistryObject<Item> PARRY_SHIELD = REGISTRY.register("parry_shield", () -> new ParryShieldItem());
 
+	// 漆 ( 原木から採れる生漆 → 漆黒/朱の漆。 鞘に塗って塗鞘スタイルにする )
+	public static final RegistryObject<Item> RAW_URUSHI = REGISTRY.register("raw_urushi", () -> new Item(new Item.Properties()));
+	public static final RegistryObject<Item> URUSHI_BLACK = REGISTRY.register("urushi_black", () -> new Item(new Item.Properties()));
+	public static final RegistryObject<Item> URUSHI_RED = REGISTRY.register("urushi_red", () -> new Item(new Item.Properties()));
+
 	private static RegistryObject<Item> block(RegistryObject<Block> block, Object tab) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()));
 	}
