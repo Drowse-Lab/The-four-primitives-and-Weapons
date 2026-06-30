@@ -99,7 +99,7 @@ public class RarityForgeJEIPlugin implements IModPlugin {
             net.minecraft.world.item.Item planks = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(
                     new ResourceLocation("minecraft", wood + "_planks"));
             if (planks != null) {
-                list.add(styleRecipe("wood_" + wood + "_saya", "wood_" + wood, Ingredient.of(planks)));
+                list.add(styleRecipe("wood_" + wood + "_saya", "wood:minecraft:" + wood + "_planks", Ingredient.of(planks)));
             }
         }
         // same ( 鮫鞘 ) は素材mod未確定のため保留 ( rayskin タグが空 → JEI表示しない )

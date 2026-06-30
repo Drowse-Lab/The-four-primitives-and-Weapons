@@ -27,6 +27,13 @@ public final class SayaStyles {
 	/** スタイル文字列 → wrap に貼るスプライト。 既定 ( nuri ) は null ( = 差し替えなし )。 */
 	public static ResourceLocation sprite(String style) {
 		if (style == null || style.isEmpty() || style.equals("nuri")) return null;
+		// 木目鞘: "wood:<名前空間>:<板材パス>" ( 他modの板材も可 )。 その板材のブロックテクスチャを使う。
+		if (style.startsWith("wood:")) {
+			ResourceLocation id = ResourceLocation.tryParse(style.substring("wood:".length()));
+			if (id == null) return null;
+			return new ResourceLocation(id.getNamespace(), "block/" + id.getPath());
+		}
+		// 旧形式 "wood_<木材>" ( minecraft の板材 ) も後方互換で対応。
 		if (style.startsWith("wood_")) {
 			String wood = style.substring("wood_".length());
 			if (wood.isEmpty()) return null;
@@ -51,7 +58,7 @@ public final class SayaStyles {
 
 	/** 木目鞘か。 */
 	public static boolean isWood(String style) {
-		return style != null && style.startsWith("wood_");
+		return style != null && (style.startsWith("wood:") || style.startsWith("wood_"));
 	}
 
 	/** 色が固定の仕立てか ( 漆系。 染色tintを掛けず テクスチャの色をそのまま出す )。 */
@@ -71,7 +78,14 @@ public final class SayaStyles {
 		if (style == null || style.isEmpty() || style.equals("nuri")) {
 			return Component.translatable("saya.style.nuri");
 		}
-		if (style.startsWith("wood_")) {
+		if (style.startsWith("wood:")) {
+			ResourceLocation id = ResourceLocation.tryParse(style.substring("wood:".length()));
+			Component plank = (id != null)
+					? Component.translatable("block." + id.getNamespace() + "." + id.getPath())
+					: Component.literal(style);
+			return Component.translatable("saya.style.wood", plank);
+		}
+		if (style.startsWith("wood_")) { // 旧形式
 			String wood = style.substring("wood_".length());
 			return Component.translatable("saya.style.wood",
 					Component.translatable("block.minecraft." + wood + "_planks"));

@@ -35,4 +35,11 @@ public final class SayaBannerPatterns {
 			REGISTRY.register("saya_wave", () -> new BannerPattern("tfpw_saya_wave"));
 	public static final RegistryObject<BannerPattern> SAYA_SCALE =
 			REGISTRY.register("saya_scale", () -> new BannerPattern("tfpw_saya_scale"));
+	// 大きく面を占める模様: 侵食 / 雷 / サビ
+	public static final RegistryObject<BannerPattern> SAYA_EROSION =
+			REGISTRY.register("saya_erosion", () -> new BannerPattern("tfpw_saya_erosion"));
+	public static final RegistryObject<BannerPattern> SAYA_THUNDER =
+			REGISTRY.register("saya_thunder", () -> new BannerPattern("tfpw_saya_thunder"));
+	public static final RegistryObject<BannerPattern> SAYA_RUST =
+			REGISTRY.register("saya_rust", () -> new BannerPattern("tfpw_saya_rust"));
 }

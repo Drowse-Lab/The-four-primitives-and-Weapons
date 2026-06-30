@@ -3,6 +3,9 @@
 	"values": [
 		"the_four_primitives_and_weapons:saya_mon",
 		"the_four_primitives_and_weapons:saya_wave",
-		"the_four_primitives_and_weapons:saya_scale"
+		"the_four_primitives_and_weapons:saya_scale",
+		"the_four_primitives_and_weapons:saya_erosion",
+		"the_four_primitives_and_weapons:saya_thunder",
+		"the_four_primitives_and_weapons:saya_rust"
 	]
 }

@@ -283,23 +283,47 @@ public class CreativeTabPopulator {
 			event.accept(UrushiWoodInit.URUSHI_PLANKS_ITEM);
 			event.accept(UrushiWoodInit.URUSHI_LEAVES_ITEM);
 			event.accept(UrushiWoodInit.URUSHI_SAPLING_ITEM);
-			// 仕立て済みの鞘 ( 刀の鞘ベースで見本を1つずつ )
-			for (String style : new String[]{
-					"kise", "kizami", "ishime", "same",
-					"kuroro", "roiro", "shunuri", "tame"}) {
-				event.accept(styledSaya(style));
+			// 仕立て済みの鞘 ( 全鞘種: 刀/直刀/剣/レイピア ぶんを出す )
+			@SuppressWarnings("unchecked")
+			net.minecraftforge.registries.RegistryObject<net.minecraft.world.item.Item>[] sayaTypes =
+					new net.minecraftforge.registries.RegistryObject[]{
+					TheFourPrimitivesAndWeaponsModItems.SAYA,
+					TheFourPrimitivesAndWeaponsModItems.TYOKUTO_SAYA,
+					TheFourPrimitivesAndWeaponsModItems.SWORD_SAYA,
+					TheFourPrimitivesAndWeaponsModItems.RAPIER_SAYA};
+			for (net.minecraftforge.registries.RegistryObject<net.minecraft.world.item.Item> saya : sayaTypes) {
+				for (String style : new String[]{
+						"kise", "kizami", "ishime", "same",
+						"kuroro", "roiro", "shunuri", "tame"}) {
+					event.accept(styledSaya(saya, style));
+				}
+				for (String wood : the_four_primitives_and_weapons.util.SayaStyles.WOODS) {
+					event.accept(styledSaya(saya, "wood:minecraft:" + wood + "_planks"));
+				}
 			}
-			// 木目鞘 ( 木材ごと )
-			for (String wood : the_four_primitives_and_weapons.util.SayaStyles.WOODS) {
-				event.accept(styledSaya("wood_" + wood));
-			}
+		}
+
+		// === バニラの建築ブロックタブ ( 漆の木材を通常の木材と並べる ) ===
+		if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
+			event.accept(UrushiWoodInit.URUSHI_PLANKS_ITEM);
+			event.accept(UrushiWoodInit.URUSHI_LOG_ITEM);
+			event.accept(UrushiWoodInit.URUSHI_WOOD_ITEM);
+			event.accept(UrushiWoodInit.STRIPPED_URUSHI_LOG_ITEM);
+			event.accept(UrushiWoodInit.STRIPPED_URUSHI_WOOD_ITEM);
+		}
+
+		// === バニラの自然ブロックタブ ( 原木/葉/苗木 ) ===
+		if (event.getTabKey() == CreativeModeTabs.NATURAL_BLOCKS) {
+			event.accept(UrushiWoodInit.URUSHI_LOG_ITEM);
+			event.accept(UrushiWoodInit.URUSHI_LEAVES_ITEM);
+			event.accept(UrushiWoodInit.URUSHI_SAPLING_ITEM);
 		}
 	}
 
-	/** 指定スタイルを付けた刀の鞘の ItemStack を作る ( クリエイティブ見本用 )。 */
-	private static net.minecraft.world.item.ItemStack styledSaya(String style) {
-		net.minecraft.world.item.ItemStack s =
-				new net.minecraft.world.item.ItemStack(TheFourPrimitivesAndWeaponsModItems.SAYA.get());
+	/** 指定スタイルを付けた鞘の ItemStack を作る ( クリエイティブ見本用 )。 */
+	private static net.minecraft.world.item.ItemStack styledSaya(
+			net.minecraftforge.registries.RegistryObject<net.minecraft.world.item.Item> sayaItem, String style) {
+		net.minecraft.world.item.ItemStack s = new net.minecraft.world.item.ItemStack(sayaItem.get());
 		the_four_primitives_and_weapons.util.SayaDesign.setStyle(s, style);
 		return s;
 	}

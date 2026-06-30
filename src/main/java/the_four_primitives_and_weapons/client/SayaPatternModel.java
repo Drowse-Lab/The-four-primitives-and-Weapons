@@ -87,6 +87,7 @@ public final class SayaPatternModel implements BakedModel {
 			case "mojang": case "globe": case "piglin":
 				return "figure";
 			case "saya_mon": case "saya_wave": case "saya_scale":
+			case "saya_erosion": case "saya_thunder": case "saya_rust":
 				return "saya"; // 鞘専用模様
 			default:
 				return "other";

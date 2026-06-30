@@ -57,9 +57,9 @@ public class SayaStyleRecipe extends CustomRecipe {
 		if (mods.size() == 1) {
 			ItemStack m = mods.get(0);
 			if (m.is(ItemTags.PLANKS)) {
+				// 板材なら何でも ( 他mod含む ) 木目鞘に。 完全ID を保存し その板材テクスチャを使う。
 				ResourceLocation id = ForgeRegistries.ITEMS.getKey(m.getItem());
-				if (id == null || !id.getPath().endsWith("_planks")) return null;
-				return "wood_" + id.getPath().substring(0, id.getPath().length() - "_planks".length());
+				return (id == null) ? null : ("wood:" + id);
 			}
 			if (m.getItem() == Items.LEATHER) return "kise";
 			if (m.getItem() == Items.FLINT) return "kizami";

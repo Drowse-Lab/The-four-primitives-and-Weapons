@@ -34,22 +34,19 @@ public class SayaWoodCraftRecipe extends ShapedRecipe {
 	@Override
 	public ItemStack assemble(CraftingContainer inv, RegistryAccess access) {
 		ItemStack out = super.assemble(inv, access);
-		String wood = firstPlanksWood(inv);
-		if (wood != null) SayaDesign.setStyle(out, "wood_" + wood);
+		String planks = firstPlanksId(inv);
+		// 板材の完全ID ( 他modも含む ) を保存。 表示には その板材のブロックテクスチャを使う。
+		if (planks != null) SayaDesign.setStyle(out, "wood:" + planks);
 		return out;
 	}
 
-	/** クラフト枠の中の最初の板材から木材名 ( "oak" 等 ) を返す。 無ければ null。 */
-	private static String firstPlanksWood(CraftingContainer inv) {
+	/** クラフト枠の中の最初の板材の 完全ID ( "minecraft:oak_planks" 等 )。 他modの板材も可。 無ければ null。 */
+	private static String firstPlanksId(CraftingContainer inv) {
 		for (int i = 0; i < inv.getContainerSize(); i++) {
 			ItemStack s = inv.getItem(i);
 			if (s.isEmpty() || !s.is(ItemTags.PLANKS)) continue;
 			ResourceLocation id = ForgeRegistries.ITEMS.getKey(s.getItem());
-			if (id == null) continue;
-			String path = id.getPath();
-			if (path.endsWith("_planks")) {
-				return path.substring(0, path.length() - "_planks".length());
-			}
+			if (id != null) return id.toString();
 		}
 		return null;
 	}
