@@ -1,5 +1,6 @@
 {
   "parent": "block/block",
+  "ambientocclusion": false,
   "textures": {
     "top": "minecraft:block/oak_planks",
     "leg": "minecraft:block/oak_log",
@@ -9,11 +10,11 @@
     {
       "from": [
         1,
-        11,
+        10,
         2
       ],
       "to": [
-        31,
+        15,
         13,
         14
       ],
@@ -46,7 +47,7 @@
       ],
       "to": [
         3,
-        11,
+        10,
         4
       ],
       "faces": {
@@ -72,13 +73,13 @@
     },
     {
       "from": [
-        28,
+        12,
         0,
         2
       ],
       "to": [
-        30,
-        11,
+        14,
+        10,
         4
       ],
       "faces": {
@@ -110,7 +111,7 @@
       ],
       "to": [
         3,
-        11,
+        10,
         14
       ],
       "faces": {
@@ -136,13 +137,13 @@
     },
     {
       "from": [
-        28,
+        12,
         0,
         12
       ],
       "to": [
-        30,
-        11,
+        14,
+        10,
         14
       ],
       "faces": {

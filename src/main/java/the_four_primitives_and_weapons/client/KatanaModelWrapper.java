@@ -47,7 +47,7 @@ public final class KatanaModelWrapper implements BakedModel {
 				BakedModel resolved = orig.resolve(wrapped, stack, level, entity, seed);
 				if (resolved != null) base = resolved;
 			}
-			return KatanaTsukaModel.maybe(base, KatanaFittings.getTsukaWrap(stack));
+			return KatanaTsukaModel.maybe(base, KatanaFittings.getTsukaWrap(stack), KatanaFittings.getTsubaStyle(stack));
 		}
 	}
 

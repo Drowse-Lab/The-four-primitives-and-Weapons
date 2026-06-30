@@ -823,5 +823,6 @@
   "jei.the_four_primitives_and_weapons.info.urushi_red": "§cVermilion Lacquer\nMade from Raw Lacquer + red dye.\nCrafting: saya + this -> Vermilion lacquer finish.",
   "jei.the_four_primitives_and_weapons.info.saya": "§6Saya (Sheath)\nCraft with planks to get that wood's grain finish.\nBase: planks->wood / leather->cloth / flint->carved / rayskin->rayskin\nLacquer: black->roiro(+glowstone=mirror) / red->vermilion / raw->tame(+gravel=stone-grain)\nsaya + honeycomb -> back to plain lacquer\nBase color: saya + dye (table) or dip in a colored cauldron",
   "block.the_four_primitives_and_weapons.koshirae_bench": "Koshirae Bench",
-  "container.the_four_primitives_and_weapons.koshirae": "Koshirae Bench"
+  "container.the_four_primitives_and_weapons.koshirae": "Koshirae Bench",
+  "saya.style.gunto": "Gunto Saya"
 }

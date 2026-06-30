@@ -19,6 +19,10 @@ public final class KatanaFittings {
 	public static final String TSUKA_KEY = "TsukaColor";
 	/** 鍔の色 ( 0xRRGGBB )。 */
 	public static final String TSUBA_KEY = "TsubaColor";
+	/** 頭 ( かしら ) の色。 */
+	public static final String KASHIRA_KEY = "KashiraColor";
+	/** 縁 ( ふち ) の色。 */
+	public static final String FUCHI_KEY = "FuchiColor";
 	/** 柄巻きの巻き方 ( デザイン )。 */
 	public static final String TSUKA_WRAP_KEY = "TsukaWrap";
 
@@ -32,8 +36,35 @@ public final class KatanaFittings {
 			"jabara",   // 蛇腹巻
 			"kake",     // 掛巻
 			"hijiri",   // 聖柄 ( 巻き無しの素柄 )
-			"shirasaya" // 白鞘 ( 素柄 + つばなし )
+			"shirasaya",// 白鞘 ( 素柄 + つばなし )
+			"saber"     // 軍刀 ( サーベル柄: 革巻き+索条 )
 	};
+
+	/** 鍔のデザイン ( 差し替え )。 "" = 既定。 "saber" = サーベルの鍔。 */
+	public static final String TSUBA_STYLE_KEY = "TsubaStyle";
+	public static final String[] TSUBAS = { "saber" };
+
+	public static String getTsubaStyle(ItemStack stack) {
+		CompoundTag t = stack.getTag();
+		return (t != null && t.contains(TSUBA_STYLE_KEY)) ? t.getString(TSUBA_STYLE_KEY) : "";
+	}
+
+	public static void setTsubaStyle(ItemStack stack, String style) {
+		if (style == null || style.isEmpty()) {
+			if (stack.hasTag()) stack.getTag().remove(TSUBA_STYLE_KEY);
+		} else {
+			stack.getOrCreateTag().putString(TSUBA_STYLE_KEY, style);
+		}
+	}
+
+	/** 次の鍔デザインへ ( 既定→TSUBAS[0]→…→末尾→既定 )。 */
+	public static String nextTsuba(String current) {
+		if (current == null || current.isEmpty()) return TSUBAS[0];
+		for (int i = 0; i < TSUBAS.length; i++) {
+			if (TSUBAS[i].equals(current)) return (i + 1 < TSUBAS.length) ? TSUBAS[i + 1] : "";
+		}
+		return TSUBAS[0];
+	}
 
 	/** 現在の柄巻きデザイン ( 未設定 = "" )。 */
 	public static String getTsukaWrap(ItemStack stack) {
@@ -63,6 +94,8 @@ public final class KatanaFittings {
 
 	public static int tsukaRgb(ItemStack stack) { return rgb(stack, TSUKA_KEY); }
 	public static int tsubaRgb(ItemStack stack) { return rgb(stack, TSUBA_KEY); }
+	public static int kashiraRgb(ItemStack stack) { return rgb(stack, KASHIRA_KEY); }
+	public static int fuchiRgb(ItemStack stack) { return rgb(stack, FUCHI_KEY); }
 
 	private static int rgb(ItemStack stack, String key) {
 		CompoundTag t = stack.getTag();
@@ -71,6 +104,8 @@ public final class KatanaFittings {
 
 	public static void setTsuka(ItemStack stack, int rgb) { stack.getOrCreateTag().putInt(TSUKA_KEY, rgb & 0xFFFFFF); }
 	public static void setTsuba(ItemStack stack, int rgb) { stack.getOrCreateTag().putInt(TSUBA_KEY, rgb & 0xFFFFFF); }
+	public static void setKashira(ItemStack stack, int rgb) { stack.getOrCreateTag().putInt(KASHIRA_KEY, rgb & 0xFFFFFF); }
+	public static void setFuchi(ItemStack stack, int rgb) { stack.getOrCreateTag().putInt(FUCHI_KEY, rgb & 0xFFFFFF); }
 
 	/** 染料色 → 0xRRGGBB。 */
 	public static int dyeRgb(DyeColor color) {

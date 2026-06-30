@@ -63,6 +63,7 @@ public class SayaStyleRecipe extends CustomRecipe {
 			}
 			if (m.getItem() == Items.LEATHER) return "kise";
 			if (m.getItem() == Items.FLINT) return "kizami";
+			if (m.getItem() == Items.IRON_INGOT) return "gunto"; // 軍刀拵えの鞘 ( 特殊な鞘 )
 			if (m.getItem() == Items.HONEYCOMB) return ""; // 塗鞘に戻す
 			if (m.is(RAYSKIN)) return "same";
 			if (is(m, the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems.URUSHI_BLACK)) return "kuroro";

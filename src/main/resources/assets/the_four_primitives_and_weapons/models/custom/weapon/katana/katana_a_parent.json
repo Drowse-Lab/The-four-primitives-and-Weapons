@@ -165,7 +165,7 @@
 						7.75
 					],
 					"texture": "#0",
-					"tintindex": 1
+					"tintindex": 3
 				}
 			}
 		},
@@ -238,7 +238,7 @@
 						8
 					],
 					"texture": "#0",
-					"tintindex": 1
+					"tintindex": 4
 				},
 				"down": {
 					"uv": [

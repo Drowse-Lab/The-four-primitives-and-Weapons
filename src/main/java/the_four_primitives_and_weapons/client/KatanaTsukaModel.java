@@ -39,44 +39,53 @@ public final class KatanaTsukaModel implements BakedModel {
 	private final List<BakedQuad> swappedNull;
 	private final Map<Direction, List<BakedQuad>> swappedBySide;
 
-	private KatanaTsukaModel(BakedModel base, TextureAtlasSprite sprite, boolean hideTsuba) {
+	private KatanaTsukaModel(BakedModel base, TextureAtlasSprite wrapSprite,
+							TextureAtlasSprite tsubaSprite, boolean hideTsuba) {
 		this.base = base;
 		this.swappedBySide = new EnumMap<>(Direction.class);
-		this.swappedNull = swap(base.getQuads(null, null, RandomSource.create(42L)), sprite, hideTsuba);
+		this.swappedNull = swap(base.getQuads(null, null, RandomSource.create(42L)), wrapSprite, tsubaSprite, hideTsuba);
 		for (Direction d : Direction.values()) {
-			swappedBySide.put(d, swap(base.getQuads(null, d, RandomSource.create(42L)), sprite, hideTsuba));
+			swappedBySide.put(d, swap(base.getQuads(null, d, RandomSource.create(42L)), wrapSprite, tsubaSprite, hideTsuba));
 		}
 	}
 
-	/** 柄巻きデザイン付きなら差し替えモデルを、 未設定/解決失敗なら base を返す。
-	 *  "shirasaya" ( 白鞘 ) は鍔 ( tintindex 2 ) を消す。 */
-	public static BakedModel maybe(BakedModel base, String wrap) {
-		if (base == null || wrap == null || wrap.isEmpty()) return base;
+	/** 柄巻き ( wrap ) と 鍔デザイン ( tsubaStyle ) を反映。 どちらも無く白鞘でもなければ base を返す。 */
+	public static BakedModel maybe(BakedModel base, String wrap, String tsubaStyle) {
+		if (base == null) return base;
 		try {
-			ResourceLocation loc = new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID,
-					"katana_fitting/tsuka/" + wrap);
-			var atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
-			TextureAtlasSprite sprite = atlas.getSprite(loc);
-			if (sprite == null || sprite.contents().name().equals(MissingTextureAtlasSprite.getLocation())) {
-				return base;
-			}
-			boolean hideTsuba = "shirasaya".equals(wrap); // 白鞘 = つばなし
-			String key = Integer.toHexString(System.identityHashCode(base)) + "@" + wrap;
-			return CACHE.computeIfAbsent(key, k -> new KatanaTsukaModel(base, sprite, hideTsuba));
+			boolean hideTsuba = "shirasaya".equals(wrap);
+			TextureAtlasSprite wrapSprite = sprite("katana_fitting/tsuka/", wrap);
+			TextureAtlasSprite tsubaSprite = sprite("katana_fitting/tsuba/", tsubaStyle);
+			if (wrapSprite == null && tsubaSprite == null && !hideTsuba) return base;
+			String key = Integer.toHexString(System.identityHashCode(base)) + "@" + wrap + "#" + tsubaStyle;
+			return CACHE.computeIfAbsent(key, k -> new KatanaTsukaModel(base, wrapSprite, tsubaSprite, hideTsuba));
 		} catch (Throwable t) {
 			return base;
 		}
 	}
 
-	/** tintindex 1 ( 柄 ) を 柄巻きスプライトへ差し替え。 hideTsuba なら tintindex 2 ( 鍔 ) を消す。 他はそのまま。 */
-	private static List<BakedQuad> swap(List<BakedQuad> srcQuads, TextureAtlasSprite dst, boolean hideTsuba) {
+	@Nullable
+	private static TextureAtlasSprite sprite(String dir, String name) {
+		if (name == null || name.isEmpty()) return null;
+		var atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
+		TextureAtlasSprite s = atlas.getSprite(new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, dir + name));
+		return (s == null || s.contents().name().equals(MissingTextureAtlasSprite.getLocation())) ? null : s;
+	}
+
+	/** 柄(tint1)の側面に柄巻きを、 鍔(tint2)に鍔デザインを貼る。 端面(頭/縁)は元のまま。 白鞘は鍔を消す。 */
+	private static List<BakedQuad> swap(List<BakedQuad> srcQuads, TextureAtlasSprite wrapSprite,
+										TextureAtlasSprite tsubaSprite, boolean hideTsuba) {
 		List<BakedQuad> out = new ArrayList<>(srcQuads.size());
 		for (BakedQuad q : srcQuads) {
 			int ti = q.getTintIndex();
-			if (ti == 1) {
-				out.add(remap(q, dst));
+			if (ti == 1 && wrapSprite != null) {
+				Direction d = q.getDirection();
+				if (d == Direction.UP || d == Direction.DOWN) out.add(q); // 頭/縁は巻かない
+				else out.add(remap(q, wrapSprite));
 			} else if (ti == 2 && hideTsuba) {
-				// 白鞘: 鍔の面は描かない
+				// 白鞘: 鍔を描かない
+			} else if (ti == 2 && tsubaSprite != null) {
+				out.add(remap(q, tsubaSprite)); // 鍔デザイン ( tint2 維持で色も乗る )
 			} else {
 				out.add(q);
 			}
@@ -106,7 +115,7 @@ public final class KatanaTsukaModel implements BakedModel {
 			v[o + 4] = Float.floatToRawIntBits(du0 + uFrac * (du1 - du0));
 			v[o + 5] = Float.floatToRawIntBits(dv0 + vFrac * (dv1 - dv0));
 		}
-		return new BakedQuad(v, 1, src.getDirection(), dst, src.isShade());
+		return new BakedQuad(v, src.getTintIndex(), src.getDirection(), dst, src.isShade());
 	}
 
 	@Override

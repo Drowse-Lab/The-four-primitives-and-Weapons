@@ -37,28 +37,38 @@ public class KatanaFittingRecipe extends CustomRecipe {
 		return s.getItem() == TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get();
 	}
 
+	private static boolean isMarker(ItemStack s) {
+		return s.getItem() == Items.GOLD_NUGGET || s.getItem() == Items.IRON_NUGGET
+				|| s.getItem() == Items.COPPER_INGOT;
+	}
+
 	@Override
 	public boolean matches(CraftingContainer inv, Level level) {
-		int katana = 0, dye = 0, marker = 0, string = 0;
+		int katana = 0, dye = 0, marker = 0, string = 0, ingot = 0;
 		for (int i = 0; i < inv.getContainerSize(); i++) {
 			ItemStack s = inv.getItem(i);
 			if (s.isEmpty()) continue;
 			if (isKatana(s)) katana++;
 			else if (s.getItem() instanceof DyeItem) dye++;
-			else if (s.getItem() == Items.GOLD_NUGGET) marker++;
+			else if (isMarker(s)) marker++;
 			else if (s.getItem() == Items.STRING) string++;
+			else if (s.getItem() == Items.IRON_INGOT) ingot++;
 			else return false;
 		}
-		if (katana != 1 || marker > 1 || string > 1 || dye > 1) return false;
-		// 「染料で色」か「糸で柄巻き切替」のどちらか一方
-		return (dye == 1 && string == 0) || (string == 1 && dye == 0);
+		if (katana != 1 || marker > 1 || string > 1 || dye > 1 || ingot > 1) return false;
+		// 「染料で色(+部位)」/「糸で柄巻き切替」/「鉄インゴットで鍔デザイン切替」のどれか一方
+		if (dye == 1) return string == 0 && ingot == 0;
+		if (string == 1) return marker == 0 && ingot == 0;
+		if (ingot == 1) return marker == 0;
+		return false;
 	}
 
 	@Override
 	public ItemStack assemble(CraftingContainer inv, RegistryAccess access) {
 		ItemStack katana = ItemStack.EMPTY;
 		DyeItem dye = null;
-		boolean tsuba = false, string = false;
+		String part = "tsuka"; // 既定 = 柄巻き
+		boolean string = false, ingot = false;
 		for (int i = 0; i < inv.getContainerSize(); i++) {
 			ItemStack s = inv.getItem(i);
 			if (s.isEmpty()) continue;
@@ -69,9 +79,15 @@ public class KatanaFittingRecipe extends CustomRecipe {
 				if (dye != null) return ItemStack.EMPTY;
 				dye = d;
 			} else if (s.getItem() == Items.GOLD_NUGGET) {
-				tsuba = true;
+				part = "tsuba";   // 金塊 = 鍔
+			} else if (s.getItem() == Items.IRON_NUGGET) {
+				part = "fuchi";   // 鉄塊 = 縁
+			} else if (s.getItem() == Items.COPPER_INGOT) {
+				part = "kashira"; // 銅 = 頭
 			} else if (s.getItem() == Items.STRING) {
 				string = true;
+			} else if (s.getItem() == Items.IRON_INGOT) {
+				ingot = true;     // 鉄インゴット = 鍔デザイン切替
 			} else {
 				return ItemStack.EMPTY;
 			}
@@ -80,13 +96,18 @@ public class KatanaFittingRecipe extends CustomRecipe {
 
 		ItemStack out = katana.copy();
 		out.setCount(1);
-		if (string) {
-			// 糸: 柄巻きデザインを次へ切り替え
+		if (ingot) {
+			KatanaFittings.setTsubaStyle(out, KatanaFittings.nextTsuba(KatanaFittings.getTsubaStyle(out)));
+		} else if (string) {
 			KatanaFittings.setTsukaWrap(out, KatanaFittings.nextWrap(KatanaFittings.getTsukaWrap(out)));
 		} else if (dye != null) {
 			int rgb = KatanaFittings.dyeRgb(dye.getDyeColor());
-			if (tsuba) KatanaFittings.setTsuba(out, rgb);
-			else KatanaFittings.setTsuka(out, rgb);
+			switch (part) {
+				case "tsuba":   KatanaFittings.setTsuba(out, rgb); break;
+				case "fuchi":   KatanaFittings.setFuchi(out, rgb); break;
+				case "kashira": KatanaFittings.setKashira(out, rgb); break;
+				default:        KatanaFittings.setTsuka(out, rgb); break;
+			}
 		} else {
 			return ItemStack.EMPTY;
 		}

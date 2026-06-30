@@ -27,6 +27,14 @@ public class KatanaColorClient {
 				int c = KatanaFittings.tsubaRgb(stack);
 				return (c < 0) ? 0xFFFFFFFF : (0xFF000000 | c);
 			}
+			if (tintIndex == 3) {
+				int c = KatanaFittings.kashiraRgb(stack);
+				return (c < 0) ? 0xFFFFFFFF : (0xFF000000 | c);
+			}
+			if (tintIndex == 4) {
+				int c = KatanaFittings.fuchiRgb(stack);
+				return (c < 0) ? 0xFFFFFFFF : (0xFF000000 | c);
+			}
 			return 0xFFFFFFFF;
 		}, TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get());
 	}

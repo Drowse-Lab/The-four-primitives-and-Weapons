@@ -24,7 +24,7 @@ public final class KoshiraeFittings {
 
 	/** 鞘の仕立て候補 ( 漆/素地系 )。 木目は別途 全木材を追加。 */
 	private static final String[] SAYA_STYLES = {
-			"kise", "kizami", "ishime", "same", "kuroro", "roiro", "shunuri", "tame"
+			"kise", "kizami", "ishime", "same", "kuroro", "roiro", "shunuri", "tame", "gunto"
 	};
 
 	public static boolean isSupported(ItemStack in) {

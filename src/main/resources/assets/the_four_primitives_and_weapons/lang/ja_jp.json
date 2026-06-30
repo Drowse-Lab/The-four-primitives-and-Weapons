@@ -823,5 +823,6 @@
   "jei.the_four_primitives_and_weapons.info.urushi_red": "§c朱の漆\n生漆 + 赤色染料 で作る。\n作業台で 鞘 + 朱の漆 → 朱漆塗。",
   "jei.the_four_primitives_and_weapons.info.saya": "§6鞘 (Saya)\n作業台で板材と作ると、その木の木目鞘になる。\n素地: 板材→木目 / 革→着せ / 火打石→刻 / 鮫皮→鮫鞘\n漆: 漆黒→黒呂塗(+研粉=呂色) / 朱→朱漆塗 / 生漆→溜塗(+砂利=石目)\n鞘+ハニカム→塗鞘に戻す\n地色: 鞘+染料(作業台) または 色付き大釜に浸す",
   "block.the_four_primitives_and_weapons.koshirae_bench": "拵え台",
-  "container.the_four_primitives_and_weapons.koshirae": "拵え台"
+  "container.the_four_primitives_and_weapons.koshirae": "拵え台",
+  "saya.style.gunto": "軍刀拵えの鞘"
 }

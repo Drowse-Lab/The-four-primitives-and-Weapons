@@ -48,6 +48,7 @@ public final class SayaStyles {
 			case "roiro":   return styleTex("roiro");
 			case "shunuri": return styleTex("shunuri");
 			case "tame":    return styleTex("tame");
+			case "gunto":   return styleTex("gunto");
 			default:        return null;
 		}
 	}
@@ -64,7 +65,7 @@ public final class SayaStyles {
 	/** 色が固定の仕立てか ( 漆系。 染色tintを掛けず テクスチャの色をそのまま出す )。 */
 	public static boolean isFixedColor(String style) {
 		switch (style == null ? "" : style) {
-			case "kuroro": case "roiro": case "shunuri": case "tame":
+			case "kuroro": case "roiro": case "shunuri": case "tame": case "gunto":
 				return true;
 			default:
 				return false;
