@@ -102,6 +102,10 @@ public class TheFourPrimitivesAndWeaponsMod {
 		the_four_primitives_and_weapons.item.SayaWoodCraftRecipe.Registrar.SERIALIZERS.register(bus);
 		// 漆の木 ( ブロック一式 )
 		the_four_primitives_and_weapons.init.UrushiWoodInit.register(bus);
+		// 刀の拵え ( 柄/鍔 の染色 ) レシピのシリアライザ
+		the_four_primitives_and_weapons.item.KatanaFittingRecipe.Registrar.SERIALIZERS.register(bus);
+		// 拵え台 ( ブロック + アイテム + メニュー )
+		the_four_primitives_and_weapons.init.KoshiraeInit.register(bus);
 		// ( 機織り模様機能は廃止: 個性は 仕立て [ 木目/着せ/刻/漆各種/石目/鮫 ] + 染色 で出す )
 	}
 

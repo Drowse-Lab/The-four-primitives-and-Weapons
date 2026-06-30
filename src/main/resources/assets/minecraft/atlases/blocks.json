@@ -14,6 +14,11 @@
       "type": "minecraft:directory",
       "source": "saya_style",
       "prefix": "saya_style/"
+    },
+    {
+      "type": "minecraft:directory",
+      "source": "katana_fitting",
+      "prefix": "katana_fitting/"
     }
   ]
 }

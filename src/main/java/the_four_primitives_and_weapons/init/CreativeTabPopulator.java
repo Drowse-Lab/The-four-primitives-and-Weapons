@@ -266,6 +266,8 @@ public class CreativeTabPopulator {
 
 		// === TAB_SAYA ( 鞘・漆・仕立て済みの鞘 ) ===
 		if (event.getTab() == TheFourPrimitivesAndWeaponsModTabs.TAB_SAYA.get()) {
+			// 拵え台
+			event.accept(KoshiraeInit.ITEM);
 			// 素の鞘
 			event.accept(TheFourPrimitivesAndWeaponsModItems.SAYA);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.TYOKUTO_SAYA);
