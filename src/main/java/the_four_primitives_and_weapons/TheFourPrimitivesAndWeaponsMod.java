@@ -102,8 +102,7 @@ public class TheFourPrimitivesAndWeaponsMod {
 		the_four_primitives_and_weapons.item.SayaWoodCraftRecipe.Registrar.SERIALIZERS.register(bus);
 		// 漆の木 ( ブロック一式 )
 		the_four_primitives_and_weapons.init.UrushiWoodInit.register(bus);
-		// 鞘専用の機織り模様 ( カスタム BannerPattern )
-		the_four_primitives_and_weapons.init.SayaBannerPatterns.REGISTRY.register(bus);
+		// ( 機織り模様機能は廃止: 個性は 仕立て [ 木目/着せ/刻/漆各種/石目/鮫 ] + 染色 で出す )
 	}
 
 	private static final String PROTOCOL_VERSION = "1";

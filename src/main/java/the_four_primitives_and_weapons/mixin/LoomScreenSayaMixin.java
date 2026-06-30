@@ -2,23 +2,18 @@ package the_four_primitives_and_weapons.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.LoomScreen;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.world.inventory.LoomMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import the_four_primitives_and_weapons.util.SayaDesign;
 
@@ -29,16 +24,12 @@ import java.util.List;
  * <ul>
  *   <li>{@code containerChanged}: 結果スロットの鞘を BannerItem へキャストする箇所で
  *       ClassCastException を防ぐ ( 地色に対応するバナーをすり替え )。</li>
- *   <li>{@code renderBg}: 結果プレビューは本来 BannerRenderer で「旗の形」を描く。
- *       鞘のときは旗描画をスキップし、 代わりに <b>鞘アイテムのモデル</b> ( 模様/仕立て込み ) を
- *       プレビュー位置に描いて、 鞘の形で見えるようにする。</li>
+ *   <li>{@code renderBg}: 結果プレビューの「旗の形」描画を鞘のときはスキップする
+ *       ( 旗の見た目を出さない )。 鞘そのものは結果スロットにアイテムとして表示される。</li>
  * </ul>
  */
 @Mixin(LoomScreen.class)
-public abstract class LoomScreenSayaMixin {
-
-	@Shadow protected int leftPos;
-	@Shadow protected int topPos;
+public class LoomScreenSayaMixin {
 
 	private static final Item[] TFP_BANNERS = {
 			Items.WHITE_BANNER, Items.ORANGE_BANNER, Items.MAGENTA_BANNER, Items.LIGHT_BLUE_BANNER,
@@ -58,7 +49,7 @@ public abstract class LoomScreenSayaMixin {
 		return stack.getItem();
 	}
 
-	/** 結果プレビューの旗描画: 鞘のときはスキップ ( 代わりに鞘アイテムを描く )。 */
+	/** 結果プレビューの旗描画: 鞘のときはスキップ ( 旗の見た目を出さない )。 */
 	@Redirect(method = "renderBg", at = @At(value = "INVOKE",
 			target = "Lnet/minecraft/client/renderer/blockentity/BannerRenderer;renderPatterns(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IILnet/minecraft/client/model/geom/ModelPart;Lnet/minecraft/client/resources/model/Material;ZLjava/util/List;)V"))
 	private void tfp$skipBannerForSaya(PoseStack pose, MultiBufferSource buf, int light, int overlay,
@@ -67,21 +58,6 @@ public abstract class LoomScreenSayaMixin {
 		if (!SayaDesign.isSaya(result)) {
 			BannerRenderer.renderPatterns(pose, buf, light, overlay, flag, base, banner, patterns);
 		}
-		// 鞘なら何もしない ( tfp$sayaPreview で鞘アイテムを描画 )
-	}
-
-	/** 鞘のときだけ、 プレビュー位置に鞘アイテム ( 模様/仕立て込み ) を描く。 */
-	@Inject(method = "renderBg", at = @At("TAIL"))
-	private void tfp$sayaPreview(GuiGraphics gfx, float partial, int mouseX, int mouseY, CallbackInfo ci) {
-		LoomMenu menu = ((LoomScreen) (Object) this).getMenu();
-		ItemStack result = menu.getResultSlot().getItem();
-		if (result.isEmpty() || !SayaDesign.isSaya(result)) return;
-
-		PoseStack pose = gfx.pose();
-		pose.pushPose();
-		pose.translate(leftPos + 141, topPos + 52, 260);
-		pose.scale(2.2F, 2.2F, 1.0F);
-		gfx.renderItem(result, -8, -8); // 16px アイテムを中央寄せで拡大描画
-		pose.popPose();
+		// 鞘なら旗を描かない ( 鞘は結果スロットにアイテム表示される )
 	}
 }
