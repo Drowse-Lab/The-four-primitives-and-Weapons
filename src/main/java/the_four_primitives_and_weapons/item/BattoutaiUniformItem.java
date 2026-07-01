@@ -116,14 +116,27 @@ public abstract class BattoutaiUniformItem extends ArmorItem {
 		@Override
 		public boolean hasCustomColor(ItemStack stack) {
 			CompoundTag tag = stack.getTag();
-			return tag != null && tag.contains(COLOR_TAG, Tag.TAG_INT);
+			if (tag != null && tag.contains(COLOR_TAG, Tag.TAG_INT)) return true;
+			return displayColor(stack) >= 0; // 皮装備方式 display.color でも可
 		}
 
 		/** 手袋の色。 未染色なら白。 */
 		@Override
 		public int getColor(ItemStack stack) {
 			CompoundTag tag = stack.getTag();
-			return (tag != null && tag.contains(COLOR_TAG, Tag.TAG_INT)) ? tag.getInt(COLOR_TAG) : 0xFFFFFF;
+			if (tag != null && tag.contains(COLOR_TAG, Tag.TAG_INT)) return tag.getInt(COLOR_TAG);
+			int d = displayColor(stack);
+			return d >= 0 ? d : 0xFFFFFF;
+		}
+
+		/** /give …{display:{color:N}} で入れた色。 無ければ -1。 */
+		private static int displayColor(ItemStack stack) {
+			CompoundTag tag = stack.getTag();
+			if (tag != null && tag.contains("display", 10)) {
+				CompoundTag d = tag.getCompound("display");
+				if (d.contains("color", 99)) return d.getInt("color") & 0xFFFFFF;
+			}
+			return -1;
 		}
 
 		@Override

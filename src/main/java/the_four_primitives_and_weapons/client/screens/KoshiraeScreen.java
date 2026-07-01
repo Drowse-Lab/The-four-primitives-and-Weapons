@@ -40,9 +40,10 @@ public class KoshiraeScreen extends AbstractContainerScreen<KoshiraeMenu> {
 		g.fill(x, y, x + 1, y + imageHeight, 0xFFFFFFFF);
 		g.fill(x + imageWidth - 1, y, x + imageWidth, y + imageHeight, 0xFF555555);
 		g.fill(x, y + imageHeight - 1, x + imageWidth, y + imageHeight, 0xFF555555);
-		// スロット枠
+		// スロット枠 ( 入力 / 結果 / 染料 )
 		slotBg(g, x + 20, y + 33);
 		slotBg(g, x + 143, y + 33);
+		slotBg(g, x + 20, y + 55);
 		// 矢印
 		g.drawString(this.font, "→", x + 126, y + 38, 0x404040, false);
 		// 候補エリア背景

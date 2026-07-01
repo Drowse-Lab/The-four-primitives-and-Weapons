@@ -31,10 +31,27 @@ import java.util.List;
 public final class KatanaModelWrapper implements BakedModel {
 
 	private final BakedModel wrapped;
+	private final boolean katanaDefaults;
+	private final boolean colorBlackMode;
 	private final DynamicOverrides overrides = new DynamicOverrides();
 
 	public KatanaModelWrapper(BakedModel wrapped) {
+		this(wrapped, false, false);
+	}
+
+	/** katanaDefaults=true: NBT未設定時に刀用の既定デザイン(tuka/tuba/kasira/fuchi)を出す。 */
+	public KatanaModelWrapper(BakedModel wrapped, boolean katanaDefaults) {
+		this(wrapped, katanaDefaults, false);
+	}
+
+	/**
+	 * @param colorBlackMode 箱UVモデル(iron_katana)用。 部位色が「ほぼ黒」の時、 乗算tintで潰さず
+	 *                       専用の黒テクスチャ(tuka_black/tuba_black/kasira_black)へ差し替える。
+	 */
+	public KatanaModelWrapper(BakedModel wrapped, boolean katanaDefaults, boolean colorBlackMode) {
 		this.wrapped = wrapped;
+		this.katanaDefaults = katanaDefaults;
+		this.colorBlackMode = colorBlackMode;
 	}
 
 	private final class DynamicOverrides extends ItemOverrides {
@@ -47,7 +64,27 @@ public final class KatanaModelWrapper implements BakedModel {
 				BakedModel resolved = orig.resolve(wrapped, stack, level, entity, seed);
 				if (resolved != null) base = resolved;
 			}
-			return KatanaTsukaModel.maybe(base, KatanaFittings.getTsukaWrap(stack), KatanaFittings.getTsubaStyle(stack));
+			if (colorBlackMode) {
+				// 箱UV(iron_katana): 部位に色を設定したら 各面を「その面自身のテクスチャのグレー版」へ差し替える。
+				// グレー地に KatanaColorClient の乗算tintで 任意の16進色が綺麗に乗る ( 軍服と同じ )。
+				// 未設定の部位は 元の菱デザインのまま。
+				boolean[] colored = new boolean[5];
+				colored[1] = KatanaFittings.tsukaRgb(stack) >= 0;
+				colored[2] = KatanaFittings.tsubaRgb(stack) >= 0;
+				colored[3] = KatanaFittings.kashiraRgb(stack) >= 0;
+				// 縁(fuchi=4)は無し
+				return KatanaTsukaModel.grayForTint(base, colored);
+			}
+			String wrap = or(KatanaFittings.getTsukaWrap(stack), "tuka");
+			String tsuba = or(KatanaFittings.getTsubaStyle(stack), "tuba");
+			String kashira = or(KatanaFittings.getKashiraStyle(stack), "kasira");
+			String fuchi = or(KatanaFittings.getFuchiStyle(stack), "fuchi");
+			return KatanaTsukaModel.maybe(base, wrap, tsuba, kashira, fuchi);
+		}
+
+		private String or(String v, String def) {
+			if (v != null && !v.isEmpty()) return v;
+			return katanaDefaults ? def : "";
 		}
 	}
 

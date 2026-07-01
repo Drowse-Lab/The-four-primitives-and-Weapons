@@ -19,23 +19,23 @@ public class KatanaColorClient {
 	@SubscribeEvent
 	public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
 		event.register((stack, tintIndex) -> {
-			if (tintIndex == 1) {
-				int c = KatanaFittings.tsukaRgb(stack);
-				return (c < 0) ? 0xFFFFFFFF : (0xFF000000 | c);
+			// 色を設定した部位は モデル側でグレー版テクスチャに差し替わる ( iron_katana )。
+			// そこへ 16進色を乗算tintするので、 任意の色 ( 黒含む ) が綺麗に乗る ( 軍服の染色と同じ )。
+			switch (tintIndex) {
+				case 1: return tint(KatanaFittings.tsukaRgb(stack));
+				case 2: return tint(KatanaFittings.tsubaRgb(stack));
+				case 3: return tint(KatanaFittings.kashiraRgb(stack));
+				// 縁(fuchi=4)は無し
+				default: return 0xFFFFFFFF;
 			}
-			if (tintIndex == 2) {
-				int c = KatanaFittings.tsubaRgb(stack);
-				return (c < 0) ? 0xFFFFFFFF : (0xFF000000 | c);
-			}
-			if (tintIndex == 3) {
-				int c = KatanaFittings.kashiraRgb(stack);
-				return (c < 0) ? 0xFFFFFFFF : (0xFF000000 | c);
-			}
-			if (tintIndex == 4) {
-				int c = KatanaFittings.fuchiRgb(stack);
-				return (c < 0) ? 0xFFFFFFFF : (0xFF000000 | c);
-			}
-			return 0xFFFFFFFF;
-		}, TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get());
+		},
+				TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get(),
+				TheFourPrimitivesAndWeaponsModItems.IRON_TYOKUTO.get(),
+				TheFourPrimitivesAndWeaponsModItems.IRON_RAPIER.get());
+	}
+
+	/** 色を tint 値(0xFFRRGGBB)へ。 未設定は白 ( = 無着色 )。 */
+	private static int tint(int rgb) {
+		return (rgb < 0) ? 0xFFFFFFFF : (0xFF000000 | rgb);
 	}
 }

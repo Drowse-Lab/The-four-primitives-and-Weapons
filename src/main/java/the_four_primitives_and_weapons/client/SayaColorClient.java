@@ -27,9 +27,9 @@ public class SayaColorClient {
 	@SubscribeEvent
 	public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
 		event.register((stack, tintIndex) -> {
-			// tintindex 0 = 鞘本体の地色、 1以上 = 機織り模様レイヤー ( layer = tintindex-1 ) の染料色
+			// tintindex 0 = 鞘本体の地色、 1=柄 / 2=鍔 / 3=頭 ( 納刀中の刀の拵え色を反映 )。
 			if (tintIndex <= 0) return baseRgb(stack);
-			return patternRgb(stack, tintIndex - 1);
+			return fittingRgb(stack, tintIndex);
 		},
 				TheFourPrimitivesAndWeaponsModItems.SAYA.get(),
 				TheFourPrimitivesAndWeaponsModItems.TYOKUTO_SAYA.get(),
@@ -37,15 +37,29 @@ public class SayaColorClient {
 				TheFourPrimitivesAndWeaponsModItems.RAPIER_SAYA.get());
 	}
 
-	/** layer 番目の機織り模様レイヤーの染料色を 0xFFRRGGBB で返す ( 無ければ白 )。 */
-	private static int patternRgb(ItemStack stack, int layer) {
-		net.minecraft.nbt.ListTag patterns =
-				net.minecraft.world.level.block.entity.BannerBlockEntity.getItemPatterns(stack);
-		if (layer < 0 || layer >= patterns.size()) return 0xFFFFFFFF;
-		int id = patterns.getCompound(layer).getInt("Color");
-		net.minecraft.world.item.DyeColor color = net.minecraft.world.item.DyeColor.byId(id);
-		float[] c = color.getTextureDiffuseColors();
-		return 0xFF000000 | ((int) (c[0] * 255f) << 16) | ((int) (c[1] * 255f) << 8) | (int) (c[2] * 255f);
+	/** 納刀中の刀の拵え色を 0xFFRRGGBB で返す ( 1=柄/2=鍔/3=頭。 未設定/未収納は白 )。 */
+	private static int fittingRgb(ItemStack saya, int tintIndex) {
+		net.minecraft.nbt.CompoundTag t = saya.getTag();
+		if (t == null) return 0xFFFFFFFF;
+		ItemStack weapon = storedWeapon(t);
+		if (weapon == null || weapon.isEmpty()) return 0xFFFFFFFF;
+		int rgb;
+		switch (tintIndex) {
+			case 1: rgb = the_four_primitives_and_weapons.util.KatanaFittings.tsukaRgb(weapon); break;
+			case 2: rgb = the_four_primitives_and_weapons.util.KatanaFittings.tsubaRgb(weapon); break;
+			case 3: rgb = the_four_primitives_and_weapons.util.KatanaFittings.kashiraRgb(weapon); break;
+			case 4: rgb = the_four_primitives_and_weapons.util.KatanaFittings.fuchiRgb(weapon); break;
+			default: rgb = -1;
+		}
+		return rgb >= 0 ? (0xFF000000 | rgb) : 0xFFFFFFFF;
+	}
+
+	/** 鞘に納められている武器 ItemStack を取り出す ( StoredKatana/Sword/Rapier )。 無ければ null。 */
+	private static ItemStack storedWeapon(net.minecraft.nbt.CompoundTag t) {
+		for (String key : new String[]{ "StoredKatana", "StoredSword", "StoredRapier" }) {
+			if (t.contains(key, 10)) return ItemStack.of(t.getCompound(key));
+		}
+		return null;
 	}
 
 	/** 鞘本体の地色を 0xFFRRGGBB で返す。 未染色は暗いグレー。 */

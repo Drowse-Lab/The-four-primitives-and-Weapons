@@ -29,24 +29,64 @@ public final class KoshiraeFittings {
 
 	public static boolean isSupported(ItemStack in) {
 		if (in.isEmpty()) return false;
-		return in.getItem() == TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get()
-				|| SayaDesign.isSaya(in);
+		return KatanaFittings.isFittingWeapon(in) || SayaDesign.isSaya(in);
 	}
 
 	/** 入力に対する見た目候補 ( 先頭は「既定」)。 対象外なら空。 */
 	public static List<ItemStack> candidatesFor(ItemStack in) {
+		return candidatesFor(in, ItemStack.EMPTY);
+	}
+
+	/**
+	 * 入力(+染料)に対する候補。
+	 * <ul>
+	 *   <li>染料あり: <b>部位ごとの色変更</b> ( 刀=柄/鍔/縁/頭 を個別に染料色へ、 鞘=地色 )。</li>
+	 *   <li>染料なし: 見た目 ( 刀=柄巻きデザイン、 鞘=仕立て )。</li>
+	 * </ul>
+	 * 大釜は「一気に全部同色」なのに対し、 拵え台は「部位ごとに部分的に」変えられる。
+	 */
+	public static List<ItemStack> candidatesFor(ItemStack in, ItemStack dye) {
 		List<ItemStack> out = new ArrayList<>();
 		if (in.isEmpty()) return out;
+		boolean hasDye = dye != null && dye.getItem() instanceof net.minecraft.world.item.DyeItem;
 
-		if (in.getItem() == TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get()) {
-			out.add(katana(in, ""));                 // 既定 ( 元の柄 )
-			for (String w : KatanaFittings.WRAPS) out.add(katana(in, w));
+		if (KatanaFittings.isFittingWeapon(in)) {
+			if (hasDye) {
+				int rgb = KatanaFittings.dyeRgb(((net.minecraft.world.item.DyeItem) dye.getItem()).getDyeColor());
+				out.add(katanaColor(in, "tsuka", rgb, "柄を染める"));
+				out.add(katanaColor(in, "tsuba", rgb, "鍔を染める"));
+				out.add(katanaColor(in, "kashira", rgb, "頭を染める"));
+			} else {
+				out.add(katana(in, ""));                 // 既定 ( 元の柄 )
+				for (String w : KatanaFittings.WRAPS) out.add(katana(in, w));
+			}
 		} else if (SayaDesign.isSaya(in)) {
-			out.add(saya(in, ""));                   // 既定 ( 塗鞘 )
-			for (String s : SAYA_STYLES) out.add(saya(in, s));
-			for (String wood : SayaStyles.WOODS) out.add(saya(in, "wood:minecraft:" + wood + "_planks"));
+			if (hasDye) {
+				int rgb = SayaDesign.dyeRgb(((net.minecraft.world.item.DyeItem) dye.getItem()).getDyeColor());
+				ItemStack s = in.copy(); s.setCount(1);
+				SayaDesign.setBaseColorRgb(s, rgb);
+				s.setHoverName(net.minecraft.network.chat.Component.literal("地色を染める"));
+				out.add(s);
+			} else {
+				out.add(saya(in, ""));                   // 既定 ( 塗鞘 )
+				for (String st : SAYA_STYLES) out.add(saya(in, st));
+				for (String wood : SayaStyles.WOODS) out.add(saya(in, "wood:minecraft:" + wood + "_planks"));
+			}
 		}
 		return out;
+	}
+
+	private static ItemStack katanaColor(ItemStack in, String part, int rgb, String label) {
+		ItemStack s = in.copy();
+		s.setCount(1);
+		switch (part) {
+			case "tsuba":   KatanaFittings.setTsuba(s, rgb); break;
+			case "fuchi":   KatanaFittings.setFuchi(s, rgb); break;
+			case "kashira": KatanaFittings.setKashira(s, rgb); break;
+			default:        KatanaFittings.setTsuka(s, rgb);
+		}
+		s.setHoverName(net.minecraft.network.chat.Component.literal(label));
+		return s;
 	}
 
 	private static ItemStack katana(ItemStack in, String wrap) {

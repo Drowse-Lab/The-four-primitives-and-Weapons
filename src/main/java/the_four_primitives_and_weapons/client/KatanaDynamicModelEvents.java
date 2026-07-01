@@ -18,13 +18,20 @@ import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 @Mod.EventBusSubscriber(modid = TheFourPrimitivesAndWeaponsMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class KatanaDynamicModelEvents {
 
-	private static final ModelResourceLocation MRL_IRON_KATANA =
-			new ModelResourceLocation(new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "iron_katana"), "inventory");
+	private static final String[] WEAPONS = { "iron_katana", "iron_tyokuto", "iron_rapier" };
 
 	@SubscribeEvent
 	public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event) {
-		BakedModel current = event.getModels().get(MRL_IRON_KATANA);
-		if (current == null || current instanceof KatanaModelWrapper) return;
-		event.getModels().put(MRL_IRON_KATANA, new KatanaModelWrapper(current));
+		for (String name : WEAPONS) {
+			ModelResourceLocation mrl = new ModelResourceLocation(
+					new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, name), "inventory");
+			BakedModel current = event.getModels().get(mrl);
+			if (current == null || current instanceof KatanaModelWrapper) continue;
+			// iron_katana: モデル(katana_a_parent)が拵えテクスチャ(tuka/tuba/kasira)を箱UVで直接使い、
+			//   tintindex 1=柄/2=鍔/3=頭/4=縁 を持つ。 色は KatanaColorClient(tint) が担う。
+			//   黒だけは乗算tintで潰れるので colorBlackMode で 専用黒テクスチャへ差し替える ( 同レイアウトで綺麗 )。
+			boolean colorBlackMode = name.equals("iron_katana");
+			event.getModels().put(mrl, new KatanaModelWrapper(current, false, colorBlackMode));
+		}
 	}
 }

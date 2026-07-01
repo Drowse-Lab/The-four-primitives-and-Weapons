@@ -15,6 +15,14 @@ public final class KatanaFittings {
 
 	private KatanaFittings() {}
 
+	/** 拵え ( 柄/鍔/縁/頭 ) を着せ替えできる武器か。 現状: 鉄の刀/直刀/レイピア。 */
+	public static boolean isFittingWeapon(ItemStack s) {
+		net.minecraft.world.item.Item it = s.getItem();
+		return it == the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get()
+				|| it == the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems.IRON_TYOKUTO.get()
+				|| it == the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems.IRON_RAPIER.get();
+	}
+
 	/** 柄巻きの色 ( 0xRRGGBB )。 */
 	public static final String TSUKA_KEY = "TsukaColor";
 	/** 鍔の色 ( 0xRRGGBB )。 */
@@ -26,23 +34,38 @@ public final class KatanaFittings {
 	/** 柄巻きの巻き方 ( デザイン )。 */
 	public static final String TSUKA_WRAP_KEY = "TsukaWrap";
 
-	/** 柄巻きの巻き方の一覧 ( 順に切り替え )。 "" = 既定 ( 元テクスチャ )。 */
-	public static final String[] WRAPS = {
-			"hishi",    // 菱巻 ( 最も一般的 )
-			"hira",     // 平巻 ( 太刀巻 )
-			"katate",   // 片手巻 ( 螺旋 )
-			"hineri",   // 捻巻
-			"tsumami",  // 撮巻/摘巻
-			"jabara",   // 蛇腹巻
-			"kake",     // 掛巻
-			"hijiri",   // 聖柄 ( 巻き無しの素柄 )
-			"shirasaya",// 白鞘 ( 素柄 + つばなし )
-			"saber"     // 軍刀 ( サーベル柄: 革巻き+索条 )
-	};
+	/** 柄巻きの一覧 ( 順に切り替え )。 "" = 既定 ( 刀本体テクスチャ = ネイティブ )。
+	 *  ※ これらは刀UVレイアウトで描いた絵を source-relative で貼る ( 刀本体テクスチャの色替え )。
+	 *  ※ "tuka"(菱デザイン) は鞘が箱UVで直接使う専用テクスチャなので、 ここには入れない
+	 *     ( 持っている刀の source-relative では崩れるため )。 */
+	public static final String[] WRAPS = { "tuka_black", "tuka_red", "tuka_brown", "tuka_white" };
+	/** 頭 ( かしら ) のデザイン一覧。 */
+	public static final String[] KASHIRAS = { "kasira" };
+	/** 縁 ( ふち ) のデザイン一覧。 */
+	public static final String[] FUCHIS = { "fuchi" };
+	public static final String KASHIRA_STYLE_KEY = "KashiraStyle";
+	public static final String FUCHI_STYLE_KEY = "FuchiStyle";
 
-	/** 鍔のデザイン ( 差し替え )。 "" = 既定。 "saber" = サーベルの鍔。 */
+	public static String getKashiraStyle(ItemStack s) {
+		CompoundTag t = s.getTag();
+		return (t != null && t.contains(KASHIRA_STYLE_KEY)) ? t.getString(KASHIRA_STYLE_KEY) : "";
+	}
+	public static String getFuchiStyle(ItemStack s) {
+		CompoundTag t = s.getTag();
+		return (t != null && t.contains(FUCHI_STYLE_KEY)) ? t.getString(FUCHI_STYLE_KEY) : "";
+	}
+	public static void setKashiraStyle(ItemStack s, String v) {
+		if (v == null || v.isEmpty()) { if (s.hasTag()) s.getTag().remove(KASHIRA_STYLE_KEY); }
+		else s.getOrCreateTag().putString(KASHIRA_STYLE_KEY, v);
+	}
+	public static void setFuchiStyle(ItemStack s, String v) {
+		if (v == null || v.isEmpty()) { if (s.hasTag()) s.getTag().remove(FUCHI_STYLE_KEY); }
+		else s.getOrCreateTag().putString(FUCHI_STYLE_KEY, v);
+	}
+
+	/** 鍔のデザイン ( 差し替え )。 "" = 既定。 */
 	public static final String TSUBA_STYLE_KEY = "TsubaStyle";
-	public static final String[] TSUBAS = { "saber" };
+	public static final String[] TSUBAS = { "tuba" };
 
 	public static String getTsubaStyle(ItemStack stack) {
 		CompoundTag t = stack.getTag();
@@ -92,7 +115,17 @@ public final class KatanaFittings {
 		return WRAPS[0];
 	}
 
-	public static int tsukaRgb(ItemStack stack) { return rgb(stack, TSUKA_KEY); }
+	/** 柄(紐)の色。 TsukaColor が無ければ 皮装備方式 display.color を見る ( /give …{display:{color:N}} )。 */
+	public static int tsukaRgb(ItemStack stack) {
+		int c = rgb(stack, TSUKA_KEY);
+		if (c >= 0) return c;
+		CompoundTag t = stack.getTag();
+		if (t != null && t.contains("display", 10)) {
+			CompoundTag d = t.getCompound("display");
+			if (d.contains("color", 99)) return d.getInt("color") & 0xFFFFFF;
+		}
+		return -1;
+	}
 	public static int tsubaRgb(ItemStack stack) { return rgb(stack, TSUBA_KEY); }
 	public static int kashiraRgb(ItemStack stack) { return rgb(stack, KASHIRA_KEY); }
 	public static int fuchiRgb(ItemStack stack) { return rgb(stack, FUCHI_KEY); }
@@ -106,6 +139,14 @@ public final class KatanaFittings {
 	public static void setTsuba(ItemStack stack, int rgb) { stack.getOrCreateTag().putInt(TSUBA_KEY, rgb & 0xFFFFFF); }
 	public static void setKashira(ItemStack stack, int rgb) { stack.getOrCreateTag().putInt(KASHIRA_KEY, rgb & 0xFFFFFF); }
 	public static void setFuchi(ItemStack stack, int rgb) { stack.getOrCreateTag().putInt(FUCHI_KEY, rgb & 0xFFFFFF); }
+
+	/** 色が「ほぼ黒」か。 黒染め時に 乗算tintで潰れるのを避け、 専用の黒テクスチャへ差し替える判定用。 */
+	public static boolean isNearBlack(int rgb) {
+		if (rgb < 0) return false;
+		int r = (rgb >> 16) & 255, g = (rgb >> 8) & 255, b = rgb & 255;
+		double l = 0.299 * r + 0.587 * g + 0.114 * b;
+		return l < 45;
+	}
 
 	/** 染料色 → 0xRRGGBB。 */
 	public static int dyeRgb(DyeColor color) {

@@ -24,14 +24,18 @@ public class KoshiraeMenu extends AbstractContainerMenu {
 
 	public static final int INPUT = 0;
 	public static final int RESULT = 1;
+	public static final int DYE = 2;
 
 	private final ContainerLevelAccess access;
 	private final Slot inputSlot;
 	private final Slot resultSlot;
+	private final Slot dyeSlot;
 	private final SimpleContainer container = new SimpleContainer(1);
 	private final SimpleContainer resultContainer = new SimpleContainer(1);
+	private final SimpleContainer dyeContainer = new SimpleContainer(1);
 	private final DataSlot selected = DataSlot.standalone();
 	private ItemStack lastInput = ItemStack.EMPTY;
+	private ItemStack lastDye = ItemStack.EMPTY;
 
 	public KoshiraeMenu(int id, Inventory inv) {
 		this(id, inv, ContainerLevelAccess.NULL);
@@ -51,6 +55,10 @@ public class KoshiraeMenu extends AbstractContainerMenu {
 				super.onTake(p, taken);
 			}
 		});
+		// 染料スロット ( メニュー番号 DYE=2 )。 染料を入れると 候補が「部位ごとの色変更」になる。
+		this.dyeSlot = this.addSlot(new Slot(this.dyeContainer, 0, 20, 55) {
+			@Override public boolean mayPlace(ItemStack s) { return s.getItem() instanceof net.minecraft.world.item.DyeItem; }
+		});
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 9; j++)
 				this.addSlot(new Slot(inv, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
@@ -58,19 +66,20 @@ public class KoshiraeMenu extends AbstractContainerMenu {
 			this.addSlot(new Slot(inv, k, 8 + k * 18, 142));
 
 		this.container.addListener(c -> this.slotsChanged(c));
+		this.dyeContainer.addListener(c -> this.slotsChanged(c));
 		this.addDataSlot(this.selected);
 	}
 
 	public int getSelected() { return this.selected.get(); }
 	public List<ItemStack> getCandidates() {
-		// クライアント表示用: 入力から都度計算 ( 同期不要 )
-		return KoshiraeFittings.candidatesFor(this.inputSlot.getItem());
+		// クライアント表示用: 入力(+染料)から都度計算 ( 同期不要 )
+		return KoshiraeFittings.candidatesFor(this.inputSlot.getItem(), this.dyeSlot.getItem());
 	}
 	public boolean hasInput() { return this.inputSlot.hasItem(); }
 
 	@Override
 	public boolean clickMenuButton(Player player, int id) {
-		List<ItemStack> list = KoshiraeFittings.candidatesFor(this.inputSlot.getItem());
+		List<ItemStack> list = KoshiraeFittings.candidatesFor(this.inputSlot.getItem(), this.dyeSlot.getItem());
 		if (id >= 0 && id < list.size()) {
 			this.selected.set(id);
 			setupResult();
@@ -81,8 +90,10 @@ public class KoshiraeMenu extends AbstractContainerMenu {
 	@Override
 	public void slotsChanged(Container c) {
 		ItemStack in = this.inputSlot.getItem();
-		if (!ItemStack.matches(in, this.lastInput)) {
+		ItemStack dye = this.dyeSlot.getItem();
+		if (!ItemStack.matches(in, this.lastInput) || !ItemStack.matches(dye, this.lastDye)) {
 			this.lastInput = in.copy();
+			this.lastDye = dye.copy();
 			this.selected.set(-1);
 			this.resultSlot.set(ItemStack.EMPTY);
 			broadcastChanges();
@@ -91,9 +102,11 @@ public class KoshiraeMenu extends AbstractContainerMenu {
 
 	private void setupResult() {
 		int i = this.selected.get();
-		List<ItemStack> list = KoshiraeFittings.candidatesFor(this.inputSlot.getItem());
+		List<ItemStack> list = KoshiraeFittings.candidatesFor(this.inputSlot.getItem(), this.dyeSlot.getItem());
 		if (i >= 0 && i < list.size()) {
-			this.resultSlot.set(list.get(i).copy());
+			ItemStack r = list.get(i).copy();
+			r.resetHoverName(); // 候補のラベル名(「柄を染める」等)は結果に残さない
+			this.resultSlot.set(r);
 		} else {
 			this.resultSlot.set(ItemStack.EMPTY);
 		}
@@ -108,7 +121,10 @@ public class KoshiraeMenu extends AbstractContainerMenu {
 	@Override
 	public void removed(Player player) {
 		super.removed(player);
-		this.access.execute((lvl, pos) -> this.clearContainer(player, this.container));
+		this.access.execute((lvl, pos) -> {
+			this.clearContainer(player, this.container);
+			this.clearContainer(player, this.dyeContainer);
+		});
 	}
 
 	@Override
@@ -118,11 +134,14 @@ public class KoshiraeMenu extends AbstractContainerMenu {
 		if (slot != null && slot.hasItem()) {
 			ItemStack s = slot.getItem();
 			ret = s.copy();
-			int invStart = 2;
+			int invStart = 3;               // プレイヤーインベントリの開始スロット ( INPUT/RESULT/DYE の次 )
 			int invEnd = this.slots.size();
-			if (index == INPUT || index == RESULT) {
+			if (index == INPUT || index == RESULT || index == DYE) {
 				if (!this.moveItemStackTo(s, invStart, invEnd, true)) return ItemStack.EMPTY;
 				slot.onQuickCraft(s, ret);
+			} else if (s.getItem() instanceof net.minecraft.world.item.DyeItem) {
+				// プレイヤー → 染料スロットへ
+				if (!this.moveItemStackTo(s, DYE, DYE + 1, false)) return ItemStack.EMPTY;
 			} else {
 				// プレイヤー → 入力スロットへ
 				if (!this.moveItemStackTo(s, INPUT, INPUT + 1, false)) return ItemStack.EMPTY;

@@ -34,7 +34,7 @@ public class KatanaFittingRecipe extends CustomRecipe {
 	}
 
 	private static boolean isKatana(ItemStack s) {
-		return s.getItem() == TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get();
+		return KatanaFittings.isFittingWeapon(s);
 	}
 
 	private static boolean isMarker(ItemStack s) {

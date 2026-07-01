@@ -82,10 +82,17 @@ public final class SayaDesign {
 		return t != null && t.contains(BASE_KEY);
 	}
 
-	/** 地の色を 0xRRGGBB で返す。 未設定なら -1。 */
+	/** 地の色を 0xRRGGBB で返す。 未設定なら -1。
+	 *  皮装備方式にも対応: SayaBase が無ければ display.color を見る ( /give …{display:{color:N}} )。 */
 	public static int getBaseRgb(ItemStack saya) {
 		CompoundTag t = saya.getTag();
-		return (t != null && t.contains(BASE_KEY)) ? (t.getInt(BASE_KEY) & 0xFFFFFF) : -1;
+		if (t == null) return -1;
+		if (t.contains(BASE_KEY)) return t.getInt(BASE_KEY) & 0xFFFFFF;
+		if (t.contains("display", 10)) {
+			CompoundTag d = t.getCompound("display");
+			if (d.contains("color", 99)) return d.getInt("color") & 0xFFFFFF;
+		}
+		return -1;
 	}
 
 	/** 任意 RGB で地色を設定。 */

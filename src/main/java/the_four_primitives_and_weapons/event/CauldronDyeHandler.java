@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
@@ -37,7 +38,9 @@ import java.util.Map;
 @Mod.EventBusSubscriber(modid = TheFourPrimitivesAndWeaponsMod.MODID)
 public class CauldronDyeHandler {
 
-	@SubscribeEvent
+	// 刀/鞘で大釜を右クリックすると 回避(DodgeAndBattouHandler, NORMAL) が先に発火して
+	// event をキャンセルしてしまうため、 染色を優先できるよう HIGHEST で処理する。
+	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public static void onRightClick(PlayerInteractEvent.RightClickBlock event) {
 		if (event.getHand() != InteractionHand.MAIN_HAND) return;
 		Level level = event.getLevel();
@@ -66,7 +69,8 @@ public class CauldronDyeHandler {
 		boolean isDye = held.getItem() instanceof DyeItem;
 		boolean isDyeable = held.getItem() instanceof DyeableLeatherItem;
 		boolean isSaya = the_four_primitives_and_weapons.util.SayaDesign.isSaya(held);
-		if (!isDye && !isDyeable && !isSaya) return;
+		boolean isKatana = the_four_primitives_and_weapons.util.KatanaFittings.isFittingWeapon(held);
+		if (!isDye && !isDyeable && !isSaya && !isKatana) return;
 
 		// 現在色（両サイドで一致するよう、 サイドごとのキャッシュ/データから取得）
 		Integer cur = level.isClientSide
@@ -79,6 +83,11 @@ public class CauldronDyeHandler {
 		if (isSaya && !isDye && cur == null
 				&& !the_four_primitives_and_weapons.util.SayaDesign.hasBase(held)
 				&& the_four_primitives_and_weapons.util.SayaDesign.patternCount(held) <= 0) return;
+		// 拵えの色が一つも無い刀を ただの水大釜に入れても何もしない
+		if (isKatana && !isDye && cur == null
+				&& the_four_primitives_and_weapons.util.KatanaFittings.tsukaRgb(held) < 0
+				&& the_four_primitives_and_weapons.util.KatanaFittings.tsubaRgb(held) < 0
+				&& the_four_primitives_and_weapons.util.KatanaFittings.kashiraRgb(held) < 0) return;
 
 		event.setCanceled(true);
 		event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide));
@@ -111,6 +120,22 @@ public class CauldronDyeHandler {
 				the_four_primitives_and_weapons.util.SayaDesign.setBaseColorRgb(held, cur);
 			} else if (!the_four_primitives_and_weapons.util.SayaDesign.removeLastPattern(held)) {
 				if (held.hasTag()) held.getTag().remove(the_four_primitives_and_weapons.util.SayaDesign.BASE_KEY);
+			}
+			lowerLevel(sl, pos, state, data);
+			sl.playSound(null, pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 0.7f, 1.1f);
+			sl.sendParticles(ParticleTypes.SPLASH, pos.getX() + 0.5, pos.getY() + 0.85, pos.getZ() + 0.5,
+					16, 0.25, 0.05, 0.25, 0.0);
+		} else if (isKatana) {
+			// 刀を大釜に浸す: 色付き水なら 柄/鍔/頭/縁 を「一気に」同色へ。 ただの水なら 全部落とす。
+			// ( 部位ごとの色変更は 拵え台 で行う )
+			if (cur != null) {
+				the_four_primitives_and_weapons.util.KatanaFittings.setTsuka(held, cur);
+				the_four_primitives_and_weapons.util.KatanaFittings.setTsuba(held, cur);
+				the_four_primitives_and_weapons.util.KatanaFittings.setKashira(held, cur);
+			} else if (held.hasTag()) {
+				held.getTag().remove(the_four_primitives_and_weapons.util.KatanaFittings.TSUKA_KEY);
+				held.getTag().remove(the_four_primitives_and_weapons.util.KatanaFittings.TSUBA_KEY);
+				held.getTag().remove(the_four_primitives_and_weapons.util.KatanaFittings.KASHIRA_KEY);
 			}
 			lowerLevel(sl, pos, state, data);
 			sl.playSound(null, pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 0.7f, 1.1f);
