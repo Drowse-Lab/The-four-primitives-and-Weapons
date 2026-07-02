@@ -27,7 +27,7 @@ public class StabbedWeaponRenderer extends EntityRenderer<StabbedWeaponEntity> {
 
 	// 見た目調整用 ( 必要なら数値を変える )。 傾きはエンティティのプリセット値を使う。
 	public static float SINK = 0.35f;    // 地面へのめり込み量
-	public static float SCALE = 1.5f;    // 杭の大きさ ( 刺した時のサイズはそのまま )
+	public static float SCALE = 1.0f;    // 刺した武器の大きさ ( 3軸同率スケール = 比率はそのままで縮小 )
 
 	public StabbedWeaponRenderer(EntityRendererProvider.Context ctx) {
 		super(ctx);
@@ -46,7 +46,9 @@ public class StabbedWeaponRenderer extends EntityRenderer<StabbedWeaponEntity> {
 			pose.mulPose(Axis.ZP.rotationDegrees(180f + entity.getRoll()));
 			// 地面へ沈める
 			pose.translate(0.0, -0.5 + SINK, 0.0);
-			pose.scale(SCALE, SCALE, SCALE);
+			// 全体スケール = グローバル基準 SCALE × 武器ごとの編集スケール ( 3軸同率で比率は保持 )
+			float sc = SCALE * entity.getScale();
+			pose.scale(sc, sc, sc);
 			// THIRD_PERSON_RIGHT_HAND: 元の比率・立体感を保つ ( FIXED は比率が崩れる )
 			Minecraft.getInstance().getItemRenderer().renderStatic(
 					stack, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,

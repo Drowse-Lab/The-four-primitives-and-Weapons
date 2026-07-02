@@ -34,7 +34,7 @@ public class StabEditScreen extends Screen {
 	protected void init() {
 		int cx = this.width / 2;
 		int bx = cx - 170;             // ボタン列 ( 左 )
-		int y = this.height / 2 - 46;
+		int y = this.height / 2 - 58; // 大きさ行を追加した分、 上寄せ
 
 		addRenderableWidget(Button.builder(Component.literal("§e向き ←"), b -> send(0, -15f)).bounds(bx, y, 78, 20).build());
 		addRenderableWidget(Button.builder(Component.literal("§e向き →"), b -> send(0, 15f)).bounds(bx + 82, y, 78, 20).build());
@@ -50,6 +50,9 @@ public class StabEditScreen extends Screen {
 		y += 24;
 		addRenderableWidget(Button.builder(Component.literal("§6判定 －"), b -> send(3, -0.1f)).bounds(bx, y, 78, 20).build());
 		addRenderableWidget(Button.builder(Component.literal("§6判定 ＋"), b -> send(3, 0.1f)).bounds(bx + 82, y, 78, 20).build());
+		y += 24;
+		addRenderableWidget(Button.builder(Component.literal("§b大きさ －"), b -> send(5, -0.1f)).bounds(bx, y, 78, 20).build());
+		addRenderableWidget(Button.builder(Component.literal("§b大きさ ＋"), b -> send(5, 0.1f)).bounds(bx + 82, y, 78, 20).build());
 		y += 28;
 		addRenderableWidget(Button.builder(Component.literal("閉じる"), b -> onClose()).bounds(bx + 40, y, 80, 20).build());
 

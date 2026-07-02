@@ -54,10 +54,13 @@ public class StabEditClient {
 		int dir = scroll > 0 ? 1 : -1;
 
 		// ギズモのリング色に対応: 無印=Y緑(向き) / Shift=X赤(傾き) / Ctrl=Z青(ロール) / Alt=黄(高さ)
+		//   Shift+Ctrl = 大きさ ( スケール ) — 単独修飾より先に判定する
 		int mode;
 		float delta;
 		String label;
-		if (Screen.hasShiftDown()) {
+		if (Screen.hasShiftDown() && Screen.hasControlDown()) {
+			mode = 5; delta = dir * 0.1f; label = "§b 大きさ " + (dir > 0 ? "+" : "-");
+		} else if (Screen.hasShiftDown()) {
 			mode = 1; delta = dir * 5f;   label = "§c X軸 傾き " + (dir > 0 ? "+" : "-");
 		} else if (Screen.hasControlDown()) {
 			mode = 4; delta = dir * 5f;   label = "§9 Z軸 ロール " + (dir > 0 ? "+" : "-");
@@ -69,7 +72,7 @@ public class StabEditClient {
 
 		TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new StabEditMessage(tgt.getId(), mode, delta));
 		player.displayClientMessage(Component.literal(label
-				+ " §7( 緑Y:向き / Shift赤X:傾き / Ctrl青Z:ロール / Alt:高さ )"), true);
+				+ " §7( 緑Y:向き / Shift赤X:傾き / Ctrl青Z:ロール / Alt:高さ / Shift+Ctrl:大きさ )"), true);
 		event.setCanceled(true); // ホットバー切替を止める
 	}
 }

@@ -30,20 +30,20 @@
 			"faces": {
 				"north": {
 					"uv": [
-						4,
 						0,
-						7,
-						2
+						0,
+						16,
+						16
 					],
 					"texture": "#kasira",
 					"tintindex": 3
 				},
 				"east": {
 					"uv": [
-						4,
-						4,
-						7,
-						6
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#kasira",
 					"tintindex": 3
@@ -51,39 +51,39 @@
 				"south": {
 					"uv": [
 						0,
-						8,
-						3,
-						10
+						0,
+						16,
+						16
 					],
 					"texture": "#kasira",
 					"tintindex": 3
 				},
 				"west": {
 					"uv": [
-						8,
 						0,
-						11,
-						2
+						0,
+						16,
+						16
 					],
 					"texture": "#kasira",
 					"tintindex": 3
 				},
 				"up": {
 					"uv": [
-						3,
-						3,
 						0,
-						0
+						0,
+						16,
+						16
 					],
 					"texture": "#kasira",
 					"tintindex": 3
 				},
 				"down": {
 					"uv": [
-						3,
-						4,
 						0,
-						7
+						0,
+						16,
+						16
 					],
 					"texture": "#kasira",
 					"tintindex": 3
@@ -115,18 +115,18 @@
 					"uv": [
 						0,
 						0,
-						1.5,
-						3.5
+						16,
+						16
 					],
 					"texture": "#tuka",
 					"tintindex": 1
 				},
 				"east": {
 					"uv": [
-						2,
 						0,
-						3.5,
-						3.5
+						0,
+						16,
+						16
 					],
 					"texture": "#tuka",
 					"tintindex": 1
@@ -134,29 +134,29 @@
 				"south": {
 					"uv": [
 						0,
-						4,
-						1.5,
-						7.5
+						0,
+						16,
+						16
 					],
 					"texture": "#tuka",
 					"tintindex": 1
 				},
 				"west": {
 					"uv": [
-						4,
 						0,
-						5.5,
-						3.5
+						0,
+						16,
+						16
 					],
 					"texture": "#tuka",
 					"tintindex": 1
 				},
 				"up": {
 					"uv": [
-						7.5,
-						3.5,
-						6,
-						2
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuka",
 					"tintindex": 1
@@ -580,59 +580,59 @@
 			"faces": {
 				"north": {
 					"uv": [
-						8,
-						8,
-						14,
-						9
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"east": {
 					"uv": [
-						8,
+						0,
 						0,
 						16,
-						1
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"south": {
 					"uv": [
-						8,
-						12,
-						14,
-						13
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"west": {
 					"uv": [
-						8,
-						4,
+						0,
+						0,
 						16,
-						5
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"up": {
 					"uv": [
-						6,
-						8,
 						0,
-						0
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"down": {
 					"uv": [
-						6,
-						8,
 						0,
+						0,
+						16,
 						16
 					],
 					"texture": "#tuba",
@@ -663,59 +663,59 @@
 			"faces": {
 				"north": {
 					"uv": [
-						8,
-						8,
-						14,
-						9
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"east": {
 					"uv": [
-						8,
+						0,
 						0,
 						16,
-						1
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"south": {
 					"uv": [
-						8,
-						12,
-						14,
-						13
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"west": {
 					"uv": [
-						8,
-						4,
+						0,
+						0,
 						16,
-						5
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"up": {
 					"uv": [
-						6,
-						8,
 						0,
-						0
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"down": {
 					"uv": [
-						6,
-						8,
 						0,
+						0,
+						16,
 						16
 					],
 					"texture": "#tuba",
@@ -746,59 +746,59 @@
 			"faces": {
 				"north": {
 					"uv": [
-						8,
-						8,
-						14,
-						9
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"east": {
 					"uv": [
-						8,
+						0,
 						0,
 						16,
-						1
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"south": {
 					"uv": [
-						8,
-						12,
-						14,
-						13
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"west": {
 					"uv": [
-						8,
-						4,
+						0,
+						0,
 						16,
-						5
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"up": {
 					"uv": [
-						6,
-						8,
 						0,
-						0
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"down": {
 					"uv": [
-						6,
-						8,
 						0,
+						0,
+						16,
 						16
 					],
 					"texture": "#tuba",
@@ -829,59 +829,59 @@
 			"faces": {
 				"north": {
 					"uv": [
-						8,
-						8,
-						14,
-						9
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"east": {
 					"uv": [
-						8,
+						0,
 						0,
 						16,
-						1
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"south": {
 					"uv": [
-						8,
-						12,
-						14,
-						13
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"west": {
 					"uv": [
-						8,
-						4,
+						0,
+						0,
 						16,
-						5
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"up": {
 					"uv": [
-						6,
-						8,
 						0,
-						0
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"down": {
 					"uv": [
-						6,
-						8,
 						0,
+						0,
+						16,
 						16
 					],
 					"texture": "#tuba",
@@ -912,59 +912,59 @@
 			"faces": {
 				"north": {
 					"uv": [
-						8,
-						8,
-						14,
-						9
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"east": {
 					"uv": [
-						8,
+						0,
 						0,
 						16,
-						1
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"south": {
 					"uv": [
-						8,
-						12,
-						14,
-						13
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"west": {
 					"uv": [
-						8,
-						4,
+						0,
+						0,
 						16,
-						5
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"up": {
 					"uv": [
-						6,
-						8,
 						0,
-						0
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"down": {
 					"uv": [
-						6,
-						8,
 						0,
+						0,
+						16,
 						16
 					],
 					"texture": "#tuba",
@@ -995,59 +995,59 @@
 			"faces": {
 				"north": {
 					"uv": [
-						8,
-						8,
-						14,
-						9
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"east": {
 					"uv": [
-						8,
+						0,
 						0,
 						16,
-						1
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"south": {
 					"uv": [
-						8,
-						12,
-						14,
-						13
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"west": {
 					"uv": [
-						8,
-						4,
+						0,
+						0,
 						16,
-						5
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"up": {
 					"uv": [
-						6,
-						8,
 						0,
-						0
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"down": {
 					"uv": [
-						6,
-						8,
 						0,
+						0,
+						16,
 						16
 					],
 					"texture": "#tuba",
@@ -1078,59 +1078,59 @@
 			"faces": {
 				"north": {
 					"uv": [
-						8,
-						8,
-						14,
-						9
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"east": {
 					"uv": [
-						8,
+						0,
 						0,
 						16,
-						1
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"south": {
 					"uv": [
-						8,
-						12,
-						14,
-						13
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"west": {
 					"uv": [
-						8,
-						4,
+						0,
+						0,
 						16,
-						5
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"up": {
 					"uv": [
-						6,
-						8,
 						0,
-						0
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"down": {
 					"uv": [
-						6,
-						8,
 						0,
+						0,
+						16,
 						16
 					],
 					"texture": "#tuba",
@@ -1161,59 +1161,59 @@
 			"faces": {
 				"north": {
 					"uv": [
-						8,
-						8,
-						14,
-						9
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"east": {
 					"uv": [
-						8,
+						0,
 						0,
 						16,
-						1
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"south": {
 					"uv": [
-						8,
-						12,
-						14,
-						13
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"west": {
 					"uv": [
-						8,
-						4,
+						0,
+						0,
 						16,
-						5
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"up": {
 					"uv": [
-						6,
-						8,
 						0,
-						0
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"down": {
 					"uv": [
-						6,
-						8,
 						0,
+						0,
+						16,
 						16
 					],
 					"texture": "#tuba",
@@ -1244,59 +1244,59 @@
 			"faces": {
 				"north": {
 					"uv": [
-						8,
-						8,
-						14,
-						9
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"east": {
 					"uv": [
-						8,
+						0,
 						0,
 						16,
-						1
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"south": {
 					"uv": [
-						8,
-						12,
-						14,
-						13
+						0,
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"west": {
 					"uv": [
-						8,
-						4,
+						0,
+						0,
 						16,
-						5
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"up": {
 					"uv": [
-						6,
-						8,
 						0,
-						0
+						0,
+						16,
+						16
 					],
 					"texture": "#tuba",
 					"tintindex": 2
 				},
 				"down": {
 					"uv": [
-						6,
-						8,
 						0,
+						0,
+						16,
 						16
 					],
 					"texture": "#tuba",

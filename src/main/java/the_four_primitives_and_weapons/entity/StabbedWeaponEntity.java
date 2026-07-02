@@ -38,6 +38,8 @@ public class StabbedWeaponEntity extends Entity {
 			SynchedEntityData.defineId(StabbedWeaponEntity.class, EntityDataSerializers.FLOAT);
 	private static final EntityDataAccessor<Float> DATA_ROLL =
 			SynchedEntityData.defineId(StabbedWeaponEntity.class, EntityDataSerializers.FLOAT);
+	private static final EntityDataAccessor<Float> DATA_SCALE =
+			SynchedEntityData.defineId(StabbedWeaponEntity.class, EntityDataSerializers.FLOAT);
 
 	public StabbedWeaponEntity(EntityType<? extends StabbedWeaponEntity> type, Level level) {
 		super(type, level);
@@ -58,6 +60,7 @@ public class StabbedWeaponEntity extends Entity {
 		this.entityData.define(DATA_TILT, 12f);
 		this.entityData.define(DATA_RADIUS, 1.0f); // 当たり判定/編集球の半径 ( 武器ごとに変更可 )
 		this.entityData.define(DATA_ROLL, 0f);      // ロール ( 軸まわりの回転 )
+		this.entityData.define(DATA_SCALE, 1.0f);   // 表示スケール ( 武器ごとに変更可 )
 	}
 
 	public void setItem(ItemStack stack) {
@@ -97,6 +100,15 @@ public class StabbedWeaponEntity extends Entity {
 
 	public void setRoll(float roll) {
 		this.entityData.set(DATA_ROLL, roll);
+	}
+
+	/** 表示スケール ( 0.2〜3.0 )。 見た目のみ。 当たり判定は半径 ( setRadius ) で別管理。 */
+	public void setScale(float sc) {
+		this.entityData.set(DATA_SCALE, Math.max(0.2f, Math.min(3.0f, sc)));
+	}
+
+	public float getScale() {
+		return this.entityData.get(DATA_SCALE);
 	}
 
 	public float getRoll() {
@@ -271,6 +283,7 @@ public class StabbedWeaponEntity extends Entity {
 		if (tag.contains("StabTilt")) setTilt(tag.getFloat("StabTilt"));
 		if (tag.contains("StabRadius")) setRadius(tag.getFloat("StabRadius"));
 		if (tag.contains("StabRoll")) setRoll(tag.getFloat("StabRoll"));
+		if (tag.contains("StabScale")) setScale(tag.getFloat("StabScale"));
 	}
 
 	@Override
@@ -280,5 +293,6 @@ public class StabbedWeaponEntity extends Entity {
 		tag.putFloat("StabTilt", getTilt());
 		tag.putFloat("StabRadius", getRadius());
 		tag.putFloat("StabRoll", getRoll());
+		tag.putFloat("StabScale", getScale());
 	}
 }

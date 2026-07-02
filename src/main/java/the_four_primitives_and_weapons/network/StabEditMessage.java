@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 
 /**
  * 突き刺さった武器/杭を後から調整する ( クライアントのスクロール操作 → サーバーで反映 )。
- *   mode 0 = 向き(yaw) / 1 = 傾き(tilt) / 2 = 高さ(Y)
+ *   mode 0 = 向き(yaw) / 1 = 傾き(tilt) / 2 = 高さ(Y) / 3 = 判定半径 / 4 = ロール / 5 = スケール
  */
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class StabEditMessage {
@@ -57,6 +57,7 @@ public class StabEditMessage {
 				case 2 -> s.setPos(s.getX(), s.getY() + m.delta, s.getZ()); // 高さ
 				case 3 -> s.setRadius(s.getRadius() + m.delta);             // 当たり判定/編集球の半径
 				case 4 -> s.setRoll(wrap(s.getRoll() + m.delta));          // ロール ( 360° )
+				case 5 -> s.setScale(s.getScale() + m.delta);              // 表示スケール ( 0.2〜3.0 )
 				default -> {}
 			}
 		});
