@@ -19,6 +19,16 @@
       "type": "minecraft:directory",
       "source": "katana_fitting",
       "prefix": "katana_fitting/"
+    },
+    {
+      "type": "minecraft:directory",
+      "source": "straight_katana_fitting",
+      "prefix": "straight_katana_fitting/"
+    },
+    {
+      "type": "minecraft:directory",
+      "source": "rapier_fitting",
+      "prefix": "rapier_fitting/"
     }
   ]
 }

@@ -52,14 +52,14 @@ public final class KatanaTsukaModel implements BakedModel {
 		}
 	}
 
-	// 色付け用: 色を設定した部位の面を「その面自身のテクスチャのグレー版(_gray)」へ差し替える
-	// ( グレー地に ItemColor の乗算で 任意の16進色が綺麗に乗る = 軍服の染色と同じ方式 )。
-	private KatanaTsukaModel(BakedModel base, boolean[] coloredByTint) {
+	// 色付け用: 部位ごとに面テクスチャを差し替える。 mode 1=グレー版(_gray、 tintで任意色)、
+	// 2=暗版(_black、 模様入りの黒。 tintなし)。 どちらも「その面自身のテクスチャの変種」に差し替える。
+	private KatanaTsukaModel(BakedModel base, int[] modeByTint) {
 		this.base = base;
 		this.swappedBySide = new EnumMap<>(Direction.class);
-		this.swappedNull = swapGray(base.getQuads(null, null, RandomSource.create(42L)), coloredByTint);
+		this.swappedNull = swapVariant(base.getQuads(null, null, RandomSource.create(42L)), modeByTint);
 		for (Direction d : Direction.values()) {
-			swappedBySide.put(d, swapGray(base.getQuads(null, d, RandomSource.create(42L)), coloredByTint));
+			swappedBySide.put(d, swapVariant(base.getQuads(null, d, RandomSource.create(42L)), modeByTint));
 		}
 	}
 
@@ -90,15 +90,15 @@ public final class KatanaTsukaModel implements BakedModel {
 	 * グレー地に {@link KatanaColorClient} の乗算tintで 任意の16進色が綺麗に乗る ( 軍服の染色と同じ )。
 	 * モデルが部位とテクスチャを混在させていても正しく機能する。
 	 */
-	public static BakedModel grayForTint(BakedModel base, boolean[] coloredByTint) {
+	public static BakedModel grayForTint(BakedModel base, int[] modeByTint) {
 		if (base == null) return base;
 		boolean any = false;
-		for (boolean b : coloredByTint) if (b) any = true;
+		for (int m : modeByTint) if (m != 0) any = true;
 		if (!any) return base;
 		try {
-			StringBuilder sb = new StringBuilder(Integer.toHexString(System.identityHashCode(base))).append("^gry");
-			for (boolean b : coloredByTint) sb.append(b ? '1' : '0');
-			return CACHE_GRAY.computeIfAbsent(sb.toString(), k -> new KatanaTsukaModel(base, coloredByTint));
+			StringBuilder sb = new StringBuilder(Integer.toHexString(System.identityHashCode(base))).append("^var");
+			for (int m : modeByTint) sb.append((char) ('0' + m));
+			return CACHE_GRAY.computeIfAbsent(sb.toString(), k -> new KatanaTsukaModel(base, modeByTint));
 		} catch (Throwable t) {
 			return base;
 		}
@@ -126,13 +126,14 @@ public final class KatanaTsukaModel implements BakedModel {
 		return out;
 	}
 
-	/** 各面を「自分自身のテクスチャのグレー版(_gray)」へ ( 色設定ありの tintindex のみ )。 */
-	private static List<BakedQuad> swapGray(List<BakedQuad> srcQuads, boolean[] coloredByTint) {
+	/** 各面を「自分自身のテクスチャの変種」へ。 mode 1=_gray / 2=_black ( tintindex 該当面のみ )。 */
+	private static List<BakedQuad> swapVariant(List<BakedQuad> srcQuads, int[] modeByTint) {
 		List<BakedQuad> out = new ArrayList<>(srcQuads.size());
 		for (BakedQuad q : srcQuads) {
 			int ti = q.getTintIndex();
-			if (ti >= 1 && ti <= 4 && coloredByTint[ti]) {
-				TextureAtlasSprite dst = grayVariant(q.getSprite());
+			int mode = (ti >= 1 && ti <= 4) ? modeByTint[ti] : 0;
+			if (mode != 0) {
+				TextureAtlasSprite dst = variant(q.getSprite(), mode == 2 ? "_black" : "_gray");
 				out.add(dst != null ? remap(q, dst) : q);
 			} else {
 				out.add(q);
@@ -141,14 +142,14 @@ public final class KatanaTsukaModel implements BakedModel {
 		return out;
 	}
 
-	/** スプライトの "_gray" 版を返す ( 無ければ null )。 */
+	/** スプライトの suffix 版 ("_gray"/"_black") を返す ( 無ければ null )。 */
 	@Nullable
-	private static TextureAtlasSprite grayVariant(TextureAtlasSprite src) {
+	private static TextureAtlasSprite variant(TextureAtlasSprite src, String suffix) {
 		if (src == null) return null;
 		ResourceLocation n = src.contents().name();
-		ResourceLocation gray = new ResourceLocation(n.getNamespace(), n.getPath() + "_gray");
+		ResourceLocation v = new ResourceLocation(n.getNamespace(), n.getPath() + suffix);
 		var atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
-		TextureAtlasSprite s = atlas.getSprite(gray);
+		TextureAtlasSprite s = atlas.getSprite(v);
 		return (s == null || s.contents().name().equals(MissingTextureAtlasSprite.getLocation())) ? null : s;
 	}
 

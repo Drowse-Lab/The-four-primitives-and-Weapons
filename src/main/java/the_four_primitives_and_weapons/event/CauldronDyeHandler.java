@@ -94,24 +94,45 @@ public class CauldronDyeHandler {
 		if (level.isClientSide) return;
 
 		ServerLevel sl = (ServerLevel) level;
-		// ポーションが貯まっている大釜は染色に使わない ( 革防具等を右クリックしても何も起きない )。
-		//   イベントは上で既にキャンセル済みなので、 バニラの洗浄も起きずに「無反応」 になる。
-		if (the_four_primitives_and_weapons.world.CauldronPotionData.get(sl).has(pos)) return;
+		// ポーションが貯まっている大釜は染色に使わない ( 装備等は入れて染色できない )。
+		//   イベントは上で既にキャンセル済みなので染色も洗浄も起きない。 液体(ポーション)色の
+		//   水飛沫だけ出して「これは染色できない」フィードバックにする。
+		if (the_four_primitives_and_weapons.world.CauldronPotionData.get(sl).has(pos)) {
+			if ((isSaya || isKatana || isDyeable) && cur != null) {
+				coloredSplash(sl, pos, cur, 12);
+			}
+			return;
+		}
 		Player player = event.getEntity();
 		CauldronColorData data = CauldronColorData.get(sl);
+
+		// 血が入った大釜に 鉄の刀を浸す → Rivers of Blood 化。
+		if (isKatana
+				&& held.getItem() == the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get()
+				&& the_four_primitives_and_weapons.world.CauldronBloodData.get(sl).has(pos)) {
+			ItemStack result = new ItemStack(
+					the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems.RIVERS_OF_BLOOD.get());
+			if (!player.getAbilities().instabuild) held.shrink(1);
+			if (held.isEmpty()) player.setItemInHand(InteractionHand.MAIN_HAND, result);
+			else if (!player.getInventory().add(result)) player.drop(result, false);
+			the_four_primitives_and_weapons.world.CauldronBloodData.get(sl).pop(pos); // 血を1回分消費
+			lowerLevel(sl, pos, state, data);
+			sl.playSound(null, pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 0.8f, 0.7f);
+			coloredSplash(sl, pos, cur != null ? cur : 0x7A0E0E, 25);
+			return;
+		}
 
 		if (isDye) {
 			int dye = dyeColor((DyeItem) held.getItem());
 			int n = data.getCount(pos);
-			// 投入数で重み付け平均: これまでの色を n、 新しい染料を 1 の重みで混ぜる。
-			// 染料が多いほど 1 個の影響が小さくなり、 白を1個入れても一気に白くならない。
-			int mixed = (cur == null || n <= 0) ? dye : mixWeighted(cur, n, dye);
+			// 革防具と同じ混色: 明度(最大成分)を保ったまま平均する → 濁らず多彩な色をほぼ無限に作れる。
+			// これまでの色を n 個ぶんとして 新しい染料1個を混ぜる。
+			int mixed = (cur == null || n <= 0) ? dye : mixLeather(cur, n, dye);
 			data.setColor(pos, mixed, n + 1);
 			syncSet(sl, pos, mixed);
 			if (!player.getAbilities().instabuild) held.shrink(1);
 			sl.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 0.7f, 1.4f);
-			sl.sendParticles(ParticleTypes.SPLASH, pos.getX() + 0.5, pos.getY() + 0.85, pos.getZ() + 0.5,
-					12, 0.25, 0.05, 0.25, 0.0);
+			coloredSplash(sl, pos, mixed, 12);
 		} else if (isSaya) {
 			// 鞘を大釜に浸す。 色付き水なら地色を染める。
 			// ただの水なら「洗う」: 旗のように 上に付けた模様を 1枚ずつ剥がし、
@@ -123,8 +144,7 @@ public class CauldronDyeHandler {
 			}
 			lowerLevel(sl, pos, state, data);
 			sl.playSound(null, pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 0.7f, 1.1f);
-			sl.sendParticles(ParticleTypes.SPLASH, pos.getX() + 0.5, pos.getY() + 0.85, pos.getZ() + 0.5,
-					16, 0.25, 0.05, 0.25, 0.0);
+			coloredSplash(sl, pos, cur != null ? cur : 0x3F76E4, 16);
 		} else if (isKatana) {
 			// 刀を大釜に浸す: 色付き水なら 柄/鍔/頭/縁 を「一気に」同色へ。 ただの水なら 全部落とす。
 			// ( 部位ごとの色変更は 拵え台 で行う )
@@ -139,17 +159,24 @@ public class CauldronDyeHandler {
 			}
 			lowerLevel(sl, pos, state, data);
 			sl.playSound(null, pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 0.7f, 1.1f);
-			sl.sendParticles(ParticleTypes.SPLASH, pos.getX() + 0.5, pos.getY() + 0.85, pos.getZ() + 0.5,
-					16, 0.25, 0.05, 0.25, 0.0);
+			coloredSplash(sl, pos, cur != null ? cur : 0x3F76E4, 16);
 		} else {
 			// 色付き大釜に浸して染色。 水位を1減らし、 空になったら色リセット（バニラ準拠）
 			DyeableLeatherItem dye = (DyeableLeatherItem) held.getItem();
 			dye.setColor(held, cur);
 			lowerLevel(sl, pos, state, data);
 			sl.playSound(null, pos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 0.7f, 1.1f);
-			sl.sendParticles(ParticleTypes.SPLASH, pos.getX() + 0.5, pos.getY() + 0.85, pos.getZ() + 0.5,
-					16, 0.25, 0.05, 0.25, 0.0);
+			coloredSplash(sl, pos, cur != null ? cur : 0x3F76E4, 16);
 		}
+	}
+
+	/** 大釜の液体色の水飛沫を出す ( 着色 dust パーティクル )。 */
+	private static void coloredSplash(ServerLevel sl, BlockPos pos, int rgb, int count) {
+		float r = ((rgb >> 16) & 255) / 255f, g = ((rgb >> 8) & 255) / 255f, b = (rgb & 255) / 255f;
+		net.minecraft.core.particles.DustParticleOptions dust =
+				new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(r, g, b), 1.0f);
+		sl.sendParticles(dust, pos.getX() + 0.5, pos.getY() + 0.9, pos.getZ() + 0.5,
+				count, 0.25, 0.06, 0.25, 0.0);
 	}
 
 	/** 水位を1減らす。 空になったら通常の大釜に戻し、 保存色も消す。 */
@@ -183,6 +210,31 @@ public class CauldronDyeHandler {
 		int r = ((((a >> 16) & 255) * wA) + ((b >> 16) & 255)) / (wA + 1);
 		int g = ((((a >> 8) & 255) * wA) + ((b >> 8) & 255)) / (wA + 1);
 		int bl = (((a & 255) * wA) + (b & 255)) / (wA + 1);
+		return (r << 16) | (g << 8) | bl;
+	}
+
+	/**
+	 * 革防具と同じ混色。 これまでの色 a を wA 個ぶん、 新しい色 b を1個として混ぜる。
+	 * 各成分を平均したあと、 「最大成分の平均」に合わせて明度を戻すので、 濁らず鮮やかな色を
+	 * ほぼ無限に作れる ( バニラの染色アルゴリズムと同じ )。
+	 */
+	private static int mixLeather(int a, int wA, int b) {
+		int ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
+		int br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
+		int count = wA + 1;
+		int rSum = ar * wA + br;
+		int gSum = ag * wA + bg;
+		int bSum = ab * wA + bb;
+		int maxSum = Math.max(ar, Math.max(ag, ab)) * wA + Math.max(br, Math.max(bg, bb));
+		int r = rSum / count, g = gSum / count, bl = bSum / count;
+		float maxAvg = (float) maxSum / count;
+		float maxComp = Math.max(r, Math.max(g, bl));
+		if (maxComp > 0f) {
+			float scale = maxAvg / maxComp;
+			r = Math.min(255, (int) (r * scale));
+			g = Math.min(255, (int) (g * scale));
+			bl = Math.min(255, (int) (bl * scale));
+		}
 		return (r << 16) | (g << 8) | bl;
 	}
 

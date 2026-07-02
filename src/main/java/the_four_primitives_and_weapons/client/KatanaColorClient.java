@@ -19,8 +19,8 @@ public class KatanaColorClient {
 	@SubscribeEvent
 	public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
 		event.register((stack, tintIndex) -> {
-			// 色を設定した部位は モデル側でグレー版テクスチャに差し替わる ( iron_katana )。
-			// そこへ 16進色を乗算tintするので、 任意の色 ( 黒含む ) が綺麗に乗る ( 軍服の染色と同じ )。
+			// 色を設定した部位は モデル側で グレー版(tint) か 暗版(模様入りの黒、tintなし) に差し替わる。
+			// 暗版(ほぼ黒)のときは 乗算で潰れないよう tint を掛けない ( テクスチャに任せる )。
 			switch (tintIndex) {
 				case 1: return tint(KatanaFittings.tsukaRgb(stack));
 				case 2: return tint(KatanaFittings.tsubaRgb(stack));
@@ -34,8 +34,9 @@ public class KatanaColorClient {
 				TheFourPrimitivesAndWeaponsModItems.IRON_RAPIER.get());
 	}
 
-	/** 色を tint 値(0xFFRRGGBB)へ。 未設定は白 ( = 無着色 )。 */
+	/** 色を tint 値(0xFFRRGGBB)へ。 未設定/ほぼ黒 は白 ( = 無着色。 黒は暗版テクスチャが担う )。 */
 	private static int tint(int rgb) {
-		return (rgb < 0) ? 0xFFFFFFFF : (0xFF000000 | rgb);
+		if (rgb < 0 || KatanaFittings.isNearBlack(rgb)) return 0xFFFFFFFF;
+		return 0xFF000000 | rgb;
 	}
 }

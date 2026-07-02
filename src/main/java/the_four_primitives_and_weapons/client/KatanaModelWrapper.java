@@ -68,12 +68,12 @@ public final class KatanaModelWrapper implements BakedModel {
 				// 箱UV(iron_katana): 部位に色を設定したら 各面を「その面自身のテクスチャのグレー版」へ差し替える。
 				// グレー地に KatanaColorClient の乗算tintで 任意の16進色が綺麗に乗る ( 軍服と同じ )。
 				// 未設定の部位は 元の菱デザインのまま。
-				boolean[] colored = new boolean[5];
-				colored[1] = KatanaFittings.tsukaRgb(stack) >= 0;
-				colored[2] = KatanaFittings.tsubaRgb(stack) >= 0;
-				colored[3] = KatanaFittings.kashiraRgb(stack) >= 0;
+				int[] mode = new int[5]; // 0=そのまま / 1=グレー版(tintで任意色) / 2=暗版(模様入りの黒)
+				mode[1] = variantMode(KatanaFittings.tsukaRgb(stack));
+				mode[2] = variantMode(KatanaFittings.tsubaRgb(stack));
+				mode[3] = variantMode(KatanaFittings.kashiraRgb(stack));
 				// 縁(fuchi=4)は無し
-				return KatanaTsukaModel.grayForTint(base, colored);
+				return KatanaTsukaModel.grayForTint(base, mode);
 			}
 			String wrap = or(KatanaFittings.getTsukaWrap(stack), "tuka");
 			String tsuba = or(KatanaFittings.getTsubaStyle(stack), "tuba");
@@ -86,6 +86,12 @@ public final class KatanaModelWrapper implements BakedModel {
 			if (v != null && !v.isEmpty()) return v;
 			return katanaDefaults ? def : "";
 		}
+	}
+
+	/** 色→差し替えモード: 未設定=0 / ほぼ黒=2(模様入り暗版) / それ以外=1(グレー版+tint)。 */
+	private static int variantMode(int rgb) {
+		if (rgb < 0) return 0;
+		return KatanaFittings.isNearBlack(rgb) ? 2 : 1;
 	}
 
 	@Override public ItemOverrides getOverrides() { return overrides; }

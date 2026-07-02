@@ -48,10 +48,12 @@ public class SayaColorClient {
 			case 1: rgb = the_four_primitives_and_weapons.util.KatanaFittings.tsukaRgb(weapon); break;
 			case 2: rgb = the_four_primitives_and_weapons.util.KatanaFittings.tsubaRgb(weapon); break;
 			case 3: rgb = the_four_primitives_and_weapons.util.KatanaFittings.kashiraRgb(weapon); break;
-			case 4: rgb = the_four_primitives_and_weapons.util.KatanaFittings.fuchiRgb(weapon); break;
-			default: rgb = -1;
+			default: rgb = -1; // 縁(4)は廃止
 		}
-		return rgb >= 0 ? (0xFF000000 | rgb) : 0xFFFFFFFF;
+		if (rgb < 0) return 0xFFFFFFFF;
+		// ほぼ黒は tint を掛けない ( モデル側が暗版テクスチャに差し替える。 持っている刀と同じ )。
+		if (the_four_primitives_and_weapons.util.KatanaFittings.isNearBlack(rgb)) return 0xFFFFFFFF;
+		return 0xFF000000 | rgb;
 	}
 
 	/** 鞘に納められている武器 ItemStack を取り出す ( StoredKatana/Sword/Rapier )。 無ければ null。 */

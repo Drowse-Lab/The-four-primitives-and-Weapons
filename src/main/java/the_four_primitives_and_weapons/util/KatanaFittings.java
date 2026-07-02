@@ -115,10 +115,14 @@ public final class KatanaFittings {
 		return WRAPS[0];
 	}
 
-	/** 柄(紐)の色。 TsukaColor が無ければ 皮装備方式 display.color を見る ( /give …{display:{color:N}} )。 */
-	public static int tsukaRgb(ItemStack stack) {
-		int c = rgb(stack, TSUKA_KEY);
-		if (c >= 0) return c;
+	// 各部位: 専用キーが無ければ 皮装備方式 display.color を見る ( /give …{display:{color:N}} で全部位が同色になる )。
+	public static int tsukaRgb(ItemStack stack)   { int c = rgb(stack, TSUKA_KEY);   return c >= 0 ? c : displayColor(stack); }
+	public static int tsubaRgb(ItemStack stack)   { int c = rgb(stack, TSUBA_KEY);   return c >= 0 ? c : displayColor(stack); }
+	public static int kashiraRgb(ItemStack stack) { int c = rgb(stack, KASHIRA_KEY); return c >= 0 ? c : displayColor(stack); }
+	public static int fuchiRgb(ItemStack stack)   { return rgb(stack, FUCHI_KEY); }
+
+	/** /give …{display:{color:N}} で入れた色 ( 革装備方式 )。 無ければ -1。 */
+	private static int displayColor(ItemStack stack) {
 		CompoundTag t = stack.getTag();
 		if (t != null && t.contains("display", 10)) {
 			CompoundTag d = t.getCompound("display");
@@ -126,9 +130,6 @@ public final class KatanaFittings {
 		}
 		return -1;
 	}
-	public static int tsubaRgb(ItemStack stack) { return rgb(stack, TSUBA_KEY); }
-	public static int kashiraRgb(ItemStack stack) { return rgb(stack, KASHIRA_KEY); }
-	public static int fuchiRgb(ItemStack stack) { return rgb(stack, FUCHI_KEY); }
 
 	private static int rgb(ItemStack stack, String key) {
 		CompoundTag t = stack.getTag();

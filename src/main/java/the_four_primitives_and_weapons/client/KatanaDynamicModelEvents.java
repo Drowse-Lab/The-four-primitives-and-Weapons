@@ -27,10 +27,9 @@ public class KatanaDynamicModelEvents {
 					new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, name), "inventory");
 			BakedModel current = event.getModels().get(mrl);
 			if (current == null || current instanceof KatanaModelWrapper) continue;
-			// iron_katana: モデル(katana_a_parent)が拵えテクスチャ(tuka/tuba/kasira)を箱UVで直接使い、
-			//   tintindex 1=柄/2=鍔/3=頭/4=縁 を持つ。 色は KatanaColorClient(tint) が担う。
-			//   黒だけは乗算tintで潰れるので colorBlackMode で 専用黒テクスチャへ差し替える ( 同レイアウトで綺麗 )。
-			boolean colorBlackMode = name.equals("iron_katana");
+			// 3種とも 箱UVで拵えテクスチャ(武器ごとの tuka/tuba/kasira)を直接使い、 tintindex 1=柄/2=鍔/3=頭 を持つ。
+			//   色は KatanaColorClient(tint)、 黒は colorBlackMode で 専用の暗版/グレー版テクスチャへ差し替える。
+			boolean colorBlackMode = true;
 			event.getModels().put(mrl, new KatanaModelWrapper(current, false, colorBlackMode));
 		}
 	}
