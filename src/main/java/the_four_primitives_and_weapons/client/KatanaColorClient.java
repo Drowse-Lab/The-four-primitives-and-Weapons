@@ -28,10 +28,19 @@ public class KatanaColorClient {
 				// 縁(fuchi=4)は無し
 				default: return 0xFFFFFFFF;
 			}
-		},
-				TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get(),
-				TheFourPrimitivesAndWeaponsModItems.IRON_TYOKUTO.get(),
-				TheFourPrimitivesAndWeaponsModItems.IRON_RAPIER.get());
+		}, fittingWeaponItems());
+	}
+
+	/** 本MODの 刀/直刀/レイピア 全種 ( saya除く ) の Item 配列。 */
+	static net.minecraft.world.item.Item[] fittingWeaponItems() {
+		return TheFourPrimitivesAndWeaponsModItems.REGISTRY.getEntries().stream()
+				.filter(ro -> {
+					String n = ro.getId().getPath();
+					return !n.contains("saya")
+							&& (n.contains("katana") || n.contains("tyokuto") || n.contains("rapier"));
+				})
+				.map(net.minecraftforge.registries.RegistryObject::get)
+				.toArray(net.minecraft.world.item.Item[]::new);
 	}
 
 	/** 色を tint 値(0xFFRRGGBB)へ。 未設定/ほぼ黒 は白 ( = 無着色。 黒は暗版テクスチャが担う )。 */

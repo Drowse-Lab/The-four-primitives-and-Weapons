@@ -18,19 +18,20 @@ import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 @Mod.EventBusSubscriber(modid = TheFourPrimitivesAndWeaponsMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class KatanaDynamicModelEvents {
 
-	private static final String[] WEAPONS = { "iron_katana", "iron_tyokuto", "iron_rapier" };
-
 	@SubscribeEvent
 	public static void onModifyBakingResult(ModelEvent.ModifyBakingResult event) {
-		for (String name : WEAPONS) {
+		// 本MODの 刀/直刀/レイピア 全種 ( saya除く ) の inventory モデルをラップ。
+		//   モデルが拵えテクスチャ(tuka/tuba/kasira)+tintindex を持つものは 色付け・黒差し替えが効く。
+		for (net.minecraftforge.registries.RegistryObject<net.minecraft.world.item.Item> ro
+				: the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems.REGISTRY.getEntries()) {
+			String name = ro.getId().getPath();
+			if (name.contains("saya")
+					|| !(name.contains("katana") || name.contains("tyokuto") || name.contains("rapier"))) continue;
 			ModelResourceLocation mrl = new ModelResourceLocation(
 					new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, name), "inventory");
 			BakedModel current = event.getModels().get(mrl);
 			if (current == null || current instanceof KatanaModelWrapper) continue;
-			// 3種とも 箱UVで拵えテクスチャ(武器ごとの tuka/tuba/kasira)を直接使い、 tintindex 1=柄/2=鍔/3=頭 を持つ。
-			//   色は KatanaColorClient(tint)、 黒は colorBlackMode で 専用の暗版/グレー版テクスチャへ差し替える。
-			boolean colorBlackMode = true;
-			event.getModels().put(mrl, new KatanaModelWrapper(current, false, colorBlackMode));
+			event.getModels().put(mrl, new KatanaModelWrapper(current, false, true));
 		}
 	}
 }

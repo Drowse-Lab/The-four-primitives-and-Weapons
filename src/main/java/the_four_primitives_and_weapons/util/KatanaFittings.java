@@ -15,12 +15,17 @@ public final class KatanaFittings {
 
 	private KatanaFittings() {}
 
-	/** 拵え ( 柄/鍔/縁/頭 ) を着せ替えできる武器か。 現状: 鉄の刀/直刀/レイピア。 */
+	/** 拵え ( 柄/鍔/頭 ) を着せ替え・染色できる武器か。
+	 *  本MODの 名前に katana / tyokuto / rapier を含む武器 全種 ( saya は除く )。 */
 	public static boolean isFittingWeapon(ItemStack s) {
-		net.minecraft.world.item.Item it = s.getItem();
-		return it == the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems.IRON_KATANA.get()
-				|| it == the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems.IRON_TYOKUTO.get()
-				|| it == the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems.IRON_RAPIER.get();
+		if (s == null || s.isEmpty()) return false;
+		net.minecraft.resources.ResourceLocation id =
+				net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(s.getItem());
+		if (id == null || !id.getNamespace().equals(the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod.MODID))
+			return false;
+		String n = id.getPath();
+		if (n.contains("saya")) return false;
+		return n.contains("katana") || n.contains("tyokuto") || n.contains("rapier");
 	}
 
 	/** 柄巻きの色 ( 0xRRGGBB )。 */

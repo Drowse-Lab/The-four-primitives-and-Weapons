@@ -47,6 +47,12 @@
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
         "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
+      },
+      "default_motions": {
+        "first_hit": "thrust",
+        "second_hit": "thrust",
+        "third_hit": "thrust",
+        "charged": "thrust"
       }
     },
     "straight_sword": {
@@ -72,7 +78,7 @@
       "default_motions": {
         "first_hit": "thrust",
         "second_hit": "thrust",
-        "third_hit": "horizontal_slash",
+        "third_hit": "thrust",
         "charged": "thrust",
         "dash": "dash_rush",
         "right_click": "dodge",
@@ -97,6 +103,12 @@
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
         "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
+      },
+      "default_motions": {
+        "first_hit": "slam_down",
+        "second_hit": "slam_down",
+        "third_hit": "slam_down",
+        "charged": "slam_down"
       }
     },
     "nata": {
@@ -105,7 +117,7 @@
         "the_four_primitives_and_weapons:machete"
       ],
       "motions": {
-        "combat": ["upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
+        "combat": ["upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash", "slam_down"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
         "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
@@ -119,6 +131,12 @@
         "dash": ["dash_rush"],
         "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
+      },
+      "default_motions": {
+        "first_hit": "slam_down",
+        "second_hit": "slam_down",
+        "third_hit": "slam_down",
+        "charged": "slam_down"
       }
     },
     "dagger": {
