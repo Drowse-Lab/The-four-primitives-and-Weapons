@@ -2,155 +2,67 @@
 	"format_version": "1.9.0",
 	"credit": "MAW saya parent (tyokuto) — edit the_four_primitives_and_weapons:belt / :back via sb_worn_display Blockbench plugin",
 	"parent": "block/block",
-	"texture_size": [8, 8],
+	"texture_size": [4, 4],
 	"textures": {
-		"1": "the_four_primitives_and_weapons:straight_katana_fitting/tsuba/tuba",
-		"2": "the_four_primitives_and_weapons:straight_katana_fitting/kasira/kasira",
-		"3": "the_four_primitives_and_weapons:straight_katana_fitting/tsuka/tuka",
-		"particle": "the_four_primitives_and_weapons:block/iron_tyokuto3d"
+		"4": "the_four_primitives_and_weapons:straight_katana_fitting/tsuba/tuba",
+		"5": "the_four_primitives_and_weapons:straight_katana_fitting/tsuka/tuka",
+		"6": "the_four_primitives_and_weapons:straight_katana_fitting/kasira/kasira",
+		"particle": "the_four_primitives_and_weapons:straight_katana_fitting/tsuba/tuba"
 	},
 	"elements": [
-		{
-			"from": [8.3, 8, 8.6],
-			"to": [8.5, 18.5, 8.9],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11.8, 7.4, 4.8]},
-			"faces": {
-				"north": {"uv": [3.5, 0, 3.625, 5.25], "texture": "#missing"},
-				"east": {"uv": [4, 0, 4.125, 5.25], "texture": "#missing"},
-				"south": {"uv": [2, 4, 2.125, 9.25], "texture": "#missing"},
-				"west": {"uv": [2.5, 4, 2.625, 9.25], "texture": "#missing"},
-				"up": {"uv": [5.625, 0.125, 5.5, 0], "texture": "#missing"},
-				"down": {"uv": [0.625, 5.5, 0.5, 5.625], "texture": "#missing"}
-			}
-		},
-		{
-			"from": [8.2, 8, 8.9],
-			"to": [8.6, 18.5, 9.4],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11.9, 7.4, 5.5]},
-			"faces": {
-				"north": {"uv": [0, 0, 0.25, 5.25], "texture": "#missing"},
-				"east": {"uv": [0.5, 0, 0.75, 5.25], "texture": "#missing"},
-				"south": {"uv": [1, 0, 1.25, 5.25], "texture": "#missing"},
-				"west": {"uv": [1.5, 0, 1.75, 5.25], "texture": "#missing"},
-				"up": {"uv": [4.75, 2.75, 4.5, 2.5], "texture": "#missing"},
-				"down": {"uv": [3.25, 4.5, 3, 4.75], "texture": "#missing"}
-			}
-		},
-		{
-			"from": [8.2, 18.5, 9],
-			"to": [8.6, 19, 9.4],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11.9, 7.4, 5.5]},
-			"faces": {
-				"north": {"uv": [4.5, 3, 4.75, 3.25], "texture": "#missing"},
-				"east": {"uv": [4.5, 3.5, 4.75, 3.75], "texture": "#missing"},
-				"south": {"uv": [4.5, 4, 4.75, 4.25], "texture": "#missing"},
-				"west": {"uv": [4.5, 4.5, 4.75, 4.75], "texture": "#missing"},
-				"up": {"uv": [5.25, 0.25, 5, 0], "texture": "#missing"},
-				"down": {"uv": [5.25, 2.5, 5, 2.75], "texture": "#missing"}
-			}
-		},
-		{
-			"from": [8.2, 19, 9.2],
-			"to": [8.6, 19.3, 9.4],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11.9, 7.4, 5.5]},
-			"faces": {
-				"north": {"uv": [3, 5, 3.25, 5.125], "texture": "#missing"},
-				"east": {"uv": [5.5, 0.5, 5.625, 0.625], "texture": "#missing"},
-				"south": {"uv": [5, 3, 5.25, 3.125], "texture": "#missing"},
-				"west": {"uv": [1, 5.5, 1.125, 5.625], "texture": "#missing"},
-				"up": {"uv": [5.25, 3.625, 5, 3.5], "texture": "#missing"},
-				"down": {"uv": [5.25, 4, 5, 4.125], "texture": "#missing"}
-			}
-		},
-		{
-			"from": [8.3, 19, 8.9],
-			"to": [8.5, 19.3, 9.2],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11.9, 7.4, 5.5]},
-			"faces": {
-				"north": {"uv": [5.5, 1, 5.625, 1.125], "texture": "#missing"},
-				"east": {"uv": [1.5, 5.5, 1.625, 5.625], "texture": "#missing"},
-				"south": {"uv": [5.5, 1.5, 5.625, 1.625], "texture": "#missing"},
-				"west": {"uv": [5.5, 2, 5.625, 2.125], "texture": "#missing"},
-				"up": {"uv": [5.625, 2.625, 5.5, 2.5], "texture": "#missing"},
-				"down": {"uv": [3.125, 5.5, 3, 5.625], "texture": "#missing"}
-			}
-		},
-		{
-			"from": [8.3, 19.3, 9.1],
-			"to": [8.5, 19.55, 9.4],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11.9, 7.4, 5.5]},
-			"faces": {
-				"north": {"uv": [5.5, 3, 5.625, 3.125], "texture": "#missing"},
-				"east": {"uv": [3.5, 5.5, 3.625, 5.625], "texture": "#missing"},
-				"south": {"uv": [5.5, 3.5, 5.625, 3.625], "texture": "#missing"},
-				"west": {"uv": [4, 5.5, 4.125, 5.625], "texture": "#missing"},
-				"up": {"uv": [5.625, 4.125, 5.5, 4], "texture": "#missing"},
-				"down": {"uv": [4.625, 5.5, 4.5, 5.625], "texture": "#missing"}
-			}
-		},
-		{
-			"from": [8.3, 18.5, 8.75],
-			"to": [8.5, 19, 9.05],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11.8, 7.4, 4.8]},
-			"faces": {
-				"north": {"uv": [4.5, 5, 4.625, 5.25], "texture": "#missing"},
-				"east": {"uv": [5, 4.5, 5.125, 4.75], "texture": "#missing"},
-				"south": {"uv": [5, 5, 5.125, 5.25], "texture": "#missing"},
-				"west": {"uv": [0, 5.5, 0.125, 5.75], "texture": "#missing"},
-				"up": {"uv": [5.625, 4.625, 5.5, 4.5], "texture": "#missing"},
-				"down": {"uv": [5.125, 5.5, 5, 5.625], "texture": "#missing"}
-			}
-		},
 		{
 			"from": [8, 8, 8.55],
 			"to": [8.8, 19.65, 9.45],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 8.4, 3.2]},
 			"faces": {
-				"north": {"uv": [2, 0, 2.75, 11.75], "texture": "#missing", "tintindex": 0},
-				"east": {"uv": [0, 0, 1, 11.75], "texture": "#missing", "tintindex": 0},
-				"south": {"uv": [3, 0, 3.75, 11.75], "texture": "#missing", "tintindex": 0},
-				"west": {"uv": [1, 0, 2, 11.75], "texture": "#missing", "tintindex": 0},
-				"up": {"uv": [4.75, 1, 4, 0], "texture": "#missing", "tintindex": 0},
-				"down": {"uv": [4.75, 1, 4, 2], "texture": "#missing", "tintindex": 0}
+				"north": {"uv": [2, 0, 2.75, 11.75], "texture": "#3", "tintindex": 0},
+				"east": {"uv": [0, 0, 1, 11.75], "texture": "#3", "tintindex": 0},
+				"south": {"uv": [3, 0, 3.75, 11.75], "texture": "#3", "tintindex": 0},
+				"west": {"uv": [1, 0, 2, 11.75], "texture": "#3", "tintindex": 0},
+				"up": {"uv": [4.75, 1, 4, 0], "texture": "#3", "tintindex": 0},
+				"down": {"uv": [4.75, 1, 4, 2], "texture": "#3", "tintindex": 0}
 			}
 		},
 		{
-			"from": [8, 4.55, 8.6],
-			"to": [8.8, 7.8, 9.4],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
-			"faces": {
-				"north": {"uv": [0, 0, 1.5, 6.5], "texture": "#3"},
-				"east": {"uv": [2, 0, 3.5, 6.5], "texture": "#3"},
-				"south": {"uv": [4, 0, 5.5, 6.5], "texture": "#3"},
-				"west": {"uv": [6, 0, 7.5, 6.5], "texture": "#3"},
-				"up": {"uv": [1.5, 9.5, 0, 8], "texture": "#3"},
-				"down": {"uv": [9.5, 0, 8, 1.5], "texture": "#3"}
-			}
-		},
-		{
-			"from": [8, 4.05, 8.6],
-			"to": [8.8, 4.55, 9.4],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 3.15, 3.2]},
-			"faces": {
-				"north": {"uv": [4, 0, 7, 2], "texture": "#2"},
-				"east": {"uv": [4, 4, 7, 6], "texture": "#2"},
-				"south": {"uv": [0, 8, 3, 10], "texture": "#2"},
-				"west": {"uv": [8, 0, 11, 2], "texture": "#2"},
-				"up": {"uv": [3, 3, 0, 0], "texture": "#2"},
-				"down": {"uv": [3, 4, 0, 7], "texture": "#2"}
-			}
-		},
-		{
+			"name": "鍔",
 			"from": [7.6, 7.8, 7.95],
 			"to": [9.2, 8.05, 10.05],
 			"rotation": {"angle": 0, "axis": "y", "origin": [11, 6.4, 3.45]},
 			"faces": {
-				"north": {"uv": [0, 8, 3.25, 8.5], "texture": "#1"},
-				"east": {"uv": [0, 6, 4.25, 6.5], "texture": "#1"},
-				"south": {"uv": [8, 0, 11.25, 0.5], "texture": "#1"},
-				"west": {"uv": [6, 6, 10.25, 6.5], "texture": "#1"},
-				"up": {"uv": [3.25, 4.25, 0, 0], "texture": "#1"},
-				"down": {"uv": [7.25, 0, 4, 4.25], "texture": "#1"}
+				"north": {"uv": [0, 8, 3.25, 8.5], "texture": "#4"},
+				"east": {"uv": [0, 6, 4.25, 6.5], "texture": "#4"},
+				"south": {"uv": [8, 0, 11.25, 0.5], "texture": "#4"},
+				"west": {"uv": [6, 6, 10.25, 6.5], "texture": "#4"},
+				"up": {"uv": [3.25, 4.25, 0, 0], "texture": "#4"},
+				"down": {"uv": [7.25, 0, 4, 4.25], "texture": "#4"}
+			}
+		},
+		{
+			"name": "柄",
+			"from": [8, 4.55, 8.6],
+			"to": [8.8, 7.8, 9.4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
+			"faces": {
+				"north": {"uv": [0, 0, 1.5, 6.5], "texture": "#5"},
+				"east": {"uv": [2, 0, 3.5, 6.5], "texture": "#5"},
+				"south": {"uv": [4, 0, 5.5, 6.5], "texture": "#5"},
+				"west": {"uv": [6, 0, 7.5, 6.5], "texture": "#5"},
+				"up": {"uv": [1.5, 9.5, 0, 8], "texture": "#5"},
+				"down": {"uv": [9.5, 0, 8, 1.5], "texture": "#5"}
+			}
+		},
+		{
+			"name": "頭",
+			"from": [8, 4.05, 8.6],
+			"to": [8.8, 4.55, 9.4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
+			"faces": {
+				"north": {"uv": [4, 0, 7, 2], "texture": "#6"},
+				"east": {"uv": [4, 4, 7, 6], "texture": "#6"},
+				"south": {"uv": [0, 8, 3, 10], "texture": "#6"},
+				"west": {"uv": [8, 0, 11, 2], "texture": "#6"},
+				"up": {"uv": [3, 3, 0, 0], "texture": "#6"},
+				"down": {"uv": [3, 4, 0, 7], "texture": "#6"}
 			}
 		}
 	],
@@ -207,21 +119,34 @@
 			"origin": [8, 8, 8],
 			"scope": 0,
 			"color": 0,
+			"children": [0]
+		},
+		{
+			"name": "tyokuto_handle",
+			"origin": [8, 8, 8],
+			"scope": 0,
+			"color": 0,
 			"children": [
-				0,
-				1,
-				2,
-				3,
-				4,
-				5,
-				6,
-				7,
 				{
-					"name": "katana_handle",
+					"name": "tuba",
+					"origin": [11, 6.4, 3.45],
+					"scope": 0,
+					"color": 0,
+					"children": [1]
+				},
+				{
+					"name": "tuka",
 					"origin": [8, 8, 8],
 					"scope": 0,
 					"color": 0,
-					"children": [8, 9, 10]
+					"children": [2]
+				},
+				{
+					"name": "kasira",
+					"origin": [8, 8, 8],
+					"scope": 0,
+					"color": 0,
+					"children": [3]
 				}
 			]
 		}
