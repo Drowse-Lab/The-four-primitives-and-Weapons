@@ -2,7 +2,10 @@
 	"format_version": "1.9.0",
 	"credit": "MAW saya parent (tyokuto) — edit the_four_primitives_and_weapons:belt / :back via sb_worn_display Blockbench plugin",
 	"parent": "block/block",
-	"texture_size": [4, 4],
+	"texture_size": [
+		4,
+		4
+	],
 	"textures": {
 		"4": "the_four_primitives_and_weapons:straight_katana_fitting/tsuba/tuba",
 		"5": "the_four_primitives_and_weapons:straight_katana_fitting/tsuka/tuka",
@@ -11,142 +14,558 @@
 	},
 	"elements": [
 		{
-			"from": [8, 8, 8.55],
-			"to": [8.8, 19.65, 9.45],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 8.4, 3.2]},
+			"from": [
+				8,
+				8,
+				8.55
+			],
+			"to": [
+				8.8,
+				19.65,
+				9.45
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					11.4,
+					8.4,
+					3.2
+				]
+			},
 			"faces": {
-				"north": {"uv": [2, 0, 2.75, 11.75], "texture": "#3", "tintindex": 0},
-				"east": {"uv": [0, 0, 1, 11.75], "texture": "#3", "tintindex": 0},
-				"south": {"uv": [3, 0, 3.75, 11.75], "texture": "#3", "tintindex": 0},
-				"west": {"uv": [1, 0, 2, 11.75], "texture": "#3", "tintindex": 0},
-				"up": {"uv": [4.75, 1, 4, 0], "texture": "#3", "tintindex": 0},
-				"down": {"uv": [4.75, 1, 4, 2], "texture": "#3", "tintindex": 0}
+				"north": {
+					"uv": [
+						2,
+						0,
+						2.75,
+						11.75
+					],
+					"texture": "#3",
+					"tintindex": 0
+				},
+				"east": {
+					"uv": [
+						0,
+						0,
+						1,
+						11.75
+					],
+					"texture": "#3",
+					"tintindex": 0
+				},
+				"south": {
+					"uv": [
+						3,
+						0,
+						3.75,
+						11.75
+					],
+					"texture": "#3",
+					"tintindex": 0
+				},
+				"west": {
+					"uv": [
+						1,
+						0,
+						2,
+						11.75
+					],
+					"texture": "#3",
+					"tintindex": 0
+				},
+				"up": {
+					"uv": [
+						4.75,
+						1,
+						4,
+						0
+					],
+					"texture": "#3",
+					"tintindex": 0
+				},
+				"down": {
+					"uv": [
+						4.75,
+						1,
+						4,
+						2
+					],
+					"texture": "#3",
+					"tintindex": 0
+				}
 			}
 		},
 		{
 			"name": "鍔",
-			"from": [7.6, 7.8, 7.95],
-			"to": [9.2, 8.05, 10.05],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11, 6.4, 3.45]},
+			"from": [
+				7.6,
+				7.8,
+				7.95
+			],
+			"to": [
+				9.2,
+				8.05,
+				10.05
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					11,
+					6.4,
+					3.45
+				]
+			},
 			"faces": {
-				"north": {"uv": [0, 8, 3.25, 8.5], "texture": "#4"},
-				"east": {"uv": [0, 6, 4.25, 6.5], "texture": "#4"},
-				"south": {"uv": [8, 0, 11.25, 0.5], "texture": "#4"},
-				"west": {"uv": [6, 6, 10.25, 6.5], "texture": "#4"},
-				"up": {"uv": [3.25, 4.25, 0, 0], "texture": "#4"},
-				"down": {"uv": [7.25, 0, 4, 4.25], "texture": "#4"}
+				"north": {
+					"uv": [
+						0,
+						8,
+						3.25,
+						8.5
+					],
+					"texture": "#4",
+					"tintindex": 2
+				},
+				"east": {
+					"uv": [
+						0,
+						6,
+						4.25,
+						6.5
+					],
+					"texture": "#4",
+					"tintindex": 2
+				},
+				"south": {
+					"uv": [
+						8,
+						0,
+						11.25,
+						0.5
+					],
+					"texture": "#4",
+					"tintindex": 2
+				},
+				"west": {
+					"uv": [
+						6,
+						6,
+						10.25,
+						6.5
+					],
+					"texture": "#4",
+					"tintindex": 2
+				},
+				"up": {
+					"uv": [
+						3.25,
+						4.25,
+						0,
+						0
+					],
+					"texture": "#4",
+					"tintindex": 2
+				},
+				"down": {
+					"uv": [
+						7.25,
+						0,
+						4,
+						4.25
+					],
+					"texture": "#4",
+					"tintindex": 2
+				}
 			}
 		},
 		{
 			"name": "柄",
-			"from": [8, 4.55, 8.6],
-			"to": [8.8, 7.8, 9.4],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
+			"from": [
+				8,
+				4.55,
+				8.6
+			],
+			"to": [
+				8.8,
+				7.8,
+				9.4
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					11.4,
+					6.4,
+					3.2
+				]
+			},
 			"faces": {
-				"north": {"uv": [0, 0, 1.5, 6.5], "texture": "#5"},
-				"east": {"uv": [2, 0, 3.5, 6.5], "texture": "#5"},
-				"south": {"uv": [4, 0, 5.5, 6.5], "texture": "#5"},
-				"west": {"uv": [6, 0, 7.5, 6.5], "texture": "#5"},
-				"up": {"uv": [1.5, 9.5, 0, 8], "texture": "#5"},
-				"down": {"uv": [9.5, 0, 8, 1.5], "texture": "#5"}
+				"north": {
+					"uv": [
+						0,
+						0,
+						1.5,
+						6.5
+					],
+					"texture": "#5",
+					"tintindex": 1
+				},
+				"east": {
+					"uv": [
+						2,
+						0,
+						3.5,
+						6.5
+					],
+					"texture": "#5",
+					"tintindex": 1
+				},
+				"south": {
+					"uv": [
+						4,
+						0,
+						5.5,
+						6.5
+					],
+					"texture": "#5",
+					"tintindex": 1
+				},
+				"west": {
+					"uv": [
+						6,
+						0,
+						7.5,
+						6.5
+					],
+					"texture": "#5",
+					"tintindex": 1
+				},
+				"up": {
+					"uv": [
+						1.5,
+						9.5,
+						0,
+						8
+					],
+					"texture": "#5",
+					"tintindex": 1
+				},
+				"down": {
+					"uv": [
+						9.5,
+						0,
+						8,
+						1.5
+					],
+					"texture": "#5",
+					"tintindex": 1
+				}
 			}
 		},
 		{
 			"name": "頭",
-			"from": [8, 4.05, 8.6],
-			"to": [8.8, 4.55, 9.4],
-			"rotation": {"angle": 0, "axis": "y", "origin": [11.4, 6.4, 3.2]},
+			"from": [
+				8,
+				4.05,
+				8.6
+			],
+			"to": [
+				8.8,
+				4.55,
+				9.4
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					11.4,
+					6.4,
+					3.2
+				]
+			},
 			"faces": {
-				"north": {"uv": [4, 0, 7, 2], "texture": "#6"},
-				"east": {"uv": [4, 4, 7, 6], "texture": "#6"},
-				"south": {"uv": [0, 8, 3, 10], "texture": "#6"},
-				"west": {"uv": [8, 0, 11, 2], "texture": "#6"},
-				"up": {"uv": [3, 3, 0, 0], "texture": "#6"},
-				"down": {"uv": [3, 4, 0, 7], "texture": "#6"}
+				"north": {
+					"uv": [
+						4,
+						0,
+						7,
+						2
+					],
+					"texture": "#6",
+					"tintindex": 3
+				},
+				"east": {
+					"uv": [
+						4,
+						4,
+						7,
+						6
+					],
+					"texture": "#6",
+					"tintindex": 3
+				},
+				"south": {
+					"uv": [
+						0,
+						8,
+						3,
+						10
+					],
+					"texture": "#6",
+					"tintindex": 3
+				},
+				"west": {
+					"uv": [
+						8,
+						0,
+						11,
+						2
+					],
+					"texture": "#6",
+					"tintindex": 3
+				},
+				"up": {
+					"uv": [
+						3,
+						3,
+						0,
+						0
+					],
+					"texture": "#6",
+					"tintindex": 3
+				},
+				"down": {
+					"uv": [
+						3,
+						4,
+						0,
+						7
+					],
+					"texture": "#6",
+					"tintindex": 3
+				}
 			}
 		}
 	],
 	"display": {
 		"thirdperson_righthand": {
-			"rotation": [0, -180, -180],
-			"translation": [-0.5, 0.5, 2],
-			"scale": [1, 1.5, 1]
+			"rotation": [
+				0,
+				-180,
+				-180
+			],
+			"translation": [
+				-0.5,
+				0.5,
+				2
+			],
+			"scale": [
+				1,
+				1.5,
+				1
+			]
 		},
 		"thirdperson_lefthand": {
-			"rotation": [0, -180, -180],
-			"translation": [0.25, 0.5, 2],
-			"scale": [1, 1.5, 1]
+			"rotation": [
+				0,
+				-180,
+				-180
+			],
+			"translation": [
+				0.25,
+				0.5,
+				2
+			],
+			"scale": [
+				1,
+				1.5,
+				1
+			]
 		},
 		"firstperson_righthand": {
-			"rotation": [135, 0, 0],
-			"translation": [0.25, 3.5, 3.5],
-			"scale": [1, 1.5, 1]
+			"rotation": [
+				135,
+				0,
+				0
+			],
+			"translation": [
+				0.25,
+				3.5,
+				3.5
+			],
+			"scale": [
+				1,
+				1.5,
+				1
+			]
 		},
 		"firstperson_lefthand": {
-			"rotation": [135, 0, 0],
-			"translation": [0.25, 3.5, 3.5],
-			"scale": [1, 1.5, 1]
+			"rotation": [
+				135,
+				0,
+				0
+			],
+			"translation": [
+				0.25,
+				3.5,
+				3.5
+			],
+			"scale": [
+				1,
+				1.5,
+				1
+			]
 		},
 		"ground": {
-			"rotation": [-180, 0, 0],
-			"translation": [0, 10.5, 1],
-			"scale": [1, 1.5, 1]
+			"rotation": [
+				-180,
+				0,
+				0
+			],
+			"translation": [
+				0,
+				10.5,
+				1
+			],
+			"scale": [
+				1,
+				1.5,
+				1
+			]
 		},
 		"gui": {
-			"rotation": [90, 45, 90],
-			"translation": [2.5, 3.9, 0],
-			"scale": [1, 1.3, 1]
+			"rotation": [
+				90,
+				45,
+				90
+			],
+			"translation": [
+				2.5,
+				3.9,
+				0
+			],
+			"scale": [
+				1,
+				1.3,
+				1
+			]
 		},
 		"fixed": {
-			"rotation": [90, -45, -90],
-			"translation": [-3.5, 5, 0],
-			"scale": [1.1, 1.6, 1.1]
+			"rotation": [
+				90,
+				-45,
+				-90
+			],
+			"translation": [
+				-3.5,
+				5,
+				0
+			],
+			"scale": [
+				1.1,
+				1.6,
+				1.1
+			]
 		},
 		"the_four_primitives_and_weapons:back": {
-			"rotation": [-90, -45, -90],
-			"translation": [-7.25, -10.25, 3],
-			"scale": [1.7, 2.2, 1.7]
+			"rotation": [
+				-90,
+				-45,
+				-90
+			],
+			"translation": [
+				-7.25,
+				-10.25,
+				3
+			],
+			"scale": [
+				1.7,
+				2.2,
+				1.7
+			]
 		},
 		"the_four_primitives_and_weapons:belt": {
-			"rotation": [65, 0, 0],
-			"translation": [5.9, -3.25, -6.5],
-			"scale": [1.7, 2.2, 1.7]
+			"rotation": [
+				65,
+				0,
+				0
+			],
+			"translation": [
+				5.9,
+				-3.25,
+				-6.5
+			],
+			"scale": [
+				1.7,
+				2.2,
+				1.7
+			]
 		}
 	},
 	"groups": [
 		{
 			"name": "saya",
-			"origin": [8, 8, 8],
+			"origin": [
+				8,
+				8,
+				8
+			],
 			"scope": 0,
 			"color": 0,
-			"children": [0]
+			"children": [
+				0
+			]
 		},
 		{
 			"name": "tyokuto_handle",
-			"origin": [8, 8, 8],
+			"origin": [
+				8,
+				8,
+				8
+			],
 			"scope": 0,
 			"color": 0,
 			"children": [
 				{
 					"name": "tuba",
-					"origin": [11, 6.4, 3.45],
+					"origin": [
+						11,
+						6.4,
+						3.45
+					],
 					"scope": 0,
 					"color": 0,
-					"children": [1]
+					"children": [
+						1
+					]
 				},
 				{
 					"name": "tuka",
-					"origin": [8, 8, 8],
+					"origin": [
+						8,
+						8,
+						8
+					],
 					"scope": 0,
 					"color": 0,
-					"children": [2]
+					"children": [
+						2
+					]
 				},
 				{
 					"name": "kasira",
-					"origin": [8, 8, 8],
+					"origin": [
+						8,
+						8,
+						8
+					],
 					"scope": 0,
 					"color": 0,
-					"children": [3]
+					"children": [
+						3
+					]
 				}
 			]
 		}
