@@ -56,6 +56,14 @@ public final class KoshiraeFittings {
 				out.add(katanaColor(in, "tsuka", rgb, "柄を染める"));
 				out.add(katanaColor(in, "tsuba", rgb, "鍔を染める"));
 				out.add(katanaColor(in, "kashira", rgb, "頭を染める"));
+			} else if (isRapier(in)) {
+				// レイピア: 柄(grip)/鍔(guard)/頭(pommel) のデザインを部位ごとに選択
+				out.add(rapierDesign(in, "grip", "",        "柄=既定"));
+				out.add(rapierDesign(in, "grip", "grip_b",  "柄=デザインB"));
+				out.add(rapierDesign(in, "guard", "",       "鍔=既定"));
+				out.add(rapierDesign(in, "guard", "guard_b","鍔=デザインB"));
+				out.add(rapierDesign(in, "pommel", "",      "頭=既定"));
+				out.add(rapierDesign(in, "pommel", "pommel_b","頭=デザインB"));
 			} else {
 				out.add(katana(in, ""));                 // 既定 ( 元の柄 )
 				for (String w : KatanaFittings.WRAPS) out.add(katana(in, w));
@@ -74,6 +82,26 @@ public final class KoshiraeFittings {
 			}
 		}
 		return out;
+	}
+
+	/** レイピア判定 ( アイテム名に rapier を含む )。 */
+	private static boolean isRapier(ItemStack in) {
+		net.minecraft.resources.ResourceLocation id =
+				net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(in.getItem());
+		return id != null && id.getPath().contains("rapier");
+	}
+
+	/** レイピアの部位デザインを設定 ( grip→柄wrap / guard→鍔style / pommel→頭style )。 空=既定。 */
+	private static ItemStack rapierDesign(ItemStack in, String part, String design, String label) {
+		ItemStack s = in.copy();
+		s.setCount(1);
+		switch (part) {
+			case "guard":  KatanaFittings.setTsubaStyle(s, design); break;
+			case "pommel": KatanaFittings.setKashiraStyle(s, design); break;
+			default:       KatanaFittings.setTsukaWrap(s, design);
+		}
+		s.setHoverName(net.minecraft.network.chat.Component.literal(label));
+		return s;
 	}
 
 	private static ItemStack katanaColor(ItemStack in, String part, int rgb, String label) {

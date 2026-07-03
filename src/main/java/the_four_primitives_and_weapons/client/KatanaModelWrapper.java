@@ -72,8 +72,12 @@ public final class KatanaModelWrapper implements BakedModel {
 				mode[1] = variantMode(KatanaFittings.tsukaRgb(stack));
 				mode[2] = variantMode(KatanaFittings.tsubaRgb(stack));
 				mode[3] = variantMode(KatanaFittings.kashiraRgb(stack));
-				// 縁(fuchi=4)は無し
-				return KatanaTsukaModel.grayForTint(base, mode);
+				// 部位ごとのデザイン ( 拵え台で選択、 同フォルダの別ファイルへ差し替え )
+				String[] design = new String[5]; // 1=柄(grip) 2=鍔(guard) 3=頭(pommel)
+				design[1] = KatanaFittings.getTsukaWrap(stack);
+				design[2] = KatanaFittings.getTsubaStyle(stack);
+				design[3] = KatanaFittings.getKashiraStyle(stack);
+				return KatanaTsukaModel.styleColor(base, design, mode);
 			}
 			String wrap = or(KatanaFittings.getTsukaWrap(stack), "tuka");
 			String tsuba = or(KatanaFittings.getTsubaStyle(stack), "tuba");

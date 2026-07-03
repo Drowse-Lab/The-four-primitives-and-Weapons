@@ -63,6 +63,16 @@ public final class KatanaTsukaModel implements BakedModel {
 		}
 	}
 
+	// デザイン差し替え＋色: 各面を「選んだデザインの同フォルダ別ファイル」に替え、 さらに色(_gray/_black)を反映。
+	private KatanaTsukaModel(BakedModel base, String[] designByTint, int[] modeByTint) {
+		this.base = base;
+		this.swappedBySide = new EnumMap<>(Direction.class);
+		this.swappedNull = swapStyleColor(base.getQuads(null, null, RandomSource.create(42L)), designByTint, modeByTint);
+		for (Direction d : Direction.values()) {
+			swappedBySide.put(d, swapStyleColor(base.getQuads(null, d, RandomSource.create(42L)), designByTint, modeByTint));
+		}
+	}
+
 	/** 柄(wrap)/鍔(tsubaStyle)/頭(kashira)/縁(fuchi) のデザインを反映。 どれも無く白鞘でもなければ base。 */
 	public static BakedModel maybe(BakedModel base, String wrap, String tsubaStyle, String kashira, String fuchi) {
 		if (base == null) return base;
@@ -104,11 +114,67 @@ public final class KatanaTsukaModel implements BakedModel {
 		}
 	}
 
+	/**
+	 * デザイン差し替え＋色。 tintindex t の面を、 designByTint[t] ( 同フォルダの別ファイル名 ) へ替え、
+	 * さらに modeByTint[t] ( 1=グレー版+tint / 2=暗版 ) を反映する。 design が空なら 元テクスチャのまま色だけ。
+	 */
+	public static BakedModel styleColor(BakedModel base, String[] designByTint, int[] modeByTint) {
+		if (base == null) return base;
+		boolean any = false;
+		for (int t = 1; t <= 4; t++) {
+			if (modeByTint[t] != 0) any = true;
+			if (designByTint[t] != null && !designByTint[t].isEmpty()) any = true;
+		}
+		if (!any) return base;
+		try {
+			StringBuilder sb = new StringBuilder(Integer.toHexString(System.identityHashCode(base))).append("^sc");
+			for (int t = 1; t <= 4; t++) sb.append(modeByTint[t]).append(designByTint[t] == null ? "" : designByTint[t]).append('/');
+			return CACHE_GRAY.computeIfAbsent(sb.toString(), k -> new KatanaTsukaModel(base, designByTint, modeByTint));
+		} catch (Throwable t) {
+			return base;
+		}
+	}
+
 	@Nullable
 	private static TextureAtlasSprite sprite(String dir, String name) {
 		if (name == null || name.isEmpty()) return null;
 		var atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
 		TextureAtlasSprite s = atlas.getSprite(new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, dir + name));
+		return (s == null || s.contents().name().equals(MissingTextureAtlasSprite.getLocation())) ? null : s;
+	}
+
+	/** 各面: デザイン(同フォルダ別名)へ替え、 さらに色(_gray/_black)を反映。 */
+	private static List<BakedQuad> swapStyleColor(List<BakedQuad> srcQuads, String[] designByTint, int[] modeByTint) {
+		List<BakedQuad> out = new ArrayList<>(srcQuads.size());
+		for (BakedQuad q : srcQuads) {
+			int ti = q.getTintIndex();
+			if (ti < 1 || ti > 4) { out.add(q); continue; }
+			TextureAtlasSprite baseS = q.getSprite();
+			String design = designByTint[ti];
+			if (design != null && !design.isEmpty()) {
+				TextureAtlasSprite d = siblingSprite(baseS, design);
+				if (d != null) baseS = d;
+			}
+			int mode = modeByTint[ti];
+			TextureAtlasSprite dst;
+			if (mode == 1) dst = variant(baseS, "_gray");
+			else if (mode == 2) dst = variant(baseS, "_black");
+			else dst = (baseS != q.getSprite()) ? baseS : null; // デザインだけ替わったら差し替え
+			out.add(dst != null ? remap(q, dst) : q);
+		}
+		return out;
+	}
+
+	/** スプライトと同じフォルダの 別ファイル名 ( デザイン ) のスプライトを返す。 */
+	@Nullable
+	private static TextureAtlasSprite siblingSprite(TextureAtlasSprite src, String name) {
+		if (src == null) return null;
+		ResourceLocation n = src.contents().name();
+		String p = n.getPath();
+		int slash = p.lastIndexOf('/');
+		ResourceLocation rl = new ResourceLocation(n.getNamespace(), (slash >= 0 ? p.substring(0, slash + 1) : "") + name);
+		var atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
+		TextureAtlasSprite s = atlas.getSprite(rl);
 		return (s == null || s.contents().name().equals(MissingTextureAtlasSprite.getLocation())) ? null : s;
 	}
 
