@@ -164,6 +164,12 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<Map<Stri
         return stats != null ? stats.durability : -1;
     }
 
+    /** 攻撃範囲ボーナス ( JSONの attack_range。 未設定=0 )。 各技の range に加算する用。 */
+    public static double attackRangeBonus(ItemStack stack) {
+        WeaponStats s = getStats(stack);
+        return (s != null && !Float.isNaN(s.attackRange)) ? s.attackRange : 0.0;
+    }
+
     public static boolean isLoaded() {
         return !STATS.isEmpty();
     }

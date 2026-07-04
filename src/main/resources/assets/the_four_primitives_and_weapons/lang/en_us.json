@@ -180,6 +180,7 @@
   "item.the_four_primitives_and_weapons.gold_katana": "§6Gold Katana",
   "item.the_four_primitives_and_weapons.iron_tyokuto": "Iron Straight Sword",
   "item.the_four_primitives_and_weapons.iron_dagger": "Iron Dagger",
+  "attribute.name.the_four_primitives_and_weapons.attack_range": "Attack Range",
   "item.the_four_primitives_and_weapons.stone_tyokuto": "Stone Straight Sword",
   "item.the_four_primitives_and_weapons.gold_tyokuto": "Gold Straight Sword",
   "item.the_four_primitives_and_weapons.gate": "§6Gate",

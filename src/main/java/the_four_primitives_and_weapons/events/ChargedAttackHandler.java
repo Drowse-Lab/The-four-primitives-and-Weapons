@@ -412,7 +412,8 @@ public class ChargedAttackHandler {
 
         // 竹を破壊する範囲を設定
         breakBambooInPath(world, playerPos, lookVec, 6.0);
-        double range = 6.0f + chargePercent * 2.0f;
+        double range = Math.max(1.0, 6.0f + chargePercent * 2.0f
+                + the_four_primitives_and_weapons.skill.WeaponStatsRegistry.attackRangeBonus(mainHand));
         
         // 貫通突きエフェクト
         if (!world.isClientSide) {

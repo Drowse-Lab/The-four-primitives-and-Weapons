@@ -26,6 +26,8 @@ public abstract class WeaponStatsMixin {
 
     /** リーチ ( ENTITY_REACH ) 用の固定UUID。 */
     private static final UUID TFPW_REACH_UUID = UUID.fromString("6b2f7d1a-8c3e-4a11-9f2b-2f4e7a1c9d33");
+    /** ブロック操作距離 ( BLOCK_REACH ) 用の固定UUID。 */
+    private static final UUID TFPW_BLOCK_REACH_UUID = UUID.fromString("7c30ae2b-9d4f-4b22-8e3c-3a5f8b2d0e44");
     /** バニラ ATTACK_DAMAGE_UUID と同値 ( protected なので複製 )。 */
     private static final UUID ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
     /** バニラ ATTACK_SPEED_UUID と同値。 */
@@ -96,6 +98,15 @@ public abstract class WeaponStatsMixin {
             out.removeAll(reach);
             out.put(reach, new AttributeModifier(
                     TFPW_REACH_UUID, "Weapon reach", st.attackRange, AttributeModifier.Operation.ADDITION));
+        }
+        // 範囲が狭い武器 ( attack_range<0 ) は ブロック操作距離も縮める。
+        if (hasReach && st.attackRange < 0) {
+            Attribute blockReach = ForgeMod.BLOCK_REACH.get();
+            if (!(hasNbt && out.containsKey(blockReach))) {
+                out.removeAll(blockReach);
+                out.put(blockReach, new AttributeModifier(
+                        TFPW_BLOCK_REACH_UUID, "Weapon block reach", st.attackRange, AttributeModifier.Operation.ADDITION));
+            }
         }
         cir.setReturnValue(out);
     }

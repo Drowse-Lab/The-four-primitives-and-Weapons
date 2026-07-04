@@ -201,8 +201,9 @@ public class TyokutouThrustAttackProcedure {
         if (entity == null || !(entity instanceof Player player))
             return;
 
-        // チャージ率に応じてパラメータを強化
-        double range = 16.0 + chargePercent * 8.0;  // 16.0～24.0（倍増）
+        // チャージ率に応じてパラメータを強化 ( +武器ごとの attack_range )
+        double range = Math.max(1.0, 16.0 + chargePercent * 8.0
+                + the_four_primitives_and_weapons.skill.WeaponStatsRegistry.attackRangeBonus(player.getMainHandItem()));  // 16.0～24.0（倍増）
         double damage = 35.0 + chargePercent * 20.0;  // 35.0～55.0
         double thrustPower = 0.8 + chargePercent * 0.4;  // 0.8～1.2（他の刀と同程度）
 

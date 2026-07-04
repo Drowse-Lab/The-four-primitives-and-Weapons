@@ -128,7 +128,8 @@ public class MotionExecutor {
     private static void performThrust(Player player, Level world, Vec3 lookVec, Vec3 playerPos, float chargePercent) {
         boolean isCharged = chargePercent > 0.0f;
         float baseDamage = isCharged ? 15.0f * (1.0f + chargePercent) : 7.0f;
-        double range = isCharged ? 6.0 + chargePercent * 2.0 : 5.0;
+        double range = Math.max(1.0, (isCharged ? 6.0 + chargePercent * 2.0 : 5.0)
+                + the_four_primitives_and_weapons.skill.WeaponStatsRegistry.attackRangeBonus(player.getMainHandItem()));
 
         // 竹破壊
         breakBambooInPath(world, playerPos, lookVec, range);
@@ -336,7 +337,8 @@ public class MotionExecutor {
         double baseRange = isCharged ? 4.0 + chargePercent * 2.0 : 3.5;
         // 武器タイプによる範囲倍率 (大剣/槍は広く、短剣は狭く)
         double rangeScale = WeaponTypeRegistry.getSpinRangeScale(player.getMainHandItem());
-        double range = baseRange * rangeScale;
+        double range = Math.max(1.0, baseRange * rangeScale
+                + the_four_primitives_and_weapons.skill.WeaponStatsRegistry.attackRangeBonus(player.getMainHandItem()));
 
         // 開始時の小さな視覚フラッシュ (足元のリング)
         if (!world.isClientSide) {
@@ -372,8 +374,9 @@ public class MotionExecutor {
     private static void performSlamDown(Player player, Level world, Vec3 lookVec, Vec3 playerPos, float chargePercent) {
         boolean isCharged = chargePercent > 0.0f;
         float baseDamage = isCharged ? 16.0f * (1.0f + chargePercent * 1.2f) : 13.0f;
-        double forwardRange = isCharged ? 4.5 + chargePercent : 3.5;
-        double width = isCharged ? 2.5 : 1.8;
+        double rangeBonus = the_four_primitives_and_weapons.skill.WeaponStatsRegistry.attackRangeBonus(player.getMainHandItem());
+        double forwardRange = Math.max(1.0, (isCharged ? 4.5 + chargePercent : 3.5) + rangeBonus);
+        double width = Math.max(0.75, (isCharged ? 2.5 : 1.8) + rangeBonus * 0.5);
 
         // 視点を上→下にアニメーション (振り下ろしの動き)
         SlamDownPitchHandler.start(player);
@@ -469,16 +472,16 @@ public class MotionExecutor {
         the_four_primitives_and_weapons.skill.WeaponStatsRegistry.WeaponStats st =
                 the_four_primitives_and_weapons.skill.WeaponStatsRegistry.getStats(
                         player.getItemInHand(InteractionHand.MAIN_HAND));
-        if (st != null && !Float.isNaN(st.attackRange)) {
-            forwardRange = Math.max(1.0, forwardRange + st.attackRange);
-            horizontalRange = Math.max(0.75, horizontalRange + st.attackRange * 0.5);
-        }
+        final double fRange = (st != null && !Float.isNaN(st.attackRange))
+                ? Math.max(1.0, forwardRange + st.attackRange) : forwardRange;
+        final double hRange = (st != null && !Float.isNaN(st.attackRange))
+                ? Math.max(0.75, horizontalRange + st.attackRange * 0.5) : horizontalRange;
         Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
 
         Vec3 minPoint = playerPos.add(lookVec.scale(-0.5))
-            .add(rightVec.scale(-horizontalRange)).add(0, -0.5, 0);
-        Vec3 maxPoint = playerPos.add(lookVec.scale(forwardRange))
-            .add(rightVec.scale(horizontalRange)).add(0, 2.5, 0);
+            .add(rightVec.scale(-hRange)).add(0, -0.5, 0);
+        Vec3 maxPoint = playerPos.add(lookVec.scale(fRange))
+            .add(rightVec.scale(hRange)).add(0, 2.5, 0);
 
         AABB searchArea = new AABB(minPoint, maxPoint);
 
@@ -487,7 +490,7 @@ public class MotionExecutor {
                 if (entity == player) return false;
                 Vec3 toEntity = entity.position().subtract(playerPos).normalize();
                 double dot = lookVec.dot(toEntity);
-                return dot > -0.3 && entity.distanceTo(player) <= forwardRange + horizontalRange;
+                return dot > -0.3 && entity.distanceTo(player) <= fRange + hRange;
             });
 
         for (LivingEntity target : targets) {
