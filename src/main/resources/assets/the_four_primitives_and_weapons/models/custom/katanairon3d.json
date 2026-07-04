@@ -1,6 +1,11 @@
 {
-  "format_version": "1.9.0",
-  "credit": "Made with Blockbench",
-  "parent": "the_four_primitives_and_weapons:custom/weapon/katana/katana_a_parent",
-  "made": "hrmcngs"
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "the_four_primitives_and_weapons:custom/weapon/katana/katana_a_parent",
+	"made": "hrmcngs",
+	"textures": {
+		"4": "the_four_primitives_and_weapons:katana_fitting/tsuka/iron_tuka",
+		"1": "the_four_primitives_and_weapons:katana_fitting/tsuba/iron_tuba",
+		"3": "the_four_primitives_and_weapons:katana_fitting/kasira/iron_kasira"
+	}
 }

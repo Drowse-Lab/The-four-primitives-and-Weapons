@@ -208,14 +208,37 @@ public final class KatanaTsukaModel implements BakedModel {
 		return out;
 	}
 
-	/** スプライトの suffix 版 ("_gray"/"_black") を返す ( 無ければ null )。 */
+	/** 拵えの基本テクスチャ名 ( 材質接頭辞を外すための対象 )。 */
+	private static final String[] FITTING_BASES = { "tuka", "tuba", "kasira", "grip", "guard", "pommel", "fuchi" };
+
+	/**
+	 * スプライトの suffix 版 ("_gray"/"_black") を返す ( 無ければ null )。
+	 * <p>まず そのまま ( 例 iron_tuka_gray ) を探し、 無ければ <b>材質接頭辞を外した共通名</b>
+	 * ( iron_tuka → tuka_gray ) を探す。 → base だけ材質別 ( iron_tuka )、 _gray/_black は共通 でよい。</p>
+	 */
 	@Nullable
 	private static TextureAtlasSprite variant(TextureAtlasSprite src, String suffix) {
 		if (src == null) return null;
 		ResourceLocation n = src.contents().name();
-		ResourceLocation v = new ResourceLocation(n.getNamespace(), n.getPath() + suffix);
+		String p = n.getPath();
+		TextureAtlasSprite s = spriteAt(n.getNamespace(), p + suffix);
+		if (s != null) return s;
+		// フォールバック: 材質接頭辞を外した共通名 ( 例 …/iron_tuka → …/tuka )
+		int slash = p.lastIndexOf('/');
+		String dir = slash >= 0 ? p.substring(0, slash + 1) : "";
+		String file = slash >= 0 ? p.substring(slash + 1) : p;
+		for (String b : FITTING_BASES) {
+			if (file.endsWith("_" + b)) {
+				return spriteAt(n.getNamespace(), dir + b + suffix);
+			}
+		}
+		return null;
+	}
+
+	@Nullable
+	private static TextureAtlasSprite spriteAt(String ns, String path) {
 		var atlas = Minecraft.getInstance().getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
-		TextureAtlasSprite s = atlas.getSprite(v);
+		TextureAtlasSprite s = atlas.getSprite(new ResourceLocation(ns, path));
 		return (s == null || s.contents().name().equals(MissingTextureAtlasSprite.getLocation())) ? null : s;
 	}
 
