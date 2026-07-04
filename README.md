@@ -45,7 +45,5 @@ https://github.com/Chuzume/True-Crafter-Mode
 https://youtu.be/7oI4bwtSQUQ  
 ***
 
-柄のテクスチャとカシラのテクスチャが変（直刀）
-レイアピア納刀した時の鞘の見た目（つかとさやと）
-他種類の直刀、刀、レイピアを納刀してもを納刀してもその色になるように
-あと全種類の武器、鞘が色を変更できるようにして
+チャージ技とか/Users/hiromichi/The-four-primitives-and-Weapons/src/main/resources/data/the_four_primitives_and_weapons/weapon_types/preferred_motions.jsonc
+これで設定されている技にも範囲が適応されるようにして

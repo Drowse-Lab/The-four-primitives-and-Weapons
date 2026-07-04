@@ -2,7 +2,7 @@
   "_comment": "溜め(右クリック長押し)中だけ使う上腕骨刀モデル。形状/テクスチャ/他の表示は通常モデルと同じで、一人称(firstperson)の位置だけ調整する。ここを編集すれば溜め時だけ位置が変わり、通常持ちには影響しない。",
   "parent": "the_four_primitives_and_weapons:custom/katananiguzyouwankotu3d",
   "textures": {
-    "1": "the_four_primitives_and_weapons:block/katananiguzyouwannkotu3d",
+    "1": "the_four_primitives_and_weapons:blade/katana/katananiguzyouwannkotu3d",
     "particle": "the_four_primitives_and_weapons:item/katananiguzyouwankotu3d"
   },
   "display": {

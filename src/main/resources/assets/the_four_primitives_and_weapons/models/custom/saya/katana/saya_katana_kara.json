@@ -3,8 +3,8 @@
 	"credit": "Made with Blockbench",
 	"parent": "the_four_primitives_and_weapons:custom/saya/katana/saya_katana_parent",
 	"textures": {
-		"0": "the_four_primitives_and_weapons:item/saya",
-		"particle": "the_four_primitives_and_weapons:item/saya"
+		"0": "the_four_primitives_and_weapons:saya/katana/saya",
+		"particle": "the_four_primitives_and_weapons:saya/katana/saya"
 	},
 	"elements": [
 		{

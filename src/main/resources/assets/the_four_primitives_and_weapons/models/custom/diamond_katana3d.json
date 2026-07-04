@@ -3,7 +3,7 @@
   "credit": "Made with Blockbench",
   "parent": "the_four_primitives_and_weapons:custom/weapon/katana/katana_a_parent",
   "textures": {
-    "0": "the_four_primitives_and_weapons:block/diamondkatana3d",
-    "particle": "the_four_primitives_and_weapons:block/diamondkatana3d"
+    "0": "the_four_primitives_and_weapons:blade/katana/diamondkatana3d",
+    "particle": "the_four_primitives_and_weapons:blade/katana/diamondkatana3d"
   }
 }

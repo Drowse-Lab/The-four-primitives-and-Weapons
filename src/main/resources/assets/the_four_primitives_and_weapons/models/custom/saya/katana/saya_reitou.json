@@ -3,10 +3,10 @@
 	"parent": "the_four_primitives_and_weapons:custom/saya/katana/saya_katana_parent",
 	"credit": "Made with Blockbench",
 	"textures": {
-		"0": "the_four_primitives_and_weapons:item/saya_reitou",
-		"1": "the_four_primitives_and_weapons:block/reitou3d",
-		"2": "the_four_primitives_and_weapons:item/obitori_reitou",
-		"particle": "the_four_primitives_and_weapons:item/saya_reitou"
+		"0": "the_four_primitives_and_weapons:saya/katana/saya_reitou",
+		"1": "the_four_primitives_and_weapons:blade/katana/reitou3d",
+		"2": "the_four_primitives_and_weapons:saya/katana/obitori_reitou",
+		"particle": "the_four_primitives_and_weapons:saya/katana/saya_reitou"
 	},
 	"elements": [
 		{

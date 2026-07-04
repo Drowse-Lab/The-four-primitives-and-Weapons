@@ -1,7 +1,7 @@
 {
   "parent": "the_four_primitives_and_weapons:custom/katanairon3dmagicanimetion",
   "textures": {
-    "1": "the_four_primitives_and_weapons:block/magical_katana_animated",
-    "particle": "the_four_primitives_and_weapons:block/magical_katana_animated"
+    "1": "the_four_primitives_and_weapons:blade/katana/magical_katana_animated",
+    "particle": "the_four_primitives_and_weapons:blade/katana/magical_katana_animated"
   }
 }

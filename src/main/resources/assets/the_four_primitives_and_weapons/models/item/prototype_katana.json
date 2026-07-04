@@ -1,7 +1,7 @@
 {
   "parent": "the_four_primitives_and_weapons:custom/katanairon3dfeen",
   "textures": {
-    "missing": "the_four_primitives_and_weapons:block/katanairon3dfeen",
+    "missing": "the_four_primitives_and_weapons:blade/katana/katanairon3dfeen",
     "particle": "the_four_primitives_and_weapons:item/katanairon3dfeen"
   }
 }

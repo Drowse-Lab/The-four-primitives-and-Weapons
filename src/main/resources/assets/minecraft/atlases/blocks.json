@@ -29,6 +29,21 @@
       "type": "minecraft:directory",
       "source": "rapier_fitting",
       "prefix": "rapier_fitting/"
+    },
+    {
+      "type": "minecraft:directory",
+      "source": "dagger_fitting",
+      "prefix": "dagger_fitting/"
+    },
+    {
+      "type": "minecraft:directory",
+      "source": "blade",
+      "prefix": "blade/"
+    },
+    {
+      "type": "minecraft:directory",
+      "source": "saya",
+      "prefix": "saya/"
     }
   ]
 }

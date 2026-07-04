@@ -3,8 +3,8 @@
   "credit": "Made with Blockbench",
   "parent": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_tyokuto_parent",
   "textures": {
-    "2": "the_four_primitives_and_weapons:block/stone_tyokuto3d",
-    "3": "the_four_primitives_and_weapons:item/saya_tyokuto",
-    "particle": "the_four_primitives_and_weapons:item/saya_tyokuto"
+    "2": "the_four_primitives_and_weapons:blade/tyokuto/stone_tyokuto3d",
+    "3": "the_four_primitives_and_weapons:saya/tyokuto/saya_tyokuto",
+    "particle": "the_four_primitives_and_weapons:saya/tyokuto/saya_tyokuto"
   }
 }

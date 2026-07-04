@@ -4,8 +4,8 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [32, 32],
 	"textures": {
-		"3": "the_four_primitives_and_weapons:item/sword_saya",
+		"3": "the_four_primitives_and_weapons:saya/sword/sword_saya",
 		"4": "item/iron_sword",
-		"particle": "the_four_primitives_and_weapons:item/sword_saya"
+		"particle": "the_four_primitives_and_weapons:saya/sword/sword_saya"
 	}
 }

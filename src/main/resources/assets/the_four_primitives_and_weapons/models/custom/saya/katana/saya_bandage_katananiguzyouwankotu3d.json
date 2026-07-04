@@ -8,9 +8,9 @@
 		8
 	],
 	"textures": {
-		"1": "the_four_primitives_and_weapons:block/saya_katananiguzyouwan",
-		"2": "the_four_primitives_and_weapons:item/saya",
-		"particle": "the_four_primitives_and_weapons:item/saya"
+		"1": "the_four_primitives_and_weapons:saya/katana/saya_katananiguzyouwan",
+		"2": "the_four_primitives_and_weapons:saya/katana/saya",
+		"particle": "the_four_primitives_and_weapons:saya/katana/saya"
 	},
 	"elements": [
 		{

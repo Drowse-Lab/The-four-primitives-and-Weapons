@@ -37,7 +37,7 @@ public class KatanaColorClient {
 				.filter(ro -> {
 					String n = ro.getId().getPath();
 					return !n.contains("saya")
-							&& (n.contains("katana") || n.contains("tyokuto") || n.contains("rapier"));
+							&& (n.contains("katana") || n.contains("tyokuto") || n.contains("rapier") || n.contains("dagger"));
 				})
 				.map(net.minecraftforge.registries.RegistryObject::get)
 				.toArray(net.minecraft.world.item.Item[]::new);

@@ -4,7 +4,7 @@
   "parent": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_tyokuto_parent",
   "textures": {
     "2": "the_four_primitives_and_weapons:block/luna",
-    "3": "the_four_primitives_and_weapons:item/saya_tyokuto",
+    "3": "the_four_primitives_and_weapons:saya/tyokuto/saya_tyokuto",
     "particle": "the_four_primitives_and_weapons:item/luna"
   }
 }

@@ -278,6 +278,7 @@ public class TheFourPrimitivesAndWeaponsModItems {
 	public static final RegistryObject<Item> IMMORTAL_CORE = REGISTRY.register("immortal_core", () -> new the_four_primitives_and_weapons.item.ImmortalCoreItem());
 	public static final RegistryObject<Item> RARITY_CHARM = REGISTRY.register("rarity_charm", () -> new the_four_primitives_and_weapons.item.RarityCharmItem());
 	public static final RegistryObject<Item> IRON_TYOKUTO = REGISTRY.register("iron_tyokuto", () -> new the_four_primitives_and_weapons.item.IronTyokutoItem());
+	public static final RegistryObject<Item> IRON_DAGGER = REGISTRY.register("iron_dagger", () -> new the_four_primitives_and_weapons.item.IronDaggerItem());
 	public static final RegistryObject<Item> GOLD_TYOKUTO = REGISTRY.register("gold_tyokuto", () -> new the_four_primitives_and_weapons.item.GoldTyokutoItem());
 	public static final RegistryObject<Item> STONE_TYOKUTO = REGISTRY.register("stone_tyokuto", () -> new the_four_primitives_and_weapons.item.StoneTyokutoItem());
 	public static final RegistryObject<Item> SAYA = REGISTRY.register("saya", () -> new SayaItem());

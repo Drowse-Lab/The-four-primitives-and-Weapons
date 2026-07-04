@@ -1,7 +1,7 @@
 {
   "parent": "the_four_primitives_and_weapons:custom/witherkatana3d",
   "textures": {
-    "1": "the_four_primitives_and_weapons:block/witherkatana3d",
+    "1": "the_four_primitives_and_weapons:blade/katana/witherkatana3d",
     "particle": "the_four_primitives_and_weapons:item/aaaaa"
   }
 }

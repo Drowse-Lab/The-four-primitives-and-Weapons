@@ -7,11 +7,11 @@
 		4
 	],
 	"textures": {
-		"0": "the_four_primitives_and_weapons:item/iron_rapier",
+		"0": "the_four_primitives_and_weapons:blade/rapier/iron_rapier",
 		"1": "the_four_primitives_and_weapons:rapier_fitting/grip/grip",
 		"2": "the_four_primitives_and_weapons:rapier_fitting/guard/guard",
 		"3": "the_four_primitives_and_weapons:rapier_fitting/pommel/pommel",
-		"particle": "the_four_primitives_and_weapons:item/iron_rapier"
+		"particle": "the_four_primitives_and_weapons:blade/rapier/iron_rapier"
 	},
 	"elements": [
 		{

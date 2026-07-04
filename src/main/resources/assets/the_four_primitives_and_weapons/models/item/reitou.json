@@ -1,7 +1,7 @@
 {
   "parent": "the_four_primitives_and_weapons:custom/reitou3d",
   "textures": {
-    "0": "the_four_primitives_and_weapons:block/reitou3d",
-    "particle": "the_four_primitives_and_weapons:block/reitou3d"
+    "0": "the_four_primitives_and_weapons:blade/katana/reitou3d",
+    "particle": "the_four_primitives_and_weapons:blade/katana/reitou3d"
   }
 }

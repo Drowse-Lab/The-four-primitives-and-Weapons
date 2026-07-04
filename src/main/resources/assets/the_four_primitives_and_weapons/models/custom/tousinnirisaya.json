@@ -6,9 +6,9 @@
 		8
 	],
 	"textures": {
-		"0": "the_four_primitives_and_weapons:item/saya",
+		"0": "the_four_primitives_and_weapons:saya/katana/saya",
 		"1": "the_four_primitives_and_weapons:item/aaaaa",
-		"particle": "the_four_primitives_and_weapons:item/saya"
+		"particle": "the_four_primitives_and_weapons:saya/katana/saya"
 	},
 	"elements": [
 		{

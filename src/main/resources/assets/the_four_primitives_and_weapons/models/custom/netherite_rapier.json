@@ -3,8 +3,8 @@
   "credit": "Made with Blockbench",
   "parent": "the_four_primitives_and_weapons:custom/weapon/rapier/rapier_parent",
   "textures": {
-    "0": "the_four_primitives_and_weapons:item/netherite_rapier",
-    "particle": "the_four_primitives_and_weapons:item/netherite_rapier"
+    "0": "the_four_primitives_and_weapons:blade/rapier/netherite_rapier",
+    "particle": "the_four_primitives_and_weapons:blade/rapier/netherite_rapier"
   },
   "made": "hrmcngs"
 }

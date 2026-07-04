@@ -1,7 +1,7 @@
 {
   "parent": "the_four_primitives_and_weapons:custom/iron_tyokuto3d",
   "textures": {
-    "2": "the_four_primitives_and_weapons:block/iron_tyokuto3d",
+    "2": "the_four_primitives_and_weapons:blade/tyokuto/iron_tyokuto3d",
     "particle": "the_four_primitives_and_weapons:item/aa"
   }
 }

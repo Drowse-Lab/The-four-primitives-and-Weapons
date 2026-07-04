@@ -3,9 +3,9 @@
 	"parent": "the_four_primitives_and_weapons:custom/saya/rapier/saya_rapier_parent",
 	"credit": "Made with Blockbench",
 	"textures": {
-		"1": "the_four_primitives_and_weapons:item/wooden_rapier",
-		"2": "the_four_primitives_and_weapons:item/saya/saya_rapier",
-		"particle": "the_four_primitives_and_weapons:item/saya/saya_rapier"
+		"1": "the_four_primitives_and_weapons:blade/rapier/wooden_rapier",
+		"2": "the_four_primitives_and_weapons:saya/rapier/saya_rapier",
+		"particle": "the_four_primitives_and_weapons:saya/rapier/saya_rapier"
 	},
 	"made": "hrmcngs"
 }

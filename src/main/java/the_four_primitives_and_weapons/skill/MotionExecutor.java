@@ -223,12 +223,18 @@ public class MotionExecutor {
 
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
-            // 左上から右下への斬撃エフェクト
-            for (int i = -2; i <= 2; i++) {
+            // 左上から右下への斜め斬り ( 向きに対して横へ広げ、 緩やかに降下 )
+            double px = -lookVec.z, pz = lookVec.x;            // 水平の右向きベクトル
+            double plen = Math.sqrt(px * px + pz * pz);
+            if (plen > 1e-4) { px /= plen; pz /= plen; }
+            double cx = playerPos.x + lookVec.x * 2;
+            double cz = playerPos.z + lookVec.z * 2;
+            for (int i = -4; i <= 4; i++) {
+                double t = i * 0.28;                            // 横の広がり ( 左→右 )
                 serverWorld.sendParticles(ParticleTypes.SWEEP_ATTACK,
-                    playerPos.x + lookVec.x * 2 - 0.5 + i * 0.2,
-                    playerPos.y + 1.5 - i * 0.2,
-                    playerPos.z + lookVec.z * 2,
+                    cx + px * t,
+                    playerPos.y + 1.5 - i * 0.10,               // 降下を緩やかに ( 0.2→0.10 )
+                    cz + pz * t,
                     1, 0, 0, 0, 0);
             }
             if (isCharged) {
@@ -253,12 +259,18 @@ public class MotionExecutor {
 
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
-            // 右上から左下への斬撃エフェクト
-            for (int i = -2; i <= 2; i++) {
+            // 右上から左下への斜め斬り ( 横は反転、 緩やかに降下 )
+            double px = -lookVec.z, pz = lookVec.x;            // 水平の右向きベクトル
+            double plen = Math.sqrt(px * px + pz * pz);
+            if (plen > 1e-4) { px /= plen; pz /= plen; }
+            double cx = playerPos.x + lookVec.x * 2;
+            double cz = playerPos.z + lookVec.z * 2;
+            for (int i = -4; i <= 4; i++) {
+                double t = i * 0.28;                            // 横の広がり ( 右→左 )
                 serverWorld.sendParticles(ParticleTypes.SWEEP_ATTACK,
-                    playerPos.x + lookVec.x * 2 + 0.5 - i * 0.2,
-                    playerPos.y + 1.5 - i * 0.2,
-                    playerPos.z + lookVec.z * 2,
+                    cx - px * t,
+                    playerPos.y + 1.5 - i * 0.10,               // 降下を緩やかに ( 0.2→0.10 )
+                    cz - pz * t,
                     1, 0, 0, 0, 0);
             }
             if (isCharged) {
@@ -453,6 +465,14 @@ public class MotionExecutor {
     private static void performSlashDamage(Player player, Level world, Vec3 lookVec, Vec3 playerPos,
                                             float baseDamage, double forwardRange, double horizontalRange,
                                             float chargePercent) {
+        // 武器ごとの攻撃範囲: weapon_stats.json の attack_range を斬撃の奥行き(と横幅)に反映。
+        the_four_primitives_and_weapons.skill.WeaponStatsRegistry.WeaponStats st =
+                the_four_primitives_and_weapons.skill.WeaponStatsRegistry.getStats(
+                        player.getItemInHand(InteractionHand.MAIN_HAND));
+        if (st != null && !Float.isNaN(st.attackRange)) {
+            forwardRange = Math.max(1.0, forwardRange + st.attackRange);
+            horizontalRange = Math.max(0.75, horizontalRange + st.attackRange * 0.5);
+        }
         Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
 
         Vec3 minPoint = playerPos.add(lookVec.scale(-0.5))

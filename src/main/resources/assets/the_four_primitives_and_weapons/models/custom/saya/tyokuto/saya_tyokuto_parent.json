@@ -3,8 +3,8 @@
   "credit": "MAW saya parent (tyokuto) — edit the_four_primitives_and_weapons:belt / :back via sb_worn_display Blockbench plugin",
   "parent": "the_four_primitives_and_weapons:custom/weapon/tyokuto/tyokuto_iri_parent",
   "textures": {
-    "2": "the_four_primitives_and_weapons:block/iron_tyokuto3d",
-    "3": "the_four_primitives_and_weapons:item/saya_tyokuto",
-    "particle": "the_four_primitives_and_weapons:item/saya_tyokuto"
+    "2": "the_four_primitives_and_weapons:blade/tyokuto/iron_tyokuto3d",
+    "3": "the_four_primitives_and_weapons:saya/tyokuto/saya_tyokuto",
+    "particle": "the_four_primitives_and_weapons:saya/tyokuto/saya_tyokuto"
   }
 }

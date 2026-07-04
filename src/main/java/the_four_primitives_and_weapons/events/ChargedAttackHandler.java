@@ -392,6 +392,14 @@ public class ChargedAttackHandler {
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         String itemName = mainHand.getItem().getClass().getSimpleName();
 
+        // weapon_stats.json に "thrust" を持つ武器は JSON駆動の突き連撃 ( ダガー等・短reach )。
+        the_four_primitives_and_weapons.skill.WeaponStatsRegistry.WeaponStats stats =
+                the_four_primitives_and_weapons.skill.WeaponStatsRegistry.getStats(mainHand);
+        if (stats != null && stats.thrust != null) {
+            the_four_primitives_and_weapons.procedures.JsonThrustProcedure.execute(player, chargePercent, stats.thrust);
+            return;
+        }
+
         if (the_four_primitives_and_weapons.procedures.TyokutouThrustAttackProcedure.isStraightSword(mainHand)) {
             // 直刀のチャージ強化突進攻撃を実行（チャージ率に応じて威力増加）
             the_four_primitives_and_weapons.procedures.TyokutouThrustAttackProcedure.executeChargedThrust(

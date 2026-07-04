@@ -4,8 +4,8 @@
 	"parent": "block/block",
 	"texture_size": [32, 32],
 	"textures": {
-		"1": "the_four_primitives_and_weapons:block/magical_katana_animated",
-		"particle": "the_four_primitives_and_weapons:block/magical_katana_animated"
+		"1": "the_four_primitives_and_weapons:blade/katana/magical_katana_animated",
+		"particle": "the_four_primitives_and_weapons:blade/katana/magical_katana_animated"
 	},
 	"elements": [
 		{

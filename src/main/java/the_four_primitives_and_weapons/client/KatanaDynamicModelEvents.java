@@ -26,7 +26,7 @@ public class KatanaDynamicModelEvents {
 				: the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems.REGISTRY.getEntries()) {
 			String name = ro.getId().getPath();
 			if (name.contains("saya")
-					|| !(name.contains("katana") || name.contains("tyokuto") || name.contains("rapier"))) continue;
+					|| !(name.contains("katana") || name.contains("tyokuto") || name.contains("rapier") || name.contains("dagger"))) continue;
 			ModelResourceLocation mrl = new ModelResourceLocation(
 					new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, name), "inventory");
 			BakedModel current = event.getModels().get(mrl);

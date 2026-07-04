@@ -4,8 +4,8 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [16, 16],
 	"textures": {
-		"0": "the_four_primitives_and_weapons:item/saya",
-		"1": "the_four_primitives_and_weapons:block/katanairon3dtest",
-		"particle": "the_four_primitives_and_weapons:item/saya"
+		"0": "the_four_primitives_and_weapons:saya/katana/saya",
+		"1": "the_four_primitives_and_weapons:blade/katana/katanairon3dtest",
+		"particle": "the_four_primitives_and_weapons:saya/katana/saya"
 	}
 }

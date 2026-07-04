@@ -25,7 +25,7 @@ public final class KatanaFittings {
 			return false;
 		String n = id.getPath();
 		if (n.contains("saya")) return false;
-		return n.contains("katana") || n.contains("tyokuto") || n.contains("rapier");
+		return n.contains("katana") || n.contains("tyokuto") || n.contains("rapier") || n.contains("dagger");
 	}
 
 	/** 柄巻きの色 ( 0xRRGGBB )。 */

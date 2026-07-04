@@ -1,7 +1,7 @@
 {
   "parent": "the_four_primitives_and_weapons:custom/swordb2",
   "textures": {
-    "0": "the_four_primitives_and_weapons:block/swordb",
+    "0": "the_four_primitives_and_weapons:blade/katana/swordb",
     "particle": "the_four_primitives_and_weapons:item/aaaaa"
   }
 }

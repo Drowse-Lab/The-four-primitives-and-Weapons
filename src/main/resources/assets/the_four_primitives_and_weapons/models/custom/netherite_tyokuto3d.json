@@ -3,6 +3,6 @@
   "credit": "Made with Blockbench",
   "parent": "the_four_primitives_and_weapons:custom/weapon/tyokuto/tyokuto_b_parent",
   "textures": {
-    "2": "the_four_primitives_and_weapons:block/netherite_tyokuto3d"
+    "2": "the_four_primitives_and_weapons:blade/tyokuto/netherite_tyokuto3d"
   }
 }
