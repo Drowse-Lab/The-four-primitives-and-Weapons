@@ -36,7 +36,7 @@ public abstract class WeaponStatsMixin {
     /**
      * getMaxDamage() を上書き: JSONで定義された耐久値を返す
      */
-    @Inject(method = "getMaxDamage", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "getMaxDamage", at = @At("RETURN"), cancellable = true, require = 0)
     private void onGetMaxDamage(CallbackInfoReturnable<Integer> cir) {
         if (!WeaponStatsRegistry.isLoaded()) return;
         ItemStack self = (ItemStack)(Object)this;
@@ -50,7 +50,7 @@ public abstract class WeaponStatsMixin {
      * getEnchantmentValue() の戻り値を上書き: JSONで定義されたエンチャント適性を返す
      * (Item.getEnchantmentValue が ItemStack 経由で呼ばれるパスをカバー)
      */
-    @Inject(method = "isEnchantable", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "isEnchantable", at = @At("RETURN"), cancellable = true, require = 0)
     private void onIsEnchantable(CallbackInfoReturnable<Boolean> cir) {
         if (!WeaponStatsRegistry.isLoaded()) return;
         ItemStack self = (ItemStack)(Object)this;
@@ -64,50 +64,60 @@ public abstract class WeaponStatsMixin {
      * getAttributeModifiers() を上書き: JSONで定義された 攻撃力 / 攻撃速度 / 近接リーチ を
      * メインハンドの属性に反映する ( 該当キーが定義された武器のみ )。
      */
-    @Inject(method = "getAttributeModifiers", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "getAttributeModifiers", at = @At("RETURN"), cancellable = true, require = 0)
     private void tfpw$applyStats(EquipmentSlot slot, CallbackInfoReturnable<Multimap<Attribute, AttributeModifier>> cir) {
-        if (slot != EquipmentSlot.MAINHAND) return;
-        if (!WeaponStatsRegistry.isLoaded()) return;
-        ItemStack self = (ItemStack)(Object)this;
-        WeaponStats st = WeaponStatsRegistry.getStats(self);
-        if (st == null) return;
-        boolean hasDmg = !Float.isNaN(st.attackDamage);
-        boolean hasSpd = !Float.isNaN(st.attackSpeed);
-        boolean hasReach = !Float.isNaN(st.attackRange);
-        if (!hasDmg && !hasSpd && !hasReach) return;
+        // 何があってもゲームをクラッシュさせない ( 例外時は元の戻り値のまま )。
+        try {
+            if (slot != EquipmentSlot.MAINHAND || !WeaponStatsRegistry.isLoaded()) return;
+            ItemStack self = (ItemStack) (Object) this;
+            WeaponStats st = WeaponStatsRegistry.getStats(self);
+            if (st == null) return;
+            boolean hasDmg = !Float.isNaN(st.attackDamage);
+            boolean hasSpd = !Float.isNaN(st.attackSpeed);
+            boolean hasReach = !Float.isNaN(st.attackRange);
+            if (!hasDmg && !hasSpd && !hasReach) return;
 
-        // アイテム側に AttributeModifiers ( item attribute ) が付いている場合、 バニラはNBTの分だけを返す。
-        // その属性は item attribute を優先し、 NBTに含まれない属性だけ JSON で補う。
-        // → 例: forge:entity_reach だけNBTで指定すれば、 攻撃範囲はそれ・ダメージ/速度はJSONのまま。
-        boolean hasNbt = self.hasTag() && self.getTag().contains("AttributeModifiers", 9);
-        Attribute reach = ForgeMod.ENTITY_REACH.get();
-        Multimap<Attribute, AttributeModifier> out = HashMultimap.create(cir.getReturnValue());
+            Multimap<Attribute, AttributeModifier> orig = cir.getReturnValue();
+            if (orig == null) return;
 
-        if (hasDmg && !(hasNbt && out.containsKey(Attributes.ATTACK_DAMAGE))) {
-            out.removeAll(Attributes.ATTACK_DAMAGE);
-            // バニラは「基礎1 + modifier」で総攻撃力になる。 総攻撃力 = attackDamage にする。
-            out.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(
-                    ATTACK_DAMAGE_UUID, "Weapon modifier", st.attackDamage - 1.0, AttributeModifier.Operation.ADDITION));
-        }
-        if (hasSpd && !(hasNbt && out.containsKey(Attributes.ATTACK_SPEED))) {
-            out.removeAll(Attributes.ATTACK_SPEED);
-            out.put(Attributes.ATTACK_SPEED, new AttributeModifier(
-                    ATTACK_SPEED_UUID, "Weapon modifier", st.attackSpeed, AttributeModifier.Operation.ADDITION));
-        }
-        if (hasReach && !(hasNbt && out.containsKey(reach))) {
-            out.removeAll(reach);
-            out.put(reach, new AttributeModifier(
-                    TFPW_REACH_UUID, "Weapon reach", st.attackRange, AttributeModifier.Operation.ADDITION));
-        }
-        // 範囲が狭い武器 ( attack_range<0 ) は ブロック操作距離も縮める。
-        if (hasReach && st.attackRange < 0) {
-            Attribute blockReach = ForgeMod.BLOCK_REACH.get();
-            if (!(hasNbt && out.containsKey(blockReach))) {
+            // アイテム側に AttributeModifiers ( item attribute ) が付いていれば その属性は優先し、
+            // NBTに含まれない属性だけ JSON で補う ( 例: reach だけNBT指定→ダメージ/速度はJSONのまま )。
+            boolean hasNbt = self.hasTag() && self.getTag().contains("AttributeModifiers", 9);
+            Attribute reach = hasReach ? ForgeMod.ENTITY_REACH.get() : null;
+            Attribute blockReach = (hasReach && st.attackRange < 0) ? ForgeMod.BLOCK_REACH.get() : null;
+
+            boolean applyDmg = hasDmg && !(hasNbt && orig.containsKey(Attributes.ATTACK_DAMAGE));
+            boolean applySpd = hasSpd && !(hasNbt && orig.containsKey(Attributes.ATTACK_SPEED));
+            boolean applyReach = reach != null && !(hasNbt && orig.containsKey(reach));
+            boolean applyBlock = blockReach != null && !(hasNbt && orig.containsKey(blockReach));
+            // 変更が無いなら Map を確保せず即return ( ラグ削減 )。
+            if (!applyDmg && !applySpd && !applyReach && !applyBlock) return;
+
+            Multimap<Attribute, AttributeModifier> out = HashMultimap.create(orig);
+            if (applyDmg) {
+                out.removeAll(Attributes.ATTACK_DAMAGE);
+                // バニラは「基礎1 + modifier」で総攻撃力。 総攻撃力 = attackDamage。
+                out.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(
+                        ATTACK_DAMAGE_UUID, "Weapon modifier", st.attackDamage - 1.0, AttributeModifier.Operation.ADDITION));
+            }
+            if (applySpd) {
+                out.removeAll(Attributes.ATTACK_SPEED);
+                out.put(Attributes.ATTACK_SPEED, new AttributeModifier(
+                        ATTACK_SPEED_UUID, "Weapon modifier", st.attackSpeed, AttributeModifier.Operation.ADDITION));
+            }
+            if (applyReach) {
+                out.removeAll(reach);
+                out.put(reach, new AttributeModifier(
+                        TFPW_REACH_UUID, "Weapon reach", st.attackRange, AttributeModifier.Operation.ADDITION));
+            }
+            if (applyBlock) {
                 out.removeAll(blockReach);
                 out.put(blockReach, new AttributeModifier(
                         TFPW_BLOCK_REACH_UUID, "Weapon block reach", st.attackRange, AttributeModifier.Operation.ADDITION));
             }
+            cir.setReturnValue(out);
+        } catch (Throwable ignored) {
+            // no-op: 属性上書きは失敗しても無視 ( クラッシュ防止 )
         }
-        cir.setReturnValue(out);
     }
 }

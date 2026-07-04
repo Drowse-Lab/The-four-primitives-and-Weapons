@@ -45,5 +45,4 @@ https://github.com/Chuzume/True-Crafter-Mode
 https://youtu.be/7oI4bwtSQUQ  
 ***
 
-チャージ技とか/Users/hiromichi/The-four-primitives-and-Weapons/src/main/resources/data/the_four_primitives_and_weapons/weapon_types/preferred_motions.jsonc
-これで設定されている技にも範囲が適応されるようにして
+dagger鞘をslot backとbeltに入れられるアイテムとして認識されていない

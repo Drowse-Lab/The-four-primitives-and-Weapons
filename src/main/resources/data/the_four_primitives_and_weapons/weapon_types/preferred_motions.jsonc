@@ -31,7 +31,7 @@
     "straight_sword": ["thrust"],            // 直刀: 突き特化
     "sword":          ["slam_down"],         // 剣: 叩きつける
     "greatsword":     ["slam_down"],         // 大剣: 叩きつける
-    "dagger":         [],
+    "dagger":         ["thrust"],             // 短剣: 突き特化
     "trident":        ["thrust"],             // 槍: 突き特化
     "nata":           ["slam_down"]              // 鉈: 叩きつける
   },
@@ -64,8 +64,7 @@
       "spin_slash",                          // 回転斬り
       "slam_down"                            // 叩きつける
     ],
-    "dagger":         [
-      "thrust",                              // 突き
+    "dagger":         [                    
       "upper_left_slash",                    // 左上斬り
       "upper_right_slash",                   // 右上斬り
       "horizontal_slash"                     // 横一文字

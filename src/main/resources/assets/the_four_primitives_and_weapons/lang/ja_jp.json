@@ -474,6 +474,8 @@
   "weapon_proficiency.the_four_primitives_and_weapons.shield": "盾",
   "motion.the_four_primitives_and_weapons.thrust": "突き",
   "motion.the_four_primitives_and_weapons.thrust.desc": "直線的な突き攻撃",
+  "motion.the_four_primitives_and_weapons.thrust_combo": "突き連撃",
+  "motion.the_four_primitives_and_weapons.thrust_combo.desc": "短い突きを連続で繰り出す（武器の thrust 設定を使用）",
   "motion.the_four_primitives_and_weapons.upper_left_slash": "左上斬り",
   "motion.the_four_primitives_and_weapons.upper_left_slash.desc": "左上からの斜め斬り",
   "motion.the_four_primitives_and_weapons.upper_right_slash": "右上斬り",

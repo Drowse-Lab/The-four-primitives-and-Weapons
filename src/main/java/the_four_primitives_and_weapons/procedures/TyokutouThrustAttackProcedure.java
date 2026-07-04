@@ -101,7 +101,7 @@ public class TyokutouThrustAttackProcedure {
         double range = 7.0;  // 他の刀と同じ範囲
         double damage = 18.0;  // 他の刀と同じダメージ
 
-        Vec3 lookVec = player.getLookAngle();
+        Vec3 lookVec = the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
         Vec3 startPos = player.position().add(0, player.getEyeHeight(), 0);
 
         // 突進エフェクト
@@ -207,7 +207,7 @@ public class TyokutouThrustAttackProcedure {
         double damage = 35.0 + chargePercent * 20.0;  // 35.0～55.0
         double thrustPower = 0.8 + chargePercent * 0.4;  // 0.8～1.2（他の刀と同程度）
 
-        Vec3 lookVec = player.getLookAngle();
+        Vec3 lookVec = the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
         Vec3 startPos = player.position().add(0, player.getEyeHeight(), 0);
 
         // 超強力な突進エフェクト
@@ -370,7 +370,7 @@ public class TyokutouThrustAttackProcedure {
         double range = 4.0;
         double damage = 12.0;
 
-        Vec3 lookVec = player.getLookAngle();
+        Vec3 lookVec = the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
         Vec3 startPos = player.position().add(0, player.getEyeHeight(), 0);
 
         // エフェクト（小さいDustパーティクル）

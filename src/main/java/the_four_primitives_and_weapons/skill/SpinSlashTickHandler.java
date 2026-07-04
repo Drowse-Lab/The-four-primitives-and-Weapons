@@ -116,11 +116,11 @@ public class SpinSlashTickHandler {
                 float sweptAt = prevSwept + anglePerTick * frac;
                 double rad = Math.toRadians(s.startYaw + sweptAt + 90);
                 double r = s.range * 0.75;          // ring を 1 本に集約
-                sw.sendParticles(ParticleTypes.SWEEP_ATTACK,
+                sw.sendParticles(MotionExecutor.DUST_KATANA,   // 13-mystic-swords katana と同じ dust
                     p.getX() + Math.cos(rad) * r,
                     p.getY() + 1.1,
                     p.getZ() + Math.sin(rad) * r,
-                    1, 0, 0, 0, 0);
+                    3, 0.15, 0.1, 0.15, 0.001);
             }
         }
 
@@ -145,12 +145,16 @@ public class SpinSlashTickHandler {
         Vec3 playerPos = player.position();
         Level world = player.level();
 
-        // (1) 新規候補を AABB スキャンで補充 (session 中の登録は累積)
-        AABB area = new AABB(playerPos.x - s.range, playerPos.y - 1, playerPos.z - s.range,
-                              playerPos.x + s.range, playerPos.y + 3, playerPos.z + s.range);
-        for (LivingEntity le : world.getEntitiesOfClass(LivingEntity.class, area, e -> e != player)) {
-            if (le.distanceTo(player) <= s.range) {
-                s.tracked.put(le.getUUID(), le);
+        // (1) 新規候補を AABB スキャンで補充 (session 中の登録は累積)。
+        //     tracked は累積なので毎tick走査は不要 → 2tickに1回だけ ( 一番重い処理を半減 )。
+        //     途中で範囲に入った敵も 1tick 遅れで拾えるので実害なし。
+        if ((s.elapsed & 1) == 0) {
+            AABB area = new AABB(playerPos.x - s.range, playerPos.y - 1, playerPos.z - s.range,
+                                  playerPos.x + s.range, playerPos.y + 3, playerPos.z + s.range);
+            for (LivingEntity le : world.getEntitiesOfClass(LivingEntity.class, area, e -> e != player)) {
+                if (le.distanceTo(player) <= s.range) {
+                    s.tracked.put(le.getUUID(), le);
+                }
             }
         }
 
@@ -177,9 +181,9 @@ public class SpinSlashTickHandler {
                 s.hitEntities.add(target.getUUID());
 
                 if (world instanceof ServerLevel sw) {
-                    sw.sendParticles(ParticleTypes.SWEEP_ATTACK,
+                    sw.sendParticles(MotionExecutor.DUST_KATANA,
                         target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
-                        2, 0.1, 0.1, 0.1, 0);
+                        5, 0.2, 0.2, 0.2, 0.001);
                 }
             }
         }

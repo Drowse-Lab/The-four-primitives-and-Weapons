@@ -105,8 +105,8 @@
         "shift_right_click": ["guard", "none_shift"]
       },
       "default_motions": {
-        "first_hit": "slam_down",
-        "second_hit": "slam_down",
+        "first_hit": "upper_left_slash",
+        "second_hit": "upper_right_slash",
         "third_hit": "slam_down",
         "charged": "slam_down"
       }
@@ -133,20 +133,28 @@
         "shift_right_click": ["guard", "none_shift"]
       },
       "default_motions": {
-        "first_hit": "slam_down",
-        "second_hit": "slam_down",
+        "first_hit": "horizontal_slash",
+        "second_hit": "spin_slash",
         "third_hit": "slam_down",
         "charged": "slam_down"
       }
     },
     "dagger": {
       "display_name": "短剣",
-      "items": [],
+      "items": [
+        "the_four_primitives_and_weapons:iron_dagger"
+      ],
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
         "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
+      },
+      "default_motions": {
+        "first_hit": "thrust",
+        "second_hit": "upper_left_slash",
+        "third_hit": "upper_right_slash",
+        "charged": "thrust_combo"
       }
     },
     "shield": {

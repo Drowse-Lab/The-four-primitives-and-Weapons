@@ -88,7 +88,7 @@ public class MotionExecutor {
             }
 
             Level world = player.level();
-            Vec3 lookVec = player.getLookAngle();
+            Vec3 lookVec = horizontalLook(player);   // ピッチ無視: 上下向いても yaw 正面に技を出す
             Vec3 playerPos = player.position();
 
             switch (motionId) {
@@ -108,6 +108,16 @@ public class MotionExecutor {
                 case "electric_discharge" -> ElectricDischargeBurstSkill.fire(player);
                 case "sword_of_night_tp" -> SwordOfNightTpProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
                 case "magic_katana_special" -> MagicKatanaSpecialChargeProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player, chargePercent);
+                // 突き連撃 ( weapon_stats の thrust 設定を使う。 ダガーのチャージ等 )。 未設定なら通常の突き。
+                case "thrust_combo" -> {
+                    the_four_primitives_and_weapons.skill.WeaponStatsRegistry.WeaponStats st =
+                            the_four_primitives_and_weapons.skill.WeaponStatsRegistry.getStats(player.getMainHandItem());
+                    if (st != null && st.thrust != null) {
+                        the_four_primitives_and_weapons.procedures.JsonThrustProcedure.execute(player, chargePercent, st.thrust);
+                    } else {
+                        performThrust(player, world, lookVec, playerPos, chargePercent);
+                    }
+                }
                 default -> performThrust(player, world, lookVec, playerPos, chargePercent);
             }
         } finally {
@@ -134,40 +144,14 @@ public class MotionExecutor {
         // 竹破壊
         breakBambooInPath(world, playerPos, lookVec, range);
 
-        // エフェクト
+        // エフェクト ( 13-mystic-swords katana と同じ 3クラスタ dust 扇に統一 )
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
-
+            slashCloudFan(serverWorld, player, lookVec, playerPos, 0.0);
             if (isCharged) {
-                // チャージ版: 貫通突き
-                for (double d = 0; d <= range; d += 0.3) {
-                    serverWorld.sendParticles(ParticleTypes.ELECTRIC_SPARK,
-                        playerPos.x + lookVec.x * d, playerPos.y + 1, playerPos.z + lookVec.z * d,
-                        5, 0.2, 0.2, 0.2, 0.05);
-                    if (chargePercent >= 1.0f) {
-                        serverWorld.sendParticles(ParticleTypes.END_ROD,
-                            playerPos.x + lookVec.x * d, playerPos.y + 1, playerPos.z + lookVec.z * d,
-                            2, 0.1, 0.1, 0.1, 0);
-                    }
-                }
-            } else {
-                // 通常版
-                for (int i = 0; i < 5; i++) {
-                    double d = i * 0.5 + 1;
-                    Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
-                    serverWorld.sendParticles(ParticleTypes.CRIT,
-                        playerPos.x + lookVec.x * d, playerPos.y + 1, playerPos.z + lookVec.z * d,
-                        2, 0.05, 0.05, 0.05, 0);
-                    for (double side = -1.5; side <= 1.5; side += 0.5) {
-                        if (side != 0) {
-                            serverWorld.sendParticles(ParticleTypes.ENCHANTED_HIT,
-                                playerPos.x + lookVec.x * d + rightVec.x * side,
-                                playerPos.y + 1,
-                                playerPos.z + lookVec.z * d + rightVec.z * side,
-                                1, 0.02, 0.02, 0.02, 0);
-                        }
-                    }
-                }
+                serverWorld.sendParticles(ParticleTypes.ENCHANTED_HIT,
+                    playerPos.x + lookVec.x * 2, playerPos.y + 1.2, playerPos.z + lookVec.z * 2,
+                    8, 0.4, 0.4, 0.4, 0.1);
             }
         }
 
@@ -224,20 +208,8 @@ public class MotionExecutor {
 
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
-            // 左上から右下への斜め斬り ( 向きに対して横へ広げ、 緩やかに降下 )
-            double px = -lookVec.z, pz = lookVec.x;            // 水平の右向きベクトル
-            double plen = Math.sqrt(px * px + pz * pz);
-            if (plen > 1e-4) { px /= plen; pz /= plen; }
-            double cx = playerPos.x + lookVec.x * 2;
-            double cz = playerPos.z + lookVec.z * 2;
-            for (int i = -4; i <= 4; i++) {
-                double t = i * 0.28;                            // 横の広がり ( 左→右 )
-                serverWorld.sendParticles(ParticleTypes.SWEEP_ATTACK,
-                    cx + px * t,
-                    playerPos.y + 1.5 - i * 0.10,               // 降下を緩やかに ( 0.2→0.10 )
-                    cz + pz * t,
-                    1, 0, 0, 0, 0);
-            }
+            // 左上から右下への斜め斬り: 横に大きく広がる白い雲のファン ( 左が高い )
+            slashCloudFan(serverWorld, player, lookVec, playerPos, -0.5);
             if (isCharged) {
                 serverWorld.sendParticles(ParticleTypes.ENCHANTED_HIT,
                     playerPos.x + lookVec.x * 2, playerPos.y + 1.2, playerPos.z + lookVec.z * 2,
@@ -260,20 +232,8 @@ public class MotionExecutor {
 
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
-            // 右上から左下への斜め斬り ( 横は反転、 緩やかに降下 )
-            double px = -lookVec.z, pz = lookVec.x;            // 水平の右向きベクトル
-            double plen = Math.sqrt(px * px + pz * pz);
-            if (plen > 1e-4) { px /= plen; pz /= plen; }
-            double cx = playerPos.x + lookVec.x * 2;
-            double cz = playerPos.z + lookVec.z * 2;
-            for (int i = -4; i <= 4; i++) {
-                double t = i * 0.28;                            // 横の広がり ( 右→左 )
-                serverWorld.sendParticles(ParticleTypes.SWEEP_ATTACK,
-                    cx - px * t,
-                    playerPos.y + 1.5 - i * 0.10,               // 降下を緩やかに ( 0.2→0.10 )
-                    cz - pz * t,
-                    1, 0, 0, 0, 0);
-            }
+            // 右上から左下への斜め斬り: 横に大きく広がる白い雲のファン ( 右が高い )
+            slashCloudFan(serverWorld, player, lookVec, playerPos, 0.5);
             if (isCharged) {
                 serverWorld.sendParticles(ParticleTypes.ENCHANTED_HIT,
                     playerPos.x + lookVec.x * 2, playerPos.y + 1.2, playerPos.z + lookVec.z * 2,
@@ -296,16 +256,10 @@ public class MotionExecutor {
 
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
-            // 横一文字エフェクト
-            Vec3 right = lookVec.cross(new Vec3(0, 1, 0)).normalize();
-            for (int i = -3; i <= 3; i++) {
-                serverWorld.sendParticles(ParticleTypes.SWEEP_ATTACK,
-                    playerPos.x + lookVec.x * 2 + right.x * i * 0.3,
-                    playerPos.y + 1,
-                    playerPos.z + lookVec.z * 2 + right.z * i * 0.3,
-                    1, 0, 0, 0, 0);
-            }
+            // 横一文字: 横に大きく広がる白い雲のファン ( 水平 )
+            slashCloudFan(serverWorld, player, lookVec, playerPos, 0.0);
             if (isCharged) {
+                Vec3 right = lookVec.cross(new Vec3(0, 1, 0)).normalize();
                 for (int i = -4; i <= 4; i++) {
                     serverWorld.sendParticles(ParticleTypes.ENCHANTED_HIT,
                         playerPos.x + lookVec.x * 2 + right.x * i * 0.4,
@@ -343,23 +297,14 @@ public class MotionExecutor {
         // 開始時の小さな視覚フラッシュ (足元のリング)
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
+            // 全周に katana dust のリング ( 13-mystic-swords と同じ色 )
             for (int i = 0; i < 360; i += 30) {
                 double rad = Math.toRadians(i);
-                serverWorld.sendParticles(ParticleTypes.CRIT,
-                    playerPos.x + Math.cos(rad) * range * 0.5,
-                    playerPos.y + 0.2,
-                    playerPos.z + Math.sin(rad) * range * 0.5,
-                    1, 0, 0, 0, 0);
-            }
-            if (isCharged && chargePercent >= 1.0f) {
-                for (int i = 0; i < 8; i++) {
-                    double angle = Math.PI * 2 * i / 8;
-                    serverWorld.sendParticles(ParticleTypes.ELECTRIC_SPARK,
-                        playerPos.x + Math.cos(angle) * range,
-                        playerPos.y + 1,
-                        playerPos.z + Math.sin(angle) * range,
-                        10, 0.2, 0.5, 0.2, 0.1);
-                }
+                serverWorld.sendParticles(DUST_KATANA,
+                    playerPos.x + Math.cos(rad) * range * 0.7,
+                    playerPos.y + 1.0,
+                    playerPos.z + Math.sin(rad) * range * 0.7,
+                    3, 0.2, 0.1, 0.2, 0.001);
             }
         }
 
@@ -501,22 +446,69 @@ public class MotionExecutor {
     }
 
     // === 竹破壊ユーティリティ ===
+    /** ピッチを無視した水平前方ベクトル ( 上下を向いていても yaw 正面に技を出すための向き )。 */
+    public static Vec3 horizontalLook(Player player) {
+        return Vec3.directionFromRotation(0.0f, player.getYRot());
+    }
+
+    // 13-mystic-swords の katana ( Sword:101 ) と同じ色: 明るい暖色グレー、 サイズ1
+    // ( 同パッケージの SpinSlashTickHandler 等からも使うので package-private )
+    static final net.minecraft.core.particles.DustParticleOptions DUST_KATANA =
+            new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.867f, 0.835f, 0.835f), 1.0f);
+
+    /** 突き系の見た目: 前方に katana dust のクラスタを3つ ( 手前→奥 ) 並べる。 */
+    private static void katanaDustForward(ServerLevel sw, Player player, Vec3 look, Vec3 playerPos, double range) {
+        double y = playerPos.y + player.getEyeHeight() * 0.85;
+        double far = Math.max(2.0, range);
+        for (int k = 0; k < 3; k++) {
+            double d = 1.5 + k * (far - 1.5) / 2.0;
+            sw.sendParticles(DUST_KATANA,
+                playerPos.x + look.x * d, y, playerPos.z + look.z * d,
+                40, 0.5, 0.3, 0.5, 0.002);
+        }
+    }
+
+    /**
+     * 斬撃の見た目 ( 13-mystic-swords の katana を忠実再現 ):
+     * 前方3ブロックに 左/中/右 の3クラスタを斜めに配置し、 各50個の dust を横に広く散布。
+     * @param tilt 斜め具合 ( 0=横一文字 / 負=左が高い(\) / 正=右が高い(/) )。 端の高さ差 = tilt。
+     */
+    private static void slashCloudFan(ServerLevel sw, Player player, Vec3 look, Vec3 playerPos, double tilt) {
+        Vec3 right = new Vec3(-look.z, 0, look.x).normalize();
+        // 武器の攻撃範囲 ( attack_range ) でパーティクルの広がりをスケール ( 範囲が広い武器ほど大きく )
+        double bonus = the_four_primitives_and_weapons.skill.WeaponStatsRegistry.attackRangeBonus(player.getMainHandItem());
+        double scale = Math.max(0.4, 1.0 + bonus * 0.25);
+        double fwd = 3.0 * scale;                      // ^3 ( 前方 ) を範囲でスケール
+        double sideBase = 2.0 * scale;                 // 横の広がり
+        double delta = 1.0 * scale;                    // 各クラスタの散布幅
+        double[] sides   = { -sideBase, 0.0, sideBase };
+        double[] heights = { 1.2 - tilt, 1.2, 1.2 + tilt }; // ^0.7 / ^1.2 / ^1.7 ( 斜め )
+        for (int k = 0; k < 3; k++) {
+            double x = playerPos.x + look.x * fwd + right.x * sides[k];
+            double y = playerPos.y + heights[k];
+            double z = playerPos.z + look.z * fwd + right.z * sides[k];
+            // 本家: delta 1 0 1 ( 横に広く・上下は広げない ), speed 0.001, count 50
+            sw.sendParticles(DUST_KATANA, x, y, z, 50, delta, 0.0, delta, 0.001);
+        }
+    }
+
     public static void breakBambooInPath(Level world, Vec3 startPos, Vec3 direction, double range) {
         if (world.isClientSide) return;
 
-        for (double d = 0; d <= range; d += 0.5) {
-            Vec3 checkPos = startPos.add(direction.scale(d));
+        // MutableBlockPos で毎回の BlockPos 生成を無くし、 過走査 ( step 0.5 ) を 1.0 に。
+        // ±1 の走査幅があるので step 1.0 でも隙間なくカバーでき、 挙動はほぼ同じ・コストは大幅減。
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (double d = 0; d <= range; d += 1.0) {
+            double cx = startPos.x + direction.x * d;
+            double cy = startPos.y + direction.y * d;
+            double cz = startPos.z + direction.z * d;
             for (int dx = -1; dx <= 1; dx++) {
                 for (int dy = -1; dy <= 2; dy++) {
                     for (int dz = -1; dz <= 1; dz++) {
-                        BlockPos pos = new BlockPos(
-                            (int)(checkPos.x + dx),
-                            (int)(checkPos.y + dy),
-                            (int)(checkPos.z + dz));
+                        pos.set((int) (cx + dx), (int) (cy + dy), (int) (cz + dz));
                         BlockState state = world.getBlockState(pos);
-                        if (state.getBlock() == Blocks.BAMBOO ||
-                            state.getBlock() == Blocks.BAMBOO_SAPLING) {
-                            world.destroyBlock(pos, true);
+                        if (state.is(Blocks.BAMBOO) || state.is(Blocks.BAMBOO_SAPLING)) {
+                            world.destroyBlock(pos.immutable(), true);
                         }
                     }
                 }

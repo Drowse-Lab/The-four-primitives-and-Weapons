@@ -686,7 +686,8 @@ public class DodgeAndBattouHandler {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
         return itemName.equals("SayaItem") || itemName.equals("TyokutoSayaItem")
-            || itemName.equals("SwordSayaItem") || itemName.equals("RapierSayaItem");
+            || itemName.equals("SwordSayaItem") || itemName.equals("RapierSayaItem")
+            || itemName.equals("DaggerSayaItem");
     }
 
     private static boolean isRapierSaya(ItemStack stack) {

@@ -231,8 +231,10 @@ public class ChargedAttackHandler {
                 TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new AttackPacket(0, 0));
             }
 
-            // チャージ開始（左クリック長押し）- クールダウン中は開始しない
-            if (isLeftClickHeld && !data.isCharging && data.clickReleaseTimer > 5) {
+            // チャージ開始（左クリック長押し）- クールダウン中は開始しない。
+            // 閾値を上げて「コンボの押しっぱなし」で誤ってチャージ攻撃(slam_down等)が
+            // 出るのを防ぐ ( 5→10 tick = 0.5秒明確に押し続けた時だけチャージ開始 )。
+            if (isLeftClickHeld && !data.isCharging && data.clickReleaseTimer > 10) {
                 if (data.chargeCooldown <= 0) {
                     data.isCharging = true;
                     data.chargeTime = 0;
@@ -301,7 +303,7 @@ public class ChargedAttackHandler {
     public static void performChargedAttack(Player player, float chargePercent, boolean isCooldown) {
         Level world = player.level();
         Vec3 playerPos = player.position();
-        Vec3 lookVec = player.getLookAngle();
+        Vec3 lookVec = the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
 
         // プレイヤーのスキルデータを取得
         PlayerSkillData.SkillStorage skillData = PlayerSkillData.getSkillData(player);

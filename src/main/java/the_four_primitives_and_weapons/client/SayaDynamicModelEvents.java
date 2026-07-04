@@ -45,7 +45,7 @@ public final class SayaDynamicModelEvents {
 
     private SayaDynamicModelEvents() {}
 
-    private static final String[] SAYA_SUBDIRS = { "katana", "sword", "tyokuto", "rapier" };
+    private static final String[] SAYA_SUBDIRS = { "katana", "sword", "tyokuto", "rapier", "dagger" };
     private static final String MODELS_PREFIX = "models/custom/saya/";
 
     /** スキャンで見つかった全カスタム鞘モデルの ResourceLocation 集合。 */

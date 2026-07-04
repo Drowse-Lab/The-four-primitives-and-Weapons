@@ -30,7 +30,8 @@ public class CuriosScabbardHelper {
     public static final String NBT_STORED_KATANA = "StoredKatana";
     public static final String NBT_STORED_SWORD  = "StoredSword";
     public static final String NBT_STORED_RAPIER = "StoredRapier";
-    public static final String[] STORED_KEYS = { NBT_STORED_KATANA, NBT_STORED_SWORD, NBT_STORED_RAPIER };
+    public static final String NBT_STORED_DAGGER = "StoredDagger";
+    public static final String[] STORED_KEYS = { NBT_STORED_KATANA, NBT_STORED_SWORD, NBT_STORED_RAPIER, NBT_STORED_DAGGER };
 
     /** 鞘アイテムに応じた NBT ストレージキーを返す。 */
     public static String storageKeyFor(ItemStack sayaStack) {
@@ -237,7 +238,8 @@ public class CuriosScabbardHelper {
         return stack.getItem() instanceof SayaItem
             || stack.getItem() instanceof TyokutoSayaItem
             || stack.getItem() instanceof SwordSayaItem
-            || stack.getItem() instanceof RapierSayaItem;
+            || stack.getItem() instanceof RapierSayaItem
+            || stack.getItem() instanceof the_four_primitives_and_weapons.item.DaggerSayaItem;
     }
 
     /**
@@ -393,9 +395,11 @@ public class CuriosScabbardHelper {
         boolean isTyokutoSaya = scabbardStack.getItem() instanceof TyokutoSayaItem;
         boolean isSwordSaya   = scabbardStack.getItem() instanceof SwordSayaItem;
         boolean isRapierSaya  = scabbardStack.getItem() instanceof RapierSayaItem;
+        boolean isDaggerSaya  = scabbardStack.getItem() instanceof the_four_primitives_and_weapons.item.DaggerSayaItem;
         boolean isStraightSword = the_four_primitives_and_weapons.procedures.TyokutouThrustAttackProcedure.isStraightSword(weaponStack);
         boolean isSwordSayaTarget  = SwordSayaItem.canSheathe(weaponStack);
         boolean isRapierSayaTarget = RapierSayaItem.canSheathe(weaponStack);
+        boolean isDaggerSayaTarget = the_four_primitives_and_weapons.item.DaggerSayaItem.canSheathe(weaponStack);
         if (isTyokutoSaya) {
             // 直刀 saya は 直刀なら全部受理 ( SayaRegistry 未登録でも納刀可能 )。
             // モデルデータが無い武器は saya 側でデフォルト表示になるだけで機能上問題ない。
@@ -404,9 +408,11 @@ public class CuriosScabbardHelper {
             return isSwordSayaTarget;
         } else if (isRapierSaya) {
             return isRapierSayaTarget;
+        } else if (isDaggerSaya) {
+            return isDaggerSayaTarget;
         } else {
             // 通常鞘 (katana): 専用鞘対象は排除し、katana 登録済みのみ受理
-            if (isStraightSword || isSwordSayaTarget || isRapierSayaTarget) return false;
+            if (isStraightSword || isSwordSayaTarget || isRapierSayaTarget || isDaggerSayaTarget) return false;
             return SayaRegistry.isRegistered(SayaRegistry.SayaType.KATANA, weaponStack);
         }
     }

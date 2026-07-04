@@ -31,7 +31,7 @@ public final class JsonThrustProcedure {
         Level world = player.level();
         if (world.isClientSide) return;
 
-        Vec3 look = player.getLookAngle();
+        Vec3 look = the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
         Vec3 eye = player.position().add(0, player.getEyeHeight() * 0.6, 0);
         double range = cfg.range * (1.0 + chargePercent * 0.3); // チャージで少しだけ伸びる
 

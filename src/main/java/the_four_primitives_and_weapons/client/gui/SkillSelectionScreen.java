@@ -53,6 +53,13 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
     // タイプモード用のクライアントローカル選択状態（サーバー同期とは別にUI表示用）
     private final java.util.Map<String, String> localTypeSelections = new java.util.HashMap<>();
 
+    // タイプ列のスクロール ( 種類が多い時に横の欄をスクロールして全部選べる )
+    private static final int TYPE_ROW_H = 11;
+    private static final int TYPE_COL_W = 52;
+    private int typeScrollOffset = 0;
+    // スクロール当たり判定・▲▼表示・proficiency配置用に buildTypeButtons で保存
+    private int typeColX, typeColW, typeColTop, typeRowH, typeMaxVisible, typeTotal;
+
     // レイアウト定数
     private static final int HEADER_HEIGHT = 14;
     // 実際のスロット (WeaponSlot) は y=22 に配置されるので、視覚的背景も同じ位置に揃える
@@ -220,22 +227,43 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
     /**
      * 武器タイプ選択ボタン（刀、剣、直刀…）
      */
+    /**
+     * タイプ列の行ピッチ。 タイプ数が多くても ウィンドウ高さに収まるよう動的に詰める ( 溢れ防止 )。
+     * addon で種類が増えても全部表示されるようにする。
+     */
+    /** タイプ列に表示できる最大行数 ( ウィンドウ高さから算出 )。 */
+    private int typeVisibleRows() {
+        int top = topPos + RADIO_ROW_Y;
+        int bottom = Math.min(topPos + imageHeight, this.height) - 24; // proficiencyボタン分の余白
+        return Math.max(1, (bottom - top) / TYPE_ROW_H);
+    }
+
     private void buildTypeButtons() {
-        Collection<WeaponTypeRegistry.WeaponTypeData> types = WeaponTypeRegistry.getAllTypes();
+        java.util.List<WeaponTypeRegistry.WeaponTypeData> types =
+                new java.util.ArrayList<>(WeaponTypeRegistry.getAllTypes());
         if (types.isEmpty()) return;
 
-        int btnX = leftPos + imageWidth - 4;
-        int btnY = topPos + RADIO_ROW_Y;
         final float TYPE_SCALE = 0.7f;
+        int bx = leftPos + imageWidth - 4 - TYPE_COL_W;
+        int top = topPos + RADIO_ROW_Y;
+        int maxVisible = typeVisibleRows();
+        int total = types.size();
+        int maxOffset = Math.max(0, total - maxVisible);
+        if (typeScrollOffset > maxOffset) typeScrollOffset = maxOffset;
+        if (typeScrollOffset < 0) typeScrollOffset = 0;
+        // スクロール当たり判定 / ▲▼ / proficiency 用に保存
+        typeColX = bx; typeColW = TYPE_COL_W; typeColTop = top; typeRowH = TYPE_ROW_H;
+        typeMaxVisible = maxVisible; typeTotal = total;
 
-        // 右側に縦並びでタイプボタンを配置
-        for (WeaponTypeRegistry.WeaponTypeData type : types) {
+        int end = Math.min(total, typeScrollOffset + maxVisible);
+        int btnY = top;
+        // スクロール窓内のタイプだけボタン化 ( 種類が多くても収まる )
+        for (int idx = typeScrollOffset; idx < end; idx++) {
+            WeaponTypeRegistry.WeaponTypeData type = types.get(idx);
             final String typeId = type.getId();
             Component labelComp = Component.translatableWithFallback(type.translationKey(), type.getDisplayName());
-            int btnW = Math.max(18, (int)(font.width(labelComp) * TYPE_SCALE) + 6);
-            int bx = btnX - btnW;
 
-            addRenderableWidget(new AbstractButton(bx, btnY, btnW, 9, labelComp) {
+            addRenderableWidget(new AbstractButton(bx, btnY, TYPE_COL_W, 9, labelComp) {
                 @Override
                 public void onPress() {
                     selectedLoadoutIndex = -1;
@@ -265,8 +293,23 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
                     this.defaultButtonNarrationText(n);
                 }
             });
-            btnY += 11;
+            btnY += TYPE_ROW_H;
         }
+    }
+
+    @Override
+    public boolean mouseScrolled(double mx, double my, double delta) {
+        // タイプ列の上でホイール → スクロールして隠れているタイプを表示・選択できる
+        if (typeTotal > typeMaxVisible
+                && mx >= typeColX && mx <= typeColX + typeColW
+                && my >= typeColTop && my <= typeColTop + typeMaxVisible * typeRowH) {
+            int maxOffset = Math.max(0, typeTotal - typeMaxVisible);
+            int old = typeScrollOffset;
+            typeScrollOffset -= (int) Math.signum(delta);   // 上スクロールで前のタイプへ
+            typeScrollOffset = Math.max(0, Math.min(maxOffset, typeScrollOffset));
+            if (typeScrollOffset != old) { buildWidgets(); return true; }
+        }
+        return super.mouseScrolled(mx, my, delta);
     }
 
     /**
@@ -286,9 +329,9 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         int btnW = 80;
         int btnH = 11;
         int btnX = leftPos + imageWidth - btnW - 4;
-        // type ボタンは RADIO_ROW_Y から 11px ピッチで並ぶ。11 種類で y += 11*11 = 121。
-        int typeCount = WeaponTypeRegistry.getAllTypes().size();
-        int btnY = topPos + RADIO_ROW_Y + typeCount * 11 + 8;
+        // type スクロール窓の下に配置 ( 種類が増えて窓が満杯でも被らない )。
+        int visible = Math.min(typeVisibleRows(), WeaponTypeRegistry.getAllTypes().size());
+        int btnY = topPos + RADIO_ROW_Y + visible * TYPE_ROW_H + 6;
 
         Component currentName = Component.translatable(current.translationKey());
         addRenderableWidget(new AbstractButton(btnX, btnY, btnW, btnH,
@@ -661,6 +704,15 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         this.renderBackground(g);
         super.render(g, mouseX, mouseY, partialTick);
         this.renderTooltip(g, mouseX, mouseY);
+
+        // タイプ列がスクロール可能なら ▲▼ を表示 ( 上下に隠れているタイプがある合図 )
+        if (typeTotal > typeMaxVisible) {
+            int cx = typeColX + typeColW / 2;
+            if (typeScrollOffset > 0)
+                g.drawCenteredString(font, "▲", cx, typeColTop - 8, 0xFFC9A24B);
+            if (typeScrollOffset + typeMaxVisible < typeTotal)
+                g.drawCenteredString(font, "▼", cx, typeColTop + typeMaxVisible * typeRowH, 0xFFC9A24B);
+        }
 
         // ホバー説明文（フッターバーなし、テキストのみ）
         if (hoveredDescription != null) {

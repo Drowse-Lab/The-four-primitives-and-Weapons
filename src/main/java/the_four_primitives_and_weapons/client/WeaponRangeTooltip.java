@@ -30,36 +30,40 @@ public class WeaponRangeTooltip {
 
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {
-        ItemStack stack = event.getItemStack();
-        if (stack.isEmpty()) return;
-        // このMODのアイテムのみ対象
-        var id = ForgeRegistries.ITEMS.getKey(stack.getItem());
-        if (id == null || !id.getNamespace().equals(TheFourPrimitivesAndWeaponsMod.MODID)) return;
+        try {
+            ItemStack stack = event.getItemStack();
+            if (stack.isEmpty()) return;
+            // このMODのアイテムのみ対象
+            var id = ForgeRegistries.ITEMS.getKey(stack.getItem());
+            if (id == null || !id.getNamespace().equals(TheFourPrimitivesAndWeaponsMod.MODID)) return;
 
-        List<Component> tip = event.getToolTip();
+            List<Component> tip = event.getToolTip();
 
-        // 自動追加された Reach 系の行を除去 ( 重複防止 )。
-        String entityReachName = I18n.get(ForgeMod.ENTITY_REACH.get().getDescriptionId());
-        String blockReachName = I18n.get(ForgeMod.BLOCK_REACH.get().getDescriptionId());
-        tip.removeIf(c -> {
-            String s = c.getString();
-            return s.contains(entityReachName) || s.contains(blockReachName);
-        });
+            // 自動追加された Reach 系の行を除去 ( 重複防止 )。
+            String entityReachName = I18n.get(ForgeMod.ENTITY_REACH.get().getDescriptionId());
+            String blockReachName = I18n.get(ForgeMod.BLOCK_REACH.get().getDescriptionId());
+            tip.removeIf(c -> {
+                String s = c.getString();
+                return s.contains(entityReachName) || s.contains(blockReachName);
+            });
 
-        // 攻撃速度の行を探す ( = 近接武器のとき )。 無ければ範囲は表示しない。
-        String atkSpeedName = I18n.get(Attributes.ATTACK_SPEED.getDescriptionId());
-        int idx = -1;
-        for (int i = 0; i < tip.size(); i++) {
-            if (tip.get(i).getString().contains(atkSpeedName)) { idx = i; break; }
+            // 攻撃速度の行を探す ( = 近接武器のとき )。 無ければ範囲は表示しない。
+            String atkSpeedName = I18n.get(Attributes.ATTACK_SPEED.getDescriptionId());
+            int idx = -1;
+            for (int i = 0; i < tip.size(); i++) {
+                if (tip.get(i).getString().contains(atkSpeedName)) { idx = i; break; }
+            }
+            if (idx < 0) return;
+
+            double range = BASE_REACH + WeaponStatsRegistry.attackRangeBonus(stack);
+            Component line = Component.translatable(
+                    "attribute.modifier.equals.0",
+                    ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(range),
+                    Component.translatable("attribute.name.the_four_primitives_and_weapons.attack_range"))
+                    .withStyle(ChatFormatting.DARK_GREEN);
+            tip.add(idx + 1, line);
+        } catch (Throwable ignored) {
+            // no-op: ツールチップ描画は失敗しても無視 ( クラッシュ防止 )
         }
-        if (idx < 0) return;
-
-        double range = BASE_REACH + WeaponStatsRegistry.attackRangeBonus(stack);
-        Component line = Component.translatable(
-                "attribute.modifier.equals.0",
-                ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(range),
-                Component.translatable("attribute.name.the_four_primitives_and_weapons.attack_range"))
-                .withStyle(ChatFormatting.DARK_GREEN);
-        tip.add(idx + 1, line);
     }
 }
