@@ -60,6 +60,8 @@ public final class SayaDynamicModelEvents {
             new ModelResourceLocation(new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "tyokuto_saya"), "inventory");
     private static final ModelResourceLocation MRL_RAPIER_SAYA =
             new ModelResourceLocation(new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "rapier_saya"), "inventory");
+    private static final ModelResourceLocation MRL_DAGGER_SAYA =
+            new ModelResourceLocation(new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "dagger_saya"), "inventory");
 
     @SubscribeEvent
     public static void onRegisterAdditional(ModelEvent.RegisterAdditional event) {
@@ -114,6 +116,7 @@ public final class SayaDynamicModelEvents {
         wrapSaya(event, MRL_SWORD_SAYA, SayaRegistry.SayaType.SWORD);
         wrapSaya(event, MRL_TYOKUTO_SAYA, SayaRegistry.SayaType.TYOKUTO);
         wrapSaya(event, MRL_RAPIER_SAYA, SayaRegistry.SayaType.RAPIER);
+        wrapSaya(event, MRL_DAGGER_SAYA, SayaRegistry.SayaType.DAGGER);
     }
 
     private static void wrapSaya(ModelEvent.ModifyBakingResult event,

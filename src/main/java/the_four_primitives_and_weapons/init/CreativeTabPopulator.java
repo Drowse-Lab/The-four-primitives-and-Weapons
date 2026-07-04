@@ -68,6 +68,7 @@ public class CreativeTabPopulator {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.DIAMOND_RAPIER);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.NETHERITE_RAPIER);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.RAPIER_SAYA);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.DAGGER_SAYA);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.RAW_URUSHI);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.URUSHI_BLACK);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.URUSHI_RED);
@@ -274,6 +275,7 @@ public class CreativeTabPopulator {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.TYOKUTO_SAYA);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.SWORD_SAYA);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.RAPIER_SAYA);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.DAGGER_SAYA);
 			// 漆素材
 			event.accept(TheFourPrimitivesAndWeaponsModItems.RAW_URUSHI);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.URUSHI_BLACK);

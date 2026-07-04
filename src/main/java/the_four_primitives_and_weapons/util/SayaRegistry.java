@@ -68,7 +68,8 @@ public class SayaRegistry extends SimplePreparableReloadListener<Map<SayaRegistr
         KATANA("katana"),
         TYOKUTO("tyokuto"),
         SWORD("sword"),
-        RAPIER("rapier");
+        RAPIER("rapier"),
+        DAGGER("dagger");
 
         private final String key;
 

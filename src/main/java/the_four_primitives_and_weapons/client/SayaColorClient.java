@@ -34,7 +34,8 @@ public class SayaColorClient {
 				TheFourPrimitivesAndWeaponsModItems.SAYA.get(),
 				TheFourPrimitivesAndWeaponsModItems.TYOKUTO_SAYA.get(),
 				TheFourPrimitivesAndWeaponsModItems.SWORD_SAYA.get(),
-				TheFourPrimitivesAndWeaponsModItems.RAPIER_SAYA.get());
+				TheFourPrimitivesAndWeaponsModItems.RAPIER_SAYA.get(),
+				TheFourPrimitivesAndWeaponsModItems.DAGGER_SAYA.get());
 	}
 
 	/** 納刀中の刀の拵え色を 0xFFRRGGBB で返す ( 1=柄/2=鍔/3=頭。 未設定/未収納は白 )。 */
@@ -58,7 +59,7 @@ public class SayaColorClient {
 
 	/** 鞘に納められている武器 ItemStack を取り出す ( StoredKatana/Sword/Rapier )。 無ければ null。 */
 	private static ItemStack storedWeapon(net.minecraft.nbt.CompoundTag t) {
-		for (String key : new String[]{ "StoredKatana", "StoredSword", "StoredRapier" }) {
+		for (String key : new String[]{ "StoredKatana", "StoredSword", "StoredRapier", "StoredDagger" }) {
 			if (t.contains(key, 10)) return ItemStack.of(t.getCompound(key));
 		}
 		return null;

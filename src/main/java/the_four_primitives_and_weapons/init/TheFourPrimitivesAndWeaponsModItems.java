@@ -300,6 +300,7 @@ public class TheFourPrimitivesAndWeaponsModItems {
 	public static final RegistryObject<Item> DIAMOND_RAPIER = REGISTRY.register("diamond_rapier", () -> new DiamondRapierItem());
 	public static final RegistryObject<Item> NETHERITE_RAPIER = REGISTRY.register("netherite_rapier", () -> new NetheriteRapierItem());
 	public static final RegistryObject<Item> RAPIER_SAYA = REGISTRY.register("rapier_saya", () -> new RapierSayaItem());
+	public static final RegistryObject<Item> DAGGER_SAYA = REGISTRY.register("dagger_saya", () -> new the_four_primitives_and_weapons.item.DaggerSayaItem());
 	public static final RegistryObject<Item> PARRY_SHIELD = REGISTRY.register("parry_shield", () -> new ParryShieldItem());
 
 	// 漆 ( 原木から採れる生漆 → 漆黒/朱の漆。 鞘に塗って塗鞘スタイルにする )

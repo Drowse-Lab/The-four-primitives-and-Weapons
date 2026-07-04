@@ -17,48 +17,47 @@
     "  モデルファイルは assets/<your_namespace>/models/custom/saya/<type>/saya_xxx.json に置く。",
     "  先頭 _ のファイルは無視される (テンプレート用)。"
   ],
-
   "katana": {
-    "the_four_primitives_and_weapons:iron_katana":             "the_four_primitives_and_weapons:custom/saya/katana/saya_iron_katana",
-    "the_four_primitives_and_weapons:gold_katana":             "the_four_primitives_and_weapons:custom/saya/katana/saya_gold_katana",
-    "the_four_primitives_and_weapons:stone_katana":            "the_four_primitives_and_weapons:custom/saya/katana/saya_stone_katana",
-    "the_four_primitives_and_weapons:netherite_katana":        "the_four_primitives_and_weapons:custom/saya/katana/saya_netherite_katana",
-    "the_four_primitives_and_weapons:wither_katana":           "the_four_primitives_and_weapons:custom/saya/katana/saya_wither_katana",
-    "the_four_primitives_and_weapons:darkness_katana":         "the_four_primitives_and_weapons:custom/saya/katana/saya_darkness_katana",
-    "the_four_primitives_and_weapons:magical_katana":          "the_four_primitives_and_weapons:custom/saya/katana/saya_magical_katana",
-    "the_four_primitives_and_weapons:magisches_feen_katana":   "the_four_primitives_and_weapons:custom/saya/katana/saya_magischesfeen_katana",
-    "the_four_primitives_and_weapons:prototype_katana":        "the_four_primitives_and_weapons:custom/saya/katana/saya_prototype_katana",
-    "the_four_primitives_and_weapons:old_katana":              "the_four_primitives_and_weapons:custom/saya/katana/saya_old_katana",
-    "the_four_primitives_and_weapons:my_test_iron_katana":     "the_four_primitives_and_weapons:custom/saya/katana/saya_mytestiron_katana",
-    "the_four_primitives_and_weapons:rivers_of_blood":         "the_four_primitives_and_weapons:custom/saya/katana/saya_riversofblood",
-    "the_four_primitives_and_weapons:katana_nigu_humerus":     "the_four_primitives_and_weapons:custom/saya/katana/saya_katananiguzyouwankotu3d",
-    "the_four_primitives_and_weapons:diamond_katana":          "the_four_primitives_and_weapons:custom/saya/katana/saya_diamond_katana"
+    "the_four_primitives_and_weapons:iron_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_iron_katana",
+    "the_four_primitives_and_weapons:gold_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_gold_katana",
+    "the_four_primitives_and_weapons:stone_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_stone_katana",
+    "the_four_primitives_and_weapons:netherite_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_netherite_katana",
+    "the_four_primitives_and_weapons:wither_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_wither_katana",
+    "the_four_primitives_and_weapons:darkness_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_darkness_katana",
+    "the_four_primitives_and_weapons:magical_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_magical_katana",
+    "the_four_primitives_and_weapons:magisches_feen_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_magischesfeen_katana",
+    "the_four_primitives_and_weapons:prototype_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_prototype_katana",
+    "the_four_primitives_and_weapons:old_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_old_katana",
+    "the_four_primitives_and_weapons:my_test_iron_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_mytestiron_katana",
+    "the_four_primitives_and_weapons:rivers_of_blood": "the_four_primitives_and_weapons:custom/saya/katana/saya_riversofblood",
+    "the_four_primitives_and_weapons:katana_nigu_humerus": "the_four_primitives_and_weapons:custom/saya/katana/saya_katananiguzyouwankotu3d",
+    "the_four_primitives_and_weapons:diamond_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_diamond_katana"
   },
-
   "tyokuto": {
-    "the_four_primitives_and_weapons:luna":                       "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_luna",
+    "the_four_primitives_and_weapons:luna": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_luna",
     "the_four_primitives_and_weapons:kaminari_kurikaraken_tyokutou": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_iron_tyokuto",
-    "the_four_primitives_and_weapons:iron_tyokuto":               "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_iron_tyokuto",
-    "the_four_primitives_and_weapons:gold_tyokuto":               "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_gold_tyokuto",
-    "the_four_primitives_and_weapons:stone_tyokuto":              "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_stone_tyokuto",
-    "the_four_primitives_and_weapons:diamond_tyokuto":            "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_diamond_tyokuto",
-    "the_four_primitives_and_weapons:netherite_tyokuto":          "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_netherite_tyokuto"
+    "the_four_primitives_and_weapons:iron_tyokuto": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_iron_tyokuto",
+    "the_four_primitives_and_weapons:gold_tyokuto": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_gold_tyokuto",
+    "the_four_primitives_and_weapons:stone_tyokuto": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_stone_tyokuto",
+    "the_four_primitives_and_weapons:diamond_tyokuto": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_diamond_tyokuto",
+    "the_four_primitives_and_weapons:netherite_tyokuto": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_netherite_tyokuto"
   },
-
   "sword": {
-    "minecraft:iron_sword":      "the_four_primitives_and_weapons:custom/saya/sword/saya_sword_iron_sword",
-    "minecraft:golden_sword":    "the_four_primitives_and_weapons:custom/saya/sword/saya_sword_golden_sword",
-    "minecraft:stone_sword":     "the_four_primitives_and_weapons:custom/saya/sword/saya_sword_stone_sword",
-    "minecraft:diamond_sword":   "the_four_primitives_and_weapons:custom/saya/sword/saya_sword_diamond_sword",
+    "minecraft:iron_sword": "the_four_primitives_and_weapons:custom/saya/sword/saya_sword_iron_sword",
+    "minecraft:golden_sword": "the_four_primitives_and_weapons:custom/saya/sword/saya_sword_golden_sword",
+    "minecraft:stone_sword": "the_four_primitives_and_weapons:custom/saya/sword/saya_sword_stone_sword",
+    "minecraft:diamond_sword": "the_four_primitives_and_weapons:custom/saya/sword/saya_sword_diamond_sword",
     "minecraft:netherite_sword": "the_four_primitives_and_weapons:custom/saya/sword/saya_sword_netherite_sword"
   },
-
   "rapier": {
-    "the_four_primitives_and_weapons:wooden_rapier":    "the_four_primitives_and_weapons:custom/saya/rapier/saya_wooden_rapier",
-    "the_four_primitives_and_weapons:stone_rapier":     "the_four_primitives_and_weapons:custom/saya/rapier/saya_stone_rapier",
-    "the_four_primitives_and_weapons:iron_rapier":      "the_four_primitives_and_weapons:custom/saya/rapier/saya_iron_rapier",
-    "the_four_primitives_and_weapons:gold_rapier":      "the_four_primitives_and_weapons:custom/saya/rapier/saya_gold_rapier",
-    "the_four_primitives_and_weapons:diamond_rapier":   "the_four_primitives_and_weapons:custom/saya/rapier/saya_diamond_rapier",
+    "the_four_primitives_and_weapons:wooden_rapier": "the_four_primitives_and_weapons:custom/saya/rapier/saya_wooden_rapier",
+    "the_four_primitives_and_weapons:stone_rapier": "the_four_primitives_and_weapons:custom/saya/rapier/saya_stone_rapier",
+    "the_four_primitives_and_weapons:iron_rapier": "the_four_primitives_and_weapons:custom/saya/rapier/saya_iron_rapier",
+    "the_four_primitives_and_weapons:gold_rapier": "the_four_primitives_and_weapons:custom/saya/rapier/saya_gold_rapier",
+    "the_four_primitives_and_weapons:diamond_rapier": "the_four_primitives_and_weapons:custom/saya/rapier/saya_diamond_rapier",
     "the_four_primitives_and_weapons:netherite_rapier": "the_four_primitives_and_weapons:custom/saya/rapier/saya_netherite_rapier"
+  },
+  "dagger": {
+    "the_four_primitives_and_weapons:iron_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_dagger_parent"
   }
 }

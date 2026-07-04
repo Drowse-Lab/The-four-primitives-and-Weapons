@@ -694,6 +694,11 @@ public class DodgeAndBattouHandler {
         return stack.getItem().getClass().getSimpleName().equals("RapierSayaItem");
     }
 
+    private static boolean isDaggerSaya(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        return stack.getItem().getClass().getSimpleName().equals("DaggerSayaItem");
+    }
+
     private static boolean isTyokutouSaya(ItemStack stack) {
         if (stack.isEmpty()) return false;
         String itemName = stack.getItem().getClass().getSimpleName();
@@ -753,6 +758,18 @@ public class DodgeAndBattouHandler {
                 );
             } else {
                 player.displayClientMessage(Component.literal("§cこの鞘にはこのレイピアを納刀できません"), true);
+            }
+            return;
+        }
+
+        // ダガー鞘の場合
+        if (isDaggerSaya(sheathStack)) {
+            if (the_four_primitives_and_weapons.item.DaggerSayaItem.canSheathe(weaponStack)) {
+                the_four_primitives_and_weapons.item.DaggerSayaItem.sheatheDagger(
+                    player, weaponStack, sheathStack, weaponHand, sheathHand
+                );
+            } else {
+                player.displayClientMessage(Component.literal("§cこの鞘にはこのダガーを納刀できません"), true);
             }
             return;
         }

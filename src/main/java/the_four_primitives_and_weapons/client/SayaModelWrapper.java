@@ -142,7 +142,7 @@ public class SayaModelWrapper implements BakedModel {
             return ItemStack.of(tag.getCompound(primary));
         }
         // フォールバック (旧データや手動編集タグ救済)
-        for (String key : new String[] { "StoredKatana", "StoredSword", "StoredRapier" }) {
+        for (String key : new String[] { "StoredKatana", "StoredSword", "StoredRapier", "StoredDagger" }) {
             if (tag.contains(key)) return ItemStack.of(tag.getCompound(key));
         }
         return ItemStack.EMPTY;
@@ -154,6 +154,7 @@ public class SayaModelWrapper implements BakedModel {
             case TYOKUTO: return "StoredSword";
             case SWORD:   return "StoredSword";
             case RAPIER:  return "StoredRapier";
+            case DAGGER:  return "StoredDagger";
             default:      return null;
         }
     }
