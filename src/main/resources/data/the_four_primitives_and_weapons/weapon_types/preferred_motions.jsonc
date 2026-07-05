@@ -23,7 +23,7 @@
 //   "horizontal_slash"   = 横一文字（広範囲の横薙ぎ）
 //   "spin_slash"         = 回転斬り（360度の範囲攻撃）
 //   "slam_down"          = 叩きつける（上から振り下ろす強打）
-//   "thrust_combo"       = 突き連撃（短い突きを連続で繰り出す）
+//   "thrust_combo"       = 高速連撃（設定済みの一撃目・二撃目・三撃目を高速で連続発動）
 // =============================================================================
 {
   "preferred_motions": {
@@ -32,7 +32,7 @@
     "straight_sword": ["thrust"],            // 直刀: 突き特化
     "sword":          ["slam_down"],         // 剣: 叩きつける
     "greatsword":     ["slam_down"],         // 大剣: 叩きつける
-    "dagger":         ["thrust", "thrust_combo"], // 短剣: 突き・突き連撃特化
+    "dagger":         ["thrust", "thrust_combo"], // 短剣: 突き・高速連撃特化
     "trident":        ["thrust"],             // 槍: 突き特化
     "nata":           ["slam_down"]              // 鉈: 叩きつける
   },
@@ -65,8 +65,7 @@
       "spin_slash",                          // 回転斬り
       "slam_down"                            // 叩きつける
     ],
-    "dagger":         [                    
-      "thrust_combo",                       // 突き連撃
+    "dagger":         [
       "upper_left_slash",                    // 左上斬り
       "upper_right_slash",                   // 右上斬り
       "horizontal_slash"                     // 横一文字

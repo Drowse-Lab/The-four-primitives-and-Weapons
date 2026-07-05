@@ -23,8 +23,8 @@
     "the_four_primitives_and_weapons:iron_katana":          { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:iron_tyokuto":         { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
 
-    "_comment_dagger": "===== ダガー: 低ダメージ・高速・短リーチ・チャージで短い突き連撃 =====",
-    "_comment_dagger_keys": "attack_damage=総攻撃力 / attack_speed=攻撃速度(大きいほど速い) / attack_range=近接リーチ加算(マイナスで短い) / thrust=チャージ突き連撃(range=奥行き, hits=連撃数, knockback, dash=踏込, damage=1ヒット;0で武器攻撃力)",
+    "_comment_dagger": "===== ダガー: 低ダメージ・高速・短リーチ。thrust は JSON 突き技用の個別設定 =====",
+    "_comment_dagger_keys": "attack_damage=総攻撃力 / attack_speed=攻撃速度(大きいほど速い) / attack_range=近接リーチ加算(マイナスで短い) / thrust=JSON突き技設定(range=奥行き, hits=連撃数, knockback, dash=踏込, damage=1ヒット;0で武器攻撃力)",
     "the_four_primitives_and_weapons:iron_dagger":          { "durability": 200, "enchantability": 14, "attack_damage": 2.0, "attack_speed": -1.2, "attack_range": -1.0, "thrust": { "range": 2.5, "hits": 4, "knockback": 0.25, "dash": 0.45, "damage": 0 } },
     "the_four_primitives_and_weapons:wither_katana":        { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:darkness_katana":      { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },

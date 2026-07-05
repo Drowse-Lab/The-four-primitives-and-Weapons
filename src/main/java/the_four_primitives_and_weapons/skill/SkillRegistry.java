@@ -59,7 +59,7 @@ public class SkillRegistry {
         // === 5つの基本モーション（一撃目〜チャージまで） ===
         register("thrust", "突き", "直線的な突き攻撃",
                 MotionCategory.UNIVERSAL, combatSlots, null);
-        register("thrust_combo", "突き連撃", "短い突きを連続で繰り出す。主に短剣のチャージ技用",
+        register("thrust_combo", "高速連撃", "一撃目・二撃目・三撃目に設定した技を高速で連続発動する",
                 MotionCategory.UNIVERSAL, combatSlots, null);
         register("upper_left_slash", "左上斬り", "左上からの斜め斬り",
                 MotionCategory.UNIVERSAL, combatSlots, null);

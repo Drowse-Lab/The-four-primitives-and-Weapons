@@ -108,16 +108,8 @@ public class MotionExecutor {
                 case "electric_discharge" -> ElectricDischargeBurstSkill.fire(player);
                 case "sword_of_night_tp" -> SwordOfNightTpProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
                 case "magic_katana_special" -> MagicKatanaSpecialChargeProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player, chargePercent);
-                // 突き連撃 ( weapon_stats の thrust 設定を使う。 ダガーのチャージ等 )。 未設定なら通常の突き。
-                case "thrust_combo" -> {
-                    the_four_primitives_and_weapons.skill.WeaponStatsRegistry.WeaponStats st =
-                            the_four_primitives_and_weapons.skill.WeaponStatsRegistry.getStats(player.getMainHandItem());
-                    if (st != null && st.thrust != null) {
-                        the_four_primitives_and_weapons.procedures.JsonThrustProcedure.execute(player, chargePercent, st.thrust);
-                    } else {
-                        performThrust(player, world, lookVec, playerPos, chargePercent);
-                    }
-                }
+                // スキル画面で設定した一撃目/二撃目/三撃目を高速で連続発動する。
+                case "thrust_combo" -> the_four_primitives_and_weapons.procedures.SkillComboProcedure.execute(player, chargePercent);
                 default -> performThrust(player, world, lookVec, playerPos, chargePercent);
             }
         } finally {
