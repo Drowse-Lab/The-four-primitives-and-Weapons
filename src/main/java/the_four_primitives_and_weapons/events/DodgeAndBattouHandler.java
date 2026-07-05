@@ -676,6 +676,11 @@ public class DodgeAndBattouHandler {
             return true;
         }
 
+        // data/<namespace>/weapon_types/*.json に登録された addon 武器も武器扱い。
+        if (the_four_primitives_and_weapons.skill.WeaponTypeRegistry.getTypeForItem(stack) != null) {
+            return true;
+        }
+
         // その他の武器（大文字小文字を考慮）
         return itemName.contains("Katana") || itemName.contains("Sword") ||
                itemName.contains("Blade") || itemName.contains("katana") ||

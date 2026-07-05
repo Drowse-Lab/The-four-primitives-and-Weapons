@@ -1,0 +1,33 @@
+{
+  "replace": false,
+  "values": [
+    "the_four_primitives_and_weapons:wooden_katana",
+    "the_four_primitives_and_weapons:iron_katana",
+    "the_four_primitives_and_weapons:gold_katana",
+    "the_four_primitives_and_weapons:stone_katana",
+    "the_four_primitives_and_weapons:diamond_katana",
+    "the_four_primitives_and_weapons:netherite_katana",
+    "the_four_primitives_and_weapons:wither_katana",
+    "the_four_primitives_and_weapons:darkness_katana",
+    "the_four_primitives_and_weapons:magical_katana",
+    "the_four_primitives_and_weapons:magisches_feen_katana",
+    "the_four_primitives_and_weapons:prototype_katana",
+    "the_four_primitives_and_weapons:old_katana",
+    "the_four_primitives_and_weapons:my_test_iron_katana",
+    "the_four_primitives_and_weapons:rivers_of_blood",
+    "the_four_primitives_and_weapons:katana_nigu_humerus",
+    "the_four_primitives_and_weapons:replica_sword_of_light",
+    "the_four_primitives_and_weapons:wooden_tyokuto",
+    "the_four_primitives_and_weapons:iron_tyokuto",
+    "the_four_primitives_and_weapons:gold_tyokuto",
+    "the_four_primitives_and_weapons:stone_tyokuto",
+    "the_four_primitives_and_weapons:diamond_tyokuto",
+    "the_four_primitives_and_weapons:netherite_tyokuto",
+    "the_four_primitives_and_weapons:wooden_rapier",
+    "the_four_primitives_and_weapons:stone_rapier",
+    "the_four_primitives_and_weapons:iron_rapier",
+    "the_four_primitives_and_weapons:gold_rapier",
+    "the_four_primitives_and_weapons:diamond_rapier",
+    "the_four_primitives_and_weapons:netherite_rapier"
+  ]
+}

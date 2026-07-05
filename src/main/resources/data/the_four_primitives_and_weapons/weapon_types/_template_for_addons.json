@@ -11,7 +11,7 @@
     "3. 特殊技を持つ武器: special_weaponsにアイテムIDと技を定義",
     "",
     "=== モーションID一覧 ===",
-    "combat用: thrust, upper_left_slash, upper_right_slash, horizontal_slash, spin_slash",
+    "combat用: thrust, thrust_combo, upper_left_slash, upper_right_slash, horizontal_slash, spin_slash, slam_down",
     "dash用: dash_rush, leap_slash, shadow_step",
     "right_click用: dodge, none_right, guard, sword_of_night_special",
     "shift_right_click用: guard, none_shift",
@@ -34,7 +34,7 @@
         "your_mod_id:your_katana_item"
       ],
       "motions": {
-        "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
+        "combat": ["thrust", "thrust_combo", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
         "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]
@@ -49,7 +49,7 @@
         "your_mod_id:your_weapon_2"
       ],
       "motions": {
-        "combat": ["thrust", "upper_left_slash", "horizontal_slash"],
+        "combat": ["thrust", "thrust_combo", "upper_left_slash", "horizontal_slash"],
         "dash": ["dash_rush"],
         "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]

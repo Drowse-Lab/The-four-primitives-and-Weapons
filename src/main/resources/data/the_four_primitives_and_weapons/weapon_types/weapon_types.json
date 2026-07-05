@@ -145,7 +145,7 @@
         "the_four_primitives_and_weapons:iron_dagger"
       ],
       "motions": {
-        "combat": ["thrust", "upper_left_slash", "upper_right_slash"],
+        "combat": ["thrust", "thrust_combo", "upper_left_slash", "upper_right_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
         "right_click": ["dodge", "none_right"],
         "shift_right_click": ["guard", "none_shift"]

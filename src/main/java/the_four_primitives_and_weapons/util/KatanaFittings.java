@@ -1,8 +1,12 @@
 package the_four_primitives_and_weapons.util;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * 刀の拵え ( こしらえ ): 柄 ( つか ) と 鍔 ( つば ) の色を NBT に保存するヘルパー。
@@ -15,10 +19,19 @@ public final class KatanaFittings {
 
 	private KatanaFittings() {}
 
+	public static final TagKey<Item> FITTING_DYEABLE_TAG = TagKey.create(
+			ForgeRegistries.ITEMS.getRegistryKey(),
+			new ResourceLocation(the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod.MODID, "koshirae/fitting_dyeable"));
+	public static final TagKey<Item> NO_FITTING_DYE_TAG = TagKey.create(
+			ForgeRegistries.ITEMS.getRegistryKey(),
+			new ResourceLocation(the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod.MODID, "koshirae/no_fitting_dye"));
+
 	/** 拵え ( 柄/鍔/頭 ) を着せ替え・染色できる武器か。
 	 *  本MODの 名前に katana / tyokuto / rapier を含む武器 全種 ( saya は除く )。 */
 	public static boolean isFittingWeapon(ItemStack s) {
 		if (s == null || s.isEmpty()) return false;
+		if (s.is(NO_FITTING_DYE_TAG)) return false;
+		if (s.is(FITTING_DYEABLE_TAG)) return true;
 		net.minecraft.resources.ResourceLocation id =
 				net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(s.getItem());
 		if (id == null || !id.getNamespace().equals(the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod.MODID))

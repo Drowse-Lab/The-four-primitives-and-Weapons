@@ -13,6 +13,7 @@ import the_four_primitives_and_weapons.item.SayaItem;
 import the_four_primitives_and_weapons.item.TyokutoSayaItem;
 import the_four_primitives_and_weapons.item.SwordSayaItem;
 import the_four_primitives_and_weapons.item.RapierSayaItem;
+import the_four_primitives_and_weapons.item.DaggerSayaItem;
 import the_four_primitives_and_weapons.events.DodgeAndBattouHandler;
 
 import javax.annotation.Nullable;
@@ -36,6 +37,7 @@ public class CuriosScabbardHelper {
     /** 鞘アイテムに応じた NBT ストレージキーを返す。 */
     public static String storageKeyFor(ItemStack sayaStack) {
         if (sayaStack.getItem() instanceof RapierSayaItem) return NBT_STORED_RAPIER;
+        if (sayaStack.getItem() instanceof DaggerSayaItem) return NBT_STORED_DAGGER;
         if (sayaStack.getItem() instanceof TyokutoSayaItem) return NBT_STORED_SWORD;
         if (sayaStack.getItem() instanceof SwordSayaItem)   return NBT_STORED_SWORD;
         return NBT_STORED_KATANA; // SayaItem (katana 鞘) and unknown
@@ -127,6 +129,7 @@ public class CuriosScabbardHelper {
         boolean isTyokutoSaya = sheathStack.getItem() instanceof TyokutoSayaItem;
         boolean isSwordSaya = sheathStack.getItem() instanceof SwordSayaItem;
         boolean isRapierSaya = sheathStack.getItem() instanceof RapierSayaItem;
+        boolean isDaggerSaya = sheathStack.getItem() instanceof DaggerSayaItem;
 
         // 直刀鞘の場合、直刀のみ納刀可能
         if (isTyokutoSaya) {
@@ -146,8 +149,14 @@ public class CuriosScabbardHelper {
                 player.displayClientMessage(Component.literal("§cこの鞘にはこのレイピアを納刀できません"), true);
                 return false;
             }
+        } else if (isDaggerSaya) {
+            // ダガー鞘の場合、登録済みダガーのみ
+            if (!DaggerSayaItem.canSheathe(weaponStack)) {
+                player.displayClientMessage(Component.literal("§cこの鞘にはこのダガーを納刀できません"), true);
+                return false;
+            }
         } else {
-            // 通常の鞘には直刀・剣の鞘対象武器・レイピアは不可
+            // 通常の鞘には直刀・剣の鞘対象武器・レイピア・ダガーは不可
             if (the_four_primitives_and_weapons.procedures.TyokutouThrustAttackProcedure.isStraightSword(weaponStack)) {
                 player.displayClientMessage(Component.literal("§c直刀は専用の鞘が必要です"), true);
                 return false;
@@ -160,13 +169,14 @@ public class CuriosScabbardHelper {
                 player.displayClientMessage(Component.literal("§cこのレイピアは専用の鞘が必要です"), true);
                 return false;
             }
+            if (DaggerSayaItem.canSheathe(weaponStack)) {
+                player.displayClientMessage(Component.literal("§cこのダガーは専用の鞘が必要です"), true);
+                return false;
+            }
         }
 
         CompoundTag sheathTag = sheathStack.getOrCreateTag();
-        String storageKey;
-        if (isRapierSaya) storageKey = "StoredRapier";
-        else if (isTyokutoSaya || isSwordSaya) storageKey = "StoredSword";
-        else storageKey = "StoredKatana";
+        String storageKey = storageKeyFor(sheathStack);
 
         // 武器のNBTデータを保存
         CompoundTag weaponData = weaponStack.save(new CompoundTag());
@@ -203,10 +213,8 @@ public class CuriosScabbardHelper {
         ItemStack sheathStack = info.stack;
         CompoundTag tag = sheathStack.getOrCreateTag();
 
-        // StoredKatana / StoredSword / StoredRapier をチェック
-        String storedKey = tag.contains("StoredKatana") ? "StoredKatana" :
-                           tag.contains("StoredSword") ? "StoredSword" :
-                           tag.contains("StoredRapier") ? "StoredRapier" : null;
+        // StoredKatana / StoredSword / StoredRapier / StoredDagger をチェック
+        String storedKey = findStoredKey(sheathStack);
         if (storedKey == null) return false;
 
         // 刀を生成

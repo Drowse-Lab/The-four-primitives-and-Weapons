@@ -18,6 +18,7 @@
     "  先頭 _ のファイルは無視される (テンプレート用)。"
   ],
   "katana": {
+    "the_four_primitives_and_weapons:wooden_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_wooden_katana",
     "the_four_primitives_and_weapons:iron_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_iron_katana",
     "the_four_primitives_and_weapons:gold_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_gold_katana",
     "the_four_primitives_and_weapons:stone_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_stone_katana",
@@ -31,11 +32,13 @@
     "the_four_primitives_and_weapons:my_test_iron_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_mytestiron_katana",
     "the_four_primitives_and_weapons:rivers_of_blood": "the_four_primitives_and_weapons:custom/saya/katana/saya_riversofblood",
     "the_four_primitives_and_weapons:katana_nigu_humerus": "the_four_primitives_and_weapons:custom/saya/katana/saya_katananiguzyouwankotu3d",
+    "the_four_primitives_and_weapons:replica_sword_of_light": "the_four_primitives_and_weapons:custom/saya/katana/saya_replica_sword_of_light",
     "the_four_primitives_and_weapons:diamond_katana": "the_four_primitives_and_weapons:custom/saya/katana/saya_diamond_katana"
   },
   "tyokuto": {
     "the_four_primitives_and_weapons:luna": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_luna",
     "the_four_primitives_and_weapons:kaminari_kurikaraken_tyokutou": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_iron_tyokuto",
+    "the_four_primitives_and_weapons:wooden_tyokuto": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_wooden_tyokuto",
     "the_four_primitives_and_weapons:iron_tyokuto": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_iron_tyokuto",
     "the_four_primitives_and_weapons:gold_tyokuto": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_gold_tyokuto",
     "the_four_primitives_and_weapons:stone_tyokuto": "the_four_primitives_and_weapons:custom/saya/tyokuto/saya_stone_tyokuto",

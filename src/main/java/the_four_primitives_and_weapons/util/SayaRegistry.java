@@ -38,7 +38,9 @@ import java.util.Set;
 /**
  * JSON駆動の鞘(saya)登録レジストリ。
  * data/&lt;namespace&gt;/maw_saya/*.json (.jsonc) を自動収集し、
- * 各サヤタイプ (katana / tyokuto / sword) に納刀可能なアイテムを管理する。
+ * 各サヤタイプ (katana / tyokuto / sword / rapier / dagger) に納刀可能なアイテムを管理する。
+ * 未知のトップレベルキーは addon の custom weapon_type とみなし、通常 saya
+ * (katana 鞘アイテム) 用の追加登録として扱う。
  *
  * <h2>JSONフォーマット</h2>
  *
@@ -49,6 +51,9 @@ import java.util.Set;
  *   "katana": {
  *     "your_mod:item_id_a": 1,                                    // ← 整数: 本体内蔵モデルのスロット番号
  *     "your_mod:item_id_b": "your_mod:custom/saya/katana/saya_x"  // ← 文字列: アドオン独自モデルパス
+ *   },
+ *   "your_custom_weapon_type": {
+ *     "your_mod:item_id_c": "your_mod:custom/saya/your_custom_weapon_type/saya_c"
  *   }
  * }
  * </pre>
@@ -179,9 +184,12 @@ public class SayaRegistry extends SimplePreparableReloadListener<Map<SayaRegistr
                 String stripped = stripJsonComments(raw);
                 JsonObject root = GSON.fromJson(stripped, JsonObject.class);
                 if (root == null) return;
-                for (SayaType type : SayaType.values()) {
-                    if (!root.has(type.getKey())) continue;
-                    JsonElement el = root.get(type.getKey());
+                for (Map.Entry<String, JsonElement> section : root.entrySet()) {
+                    String sectionKey = section.getKey();
+                    if (sectionKey == null || sectionKey.startsWith("_")) continue;
+                    SayaType type = typeForSection(sectionKey);
+                    if (type == null) continue;
+                    JsonElement el = section.getValue();
                     if (!el.isJsonObject()) continue;
                     JsonObject obj = el.getAsJsonObject();
                     Map<ResourceLocation, Entry> map = result.get(type);
@@ -201,6 +209,19 @@ public class SayaRegistry extends SimplePreparableReloadListener<Map<SayaRegistr
         });
 
         return result;
+    }
+
+    /**
+     * maw_saya のトップレベルキーを SayaType に変換する。
+     * 既知キーは専用 saya へ、未知キーは addon の custom weapon_type として
+     * 通常 saya (KATANA) に合流させる。
+     */
+    @Nullable
+    private static SayaType typeForSection(String key) {
+        for (SayaType type : SayaType.values()) {
+            if (type.getKey().equals(key)) return type;
+        }
+        return SayaType.KATANA;
     }
 
     /** JsonElement を Entry に変換。数値ならスロット、文字列ならモデルパス、その他は null。 */

@@ -15,9 +15,7 @@ import net.minecraftforge.fml.common.Mod;
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 import the_four_primitives_and_weapons.util.SayaRegistry;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -26,7 +24,7 @@ import java.util.Set;
  * <p><b>動作の流れ</b>:</p>
  * <ol>
  *   <li>{@link ModelEvent.RegisterAdditional}: resource pack 内の
- *       {@code assets/&lt;modid&gt;/models/custom/saya/{katana,sword,tyokuto}/*.json}
+ *       {@code assets/&lt;modid&gt;/models/custom/saya/.../*.json}
  *       を全部スキャンし、ベイク対象として登録する (規約: 先頭 _ は無視)。
  *       これによりアドオン側は規約フォルダにモデルを置くだけで自動でベイクされる。</li>
  *   <li>{@link ModelEvent.BakingCompleted}: ベイク済みモデルをキャッシュへ。
@@ -45,8 +43,7 @@ public final class SayaDynamicModelEvents {
 
     private SayaDynamicModelEvents() {}
 
-    private static final String[] SAYA_SUBDIRS = { "katana", "sword", "tyokuto", "rapier", "dagger" };
-    private static final String MODELS_PREFIX = "models/custom/saya/";
+    private static final String MODELS_PREFIX = "models/custom/saya";
 
     /** スキャンで見つかった全カスタム鞘モデルの ResourceLocation 集合。 */
     private static final Set<ResourceLocation> DISCOVERED_MODELS = new HashSet<>();
@@ -72,24 +69,22 @@ public final class SayaDynamicModelEvents {
         //   directory ソース ( entity/banner ) でブロックアトラスへ stitch される
         //   ( 全名前空間を走査するので外部 mod 追加の模様も含む )。
 
-        // 規約フォルダ配下の全 .json をスキャン (_ で始まるテンプレは除外)
-        for (String sub : SAYA_SUBDIRS) {
-            String prefix = MODELS_PREFIX + sub;
-            rm.listResources(prefix, loc -> {
-                String path = loc.getPath();
-                int slash = path.lastIndexOf('/');
-                String fileName = slash >= 0 ? path.substring(slash + 1) : path;
-                return path.endsWith(".json") && !fileName.startsWith("_");
-            }).keySet().forEach(loc -> {
-                // "models/custom/saya/sword/foo.json" → "custom/saya/sword/foo"
-                String p = loc.getPath();
-                if (!p.startsWith("models/") || !p.endsWith(".json")) return;
-                String modelPath = p.substring("models/".length(), p.length() - ".json".length());
-                ResourceLocation modelLoc = new ResourceLocation(loc.getNamespace(), modelPath);
-                DISCOVERED_MODELS.add(modelLoc);
-                event.register(modelLoc);
-            });
-        }
+        // 規約フォルダ配下の全 .json を再帰スキャン (_ で始まるテンプレは除外)。
+        // assets/<namespace>/models/custom/saya/<custom_weapon_type>/foo.json も拾う。
+        rm.listResources(MODELS_PREFIX, loc -> {
+            String path = loc.getPath();
+            int slash = path.lastIndexOf('/');
+            String fileName = slash >= 0 ? path.substring(slash + 1) : path;
+            return path.endsWith(".json") && !fileName.startsWith("_");
+        }).keySet().forEach(loc -> {
+            // "models/custom/saya/sword/foo.json" → "custom/saya/sword/foo"
+            String p = loc.getPath();
+            if (!p.startsWith("models/") || !p.endsWith(".json")) return;
+            String modelPath = p.substring("models/".length(), p.length() - ".json".length());
+            ResourceLocation modelLoc = new ResourceLocation(loc.getNamespace(), modelPath);
+            DISCOVERED_MODELS.add(modelLoc);
+            event.register(modelLoc);
+        });
     }
 
     @SubscribeEvent

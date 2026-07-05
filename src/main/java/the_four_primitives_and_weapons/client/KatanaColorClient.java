@@ -8,6 +8,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * 刀の 柄 ( tintindex 1 ) と 鍔 ( tintindex 2 ) を、 {@link KatanaFittings} に保存した色で着色する。
@@ -19,6 +20,7 @@ public class KatanaColorClient {
 	@SubscribeEvent
 	public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
 		event.register((stack, tintIndex) -> {
+			if (!KatanaFittings.isFittingWeapon(stack)) return 0xFFFFFFFF;
 			// 色を設定した部位は モデル側で グレー版(tint) か 暗版(模様入りの黒、tintなし) に差し替わる。
 			// 暗版(ほぼ黒)のときは 乗算で潰れないよう tint を掛けない ( テクスチャに任せる )。
 			switch (tintIndex) {
@@ -31,15 +33,16 @@ public class KatanaColorClient {
 		}, fittingWeaponItems());
 	}
 
-	/** 本MODの 刀/直刀/レイピア 全種 ( saya除く ) の Item 配列。 */
+	/** 本MODの 刀/直刀/レイピア系 + addon の SwordItem 系。 dyeable 可否は tag/NBT 評価時に判定する。 */
 	static net.minecraft.world.item.Item[] fittingWeaponItems() {
-		return TheFourPrimitivesAndWeaponsModItems.REGISTRY.getEntries().stream()
-				.filter(ro -> {
-					String n = ro.getId().getPath();
-					return !n.contains("saya")
-							&& (n.contains("katana") || n.contains("tyokuto") || n.contains("rapier") || n.contains("dagger"));
-				})
-				.map(net.minecraftforge.registries.RegistryObject::get)
+		return ForgeRegistries.ITEMS.getValues().stream()
+				.filter(item -> item instanceof net.minecraft.world.item.SwordItem
+						|| TheFourPrimitivesAndWeaponsModItems.REGISTRY.getEntries().stream().anyMatch(ro -> {
+							if (ro.get() != item) return false;
+							String n = ro.getId().getPath();
+							return !n.contains("saya")
+									&& (n.contains("katana") || n.contains("tyokuto") || n.contains("rapier") || n.contains("dagger"));
+				}))
 				.toArray(net.minecraft.world.item.Item[]::new);
 	}
 
