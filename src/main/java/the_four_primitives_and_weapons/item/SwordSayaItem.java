@@ -98,10 +98,6 @@ public class SwordSayaItem extends Item implements ICurioItem {
 		return false;
 	}
 
-	/**
-	 * 剣ごとのモデルデータを返す。
-	 * data/&lt;namespace&gt;/maw_saya/*.json の "sword" セクションから読み込まれる。
-	 */
 	public static int getSwordModelData(ItemStack sword) {
 		return SayaRegistry.getModelData(SayaRegistry.SayaType.SWORD, sword);
 	}

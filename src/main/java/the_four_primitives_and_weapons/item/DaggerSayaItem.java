@@ -1,16 +1,17 @@
 package the_four_primitives_and_weapons.item;
 
+import net.minecraft.world.level.Level;
+import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.UseAnim;
-import net.minecraft.world.level.Level;
+
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurioItem;
 
@@ -33,6 +34,7 @@ public class DaggerSayaItem extends Item implements ICurioItem {
     @Override
     public void appendHoverText(ItemStack stack, Level world, List<Component> list, net.minecraft.world.item.TooltipFlag flag) {
         super.appendHoverText(stack, world, list, flag);
+        
         String sayaHex = the_four_primitives_and_weapons.util.SayaDesign.getBaseHex(stack);
         if (sayaHex != null) list.add(Component.translatable("tooltip.the_four_primitives_and_weapons.saya.base", sayaHex));
         Component sayaFinish = the_four_primitives_and_weapons.util.SayaStyles.finishName(
@@ -40,6 +42,7 @@ public class DaggerSayaItem extends Item implements ICurioItem {
                 the_four_primitives_and_weapons.util.SayaDesign.getLacquer(stack));
         if (sayaFinish != null)
             list.add(Component.translatable("tooltip.the_four_primitives_and_weapons.saya.style", sayaFinish));
+
         if (stack.hasTag() && stack.getTag().contains("StoredDagger")) {
             ItemStack stored = ItemStack.of(stack.getTag().getCompound("StoredDagger"));
             list.add(Component.translatable("tooltip.the_four_primitives_and_weapons.saya.sheathed", stored.getHoverName()));

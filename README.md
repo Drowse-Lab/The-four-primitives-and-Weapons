@@ -45,4 +45,5 @@ https://github.com/Chuzume/True-Crafter-Mode
 https://youtu.be/7oI4bwtSQUQ  
 ***
 
-dagger鞘をslot backとbeltに入れられるアイテムとして認識されていない
+dagger鞘をslot backとbeltに入れても3Dmodelが出ない
+簡単にできるようにして自動で外部addonでも適応できるように
