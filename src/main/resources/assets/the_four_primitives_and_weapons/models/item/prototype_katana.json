@@ -1,7 +1,10 @@
 {
-  "parent": "the_four_primitives_and_weapons:custom/katanairon3dfeen",
+  "parent": "the_four_primitives_and_weapons:custom/weapon/katana/katana_a_parent",
   "textures": {
-    "missing": "the_four_primitives_and_weapons:blade/katana/katanairon3dfeen",
-    "particle": "the_four_primitives_and_weapons:item/katanairon3dfeen"
+    "0": "the_four_primitives_and_weapons:blade/katana/katanairon3dfeen",
+    "1": "the_four_primitives_and_weapons:katana_fitting/tsuba/tuba_gray",
+    "3": "the_four_primitives_and_weapons:katana_fitting/kasira/kasira_black",
+    "4": "the_four_primitives_and_weapons:katana_fitting/tsuka/iron_tuka",
+    "particle": "the_four_primitives_and_weapons:blade/katana/katanairon3dfeen"
   }
 }
