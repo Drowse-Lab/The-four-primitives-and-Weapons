@@ -2,6 +2,9 @@
   "parent": "the_four_primitives_and_weapons:custom/goldenkatana3d",
   "textures": {
     "0": "the_four_primitives_and_weapons:blade/katana/goldenkatana3d",
-    "particle": "the_four_primitives_and_weapons:item/aa"
+    "1": "the_four_primitives_and_weapons:katana_fitting/tsuba/goldenkatana_tuba",
+    "3": "the_four_primitives_and_weapons:katana_fitting/kasira/goldenkatana_kasira",
+    "4": "the_four_primitives_and_weapons:katana_fitting/tsuka/tuka",
+    "particle": "the_four_primitives_and_weapons:blade/katana/goldenkatana3d"
   }
 }

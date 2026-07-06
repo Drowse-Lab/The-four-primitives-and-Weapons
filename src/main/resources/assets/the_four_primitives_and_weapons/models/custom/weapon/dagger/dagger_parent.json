@@ -3,12 +3,6 @@
 	"credit": "Made with Blockbench",
 	"parent": "block/block",
 	"texture_size": [8, 8],
-	"textures": {
-		"1": "the_four_primitives_and_weapons:dagger_fitting/tuba/tuba",
-		"2": "the_four_primitives_and_weapons:dagger_fitting/grip/grip",
-		"3": "the_four_primitives_and_weapons:blade/dagger/iron_dagger",
-		"particle": "the_four_primitives_and_weapons:blade/dagger/iron_dagger"
-	},
 	"elements": [
 		{
 			"from": [7.8, 8.3, 7.6],

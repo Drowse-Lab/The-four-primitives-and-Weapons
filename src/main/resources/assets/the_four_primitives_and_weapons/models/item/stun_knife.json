@@ -2,6 +2,9 @@
   "parent": "the_four_primitives_and_weapons:custom/throwingknife",
   "textures": {
     "0": "the_four_primitives_and_weapons:block/throwingknife",
+    "1": "the_four_primitives_and_weapons:dagger_fitting/tuba/tuba",
+    "2": "the_four_primitives_and_weapons:dagger_fitting/grip/grip",
+    "3": "the_four_primitives_and_weapons:blade/dagger/iron_dagger",
     "particle": "the_four_primitives_and_weapons:item/throwingknife"
   }
 }
