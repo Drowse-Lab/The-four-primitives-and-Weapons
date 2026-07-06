@@ -396,7 +396,7 @@
   "tooltip.the_four_primitives_and_weapons.element.electric": "電気属性",
   "tooltip.the_four_primitives_and_weapons.element.corrosion": "侵食属性",
   "tooltip.the_four_primitives_and_weapons.element.holy": "聖属性",
-  "tooltip.the_four_primitives_and_weapons.element.error": "error属性",
+  "tooltip.the_four_primitives_and_weapons.element.error": "消滅属性",
   "tooltip.the_four_primitives_and_weapons.element.miasma": "瘴気属性",
   "tooltip.the_four_primitives_and_weapons.element.x": "X",
   "item.the_four_primitives_and_weapons.miasma_book": "瘴気の魔導書",

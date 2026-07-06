@@ -81,9 +81,9 @@ public class SayaColorClient {
 		if (SayaDesign.hasStyle(stack)) return true;               // 木目/着せ/刻 などのスタイル
 		net.minecraft.nbt.CompoundTag t = stack.getTag();
 		if (t == null) return false;
+		if ("sigiled".equals(t.getString("Feyn"))) return true;
 		if (t.getInt("SayaNBT") == 1) return true;                 // SayaVisualUpdateHandler が立てる霊刀フラグ
 		if ("reitou".equals(t.getString("SayaStyle"))) return true;
-		return t.contains("StoredKatana")
-				&& t.getCompound("StoredKatana").getString("id").contains("reitou");
+		return false;
 	}
 }

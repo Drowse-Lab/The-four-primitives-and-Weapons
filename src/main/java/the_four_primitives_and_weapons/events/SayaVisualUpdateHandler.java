@@ -221,24 +221,15 @@ public class SayaVisualUpdateHandler {
      * クライアント側の item property で saya_nbt として使用される。
      */
     private static void updateSayaNBT(CompoundTag tag) {
-        boolean isReitouStyle = false;
-
+        // 旧データ互換: 以前の霊刀鞘タグは、今後は「封の鞘」として扱う。
         if ("reitou".equals(tag.getString("SayaStyle"))) {
-            isReitouStyle = true;
-        }
-
-        if (!isReitouStyle && tag.contains("StoredKatana")) {
-            CompoundTag katanaTag = tag.getCompound("StoredKatana");
-            String id = katanaTag.getString("id");
-            if (id.contains("reitou")) {
-                isReitouStyle = true;
-            }
+            tag.putString("Feyn", "sigiled");
+            tag.remove("SayaStyle");
         }
 
         int current = tag.getInt("SayaNBT");
-        int target = isReitouStyle ? 1 : 0;
-        if (current != target) {
-            tag.putInt("SayaNBT", target);
+        if (current != 0) {
+            tag.putInt("SayaNBT", 0);
         }
     }
 }

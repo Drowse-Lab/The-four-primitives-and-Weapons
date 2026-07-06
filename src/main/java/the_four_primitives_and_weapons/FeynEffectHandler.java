@@ -1,102 +1,10 @@
 package the_four_primitives_and_weapons;
 
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-
-import java.util.UUID;
-
-@Mod.EventBusSubscriber
+/**
+ * @deprecated 属性/呪の持ち歩きデバフは
+ * {@link the_four_primitives_and_weapons.damage.ElementalCarryDebuffHandler}
+ * に移動しました。
+ */
+@Deprecated
 public class FeynEffectHandler {
-
-    private static final UUID HEALTH_MODIFIER_UUID = UUID.fromString("11111111-1111-1111-1111-111111111111");
-    private static final UUID ATTACK_MODIFIER_UUID = UUID.fromString("22222222-2222-2222-2222-222222222222");
-
-    @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        Player player = event.player;
-        if (player == null || player.level().isClientSide) return;
-
-        boolean hasCursedItem = hasCursedFeyn(player.getMainHandItem()) || hasCursedFeyn(player.getOffhandItem());
-
-        // 修飾子の現在状態に応じて add / remove。状態が変化した時だけ true.
-        boolean changed = false;
-        if (hasCursedItem) {
-            // 最大体力：-30%
-            if (!hasModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID)) {
-                double maxHealth = player.getAttributeBaseValue(Attributes.MAX_HEALTH);
-                applyModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID, "Cursed Health Down", -maxHealth * 0.2);
-                changed = true;
-            }
-            // 攻撃力：+14%
-            if (!hasModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID)) {
-                double attackDamage = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
-                applyModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID, "Cursed Attack Up", attackDamage * 0.14);
-                changed = true;
-            }
-        } else if (hasModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID)
-                || hasModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID)) {
-            // 持ってない & 修飾子が残っている → 解除
-            removeModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER_UUID);
-            removeModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER_UUID);
-            changed = true;
-        }
-
-        // クライアント同期 — 変化があった時だけ送信 (毎 tick 全プレイヤーへ送ると network が重い)
-        if (changed && player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.connection.send(new ClientboundUpdateAttributesPacket(
-                    player.getId(), player.getAttributes().getSyncableAttributes()
-            ));
-        }
-    }
-
-    // NBTが "Feyn":"cursed" であるか確認
-    private static boolean hasCursedFeyn(ItemStack stack) {
-        return stack.hasTag() && "cursed".equals(stack.getTag().getString("Feyn"));
-    }
-
-    // UUIDによってmodifierを持っているか確認
-    private static boolean hasModifier(Player player, Attribute attribute, UUID uuid) {
-        AttributeInstance instance = player.getAttribute(attribute);
-        return instance != null && instance.getModifier(uuid) != null;
-    }
-
-    // modifier を追加（MAX_HEALTHなら体力を調整）
-    private static void applyModifier(Player player, Attribute attribute, UUID uuid, String name, double value) {
-        AttributeInstance instance = player.getAttribute(attribute);
-        if (instance == null) return;
-
-        if (instance.getModifier(uuid) == null) {
-            AttributeModifier modifier = new AttributeModifier(uuid, name, value, AttributeModifier.Operation.ADDITION);
-            instance.addPermanentModifier(modifier);
-
-            // 最大体力を減らした直後に体力が上限を超えていたら調整
-            if (attribute == Attributes.MAX_HEALTH) {
-                float health = player.getHealth();
-                float maxHealth = (float) instance.getValue();
-                if (health > maxHealth) {
-                    player.setHealth(maxHealth);
-                }
-            }
-        }
-    }
-
-    // modifier を削除
-    private static void removeModifier(Player player, Attribute attribute, UUID uuid) {
-        AttributeInstance instance = player.getAttribute(attribute);
-        if (instance == null) return;
-
-        AttributeModifier modifier = instance.getModifier(uuid);
-        if (modifier != null) {
-            instance.removeModifier(modifier);
-        }
-    }
 }

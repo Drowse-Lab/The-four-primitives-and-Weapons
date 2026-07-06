@@ -210,11 +210,11 @@ public class RarityForgeJEIPlugin implements IModPlugin {
     }
 
     private void registerSayaCraftingRecipes(IRecipeRegistration registration) {
-        // 霊刀スタイル鞘: 紫染料 + 鞘 + 糸
+        // 特別な封の鞘: 紫染料 + 鞘 + 糸
         {
             ItemStack result = new ItemStack(TheFourPrimitivesAndWeaponsModItems.SAYA.get());
             CompoundTag tag = new CompoundTag();
-            tag.putString("SayaStyle", "reitou");
+            tag.putString("Feyn", "sigiled");
             result.setTag(tag);
 
             NonNullList<Ingredient> inputs = NonNullList.of(Ingredient.EMPTY,

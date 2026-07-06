@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 import the_four_primitives_and_weapons.util.SayaRegistry;
 
 import javax.annotation.Nullable;
@@ -38,6 +39,9 @@ import java.util.Random;
  */
 @OnlyIn(Dist.CLIENT)
 public class SayaModelWrapper implements BakedModel {
+
+    private static final ResourceLocation SPECIAL_SEAL_SAYA_MODEL = new ResourceLocation(
+            TheFourPrimitivesAndWeaponsMod.MODID, "custom/saya/katana/saya_special_seal_any_katana");
 
     private final BakedModel wrapped;
     private final SayaRegistry.SayaType sayaType;
@@ -94,19 +98,16 @@ public class SayaModelWrapper implements BakedModel {
             // 納刀中の武器を取り出して SayaRegistry から Entry を引く
             ItemStack stored = getStoredWeapon(stack, outer.sayaType);
             if (!stored.isEmpty()) {
+                ResourceLocation specialSealModel = specialSealModel(stack);
+                if (specialSealModel != null) {
+                    BakedModel themed = resolveCachedModel(specialSealModel, stack, level, entity, seed);
+                    if (themed != null) return themed;
+                }
+
                 SayaRegistry.Entry e = SayaRegistry.getEntry(outer.sayaType, stored);
                 if (e != null && e.hasCustomModel()) {
-                    ResourceLocation loc = e.modelLocation();
-                    BakedModel custom = SayaCustomModelCache.get(loc);
-                    if (custom != null) {
-                        // 解決されたモデルもさらに overrides を持つ可能性があるので再帰
-                        ItemOverrides sub = custom.getOverrides();
-                        if (sub != null && sub != this) {
-                            BakedModel resolved = sub.resolve(custom, stack, level, entity, seed);
-                            if (resolved != null) return resolved;
-                        }
-                        return custom;
-                    }
+                    BakedModel custom = resolveCachedModel(e.modelLocation(), stack, level, entity, seed);
+                    if (custom != null) return custom;
                 }
             }
             // カスタムモデル未指定 or 解決失敗 → 元の overrides (custom_model_data 用) に委譲
@@ -116,6 +117,29 @@ public class SayaModelWrapper implements BakedModel {
                 if (resolved != null) return resolved;
             }
             return outer.wrapped;
+        }
+
+        @Nullable
+        private BakedModel resolveCachedModel(@Nullable ResourceLocation loc, ItemStack stack,
+                                              @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+            if (loc == null) return null;
+            BakedModel custom = SayaCustomModelCache.get(loc);
+            if (custom == null) return null;
+            // 解決されたモデルもさらに overrides を持つ可能性があるので再帰
+            ItemOverrides sub = custom.getOverrides();
+            if (sub != null && sub != this) {
+                BakedModel resolved = sub.resolve(custom, stack, level, entity, seed);
+                if (resolved != null) return resolved;
+            }
+            return custom;
+        }
+
+        @Nullable
+        private ResourceLocation specialSealModel(ItemStack sayaStack) {
+            if (outer.sayaType != SayaRegistry.SayaType.KATANA) return null;
+            CompoundTag tag = sayaStack.getTag();
+            if (tag == null || !"sigiled".equals(tag.getString("Feyn"))) return null;
+            return SPECIAL_SEAL_SAYA_MODEL;
         }
 
         /** ベースモデルの鞘本体 wrap を 仕立て ( 木目/着せ/刻/石目/鮫/漆系 ) のテクスチャへ差し替える。 */

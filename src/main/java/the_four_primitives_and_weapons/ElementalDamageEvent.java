@@ -41,6 +41,17 @@ public class ElementalDamageEvent {
     private static final String TAG_HOLY_DAMAGE = "the_four_primitives_and_weapons.mh_rpgish.holy_damage";
     private static final String TAG_ERROR_DAMAGE = "the_four_primitives_and_weapons.mh_rpgish.error_damage";
 
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onErrorElementNullifyIncoming(LivingHurtEvent event) {
+        if (!(event.getEntity() instanceof Player defender)) return;
+        if (defender.level().isClientSide) return;
+        if (!ErrorElementDamageHandler.shouldNullifyIncoming(defender, event.getSource())) return;
+
+        event.setAmount(0.0F);
+        event.setCanceled(true);
+        ErrorElementDamageHandler.spawnNullifyEffect(defender);
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onLivingHurt(LivingHurtEvent event) {
         // 攻撃者を取得
@@ -149,7 +160,6 @@ public class ElementalDamageEvent {
                 break;
             case ERROR:
                 modifiedDamage = ErrorElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
-                target.addTag(TAG_ERROR_DAMAGE);
                 break;
             case FIRE:
                 modifiedDamage = FireElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);

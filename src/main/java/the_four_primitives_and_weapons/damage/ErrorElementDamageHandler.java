@@ -1,229 +1,137 @@
 package the_four_primitives_and_weapons.damage;
 
-import the_four_primitives_and_weapons.util.VersionHelper;
-
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
+import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModDamageTypes;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * エラー属性ダメージハンドラー
- * - 防御値（アーマー・エンチャント・耐性・他mod含む全て）を貫通する
- * - レベル1ごとに10%防御貫通
- * - レベル10以上で100%貫通 + 追加攻撃力ボーナス
+ * ERROR / 消滅属性。
  *
- * 仕組み:
- *   LivingHurtEvent（防御軽減前）で元ダメージとレベルを記録
- *   → LivingDamageEvent（全防御軽減後）で実際に軽減された分 × 貫通率 を戻す
- *   これによりバニラ・他mod問わず全ての防御軽減を正確に貫通できる
+ * 攻撃側では普通の攻撃として扱い、追加ダメージや防御貫通は行わない。
+ * 防御側が ERROR を持っている場合、遠距離攻撃・属性 DamageSource・属性武器/本を
+ * 持つ他者からの攻撃を消滅させる。
  */
 public class ErrorElementDamageHandler {
 
-    // レベルあたりの防御貫通率（10%）
-    private static final float PENETRATION_PER_LEVEL = 0.1f;
-    // レベル10超過時の追加ダメージ倍率（レベルごと）
-    private static final float BONUS_DAMAGE_PER_LEVEL = 0.15f;
-
-    // LivingHurtEvent → LivingDamageEvent 間のデータ受け渡し用
-    private static final Map<UUID, PendingErrorDamage> pendingDamage = new ConcurrentHashMap<>();
-    // LivingDamageEvent HIGH → LOWEST 間のデータ受け渡し用
-    private static final Map<UUID, PostArmorPenetration> postArmorData = new ConcurrentHashMap<>();
-
-    /**
-     * HurtEvent時点で記録するデータ
-     */
-    public static class PendingErrorDamage {
-        public final float preDamage;  // 防御軽減前のダメージ（error適用後）
-        public final int elementLevel;
-        public final long gameTick;
-
-        public PendingErrorDamage(float preDamage, int elementLevel, long gameTick) {
-            this.preDamage = preDamage;
-            this.elementLevel = elementLevel;
-            this.gameTick = gameTick;
-        }
-    }
-
-    /**
-     * DamageEvent HIGH → LOWEST 間で受け渡すデータ
-     * アーマー貫通適用後のダメージを記録し、他modエフェクト貫通に使う
-     */
-    public static class PostArmorPenetration {
-        public final float damageAfterArmorPenetration;  // アーマー貫通適用後のダメージ
-        public final float penetrationPercent;
-        public final long gameTick;
-
-        public PostArmorPenetration(float damageAfterArmorPenetration, float penetrationPercent, long gameTick) {
-            this.damageAfterArmorPenetration = damageAfterArmorPenetration;
-            this.penetrationPercent = penetrationPercent;
-            this.gameTick = gameTick;
-        }
-    }
-
-    /**
-     * LivingHurtEvent で呼ばれる: レベル10+の攻撃力ボーナスを適用し、貫通用データを記録
-     * ここでは防御貫通は行わない（まだ防御軽減が起きていないため）
-     */
     public static float calculateDamage(LivingEntity target, float originalDamage, int elementLevel) {
-        float totalDamage = originalDamage;
-
-        // レベル10以上: 追加攻撃力ボーナス
-        if (elementLevel >= 10) {
-            int bonusLevels = elementLevel - 9;
-            totalDamage += originalDamage * (bonusLevels * BONUS_DAMAGE_PER_LEVEL);
-        }
-
-        // 相手のバフ（有益なエフェクト）を解除する
-        removeBuffs(target, elementLevel);
-
-        // LivingDamageEvent用にデータを保存
-        pendingDamage.put(target.getUUID(),
-            new PendingErrorDamage(totalDamage, elementLevel, target.level().getGameTime()));
-
-        // パーティクルエフェクト
-        if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {
-            double x = target.getX();
-            double y = target.getY() + target.getBbHeight() / 2;
-            double z = target.getZ();
-
-            serverLevel.sendParticles(ParticleTypes.CRIT,
-                x, y, z, 15, 0.4, 0.5, 0.4, 0.2);
-
-            serverLevel.sendParticles(ParticleTypes.PORTAL,
-                x, y, z, 10, 0.3, 0.4, 0.3, 0.1);
-
-            if (elementLevel >= 10) {
-                serverLevel.sendParticles(ParticleTypes.DAMAGE_INDICATOR,
-                    x, y, z, 5, 0.3, 0.3, 0.3, 0.1);
-            }
-        }
-
-        return totalDamage;
+        spawnEraseParticles(target, Math.max(1, elementLevel));
+        return originalDamage;
     }
 
-    /**
-     * [Phase 1] LivingDamageEvent HIGH で呼ばれる:
-     * バニラのアーマー・エンチャント・耐性による軽減分を貫通率に応じて戻す
-     * その後、他modエフェクト貫通用にデータを記録する
-     *
-     * @param target     ターゲット
-     * @param postDamage 防御軽減後のダメージ
-     * @return アーマー貫通適用後のダメージ
-     */
-    public static float applyArmorPenetration(LivingEntity target, float postDamage) {
-        PendingErrorDamage pending = pendingDamage.remove(target.getUUID());
-        if (pending == null) {
-            return postDamage;
+    public static boolean shouldNullifyIncoming(Player defender, DamageSource source) {
+        if (defender == null || source == null || !hasErrorElement(defender)) return false;
+        if (source.getEntity() == defender) return false;
+
+        if (isRangedAttack(source)) return true;
+
+        ElementType sourceElement = getSourceElement(source);
+        if (sourceElement != ElementType.NONE) return true;
+
+        if (source.getEntity() instanceof LivingEntity attacker && attacker != defender) {
+            return hasAnyAttackElement(attacker);
         }
 
-        // 古いデータ（2tick以上前）は無視
-        if (target.level().getGameTime() - pending.gameTick > 1) {
-            return postDamage;
-        }
-
-        float penetrationPercent = Math.min(pending.elementLevel * PENETRATION_PER_LEVEL, 1.0f);
-
-        // 防御で軽減された量 = 軽減前ダメージ - 軽減後ダメージ
-        float totalReduction = pending.preDamage - postDamage;
-        float result = postDamage;
-        if (totalReduction > 0) {
-            result = postDamage + totalReduction * penetrationPercent;
-        }
-
-        // Phase 2用にデータを記録（他modエフェクト貫通用）
-        postArmorData.put(target.getUUID(),
-            new PostArmorPenetration(result, penetrationPercent, pending.gameTick));
-
-        return result;
+        return false;
     }
 
-    /**
-     * [Phase 2] LivingDamageEvent LOWEST で呼ばれる:
-     * Heart Stop等の他modエフェクトがダメージを軽減/0にした場合、
-     * その軽減分も貫通率に応じて戻す
-     *
-     * @param target     ターゲット
-     * @param postDamage 他modエフェクト適用後のダメージ
-     * @return エフェクト貫通適用後の最終ダメージ
-     */
-    public static float applyEffectPenetration(LivingEntity target, float postDamage) {
-        PostArmorPenetration data = postArmorData.remove(target.getUUID());
-        if (data == null) {
-            return postDamage;
-        }
-
-        // 古いデータは無視
-        if (target.level().getGameTime() - data.gameTick > 1) {
-            return postDamage;
-        }
-
-        // Phase1後に他modが更にダメージを軽減した量
-        float effectReduction = data.damageAfterArmorPenetration - postDamage;
-        if (effectReduction <= 0) {
-            // 他modによる追加軽減なし
-            return postDamage;
-        }
-
-        // 他modエフェクトの軽減分も貫通率に応じて戻す
-        return postDamage + effectReduction * data.penetrationPercent;
+    public static void spawnNullifyEffect(Player defender) {
+        spawnEraseParticles(defender, 3);
     }
 
-    /**
-     * 指定UUIDのpendingデータ(Phase1用)があるかチェック
-     */
     public static boolean hasPendingHurt(UUID uuid) {
-        return pendingDamage.containsKey(uuid);
+        return false;
     }
 
-    /**
-     * 指定UUIDのpostArmorデータ(Phase2用)があるかチェック
-     */
     public static boolean hasPendingEffect(UUID uuid) {
-        return postArmorData.containsKey(uuid);
+        return false;
     }
 
-    /**
-     * ターゲットのバフ（有益なエフェクト）を解除する。
-     * レベルに応じて解除数が増加する:
-     *   Lv1-4: 最大2個、Lv5-9: 最大4個、Lv10+: 全て解除
-     *
-     * @param target       攻撃対象
-     * @param elementLevel 属性レベル
-     */
-    private static void removeBuffs(LivingEntity target, int elementLevel) {
-        // 有益なエフェクトを収集
-        List<MobEffectInstance> buffs = new ArrayList<>();
-        for (MobEffectInstance effect : target.getActiveEffects()) {
-            if (effect.getEffect().getCategory() == MobEffectCategory.BENEFICIAL) {
-                buffs.add(effect);
-            }
+    public static float applyArmorPenetration(LivingEntity target, float postDamage) {
+        return postDamage;
+    }
+
+    public static float applyEffectPenetration(LivingEntity target, float postDamage) {
+        return postDamage;
+    }
+
+    private static boolean hasErrorElement(Player player) {
+        if (ElementalDamageUtils.getElementType(player.getMainHandItem()) == ElementType.ERROR) return true;
+        if (ElementalDamageUtils.getElementType(player.getOffhandItem()) == ElementType.ERROR) return true;
+        return ElementalDamageUtils.getBookSlotInfo(player).type == ElementType.ERROR;
+    }
+
+    private static boolean hasAnyAttackElement(LivingEntity attacker) {
+        if (hasAttackElement(attacker.getMainHandItem())) return true;
+        if (hasAttackElement(attacker.getOffhandItem())) return true;
+        if (attacker instanceof Player player) {
+            ElementType bookType = ElementalDamageUtils.getBookSlotInfo(player).type;
+            return bookType != ElementType.NONE;
+        }
+        return false;
+    }
+
+    private static boolean hasAttackElement(ItemStack stack) {
+        ElementType type = ElementalDamageUtils.getElementType(stack);
+        return type != ElementType.NONE;
+    }
+
+    private static boolean isRangedAttack(DamageSource source) {
+        Entity direct = source.getDirectEntity();
+        Entity owner = source.getEntity();
+        return source.is(DamageTypeTags.IS_PROJECTILE)
+                || source.is(DamageTypes.ARROW)
+                || source.is(DamageTypes.TRIDENT)
+                || source.is(DamageTypes.THROWN)
+                || source.is(DamageTypes.MOB_PROJECTILE)
+                || direct instanceof Projectile
+                || (direct != null && direct != owner && !(direct instanceof LivingEntity));
+    }
+
+    private static ElementType getSourceElement(DamageSource source) {
+        if (source instanceof IElementalDamageSource elementalSource) {
+            ElementType type = elementalSource.getElementType();
+            if (type != null && type != ElementType.NONE) return type;
         }
 
-        if (buffs.isEmpty()) return;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.HOLY)) return ElementType.HOLY;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.ICE)) return ElementType.ICE;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.ELECTRIC)) return ElementType.ELECTRIC;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.THUNDER)) return ElementType.THUNDER;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.CORROSION)) return ElementType.CORROSION;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.DARK)) return ElementType.DARK;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.MIASMA)) return ElementType.MIASMA;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.FIRE)) return ElementType.FIRE;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.WATER)) return ElementType.WATER;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.WIND)) return ElementType.WIND;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.ERROR)) return ElementType.ERROR;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.BLOOD)) return ElementType.BLOOD;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.DARK_DOT)) return ElementType.DARK;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.BLOOD_DOT)) return ElementType.BLOOD;
 
-        // レベルに応じた最大解除数
-        int maxRemove;
-        if (elementLevel >= 10) {
-            maxRemove = buffs.size(); // 全解除
-        } else if (elementLevel >= 5) {
-            maxRemove = 4;
-        } else {
-            maxRemove = 2;
-        }
+        return ElementType.NONE;
+    }
 
-        int removed = 0;
-        for (MobEffectInstance buff : buffs) {
-            if (removed >= maxRemove) break;
-            target.removeEffect(buff.getEffect());
-            removed++;
-        }
+    private static void spawnEraseParticles(LivingEntity target, int level) {
+        if (target == null || target.level().isClientSide) return;
+        if (!(target.level() instanceof ServerLevel serverLevel)) return;
+
+        int count = Math.min(18, 6 + level);
+        double y = target.getY() + target.getBbHeight() * 0.5;
+        serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                target.getX(), y, target.getZ(),
+                count, 0.35, 0.45, 0.35, 0.04);
+        serverLevel.sendParticles(ParticleTypes.CRIT,
+                target.getX(), y, target.getZ(),
+                Math.max(2, count / 3), 0.25, 0.3, 0.25, 0.08);
     }
 }
