@@ -182,10 +182,10 @@ public class AngelTrioEntity extends PathfinderMob {
         if (interactCooldown > 0) return InteractionResult.PASS;
         interactCooldown = 20; // 1秒クールダウン
 
-        // === 真面目 + error本を手に持っている → 渡す ===
+        // === 真面目 + erasure本を手に持っている → 渡す ===
         if (personality == PERSONALITY_SERIOUS && !angry) {
             ItemStack held = player.getItemInHand(hand);
-            if (isErrorBook(held)) {
+            if (isErasureBook(held)) {
                 broadcastChat(player, "§7[§a???§7] §fありがとう…これで安全だよ");
                 held.shrink(1);
                 askCount = 0;
@@ -234,7 +234,7 @@ public class AngelTrioEntity extends PathfinderMob {
      */
     public String getFirstMessage(Player player) {
         if (personality == PERSONALITY_SERIOUS) {
-            if (!angry && playerHasErrorBook(player)) {
+            if (!angry && playerHasErasureBook(player)) {
                 if (askCount < SERIOUS_ASK_MESSAGES.length) {
                     // §7[§a???§7] §f のプレフィックスを除去して本文だけ返す
                     String raw = SERIOUS_ASK_MESSAGES[askCount];
@@ -311,23 +311,23 @@ public class AngelTrioEntity extends PathfinderMob {
         }
     }
 
-    // === error本検出 ===
+    // === erasure本検出 ===
 
-    private boolean playerHasErrorBook(Player player) {
-        if (isErrorBook(player.getMainHandItem())) return true;
-        if (isErrorBook(player.getOffhandItem())) return true;
+    private boolean playerHasErasureBook(Player player) {
+        if (isErasureBook(player.getMainHandItem())) return true;
+        if (isErasureBook(player.getOffhandItem())) return true;
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            if (isErrorBook(player.getInventory().getItem(i))) return true;
+            if (isErasureBook(player.getInventory().getItem(i))) return true;
         }
         return false;
     }
 
-    private boolean isErrorBook(ItemStack stack) {
+    private boolean isErasureBook(ItemStack stack) {
         if (stack.isEmpty()) return false;
         var itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (itemId == null) return false;
         String id = itemId.toString();
-        return id.contains("error") || id.contains("tukaena");
+        return id.contains("erasure") || id.contains("tukaena");
     }
 
     // === 怒り ===

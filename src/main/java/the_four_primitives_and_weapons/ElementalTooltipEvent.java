@@ -87,7 +87,7 @@ public class ElementalTooltipEvent {
             case ELECTRIC:  return "tooltip.the_four_primitives_and_weapons.element.electric";
             case CORROSION: return "tooltip.the_four_primitives_and_weapons.element.corrosion";
             case HOLY:      return "tooltip.the_four_primitives_and_weapons.element.holy";
-            case ERROR:     return "tooltip.the_four_primitives_and_weapons.element.error";
+            case ERASURE:     return "tooltip.the_four_primitives_and_weapons.element.erasure";
             case MIASMA:    return "tooltip.the_four_primitives_and_weapons.element.miasma";
             default: return "";
         }
@@ -107,7 +107,7 @@ public class ElementalTooltipEvent {
             case ELECTRIC:  return "#FFFF55";  // 黄色
             case CORROSION: return "#BF198C";  // 赤紫 (マゼンタ — 通常パーティクル色と統一)
             case HOLY:      return "#FFAA00";  // 金色
-            case ERROR:     return "#FF0000";  // 赤
+            case ERASURE:     return "#FF0000";  // 赤
             case MIASMA:    return "#550088";  // 暗紫
             default: return "#AAAAAA";         // グレー
         }

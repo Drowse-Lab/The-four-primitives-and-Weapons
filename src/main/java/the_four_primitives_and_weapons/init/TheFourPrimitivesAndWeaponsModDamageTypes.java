@@ -29,7 +29,7 @@ public final class TheFourPrimitivesAndWeaponsModDamageTypes {
 	public static final ResourceKey<DamageType> FIRE      = key("fire");
 	public static final ResourceKey<DamageType> WATER     = key("water");
 	public static final ResourceKey<DamageType> WIND      = key("wind");
-	public static final ResourceKey<DamageType> ERROR     = key("error");
+	public static final ResourceKey<DamageType> ERASURE   = key("erasure");
 	public static final ResourceKey<DamageType> BLOOD     = key("blood");
 
 	// 継続ダメージ (DoT) 用の別 key — 直接ヒット と区別して死亡メッセージや

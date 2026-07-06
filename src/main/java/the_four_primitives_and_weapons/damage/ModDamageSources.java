@@ -42,7 +42,7 @@ public final class ModDamageSources {
 
 	/** ElementType → mod の DamageType key */
 	public static ResourceKey<DamageType> keyFor(ElementType element) {
-		if (element == null) return TheFourPrimitivesAndWeaponsModDamageTypes.ERROR;
+		if (element == null) return TheFourPrimitivesAndWeaponsModDamageTypes.ERASURE;
 		switch (element) {
 			case HOLY:      return TheFourPrimitivesAndWeaponsModDamageTypes.HOLY;
 			case ICE:       return TheFourPrimitivesAndWeaponsModDamageTypes.ICE;
@@ -55,7 +55,8 @@ public final class ModDamageSources {
 			case WATER:     return TheFourPrimitivesAndWeaponsModDamageTypes.WATER;
 			case WIND:      return TheFourPrimitivesAndWeaponsModDamageTypes.WIND;
 			case BLOOD:     return TheFourPrimitivesAndWeaponsModDamageTypes.BLOOD;
-			default:        return TheFourPrimitivesAndWeaponsModDamageTypes.ERROR;
+			case ERASURE:   return TheFourPrimitivesAndWeaponsModDamageTypes.ERASURE;
+			default:        return TheFourPrimitivesAndWeaponsModDamageTypes.ERASURE;
 		}
 	}
 

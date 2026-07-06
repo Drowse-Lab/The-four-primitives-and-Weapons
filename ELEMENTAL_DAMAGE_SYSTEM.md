@@ -200,8 +200,46 @@ giveコマンドでNBT指定:
 3. 殴ってトーテムが発動せず死亡すれば成功
 
 #### 使用可能な属性名
-`ice`, `electric`, `thunder`, `corrosion`, `holy`, `dark`, `fire`, `wind`, `water`, `miasma`
+`ice`, `electric`, `thunder`, `corrosion`, `holy`, `dark`, `fire`, `wind`, `water`, `miasma`, `blood`, `erasure`
 (大文字小文字どちらでもOK)
+
+## 属性持ち歩きデバフと適性attribute
+
+属性または呪を持つ武器を直接持っている場合、または `Feyn:"sigiled"` ではない鞘に入れて持ち歩く場合、プレイヤーに属性デバフが発生します。
+封付き鞘 (`Feyn:"sigiled"`) は中の武器の属性/呪を遮断します。
+
+適性は player attribute で管理されます。属性デバフの実効レベルは次の式です。
+
+```text
+実効デバフLv = max(0, ceil(属性Lv - 対応する適性attribute値))
+```
+
+適性値が属性Lv以上なら、その属性の持ち歩きデバフは発生しません。適性値が途中まである場合は、その分だけデバフLvが下がります。
+呪は `curse_aptitude >= 1` で無効化されます。
+
+例:
+
+```mcfunction
+/attribute @s the_four_primitives_and_weapons:fire_aptitude base set 5
+```
+
+| Attribute ID | 対応するデバフ |
+|---|---|
+| `the_four_primitives_and_weapons:fire_aptitude` | 炎: 被ダメージ時の微量Fire DoT |
+| `the_four_primitives_and_weapons:water_aptitude` | 水: 水中での追加酸素減少 |
+| `the_four_primitives_and_weapons:wind_aptitude` | 風: 満腹度exhaustion増加 |
+| `the_four_primitives_and_weapons:ice_aptitude` | 氷: 移動速度低下 |
+| `the_four_primitives_and_weapons:thunder_aptitude` | 雷: 防具強度低下 |
+| `the_four_primitives_and_weapons:electric_aptitude` | 電気: 攻撃速度低下 |
+| `the_four_primitives_and_weapons:corrosion_aptitude` | 侵食: 防御力低下 |
+| `the_four_primitives_and_weapons:holy_aptitude` | 聖: 発光 |
+| `the_four_primitives_and_weapons:dark_aptitude` | 闇: Darkness付与 |
+| `the_four_primitives_and_weapons:miasma_aptitude` | 瘴気: 回復量低下 |
+| `the_four_primitives_and_weapons:blood_aptitude` | 血: 微量DoT |
+| `the_four_primitives_and_weapons:erasure_aptitude` | 消滅: 混乱 |
+| `the_four_primitives_and_weapons:curse_aptitude` | 呪: 体力低下/攻撃上昇 |
+
+アドオン装備は通常の attribute modifier でこれらの適性を付与できます。
 
 ## 既存システムとの統合
 

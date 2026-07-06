@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 public class ElementDamageCommand {
 
     private static final java.util.List<String> ELEMENT_NAMES = Arrays.stream(ElementType.values())
-        .filter(e -> e != ElementType.NONE && e != ElementType.ERROR)
+        .filter(e -> e != ElementType.NONE && e != ElementType.ERASURE)
         .map(e -> e.getName())
         .collect(Collectors.toList());
 

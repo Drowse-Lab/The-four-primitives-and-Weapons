@@ -28,7 +28,7 @@ public class MiasmaBookItem extends Item implements ICurioItem {
 		if (lv >= 1 && lv <= 10) {
 			tooltip.add(Component.literal("§5").append(Component.translatable("tooltip.the_four_primitives_and_weapons.element.miasma")).append(Component.literal(" " + ElementalTooltipEvent.toRoman(lv))));
 		} else if (lv != 0) {
-			tooltip.add(ErrorBookItem.buildErrorComponent());
+			tooltip.add(ErasureBookItem.buildErasureComponent());
 		}
 	}
 

@@ -152,7 +152,7 @@ Each element has a counter element that deals increased damage against it.
 | Dark | Holy |
 | Water | Thunder |
 | Wind | Ice |
-| Error | — |
+| Erasure | — |
 
 ---
 
@@ -164,6 +164,49 @@ Each element has a counter element that deals increased damage against it.
   "ElementLevel": 2
 }
 ```
+
+---
+
+## 属性持ち歩きデバフと適性attribute / Carry Debuffs and Aptitude Attributes
+
+属性または呪を持つ武器を直接持っている場合、または `Feyn:"sigiled"` ではない鞘に入れて持ち歩く場合、プレイヤーに属性デバフが発生します。
+封付き鞘 (`Feyn:"sigiled"`) は中の武器の属性/呪を遮断します。
+
+When carrying an elemental or cursed weapon directly, or inside a scabbard that is not `Feyn:"sigiled"`, the player receives a carry debuff.
+A sigiled scabbard blocks the stored weapon's element/curse.
+
+適性は player attribute で管理されます。
+
+```text
+Effective debuff level = max(0, ceil(ElementLevel - aptitude attribute value))
+```
+
+適性値が属性Lv以上なら、その属性の持ち歩きデバフは発生しません。呪は `curse_aptitude >= 1` で無効化されます。
+
+If aptitude is equal to or greater than the element level, that carry debuff is disabled. Curse is disabled when `curse_aptitude >= 1`.
+
+Example:
+
+```mcfunction
+/attribute @s the_four_primitives_and_weapons:fire_aptitude base set 5
+```
+
+| Attribute ID | Debuff |
+|---|---|
+| `the_four_primitives_and_weapons:fire_aptitude` | Fire: tiny Fire DoT after taking damage |
+| `the_four_primitives_and_weapons:water_aptitude` | Water: extra air loss underwater |
+| `the_four_primitives_and_weapons:wind_aptitude` | Wind: increased food exhaustion |
+| `the_four_primitives_and_weapons:ice_aptitude` | Ice: movement speed down |
+| `the_four_primitives_and_weapons:thunder_aptitude` | Thunder: armor toughness down |
+| `the_four_primitives_and_weapons:electric_aptitude` | Electric: attack speed down |
+| `the_four_primitives_and_weapons:corrosion_aptitude` | Corrosion: armor down |
+| `the_four_primitives_and_weapons:holy_aptitude` | Holy: glowing |
+| `the_four_primitives_and_weapons:dark_aptitude` | Dark: Darkness effect |
+| `the_four_primitives_and_weapons:miasma_aptitude` | Miasma: healing reduction |
+| `the_four_primitives_and_weapons:blood_aptitude` | Blood: tiny DoT |
+| `the_four_primitives_and_weapons:erasure_aptitude` | Erasure: confusion |
+| `the_four_primitives_and_weapons:curse_aptitude` | Curse: max health down / attack up |
+
 ---
 ## Test command
 /give @s the_four_primitives_and_weapons:kurikarakenutigatana{ElementType:"ELECTRIC",ElementLevel:1}

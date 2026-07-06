@@ -27,7 +27,7 @@ public class HolyBookItem extends Item implements ICurioItem {
 		if (lv >= 1 && lv <= 10) {
 			tooltip.add(Component.literal("§6").append(Component.translatable("tooltip.the_four_primitives_and_weapons.element.holy")).append(Component.literal(" " + ElementalTooltipEvent.toRoman(lv))));
 		} else if (lv != 0) {
-			tooltip.add(ErrorBookItem.buildErrorComponent());
+			tooltip.add(ErasureBookItem.buildErasureComponent());
 		}
 	}
 

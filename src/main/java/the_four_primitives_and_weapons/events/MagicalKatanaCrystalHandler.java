@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *   3. 破壊された瞬間に、 オーナーの手に「具現化 Magical Katana」が入る
  *      - NBT: MaterializedFor = owner UUID
  *      - NBT: Materialized = true
- *      - 侵食属性 Lv 12 ( = XII 表記、 ERROR 級ダメージ )
+     *      - 侵食属性 Lv 12 ( = XII 表記、 ERASURE 級ダメージ )
  *   4. 具現化武器を納刀すると、 武器が砕けて消滅 ( ダメージ無し、 演出のみ )
  *
  * 未対応 ( phase 2 ):

@@ -18,12 +18,12 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 import javax.annotation.Nullable;
 
-public class ErrorBookItem extends Item implements ICurioItem {
+public class ErasureBookItem extends Item implements ICurioItem {
 
     private static final ResourceLocation NOISE_FONT =
             new ResourceLocation("the_four_primitives_and_weapons", "static_noise");
 
-    public ErrorBookItem() {
+    public ErasureBookItem() {
         super(new Item.Properties().stacksTo(1).rarity(Rarity.EPIC));
     }
 
@@ -32,18 +32,18 @@ public class ErrorBookItem extends Item implements ICurioItem {
                                 List<Component> tooltip, TooltipFlag flag) {
         int lv = ElementalDamageUtils.getElementLevel(stack);
         if (lv >= 1 && lv <= 10) {
-            tooltip.add(Component.translatable("tooltip.the_four_primitives_and_weapons.element.error").append(Component.literal(" " + ElementalTooltipEvent.toRoman(lv)))
+            tooltip.add(Component.translatable("tooltip.the_four_primitives_and_weapons.element.erasure").append(Component.literal(" " + ElementalTooltipEvent.toRoman(lv)))
                     .withStyle(Style.EMPTY
                             .withColor(ChatFormatting.DARK_RED)
                             .withFont(NOISE_FONT)));
         } else if (lv != 0) {
-            tooltip.add(buildErrorComponent());
+            tooltip.add(buildErasureComponent());
         }
     }
 
-    /** §4 赤 + ノイズフォントで "error" を表示するコンポーネント */
-    public static Component buildErrorComponent() {
-        return Component.literal("error")
+    /** §4 赤 + ノイズフォントで "erasure" を表示するコンポーネント */
+    public static Component buildErasureComponent() {
+        return Component.literal("erasure")
                 .withStyle(Style.EMPTY
                         .withColor(ChatFormatting.DARK_RED)
                         .withFont(new ResourceLocation("the_four_primitives_and_weapons", "static_noise")));

@@ -14,7 +14,7 @@
 | 聖 | HOLY | HolyBookItem | DARK |
 | 闇 | DARK | DarknessItem | HOLY |
 | 瘴気 | MIASMA | MiasmaBookItem | HOLY |
-| エラー | ERROR | ErrorBookItem | NONE |
+| 消滅 | ERASURE | ErasureBookItem | NONE |
 
 ---
 
@@ -84,11 +84,10 @@
 - DoT(常に発動): 60tick + レベルごとに+40tick、0.5 + レベルごとに+0.5ダメージ
 - Lv4以上で回復完全ブロック
 
-### エラー (ERROR)
-- 防御貫通: レベルごとに10%(Lv10以上で100%貫通)
-- Lv10超過ボーナス: 超過レベルごとに+15%ダメージ(例: Lv15 = 100%貫通 + 75%追加)
-- 全防御を無視: 防具、エンチャント、耐性、他MODの保護
-- 対象のバフを除去
+### 消滅 (ERASURE)
+- 攻撃時は通常攻撃として扱う
+- 防御側が消滅属性を持つ場合、遠距離攻撃、属性攻撃、属性武器/魔導書を持つ相手からの攻撃を無効化する
+- カウンター属性はなし
 
 ---
 
@@ -121,7 +120,7 @@
 | HOLY | 1.1x | 対アンデッド | 2.5x | 3.4x |
 | DARK | 1.1x | 暗所 | 1.4x | 1.54x |
 | MIASMA | 1.1x | - | - | 1.1x |
-| ERROR | 1.0x | 防御貫通 | Lv10+で+15%/Lv | 無制限 |
+| ERASURE | 1.0x | 防御側で属性/遠距離攻撃を無効化 | - | 1.0x |
 
 ---
 
@@ -143,3 +142,42 @@
 
 魔導書は**bookスロット**(Curios)に装備して使用する。
 装備するとプレイヤーの攻撃に対応する属性ダメージが付与される。
+
+---
+
+## 属性持ち歩きデバフと適性attribute
+
+属性または呪を持つ武器は、直接持っている場合、または `Feyn:"sigiled"` ではない鞘に納刀されている場合に持ち歩きデバフを発生させる。
+封付き鞘 (`Feyn:"sigiled"`) は中の武器の属性/呪を遮断する。
+
+プレイヤーの適性は attribute で管理する。属性デバフの実効レベルは次の式で決まる。
+
+```text
+実効デバフLv = max(0, ceil(属性Lv - 対応する適性attribute値))
+```
+
+適性値が属性Lv以上なら、その属性の持ち歩きデバフは発生しない。適性値が途中まである場合は、その分だけデバフLvが下がる。呪は `curse_aptitude >= 1` で無効化する。
+
+例:
+
+```mcfunction
+/attribute @s the_four_primitives_and_weapons:fire_aptitude base set 5
+```
+
+| Attribute ID | 対応するデバフ |
+|---|---|
+| `the_four_primitives_and_weapons:fire_aptitude` | 炎: 被ダメージ時の微量Fire DoT |
+| `the_four_primitives_and_weapons:water_aptitude` | 水: 水中での追加酸素減少 |
+| `the_four_primitives_and_weapons:wind_aptitude` | 風: 満腹度exhaustion増加 |
+| `the_four_primitives_and_weapons:ice_aptitude` | 氷: 移動速度低下 |
+| `the_four_primitives_and_weapons:thunder_aptitude` | 雷: 防具強度低下 |
+| `the_four_primitives_and_weapons:electric_aptitude` | 電気: 攻撃速度低下 |
+| `the_four_primitives_and_weapons:corrosion_aptitude` | 侵食: 防御力低下 |
+| `the_four_primitives_and_weapons:holy_aptitude` | 聖: 発光 |
+| `the_four_primitives_and_weapons:dark_aptitude` | 闇: Darkness付与 |
+| `the_four_primitives_and_weapons:miasma_aptitude` | 瘴気: 回復量低下 |
+| `the_four_primitives_and_weapons:blood_aptitude` | 血: 微量DoT |
+| `the_four_primitives_and_weapons:erasure_aptitude` | 消滅: 混乱 |
+| `the_four_primitives_and_weapons:curse_aptitude` | 呪: 体力低下/攻撃上昇 |
+
+アドオン装備は通常の attribute modifier でこれらの適性を付与できる。

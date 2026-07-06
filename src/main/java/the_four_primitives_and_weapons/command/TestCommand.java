@@ -69,7 +69,7 @@ public class TestCommand {
         .map(t -> t.name().toLowerCase()).collect(Collectors.toList());
 
     private static final List<String> ELEMENT_NAMES = Arrays.stream(ElementType.values())
-        .filter(e -> e != ElementType.NONE && e != ElementType.ERROR)
+        .filter(e -> e != ElementType.NONE && e != ElementType.ERASURE)
         .map(ElementType::getName).collect(Collectors.toList());
 
     private static final List<String> DIFF_NAMES = Arrays.stream(CustomDifficulty.values())
@@ -359,7 +359,7 @@ public class TestCommand {
         int count = 0;
         String baseName;
         for (ElementType elem : ElementType.values()) {
-            if (elem == ElementType.NONE || elem == ElementType.ERROR) continue;
+            if (elem == ElementType.NONE || elem == ElementType.ERASURE) continue;
             ItemStack stack;
             try {
                 stack = (itemInput != null)
@@ -522,7 +522,7 @@ public class TestCommand {
 
         int count = 0;
         for (ElementType elem : ElementType.values()) {
-            if (elem == ElementType.NONE || elem == ElementType.ERROR) continue;
+            if (elem == ElementType.NONE || elem == ElementType.ERASURE) continue;
             net.minecraft.world.damagesource.DamageSource ds = target.damageSources().magic();
             if (ds instanceof IElementalDamageSource elemSource) {
                 elemSource.setElementType(elem);

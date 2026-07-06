@@ -15,13 +15,13 @@ import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModDamage
 import java.util.UUID;
 
 /**
- * ERROR / 消滅属性。
+ * ERASURE / 消滅属性。
  *
  * 攻撃側では普通の攻撃として扱い、追加ダメージや防御貫通は行わない。
- * 防御側が ERROR を持っている場合、遠距離攻撃・属性 DamageSource・属性武器/本を
+ * 防御側が ERASURE を持っている場合、遠距離攻撃・属性 DamageSource・属性武器/本を
  * 持つ他者からの攻撃を消滅させる。
  */
-public class ErrorElementDamageHandler {
+public class ErasureElementDamageHandler {
 
     public static float calculateDamage(LivingEntity target, float originalDamage, int elementLevel) {
         spawnEraseParticles(target, Math.max(1, elementLevel));
@@ -29,7 +29,7 @@ public class ErrorElementDamageHandler {
     }
 
     public static boolean shouldNullifyIncoming(Player defender, DamageSource source) {
-        if (defender == null || source == null || !hasErrorElement(defender)) return false;
+        if (defender == null || source == null || !hasErasureElement(defender)) return false;
         if (source.getEntity() == defender) return false;
 
         if (isRangedAttack(source)) return true;
@@ -64,10 +64,10 @@ public class ErrorElementDamageHandler {
         return postDamage;
     }
 
-    private static boolean hasErrorElement(Player player) {
-        if (ElementalDamageUtils.getElementType(player.getMainHandItem()) == ElementType.ERROR) return true;
-        if (ElementalDamageUtils.getElementType(player.getOffhandItem()) == ElementType.ERROR) return true;
-        return ElementalDamageUtils.getBookSlotInfo(player).type == ElementType.ERROR;
+    private static boolean hasErasureElement(Player player) {
+        if (ElementalDamageUtils.getElementType(player.getMainHandItem()) == ElementType.ERASURE) return true;
+        if (ElementalDamageUtils.getElementType(player.getOffhandItem()) == ElementType.ERASURE) return true;
+        return ElementalDamageUtils.getBookSlotInfo(player).type == ElementType.ERASURE;
     }
 
     private static boolean hasAnyAttackElement(LivingEntity attacker) {
@@ -113,7 +113,7 @@ public class ErrorElementDamageHandler {
         if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.FIRE)) return ElementType.FIRE;
         if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.WATER)) return ElementType.WATER;
         if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.WIND)) return ElementType.WIND;
-        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.ERROR)) return ElementType.ERROR;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.ERASURE)) return ElementType.ERASURE;
         if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.BLOOD)) return ElementType.BLOOD;
         if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.DARK_DOT)) return ElementType.DARK;
         if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.BLOOD_DOT)) return ElementType.BLOOD;

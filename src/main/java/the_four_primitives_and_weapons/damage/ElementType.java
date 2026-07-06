@@ -16,7 +16,7 @@ public enum ElementType {
     WATER("water"),        // 水属性
     MIASMA("miasma"),      // 瘴気属性
     BLOOD("blood"),        // 血属性 (Rivers of Blood 系)
-    ERROR("error");        // エラー属性
+    ERASURE("erasure");    // 消滅属性
 
     private final String name;
 
@@ -55,7 +55,7 @@ public enum ElementType {
             case WIND:      return ICE;     
             case MIASMA:    return HOLY;
             case BLOOD:     return HOLY;   // 血 ↔ 聖
-            case ERROR:     return NONE;
+            case ERASURE:   return NONE;
             default:        return NONE;
         }
     }

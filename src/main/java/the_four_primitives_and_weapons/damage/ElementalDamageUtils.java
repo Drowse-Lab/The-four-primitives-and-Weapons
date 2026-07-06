@@ -150,7 +150,7 @@ public class ElementalDamageUtils {
             case "ElectricBookItem":return ElementType.ELECTRIC;
             case "CorrosionBookItem":return ElementType.CORROSION;
             case "HolyBookItem":    return ElementType.HOLY;
-            case "ErrorBookItem":   return ElementType.ERROR;
+            case "ErasureBookItem":   return ElementType.ERASURE;
             case "MiasmaBookItem":  return ElementType.MIASMA;
             default:                return ElementType.NONE;
         }

@@ -17,6 +17,7 @@ import net.minecraftforge.event.entity.living.LivingHealEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import the_four_primitives_and_weapons.init.MawExtraAttributes;
 import the_four_primitives_and_weapons.util.CuriosScabbardHelper;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
@@ -67,18 +68,19 @@ public class ElementalCarryDebuffHandler {
 
         CarryState state = collectState(player);
 
-        boolean changed = syncCursedModifiers(player, state.cursed);
-        changed |= syncIceModifier(player, state.level(ElementType.ICE));
-        changed |= syncElectricModifier(player, state.level(ElementType.ELECTRIC));
-        changed |= syncCorrosionModifier(player, state.level(ElementType.CORROSION));
-        changed |= syncThunderModifier(player, state.level(ElementType.THUNDER));
+        boolean cursed = state.cursed && getCurseAptitude(player) < 1.0D;
+        boolean changed = syncCursedModifiers(player, cursed);
+        changed |= syncIceModifier(player, effectiveDebuffLevel(player, state, ElementType.ICE));
+        changed |= syncElectricModifier(player, effectiveDebuffLevel(player, state, ElementType.ELECTRIC));
+        changed |= syncCorrosionModifier(player, effectiveDebuffLevel(player, state, ElementType.CORROSION));
+        changed |= syncThunderModifier(player, effectiveDebuffLevel(player, state, ElementType.THUNDER));
 
-        applyWindExhaustion(player, state.level(ElementType.WIND));
-        applyWaterAirDrain(player, state.level(ElementType.WATER));
-        applyHolyGlow(player, state.level(ElementType.HOLY));
-        applyDarkness(player, state.level(ElementType.DARK));
-        applyBloodDrain(player, state.level(ElementType.BLOOD));
-        applyErrorInstability(player, state.level(ElementType.ERROR));
+        applyWindExhaustion(player, effectiveDebuffLevel(player, state, ElementType.WIND));
+        applyWaterAirDrain(player, effectiveDebuffLevel(player, state, ElementType.WATER));
+        applyHolyGlow(player, effectiveDebuffLevel(player, state, ElementType.HOLY));
+        applyDarkness(player, effectiveDebuffLevel(player, state, ElementType.DARK));
+        applyBloodDrain(player, effectiveDebuffLevel(player, state, ElementType.BLOOD));
+        applyErasureInstability(player, effectiveDebuffLevel(player, state, ElementType.ERASURE));
 
         if (changed && player instanceof ServerPlayer serverPlayer) {
             serverPlayer.connection.send(new ClientboundUpdateAttributesPacket(
@@ -92,7 +94,8 @@ public class ElementalCarryDebuffHandler {
         if (!(event.getEntity() instanceof Player player)) return;
         if (player.level().isClientSide || event.getAmount() <= 0.0F) return;
 
-        int fireLevel = collectState(player).level(ElementType.FIRE);
+        CarryState state = collectState(player);
+        int fireLevel = effectiveDebuffLevel(player, state, ElementType.FIRE);
         if (fireLevel <= 0) return;
 
         long gameTime = player.level().getGameTime();
@@ -110,7 +113,8 @@ public class ElementalCarryDebuffHandler {
         if (!(event.getEntity() instanceof Player player)) return;
         if (player.level().isClientSide || event.getAmount() <= 0.0F) return;
 
-        int miasmaLevel = collectState(player).level(ElementType.MIASMA);
+        CarryState state = collectState(player);
+        int miasmaLevel = effectiveDebuffLevel(player, state, ElementType.MIASMA);
         if (miasmaLevel <= 0) return;
 
         float reduction = Math.min(0.8F, 0.15F + 0.03F * miasmaLevel);
@@ -218,7 +222,7 @@ public class ElementalCarryDebuffHandler {
         ElementalDoTHandler.apply(player, duration, damagePerTick, ElementType.BLOOD);
     }
 
-    private static void applyErrorInstability(Player player, int level) {
+    private static void applyErasureInstability(Player player, int level) {
         if (level <= 0) return;
         if (player.tickCount % 80 != 0) return;
 
@@ -291,6 +295,32 @@ public class ElementalCarryDebuffHandler {
         if (!stack.hasTag()) return false;
         CompoundTag tag = stack.getTag();
         return tag != null && "sigiled".equals(tag.getString("Feyn"));
+    }
+
+    private static int effectiveDebuffLevel(Player player, CarryState state, ElementType type) {
+        int level = state.level(type);
+        if (level <= 0) return 0;
+
+        double aptitude = getAptitude(player, type);
+        double effective = level - aptitude;
+        if (effective <= 0.0D) return 0;
+        return Math.max(1, (int) Math.ceil(effective));
+    }
+
+    private static double getAptitude(Player player, ElementType type) {
+        Attribute attribute = MawExtraAttributes.getAptitudeAttribute(type);
+        return getAttributeValue(player, attribute);
+    }
+
+    private static double getCurseAptitude(Player player) {
+        return getAttributeValue(player, MawExtraAttributes.CURSE_APTITUDE.get());
+    }
+
+    private static double getAttributeValue(Player player, Attribute attribute) {
+        if (attribute == null) return 0.0D;
+        AttributeInstance instance = player.getAttribute(attribute);
+        if (instance == null) return 0.0D;
+        return Math.max(0.0D, instance.getValue());
     }
 
     private static boolean syncModifier(Player player, Attribute attribute, UUID uuid, String name,

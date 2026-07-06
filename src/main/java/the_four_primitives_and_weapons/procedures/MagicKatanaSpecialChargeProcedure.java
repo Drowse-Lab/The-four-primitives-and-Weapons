@@ -123,7 +123,7 @@ public class MagicKatanaSpecialChargeProcedure {
             case "HolyBookItem":
                 executeHolyAttack(world, x, y, z, player, chargePercent, elementLevel);
                 break;
-            case "ErrorBookItem":
+            case "ErasureBookItem":
                 executeErrorAttack(world, x, y, z, player, chargePercent, elementLevel);
                 break;
             case "MiasmaBookItem":
@@ -237,7 +237,7 @@ public class MagicKatanaSpecialChargeProcedure {
                             itemName.equals("BubbleshotItem") || itemName.equals("DarknessItem") ||
                             itemName.equals("IceBookItem") || itemName.equals("ElectricBookItem") ||
                             itemName.equals("CorrosionBookItem") || itemName.equals("HolyBookItem") ||
-                            itemName.equals("ErrorBookItem") || itemName.equals("MiasmaBookItem")) {
+                            itemName.equals("ErasureBookItem") || itemName.equals("MiasmaBookItem")) {
                             specialItem.set(stack);
                             return;
                         }
@@ -1140,7 +1140,7 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
-     * ErrorBookItem - グリッチ攻撃（ランダム範囲 + ランダム効果 + テレポート）
+     * ErasureBookItem - グリッチ攻撃（ランダム範囲 + ランダム効果 + テレポート）
      */
     private static void executeErrorAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent, int elementLevel) {
         Vec3 playerPos = player.position();
@@ -1193,7 +1193,7 @@ public class MagicKatanaSpecialChargeProcedure {
 
         // 斬撃カラー（薄い1本線）
         DustParticleOptions slashCore = new DustParticleOptions(
-            new Vector3f(0.8f, 0.0f, 0.0f), 1.2f);     // 赤エラーの芯
+            new Vector3f(0.8f, 0.0f, 0.0f), 1.2f);     // 赤い消滅の芯
         DustParticleOptions slashEdge = new DustParticleOptions(
             new Vector3f(1.0f, 0.15f, 0.1f), 0.8f);     // 明るい赤の縁
 
@@ -1283,7 +1283,7 @@ public class MagicKatanaSpecialChargeProcedure {
 
         for (LivingEntity target : targets) {
             float damage = (12.0f + (float)(Math.random() * 8.0)) * errBonus;
-            target.hurt(ModDamageSources.ofElement(player.level(), ElementType.ERROR, player), damage);
+            target.hurt(ModDamageSources.ofElement(player.level(), ElementType.ERASURE, player), damage);
 
             // ヒットエフェクト：敵の体に斬撃跡
             if (world instanceof ServerLevel serverLevel) {

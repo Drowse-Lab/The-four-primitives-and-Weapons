@@ -39,17 +39,17 @@ public class ElementalDamageEvent {
     private static final String TAG_ELECTRIC_DAMAGE = "the_four_primitives_and_weapons.mh_rpgish.electric_damage";
     private static final String TAG_CORROSION_DAMAGE = "the_four_primitives_and_weapons.mh_rpgish.corrosion_damage";
     private static final String TAG_HOLY_DAMAGE = "the_four_primitives_and_weapons.mh_rpgish.holy_damage";
-    private static final String TAG_ERROR_DAMAGE = "the_four_primitives_and_weapons.mh_rpgish.error_damage";
+    private static final String TAG_ERASURE_DAMAGE = "the_four_primitives_and_weapons.mh_rpgish.erasure_damage";
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onErrorElementNullifyIncoming(LivingHurtEvent event) {
+    public static void onErasureElementNullifyIncoming(LivingHurtEvent event) {
         if (!(event.getEntity() instanceof Player defender)) return;
         if (defender.level().isClientSide) return;
-        if (!ErrorElementDamageHandler.shouldNullifyIncoming(defender, event.getSource())) return;
+        if (!ErasureElementDamageHandler.shouldNullifyIncoming(defender, event.getSource())) return;
 
         event.setAmount(0.0F);
         event.setCanceled(true);
-        ErrorElementDamageHandler.spawnNullifyEffect(defender);
+        ErasureElementDamageHandler.spawnNullifyEffect(defender);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGH)
@@ -158,8 +158,8 @@ public class ElementalDamageEvent {
                 modifiedDamage = HolyElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
                 target.addTag(TAG_HOLY_DAMAGE);
                 break;
-            case ERROR:
-                modifiedDamage = ErrorElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+            case ERASURE:
+                modifiedDamage = ErasureElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
                 break;
             case FIRE:
                 modifiedDamage = FireElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
@@ -196,11 +196,11 @@ public class ElementalDamageEvent {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onLivingDamagePhase1(LivingDamageEvent event) {
         LivingEntity target = event.getEntity();
-        if (!ErrorElementDamageHandler.hasPendingHurt(target.getUUID())) {
+        if (!ErasureElementDamageHandler.hasPendingHurt(target.getUUID())) {
             return;
         }
 
-        float result = ErrorElementDamageHandler.applyArmorPenetration(target, event.getAmount());
+        float result = ErasureElementDamageHandler.applyArmorPenetration(target, event.getAmount());
         if (result != event.getAmount()) {
             event.setAmount(result);
         }
@@ -213,11 +213,11 @@ public class ElementalDamageEvent {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDamagePhase2(LivingDamageEvent event) {
         LivingEntity target = event.getEntity();
-        if (!ErrorElementDamageHandler.hasPendingEffect(target.getUUID())) {
+        if (!ErasureElementDamageHandler.hasPendingEffect(target.getUUID())) {
             return;
         }
 
-        float result = ErrorElementDamageHandler.applyEffectPenetration(target, event.getAmount());
+        float result = ErasureElementDamageHandler.applyEffectPenetration(target, event.getAmount());
         if (result != event.getAmount()) {
             event.setAmount(result);
         }
@@ -231,7 +231,7 @@ public class ElementalDamageEvent {
         entity.removeTag(TAG_ELECTRIC_DAMAGE);
         entity.removeTag(TAG_CORROSION_DAMAGE);
         entity.removeTag(TAG_HOLY_DAMAGE);
-        entity.removeTag(TAG_ERROR_DAMAGE);
+        entity.removeTag(TAG_ERASURE_DAMAGE);
     }
 
     /**
@@ -376,7 +376,7 @@ public class ElementalDamageEvent {
             targetElement = ElementalDamageUtils.getBookSlotInfo(targetPlayer).type;
         }
 
-        if (targetElement == ElementType.NONE || targetElement == ElementType.ERROR) return 0f;
+        if (targetElement == ElementType.NONE || targetElement == ElementType.ERASURE) return 0f;
 
         // ターゲットの属性のカウンターが攻撃属性と一致 → 弱点攻撃
         if (targetElement.getCounterElement() == attackElement) {

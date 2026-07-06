@@ -24,10 +24,10 @@ public class CorrosionBookItem extends Item implements ICurioItem {
 	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
 		// 正常 lv (1-10) の "Corrosion Element X" 表示は ElementalTooltipEvent が
 		// 全アイテム共通で挿入するのでここでは出さない ( 二重表示防止 )。
-		// 異常 lv ( = NBT 改ざん / 範囲外 ) のときだけ ERROR 表記を出す。
+		// 異常 lv ( = NBT 改ざん / 範囲外 ) のときだけ ERASURE 表記を出す。
 		int lv = ElementalDamageUtils.getElementLevel(stack);
 		if (lv != 0 && (lv < 1 || lv > 10)) {
-			tooltip.add(ErrorBookItem.buildErrorComponent());
+			tooltip.add(ErasureBookItem.buildErasureComponent());
 		}
 	}
 

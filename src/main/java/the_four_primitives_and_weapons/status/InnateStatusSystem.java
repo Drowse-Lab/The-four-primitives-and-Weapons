@@ -37,7 +37,7 @@ public class InnateStatusSystem {
 
     // 先天的ステータスを付与する対象から除外する属性
     private static final ElementType[] EXCLUDED = {
-            ElementType.NONE, ElementType.ERROR
+            ElementType.NONE, ElementType.ERASURE
     };
 
     public enum InnateType {
