@@ -115,6 +115,8 @@ public class ErasureElementDamageHandler {
         if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.WIND)) return ElementType.WIND;
         if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.ERASURE)) return ElementType.ERASURE;
         if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.BLOOD)) return ElementType.BLOOD;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.SOUL)) return ElementType.SOUL;
+        if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.SOUL_FIRE)) return ElementType.SOUL_FIRE;
         if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.DARK_DOT)) return ElementType.DARK;
         if (source.is(TheFourPrimitivesAndWeaponsModDamageTypes.BLOOD_DOT)) return ElementType.BLOOD;
 

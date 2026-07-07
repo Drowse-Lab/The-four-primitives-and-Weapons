@@ -27,9 +27,11 @@ public class LivingEntityDamageMixin {
     )
     private float applyElementalDamage(float originalDamage, DamageSource source) {
         LivingEntity target = (LivingEntity) (Object) this;
+        boolean hasExplicitElementalSource = source instanceof IElementalDamageSource elementalSource
+                && elementalSource.getElementType() != ElementType.NONE;
 
         // 攻撃元のエンティティを取得
-        if (source.getEntity() instanceof LivingEntity attacker) {
+        if (!hasExplicitElementalSource && source.getEntity() instanceof LivingEntity attacker) {
             // 攻撃者が持っているメインハンドのアイテムを取得
             ItemStack weapon = attacker.getMainHandItem();
 
@@ -92,6 +94,12 @@ public class LivingEntityDamageMixin {
                     break;
                 case HOLY:
                     modifiedDamage = HolyElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                    break;
+                case SOUL:
+                    modifiedDamage = SoulElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                    break;
+                case SOUL_FIRE:
+                    modifiedDamage = SoulFireElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
                     break;
                 default:
                     break;

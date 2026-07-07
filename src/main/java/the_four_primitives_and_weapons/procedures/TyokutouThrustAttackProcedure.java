@@ -310,6 +310,7 @@ public class TyokutouThrustAttackProcedure {
             if (chargePercent >= 1.0f) {
                 SpecialDebuffHandler.applySlowness(target, 60, 3);
                 target.setSecondsOnFire(5);  // 燃焼 (vanilla 仕様、 swirl 出ない)
+                the_four_primitives_and_weapons.damage.SoulFireHandler.markSoulSource(target, 5 * 20 + 10);  // 魂の炎(青)で描画
             }
 
             // サウンド

@@ -89,6 +89,10 @@ public class SkillRegistry {
                 MotionCategory.UNIVERSAL, rightClickOnly, null);
         register("none_right", "なし", "右クリックで何もしない（回避OFF）",
                 MotionCategory.UNIVERSAL, rightClickOnly, null);
+        // スペル: 右クリックで Iron's Spellbooks の登録スペルを発動（回避しない）。
+        // Iron's Spellbooks 導入時のみ選択肢に表示される（getAvailableMotions* でフィルタ）。
+        register("spell", "スペル", "右クリックで登録スペルを発動する（Iron's Spellbooks）。回避は行わない",
+                MotionCategory.UNIVERSAL, rightClickOnly, null);
         register("trident_throw", "投擲", "右クリックでトライデントを投擲する（vanilla挙動）",
                 MotionCategory.UNIVERSAL, rightClickOnly, null);
         register("bow_power_shot", "集中射撃", "矢のダメージ +4 + クリティカル",
@@ -204,6 +208,9 @@ public class SkillRegistry {
         List<MotionInfo> result = new ArrayList<>();
         for (MotionInfo info : BY_ID.values()) {
             if (!info.compatibleSlots.contains(slot)) continue;
+            // spell は Iron's Spellbooks 導入時のみ
+            if (info.id.equals("spell")
+                    && !the_four_primitives_and_weapons.compat.SpellbooksCompat.isLoaded()) continue;
             if (info.category == MotionCategory.UNIVERSAL) {
                 // bow_* は弓/クロスボウ専用 — デフォルトロードアウト等では除外
                 if (info.id.startsWith("bow_")) continue;
@@ -227,6 +234,9 @@ public class SkillRegistry {
             if (!motionIds.isEmpty()) {
                 List<MotionInfo> result = new ArrayList<>();
                 for (String id : motionIds) {
+                    // spell は Iron's Spellbooks 導入時のみ
+                    if (id.equals("spell")
+                            && !the_four_primitives_and_weapons.compat.SpellbooksCompat.isLoaded()) continue;
                     MotionInfo info = getById(id);
                     if (info != null) result.add(info);
                 }

@@ -40,6 +40,8 @@ public class ElementalDamageEvent {
     private static final String TAG_CORROSION_DAMAGE = "the_four_primitives_and_weapons.mh_rpgish.corrosion_damage";
     private static final String TAG_HOLY_DAMAGE = "the_four_primitives_and_weapons.mh_rpgish.holy_damage";
     private static final String TAG_ERASURE_DAMAGE = "the_four_primitives_and_weapons.mh_rpgish.erasure_damage";
+    private static final String TAG_SOUL_DAMAGE = "the_four_primitives_and_weapons.mh_rpgish.soul_damage";
+    private static final String TAG_SOUL_FIRE_DAMAGE = "the_four_primitives_and_weapons.mh_rpgish.soul_fire_damage";
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onErasureElementNullifyIncoming(LivingHurtEvent event) {
@@ -54,6 +56,11 @@ public class ElementalDamageEvent {
 
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onLivingHurt(LivingHurtEvent event) {
+        if (event.getSource() instanceof IElementalDamageSource elementalSource
+                && elementalSource.getElementType() != ElementType.NONE) {
+            return;
+        }
+
         // 攻撃者を取得
         if (!(event.getSource().getEntity() instanceof LivingEntity attacker)) {
             return;
@@ -176,6 +183,16 @@ public class ElementalDamageEvent {
             case DARK:
                 modifiedDamage = DarkElementDamageHandler.calculateDamage(attacker, target, originalDamage, elementLevel);
                 break;
+            case SOUL:
+                modifiedDamage = SoulElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                target.addTag(TAG_SOUL_DAMAGE);
+                // SOUL 属性の攻撃を受けた対象は、この間に炎が付いていれば青い炎で描画する
+                the_four_primitives_and_weapons.damage.SoulFireHandler.markSoulSource(target, 100);
+                break;
+            case SOUL_FIRE:
+                modifiedDamage = SoulFireElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                target.addTag(TAG_SOUL_FIRE_DAMAGE);
+                break;
             default:
                 break;
         }
@@ -232,6 +249,8 @@ public class ElementalDamageEvent {
         entity.removeTag(TAG_CORROSION_DAMAGE);
         entity.removeTag(TAG_HOLY_DAMAGE);
         entity.removeTag(TAG_ERASURE_DAMAGE);
+        entity.removeTag(TAG_SOUL_DAMAGE);
+        entity.removeTag(TAG_SOUL_FIRE_DAMAGE);
     }
 
     /**

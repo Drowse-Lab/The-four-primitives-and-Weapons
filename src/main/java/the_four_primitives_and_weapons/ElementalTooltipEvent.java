@@ -89,6 +89,8 @@ public class ElementalTooltipEvent {
             case HOLY:      return "tooltip.the_four_primitives_and_weapons.element.holy";
             case ERASURE:     return "tooltip.the_four_primitives_and_weapons.element.erasure";
             case MIASMA:    return "tooltip.the_four_primitives_and_weapons.element.miasma";
+            case SOUL:      return "tooltip.the_four_primitives_and_weapons.element.soul";
+            case SOUL_FIRE: return "tooltip.the_four_primitives_and_weapons.element.soul_fire";
             default: return "";
         }
     }
@@ -109,6 +111,8 @@ public class ElementalTooltipEvent {
             case HOLY:      return "#FFAA00";  // 金色
             case ERASURE:     return "#FF0000";  // 赤
             case MIASMA:    return "#550088";  // 暗紫
+            case SOUL:      return "#66CCFF";  // 青白
+            case SOUL_FIRE: return "#7FFFD4";  // 燐火
             default: return "#AAAAAA";         // グレー
         }
     }

@@ -273,6 +273,27 @@ public class PlayerSkillData {
             return selectedMotions.getOrDefault(slot, "thrust");
         }
 
+        /**
+         * このスロットに「ユーザーが明示的に設定した」モーションがあるか。
+         * NBT / 武器スロット / 武器タイプ別設定 のいずれかがあれば true。
+         * JSON の default_motions やグローバル既定は「明示設定」に含めない
+         * ( スペル自動優先が JSON 既定 "dodge" を上書きできるようにするため )。
+         */
+        public boolean hasExplicitMotion(AttackSlot slot, ItemStack heldItem) {
+            if (heldItem == null || heldItem.isEmpty()) return false;
+            if (WeaponSkillNBT.getMotion(heldItem, slot) != null) return true;
+            String weaponClass = heldItem.getItem().getClass().getSimpleName();
+            for (WeaponLoadout loadout : weaponSlots) {
+                if (loadout != null && loadout.getWeaponClass().equals(weaponClass)) return true;
+            }
+            WeaponTypeRegistry.WeaponTypeData typeData = WeaponTypeRegistry.getTypeForItem(heldItem);
+            if (typeData != null) {
+                Map<AttackSlot, String> typeSetting = typeMotions.get(typeData.getId());
+                if (typeSetting != null && typeSetting.containsKey(slot)) return true;
+            }
+            return false;
+        }
+
         // === 武器タイプ別モーション設定 ===
 
         public String getTypeMotion(String typeId, AttackSlot slot) {

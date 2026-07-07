@@ -124,6 +124,10 @@ public class ElementalDamageUtils {
                 return DarkElementDamageHandler.handleDarkDamage(attacker, target, weapon, baseDmg);
             case MIASMA:
                 return MiasmaElementDamageHandler.handleMiasmaDamage(attacker, target, weapon, baseDmg);
+            case SOUL:
+                return SoulElementDamageHandler.handleSoulDamage(attacker, target, weapon, baseDmg);
+            case SOUL_FIRE:
+                return SoulFireElementDamageHandler.handleSoulFireDamage(attacker, target, weapon, baseDmg);
             default:
                 return baseDmg;
         }
@@ -136,6 +140,10 @@ public class ElementalDamageUtils {
     /**
      * アイテムのクラス名から魔導書の属性を判定
      */
+    public static ElementType getBookElementFromItemStack(ItemStack stack) {
+        return getBookElementFromItem(stack);
+    }
+
     private static ElementType getBookElementFromItem(ItemStack stack) {
         if (stack.isEmpty()) return ElementType.NONE;
         String itemName = stack.getItem().getClass().getSimpleName();
@@ -152,6 +160,9 @@ public class ElementalDamageUtils {
             case "HolyBookItem":    return ElementType.HOLY;
             case "ErasureBookItem":   return ElementType.ERASURE;
             case "MiasmaBookItem":  return ElementType.MIASMA;
+            case "SoulBookItem":    return ElementType.SOUL;
+            case "SoulFireBookItem":
+            case "RinkaBookItem":   return ElementType.SOUL_FIRE;
             default:                return ElementType.NONE;
         }
     }
@@ -315,6 +326,7 @@ public class ElementalDamageUtils {
                 case ELECTRIC:
                 case THUNDER:
                 case FIRE:
+                case SOUL_FIRE:
                 case CORROSION:
                 case WATER:
                     return true;

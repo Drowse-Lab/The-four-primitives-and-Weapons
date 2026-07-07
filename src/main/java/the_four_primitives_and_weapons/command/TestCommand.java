@@ -34,6 +34,7 @@ import the_four_primitives_and_weapons.client.renderer.GateProjectileRenderer;
 import the_four_primitives_and_weapons.damage.ElementType;
 import the_four_primitives_and_weapons.damage.ElementalDamageUtils;
 import the_four_primitives_and_weapons.damage.IElementalDamageSource;
+import the_four_primitives_and_weapons.damage.ModDamageSources;
 import the_four_primitives_and_weapons.trait.MobTrait;
 import the_four_primitives_and_weapons.trait.MobTraitHandler;
 import the_four_primitives_and_weapons.ai.lisp.CombatLogger;
@@ -489,7 +490,8 @@ public class TestCommand {
                 a.distanceToSqr(source.getPosition()), b.distanceToSqr(source.getPosition())))
             .get();
 
-        net.minecraft.world.damagesource.DamageSource ds = target.damageSources().magic();
+        net.minecraft.world.damagesource.DamageSource ds =
+            ModDamageSources.ofElement(target.level(), element, source.getEntity());
         if (ds instanceof IElementalDamageSource elemSource) {
             elemSource.setElementType(element);
             elemSource.setElementLevel(lvl);
@@ -523,7 +525,8 @@ public class TestCommand {
         int count = 0;
         for (ElementType elem : ElementType.values()) {
             if (elem == ElementType.NONE || elem == ElementType.ERASURE) continue;
-            net.minecraft.world.damagesource.DamageSource ds = target.damageSources().magic();
+            net.minecraft.world.damagesource.DamageSource ds =
+                ModDamageSources.ofElement(target.level(), elem, source.getEntity());
             if (ds instanceof IElementalDamageSource elemSource) {
                 elemSource.setElementType(elem);
                 elemSource.setElementLevel(lvl);
@@ -577,7 +580,8 @@ public class TestCommand {
         // 簡易版: 即時で全ダメージを与えてDPSを計算表示
         float totalDmg = 0;
         for (int i = 0; i < seconds * 4; i++) { // 0.25秒間隔で計算
-            net.minecraft.world.damagesource.DamageSource ds = target.damageSources().magic();
+            net.minecraft.world.damagesource.DamageSource ds =
+                ModDamageSources.ofElement(target.level(), element, source.getEntity());
             if (ds instanceof IElementalDamageSource elemSource) {
                 elemSource.setElementType(element);
                 elemSource.setElementLevel(lvl);

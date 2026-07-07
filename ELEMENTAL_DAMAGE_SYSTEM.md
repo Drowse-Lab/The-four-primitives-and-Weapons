@@ -11,6 +11,8 @@ Minecraft 1.20.1 Forgeモッド用の属性ダメージシステムです。**NB
 2. **電気/雷属性 (Electric)** - 水中AOE、導体装備時ボーナス
 3. **侵食/闇属性 (Corrosion/Dark)** - 防御力低下、攻撃力低下、独自DoT
 4. **聖属性 (Holy)** - アンデッド特効(2.5倍)、独自glowing tag、高レベルで炎上
+5. **魂属性 (Soul)** - 残り体力が低い対象への追加倍率、専用DamageType
+6. **燐火属性 (Soul Fire)** - 炎+魂の合成属性、青白い炎上、専用DamageType
 
 ### ✅ システム機能
 - **NBTタグベース**: どのアイテムにも属性付与可能
@@ -29,7 +31,9 @@ src/main/java/the_four_primitives_and_weapons/damage/
 ├── IceElementDamageHandler.java        # 氷属性ハンドラー
 ├── ElectricElementDamageHandler.java   # 電気属性ハンドラー
 ├── CorrosionElementDamageHandler.java  # 侵食属性ハンドラー
-└── HolyElementDamageHandler.java       # 聖属性ハンドラー
+├── HolyElementDamageHandler.java       # 聖属性ハンドラー
+├── SoulElementDamageHandler.java       # 魂属性ハンドラー
+└── SoulFireElementDamageHandler.java   # 燐火属性ハンドラー
 
 src/main/java/the_four_primitives_and_weapons/mixin/
 ├── DamageSourceMixin.java              # DamageSourceへの属性データ追加
@@ -123,6 +127,20 @@ if (ElementalDamageUtils.hasElement(weapon)) {
 - MobEffectではなく独自時間管理のglowing tagを付与
 - 高レベルで炎上
 
+#### 魂属性
+- 基礎倍率: 1.05x
+- レベル倍率: +0.04x/レベル(最大+0.40x)
+- 対象の残り体力が少ないほど最大+0.35x追加
+- `the_four_primitives_and_weapons:soul` の専用DamageTypeを使用
+
+#### 燐火属性
+- 炎 + 魂の合成属性
+- 基礎倍率: 1.08x
+- レベル倍率: +0.035x/レベル(最大+0.35x)
+- 対象の残り体力が少ないほど最大+0.25x追加
+- 青白い魂の炎で炎上させる
+- `the_four_primitives_and_weapons:soul_fire` の専用DamageTypeを使用
+
 ## ビルドと実行
 
 ### ビルド
@@ -204,7 +222,7 @@ giveコマンドでNBT指定:
 3. 殴ってトーテムが発動せず死亡すれば成功
 
 #### 使用可能な属性名
-`ice`, `electric`, `thunder`, `corrosion`, `holy`, `dark`, `fire`, `wind`, `water`, `miasma`, `blood`, `erasure`
+`ice`, `electric`, `thunder`, `corrosion`, `holy`, `dark`, `fire`, `wind`, `water`, `miasma`, `blood`, `erasure`, `soul`, `soul_fire`
 (大文字小文字どちらでもOK)
 
 ## 属性持ち歩きデバフと適性attribute
@@ -237,12 +255,19 @@ giveコマンドでNBT指定:
 | `the_four_primitives_and_weapons:thunder_aptitude` | 雷: 防具強度低下 |
 | `the_four_primitives_and_weapons:electric_aptitude` | 電気: 攻撃速度低下、導体防具装備時の感電ダメージ |
 | `the_four_primitives_and_weapons:corrosion_aptitude` | 侵食: 防御力低下 |
-| `the_four_primitives_and_weapons:holy_aptitude` | 聖: 独自glowing tag + 光粒子 |
+| `the_four_primitives_and_weapons:holy_aptitude` | 聖: 満腹度exhaustion増加 + アンデッドから見つかりやすくなる |
 | `the_four_primitives_and_weapons:dark_aptitude` | 闇: 攻撃力低下 + 黒霧粒子 |
 | `the_four_primitives_and_weapons:miasma_aptitude` | 瘴気: 回復量低下 |
 | `the_four_primitives_and_weapons:blood_aptitude` | 血: 微量DoT |
 | `the_four_primitives_and_weapons:erasure_aptitude` | 消滅: 独自の操作揺らし + 消滅粒子 |
+| `the_four_primitives_and_weapons:soul_aptitude` | 魂: 最大体力低下 + 魂粒子 |
+| `the_four_primitives_and_weapons:soul_fire_aptitude` | 燐火: 青白い炎反動 + 最大体力低下 |
 | `the_four_primitives_and_weapons:curse_aptitude` | 呪: 体力低下/攻撃上昇 |
+
+## 属性合成
+
+レアリティ強化台で中央アイテムと触媒枠のどちらかが `FIRE` + `SOUL` になると、出力は `SOUL_FIRE` (燐火) になります。
+NBTで属性が付いた武器、魔導書、`book_elements.json` に登録されたaddon魔導書、`SoulBookItem` / `SoulFireBookItem` / `RinkaBookItem` クラス名のaddon本を判定します。
 
 アドオン装備は通常の attribute modifier でこれらの適性を付与できます。
 

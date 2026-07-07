@@ -31,6 +31,8 @@ public final class TheFourPrimitivesAndWeaponsModDamageTypes {
 	public static final ResourceKey<DamageType> WIND      = key("wind");
 	public static final ResourceKey<DamageType> ERASURE   = key("erasure");
 	public static final ResourceKey<DamageType> BLOOD     = key("blood");
+	public static final ResourceKey<DamageType> SOUL      = key("soul");
+	public static final ResourceKey<DamageType> SOUL_FIRE = key("soul_fire");
 
 	// 継続ダメージ (DoT) 用の別 key — 直接ヒット と区別して死亡メッセージや
 	// debug 表記を分けたい場合に使う。

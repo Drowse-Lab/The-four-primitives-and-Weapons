@@ -119,6 +119,9 @@ public class RarityForgeScreen extends AbstractContainerScreen<RarityForgeMenu> 
                 case BOOK_ELEMENT:
                     modeLabel = Component.translatable("gui.the_four_primitives_and_weapons.rarity_forge.mode.book").withStyle(net.minecraft.ChatFormatting.AQUA);
                     break;
+                case ELEMENT_FUSION:
+                    modeLabel = Component.translatable("gui.the_four_primitives_and_weapons.rarity_forge.mode.fusion").withStyle(net.minecraft.ChatFormatting.AQUA);
+                    break;
                 case RARITY:
                     modeLabel = Component.translatable("gui.the_four_primitives_and_weapons.rarity_forge.mode.rarity").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE);
                     break;

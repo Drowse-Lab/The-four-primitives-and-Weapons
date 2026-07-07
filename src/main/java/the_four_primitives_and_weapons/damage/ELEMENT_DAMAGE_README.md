@@ -137,6 +137,37 @@ Adds direct hit damage without using MobEffect.
 
 ---
 
+### 魂属性 / Soul
+
+対象の残り体力が少ないほど威力が上がる、専用DamageTypeの属性ダメージです。  
+Uses a dedicated DamageType and gains a small bonus against targets with lower remaining health.
+
+| パラメータ | 値 |
+|---|---|
+| 基礎倍率 / Base multiplier | 1.05× |
+| レベル倍率 / Per level | +0.04× (最大 +0.40× / max +0.40×) |
+| 体力低下ボーナス / Missing-health bonus | 最大 +0.35× / Up to +0.35× |
+| DamageType | `the_four_primitives_and_weapons:soul` |
+| 弱点属性 / Weak against | Holy |
+
+---
+
+### 燐火属性 / Soul Fire
+
+炎と魂を合成した、青白い炎属性です。対象を魂の炎で燃やし、残り体力が少ない相手へ少し威力が伸びます。  
+A blue-white fire element fused from Fire and Soul. It burns the target with soul fire and gains a small bonus against wounded targets.
+
+| パラメータ | 値 |
+|---|---|
+| 基礎倍率 / Base multiplier | 1.08× |
+| レベル倍率 / Per level | +0.035× (最大 +0.35× / max +0.35×) |
+| 体力低下ボーナス / Missing-health bonus | 最大 +0.25× / Up to +0.25× |
+| 付与効果 / Applied effect | 青白い炎上 / Blue-white soul fire |
+| DamageType | `the_four_primitives_and_weapons:soul_fire` |
+| 弱点属性 / Weak against | Water |
+
+---
+
 ## 属性相性表 / Counter Chart
 
 属性には「弱点属性」が設定されており、弱点属性の攻撃を受けるとダメージが増加します。  
@@ -154,6 +185,8 @@ Each element has a counter element that deals increased damage against it.
 | Water | Thunder |
 | Wind | Ice |
 | Erasure | — |
+| Soul | Holy |
+| Soul Fire | Water |
 
 ---
 
@@ -206,14 +239,21 @@ Example:
 | `the_four_primitives_and_weapons:thunder_aptitude` | Thunder: armor toughness down |
 | `the_four_primitives_and_weapons:electric_aptitude` | Electric: attack speed down, shock damage with conductive armor |
 | `the_four_primitives_and_weapons:corrosion_aptitude` | Corrosion: armor down |
-| `the_four_primitives_and_weapons:holy_aptitude` | Holy: custom glowing tag + light particles |
+| `the_four_primitives_and_weapons:holy_aptitude` | Holy: increased food exhaustion + easier detection by undead |
 | `the_four_primitives_and_weapons:dark_aptitude` | Dark: attack damage down + black mist particles |
 | `the_four_primitives_and_weapons:miasma_aptitude` | Miasma: healing reduction |
 | `the_four_primitives_and_weapons:blood_aptitude` | Blood: tiny DoT |
 | `the_four_primitives_and_weapons:erasure_aptitude` | Erasure: custom movement instability + erasure particles |
+| `the_four_primitives_and_weapons:soul_aptitude` | Soul: max health down + soul particles |
+| `the_four_primitives_and_weapons:soul_fire_aptitude` | Soul Fire: blue-white fire backlash + max health down |
 | `the_four_primitives_and_weapons:curse_aptitude` | Curse: max health down / attack up |
 
 ---
+## 属性合成 / Element Fusion
+
+レアリティ強化台で中央アイテムと触媒枠のどちらかが `FIRE` + `SOUL` の組み合わせになると、出力は `SOUL_FIRE` (燐火) になります。  
+When the Rarity Forge sees `FIRE` + `SOUL` between the medium item and a catalyst slot, the output becomes `SOUL_FIRE`.
+
 ## Test command
 /give @s the_four_primitives_and_weapons:kurikarakenutigatana{ElementType:"ELECTRIC",ElementLevel:1}
 ---

@@ -289,8 +289,39 @@ public class DodgeAndBattouHandler {
         }
     }
 
+    /**
+     * 右クリックスロットが「スペル」の武器を右クリックしたら、付与された Iron's スペルを発動する。
+     * Iron's の詠唱アイテムと同様に client/server 両方で fire する ( 内部でサイド処理 )。
+     * スペル未付与 / 未ロード等で発動できなければキャンセルせず通常挙動に任せる。
+     */
+    @SubscribeEvent
+    public static void onRightClickCastSpell(PlayerInteractEvent.RightClickItem event) {
+        tryCastImbuedSpell(event.getEntity(), event.getItemStack(), event.getHand(), event);
+    }
+
+    /** ブロックを狙って右クリックした場合もスペルを撃てるように ( 高優先度でブロック操作より先に判定 )。 */
+    @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.HIGH)
+    public static void onRightClickBlockCastSpell(PlayerInteractEvent.RightClickBlock event) {
+        tryCastImbuedSpell(event.getEntity(), event.getItemStack(), event.getHand(), event);
+    }
+
+    /** motion=="spell" の武器で 付与スペルを発動。 成功したらイベントをキャンセルする。 */
+    private static void tryCastImbuedSpell(Player player, ItemStack held, InteractionHand hand,
+                                           PlayerInteractEvent event) {
+        // サーバー側のみで詠唱 ( 二重詠唱防止 )。 クライアントは通常通り use パケットを送り、
+        // それを受けたサーバーがここで詠唱してイベントをキャンセルする。
+        if (player.level().isClientSide) return;
+        if (!the_four_primitives_and_weapons.compat.SpellbooksCompat.isLoaded()) return;
+        if (held.isEmpty()) return;
+        if (!"spell".equals(resolveRightClickMotion(player, held))) return;
+        if (the_four_primitives_and_weapons.compat.SpellbooksCompat.castImbuedSpell(player, held, hand)) {
+            event.setCanceled(true);
+            event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+        }
+    }
+
     // (遠距離武器の右クリックは vanilla 挙動に戻した — 弓/クロスボウの引き絞り/発射)
-    
+
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (event.isCanceled()) return;
@@ -478,16 +509,12 @@ public class DodgeAndBattouHandler {
         // 回避無効化設定チェック（グローバル設定）
         if (the_four_primitives_and_weapons.config.DodgeConfig.dodgeDisabled) return false;
 
-        // 右クリックスロットが「回避」以外に設定されている場合は回避しない
+        // 右クリックスロットが「回避」以外 ( なし/スペル等 ) に設定されている場合は回避しない。
+        // スペル付与済みで未設定なら resolveRightClickMotion が "spell" を返し、回避しない。
         ItemStack heldItem = player.getMainHandItem();
         if (!heldItem.isEmpty()) {
-            the_four_primitives_and_weapons.skill.PlayerSkillData.SkillStorage skillData =
-                    the_four_primitives_and_weapons.skill.PlayerSkillData.getSkillData(player);
-            if (skillData != null) {
-                String rightClickMotion = skillData.getMotionForWeapon(
-                        the_four_primitives_and_weapons.skill.PlayerSkillData.AttackSlot.RIGHT_CLICK, heldItem);
-                if (!"dodge".equals(rightClickMotion)) return false;
-            }
+            String rightClickMotion = resolveRightClickMotion(player, heldItem);
+            if (!"dodge".equals(rightClickMotion)) return false;
         }
 
         // メインハンドが近接武器で、オフハンドが右クリックで作用するアイテム（弓/クロスボウ/盾/投擲等）
@@ -578,12 +605,28 @@ public class DodgeAndBattouHandler {
     public static boolean isRightClickDodgeEnabled(Player player) {
         ItemStack heldItem = player.getMainHandItem();
         if (heldItem.isEmpty()) return true; // 素手のデフォルトは回避相当
+        return "dodge".equals(resolveRightClickMotion(player, heldItem));
+    }
+
+    /**
+     * 右クリックスロットの実効モーションを返す。
+     * <p>基本は設定値 ( getMotionForWeapon )。ただし Iron's Spellbooks 導入時、
+     * アイテムにスペルが付与されていて ユーザーが右クリックを明示設定していない場合は
+     * "spell" を返す ( = スペル優先。回避せず詠唱を通す )。
+     * ユーザーが明示的に "回避" 等を選んでいればその設定を尊重する。</p>
+     */
+    public static String resolveRightClickMotion(Player player, ItemStack heldItem) {
         the_four_primitives_and_weapons.skill.PlayerSkillData.SkillStorage skillData =
                 the_four_primitives_and_weapons.skill.PlayerSkillData.getSkillData(player);
-        if (skillData == null) return true;
-        String rightClickMotion = skillData.getMotionForWeapon(
-                the_four_primitives_and_weapons.skill.PlayerSkillData.AttackSlot.RIGHT_CLICK, heldItem);
-        return "dodge".equals(rightClickMotion);
+        if (skillData == null) return "dodge";
+        the_four_primitives_and_weapons.skill.PlayerSkillData.AttackSlot slot =
+                the_four_primitives_and_weapons.skill.PlayerSkillData.AttackSlot.RIGHT_CLICK;
+        if (the_four_primitives_and_weapons.compat.SpellbooksCompat.isLoaded()
+                && the_four_primitives_and_weapons.compat.SpellbooksCompat.hasImbuedSpell(heldItem)
+                && !skillData.hasExplicitMotion(slot, heldItem)) {
+            return "spell";
+        }
+        return skillData.getMotionForWeapon(slot, heldItem);
     }
 
     /**

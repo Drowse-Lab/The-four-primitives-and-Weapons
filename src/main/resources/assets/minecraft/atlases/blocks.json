@@ -44,6 +44,14 @@
       "type": "minecraft:directory",
       "source": "saya",
       "prefix": "saya/"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "the_four_primitives_and_weapons:block/blue_fire_0"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "the_four_primitives_and_weapons:block/blue_fire_1"
     }
   ]
 }

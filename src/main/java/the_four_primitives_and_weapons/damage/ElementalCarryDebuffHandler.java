@@ -7,6 +7,9 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -55,6 +58,8 @@ public class ElementalCarryDebuffHandler {
             UUID.fromString("66666666-6666-6666-6666-666666666666");
     private static final UUID DARK_ATTACK_DAMAGE_MODIFIER_UUID =
             UUID.fromString("77777777-7777-7777-7777-777777777777");
+    private static final UUID SOUL_HEALTH_MODIFIER_UUID =
+            UUID.fromString("88888888-8888-8888-8888-888888888888");
 
     private static final int FIRE_BACKLASH_COOLDOWN_TICKS = 60;
     private static final int ELECTRIC_CONDUCTION_INTERVAL_TICKS = 60;
@@ -62,11 +67,11 @@ public class ElementalCarryDebuffHandler {
     private static final int BLOOD_DRAIN_INTERVAL_TICKS = 100;
     private static final int VISUAL_REFRESH_INTERVAL = 20;
     private static final int ERASURE_INSTABILITY_INTERVAL_TICKS = 80;
+    private static final int HOLY_UNDEAD_LURE_INTERVAL_TICKS = 20;
 
     private static final Map<UUID, Long> LAST_FIRE_BACKLASH_TICK = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> LAST_ELECTRIC_CONDUCTION_TICK = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> LAST_BLOOD_DRAIN_TICK = new ConcurrentHashMap<>();
-    private static final Map<UUID, Boolean> HOLY_GLOW_PREVIOUS_STATE = new ConcurrentHashMap<>();
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -78,6 +83,10 @@ public class ElementalCarryDebuffHandler {
 
         int electricLevel = effectiveDebuffLevel(player, state, ElementType.ELECTRIC);
         int darkLevel = effectiveDebuffLevel(player, state, ElementType.DARK);
+        int holyLevel = effectiveDebuffLevel(player, state, ElementType.HOLY);
+        int soulLevel = effectiveDebuffLevel(player, state, ElementType.SOUL);
+        int soulFireLevel = effectiveDebuffLevel(player, state, ElementType.SOUL_FIRE);
+        int soulLikeLevel = Math.max(soulLevel, soulFireLevel);
         boolean cursed = state.cursed && getCurseAptitude(player) < 1.0D;
         boolean changed = syncCursedModifiers(player, cursed);
         changed |= syncIceModifier(player, effectiveDebuffLevel(player, state, ElementType.ICE));
@@ -85,14 +94,17 @@ public class ElementalCarryDebuffHandler {
         changed |= syncCorrosionModifier(player, effectiveDebuffLevel(player, state, ElementType.CORROSION));
         changed |= syncThunderModifier(player, effectiveDebuffLevel(player, state, ElementType.THUNDER));
         changed |= syncDarkModifier(player, darkLevel);
+        changed |= syncSoulModifier(player, soulLikeLevel);
 
         applyWindExhaustion(player, effectiveDebuffLevel(player, state, ElementType.WIND));
         applyElectricConductionDamage(player, electricLevel);
         applyWaterAirDrain(player, effectiveDebuffLevel(player, state, ElementType.WATER));
-        syncHolyGlow(player, effectiveDebuffLevel(player, state, ElementType.HOLY));
+        applyHolyExhaustion(player, holyLevel);
+        lureUndeadToHolyBearer(player, holyLevel);
         applyDarkShroud(player, darkLevel);
         applyBloodDrain(player, effectiveDebuffLevel(player, state, ElementType.BLOOD));
         applyErasureInstability(player, effectiveDebuffLevel(player, state, ElementType.ERASURE));
+        applySoulEcho(player, soulLikeLevel);
 
         if (changed && player instanceof ServerPlayer serverPlayer) {
             serverPlayer.connection.send(new ClientboundUpdateAttributesPacket(
@@ -108,16 +120,23 @@ public class ElementalCarryDebuffHandler {
 
         CarryState state = collectState(player);
         int fireLevel = effectiveDebuffLevel(player, state, ElementType.FIRE);
-        if (fireLevel <= 0) return;
+        int soulFireLevel = effectiveDebuffLevel(player, state, ElementType.SOUL_FIRE);
+        if (fireLevel <= 0 && soulFireLevel <= 0) return;
 
         long gameTime = player.level().getGameTime();
         Long lastTick = LAST_FIRE_BACKLASH_TICK.get(player.getUUID());
         if (lastTick != null && gameTime - lastTick < FIRE_BACKLASH_COOLDOWN_TICKS) return;
 
         LAST_FIRE_BACKLASH_TICK.put(player.getUUID(), gameTime);
-        int duration = Math.min(60, 20 + fireLevel * 2);
-        float damagePerTick = Math.min(0.04F, 0.006F * Math.max(1, fireLevel));
-        ElementalDoTHandler.apply(player, duration, damagePerTick, ElementType.FIRE);
+        int level = Math.max(fireLevel, soulFireLevel);
+        int duration = Math.min(70, 20 + level * 2);
+        float damagePerTick = Math.min(0.045F, 0.006F * Math.max(1, level));
+        ElementType backlashType = soulFireLevel > 0 ? ElementType.SOUL_FIRE : ElementType.FIRE;
+        ElementalDoTHandler.apply(player, duration, damagePerTick, backlashType);
+        if (backlashType == ElementType.SOUL_FIRE) {
+            player.setSecondsOnFire(Math.max(1, duration / 20));
+            SoulFireHandler.markSoulSource(player, duration + 10);
+        }
     }
 
     @SubscribeEvent
@@ -200,6 +219,16 @@ public class ElementalCarryDebuffHandler {
                 "Dark Attack Focus Down", attackDown, AttributeModifier.Operation.MULTIPLY_TOTAL);
     }
 
+    private static boolean syncSoulModifier(Player player, int level) {
+        if (level <= 0) {
+            return removeModifier(player, Attributes.MAX_HEALTH, SOUL_HEALTH_MODIFIER_UUID);
+        }
+
+        double healthDown = -Math.min(6.0, 1.0 + level * 0.25);
+        return syncModifier(player, Attributes.MAX_HEALTH, SOUL_HEALTH_MODIFIER_UUID,
+                "Soul Max Health Down", healthDown, AttributeModifier.Operation.ADDITION);
+    }
+
     private static void applyWindExhaustion(Player player, int level) {
         if (level <= 0 || player.isCreative() || player.isSpectator()) return;
 
@@ -237,29 +266,41 @@ public class ElementalCarryDebuffHandler {
         }
     }
 
-    private static void syncHolyGlow(Player player, int level) {
-        UUID id = player.getUUID();
-        if (level <= 0) {
-            Boolean previous = HOLY_GLOW_PREVIOUS_STATE.remove(id);
-            if (previous != null) {
-                player.setGlowingTag(previous);
-            }
-            return;
-        }
+    private static void applyHolyExhaustion(Player player, int level) {
+        if (level <= 0 || player.isCreative() || player.isSpectator()) return;
 
-        HOLY_GLOW_PREVIOUS_STATE.putIfAbsent(id, player.isCurrentlyGlowing());
-        player.setGlowingTag(true);
+        float exhaustion = Math.min(0.10F, 0.004F * Math.max(1, level));
+        player.causeFoodExhaustion(exhaustion);
+    }
 
-        if (player.tickCount % VISUAL_REFRESH_INTERVAL != 0) return;
-        if (player.level() instanceof ServerLevel serverLevel) {
-            double mid = player.getY() + player.getBbHeight() * 0.5;
-            serverLevel.sendParticles(ParticleTypes.GLOW,
-                    player.getX(), mid, player.getZ(),
-                    Math.min(16, 4 + level), 0.35, 0.45, 0.35, 0.04);
-            serverLevel.sendParticles(ParticleTypes.WAX_ON,
-                    player.getX(), mid, player.getZ(),
-                    Math.min(10, 2 + level), 0.3, 0.35, 0.3, 0.03);
+    private static void lureUndeadToHolyBearer(Player player, int level) {
+        if (level <= 0 || player.isCreative() || player.isSpectator()) return;
+        if (player.tickCount % HOLY_UNDEAD_LURE_INTERVAL_TICKS != 0) return;
+        if (!(player.level() instanceof ServerLevel serverLevel)) return;
+
+        double radius = Math.min(48.0D, 18.0D + Math.max(1, level) * 3.0D);
+        double radiusSqr = radius * radius;
+        for (Mob mob : serverLevel.getEntitiesOfClass(Mob.class, player.getBoundingBox().inflate(radius),
+                mob -> isUndeadMob(mob) && mob.isAlive() && mob.canAttack(player))) {
+            double distanceSqr = mob.distanceToSqr(player);
+            if (distanceSqr > radiusSqr) continue;
+            if (!shouldLureUndead(mob, player, distanceSqr)) continue;
+
+            mob.setTarget(player);
+            mob.getNavigation().moveTo(player, 1.0D);
         }
+    }
+
+    private static boolean isUndeadMob(Mob mob) {
+        return mob.getMobType() == MobType.UNDEAD;
+    }
+
+    private static boolean shouldLureUndead(Mob mob, Player player, double distanceSqr) {
+        LivingEntity currentTarget = mob.getTarget();
+        if (currentTarget == null || !currentTarget.isAlive()) return true;
+        if (currentTarget == player) return true;
+        if (currentTarget instanceof Player) return false;
+        return distanceSqr + 16.0D < mob.distanceToSqr(currentTarget);
     }
 
     private static void applyDarkShroud(Player player, int level) {
@@ -312,6 +353,18 @@ public class ElementalCarryDebuffHandler {
             serverLevel.sendParticles(ParticleTypes.CRIT,
                     player.getX(), mid, player.getZ(),
                     Math.min(8, 2 + level / 2), 0.25, 0.3, 0.25, 0.08);
+        }
+    }
+
+    private static void applySoulEcho(Player player, int level) {
+        if (level <= 0) return;
+        if (player.tickCount % VISUAL_REFRESH_INTERVAL != 0) return;
+
+        if (player.level() instanceof ServerLevel serverLevel) {
+            double mid = player.getY() + player.getBbHeight() * 0.55;
+            serverLevel.sendParticles(ParticleTypes.SOUL,
+                    player.getX(), mid, player.getZ(),
+                    Math.min(12, 3 + level), 0.25, 0.4, 0.25, 0.02);
         }
     }
 

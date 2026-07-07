@@ -56,6 +56,8 @@ public final class ModDamageSources {
 			case WIND:      return TheFourPrimitivesAndWeaponsModDamageTypes.WIND;
 			case BLOOD:     return TheFourPrimitivesAndWeaponsModDamageTypes.BLOOD;
 			case ERASURE:   return TheFourPrimitivesAndWeaponsModDamageTypes.ERASURE;
+			case SOUL:      return TheFourPrimitivesAndWeaponsModDamageTypes.SOUL;
+			case SOUL_FIRE: return TheFourPrimitivesAndWeaponsModDamageTypes.SOUL_FIRE;
 			default:        return TheFourPrimitivesAndWeaponsModDamageTypes.ERASURE;
 		}
 	}

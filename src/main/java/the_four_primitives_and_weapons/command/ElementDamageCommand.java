@@ -17,6 +17,7 @@ import net.minecraftforge.fml.common.Mod;
 
 import the_four_primitives_and_weapons.damage.ElementType;
 import the_four_primitives_and_weapons.damage.IElementalDamageSource;
+import the_four_primitives_and_weapons.damage.ModDamageSources;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -79,9 +80,11 @@ public class ElementDamageCommand {
         }
 
         int count = 0;
+        Entity attacker = source.getEntity();
         for (Entity entity : targets) {
             if (entity instanceof LivingEntity living) {
-                net.minecraft.world.damagesource.DamageSource ds = living.damageSources().magic();
+                net.minecraft.world.damagesource.DamageSource ds =
+                    ModDamageSources.ofElement(living.level(), element, attacker);
                 if (ds instanceof IElementalDamageSource elemSource) {
                     elemSource.setElementType(element);
                     elemSource.setElementLevel(level);

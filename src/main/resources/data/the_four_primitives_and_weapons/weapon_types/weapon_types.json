@@ -25,7 +25,7 @@
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right"],
+        "right_click": ["dodge", "none_right", "spell"],
         "shift_right_click": ["guard", "none_shift"]
       },
       "default_motions": {
@@ -46,7 +46,7 @@
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right"],
+        "right_click": ["dodge", "none_right", "spell"],
         "shift_right_click": ["guard", "none_shift"]
       },
       "default_motions": {
@@ -73,7 +73,7 @@
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right"],
+        "right_click": ["dodge", "none_right", "spell"],
         "shift_right_click": ["guard", "none_shift"]
       },
       "default_motions": {
@@ -102,7 +102,7 @@
       "motions": {
         "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash", "slam_down"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right"],
+        "right_click": ["dodge", "none_right", "spell"],
         "shift_right_click": ["guard", "none_shift"]
       },
       "default_motions": {
@@ -120,7 +120,7 @@
       "motions": {
         "combat": ["upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash", "slam_down"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right"],
+        "right_click": ["dodge", "none_right", "spell"],
         "shift_right_click": ["guard", "none_shift"]
       }
     },
@@ -130,7 +130,7 @@
       "motions": {
         "combat": ["thrust", "horizontal_slash", "spin_slash", "slam_down"],
         "dash": ["dash_rush"],
-        "right_click": ["dodge", "none_right"],
+        "right_click": ["dodge", "none_right", "spell"],
         "shift_right_click": ["guard", "none_shift"]
       },
       "default_motions": {
@@ -148,7 +148,7 @@
       "motions": {
         "combat": ["thrust", "thrust_combo", "upper_left_slash", "upper_right_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right"],
+        "right_click": ["dodge", "none_right", "spell"],
         "shift_right_click": ["guard", "none_shift"]
       },
       "default_motions": {

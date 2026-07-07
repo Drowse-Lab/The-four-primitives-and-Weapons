@@ -31,6 +31,7 @@ public final class RarityForgeCenterLogic {
     public enum Mode {
         NONE,
         BOOK_ELEMENT,
+        ELEMENT_FUSION,
         UNBREAKABLE,
         RARITY
     }
@@ -44,6 +45,7 @@ public final class RarityForgeCenterLogic {
      */
     public static Mode resolveEnhanceMode(ItemStack medium, ItemStack catalyst) {
         if (medium.isEmpty() || catalyst.isEmpty()) return Mode.NONE;
+        if (getFusionElement(medium, catalyst) != ElementType.NONE) return Mode.ELEMENT_FUSION;
         if (isBookItem(medium)) {
             if (getCatalystLevel(catalyst) > 0) return Mode.BOOK_ELEMENT;
             return Mode.NONE;
@@ -55,6 +57,8 @@ public final class RarityForgeCenterLogic {
     public static ItemStack buildEnhancePreview(ItemStack medium, ItemStack catalyst) {
         Mode mode = resolveEnhanceMode(medium, catalyst);
         switch (mode) {
+            case ELEMENT_FUSION:
+                return buildFusionPreview(medium, catalyst, ItemStack.EMPTY);
             case BOOK_ELEMENT: {
                 ElementType type = getBookElement(medium);
                 int lvl = getCatalystLevel(catalyst);
@@ -178,7 +182,9 @@ public final class RarityForgeCenterLogic {
         if (center.isEmpty()) return ElementType.NONE;
         Item item = center.getItem();
         String id = ForgeRegistries.ITEMS.getKey(item).toString();
-        return bookElements.getOrDefault(id, ElementType.NONE);
+        ElementType fromTable = bookElements.getOrDefault(id, ElementType.NONE);
+        if (fromTable != ElementType.NONE) return fromTable;
+        return ElementalDamageUtils.getBookElementFromItemStack(center);
     }
 
     public static boolean isBookItem(ItemStack center) {
@@ -203,6 +209,10 @@ public final class RarityForgeCenterLogic {
 
     public static Mode resolveMode(ItemStack center, ItemStack cat0, ItemStack cat1) {
         if (center.isEmpty()) return Mode.NONE;
+        if (getFusionElement(center, cat0) != ElementType.NONE
+                || getFusionElement(center, cat1) != ElementType.NONE) {
+            return Mode.ELEMENT_FUSION;
+        }
         if (isBookItem(center)) {
             if (getCatalystLevel(cat0) > 0 || getCatalystLevel(cat1) > 0) {
                 return Mode.BOOK_ELEMENT;
@@ -222,6 +232,8 @@ public final class RarityForgeCenterLogic {
     public static ItemStack buildPreview(ItemStack center, ItemStack cat0, ItemStack cat1) {
         Mode mode = resolveMode(center, cat0, cat1);
         switch (mode) {
+            case ELEMENT_FUSION:
+                return buildFusionPreview(center, cat0, cat1);
             case BOOK_ELEMENT: {
                 ElementType type = getBookElement(center);
                 int lvl = Math.max(getCatalystLevel(cat0), getCatalystLevel(cat1));
@@ -260,5 +272,53 @@ public final class RarityForgeCenterLogic {
             return out;
         }
         return buildPreview(center, cat0, cat1);
+    }
+
+    private static ItemStack buildFusionPreview(ItemStack center, ItemStack cat0, ItemStack cat1) {
+        ItemStack partner = ItemStack.EMPTY;
+        ElementType fusion = getFusionElement(center, cat0);
+        if (fusion != ElementType.NONE) {
+            partner = cat0;
+        } else {
+            fusion = getFusionElement(center, cat1);
+            if (fusion != ElementType.NONE) {
+                partner = cat1;
+            }
+        }
+        if (fusion == ElementType.NONE || partner.isEmpty()) return ItemStack.EMPTY;
+
+        int lvl = Math.max(getStackElementLevel(center), getStackElementLevel(partner));
+        if (lvl <= 0) lvl = 1;
+
+        ItemStack out = center.copy();
+        out.setCount(1);
+        ElementalDamageUtils.setElement(out, fusion, lvl);
+        return out;
+    }
+
+    private static ElementType getFusionElement(ItemStack a, ItemStack b) {
+        if (a.isEmpty() || b.isEmpty()) return ElementType.NONE;
+        ElementType left = getStackElement(a);
+        ElementType right = getStackElement(b);
+        if (isFireSoulPair(left, right)) return ElementType.SOUL_FIRE;
+        return ElementType.NONE;
+    }
+
+    private static boolean isFireSoulPair(ElementType left, ElementType right) {
+        return (left == ElementType.FIRE && right == ElementType.SOUL)
+                || (left == ElementType.SOUL && right == ElementType.FIRE);
+    }
+
+    private static ElementType getStackElement(ItemStack stack) {
+        if (stack.isEmpty()) return ElementType.NONE;
+        ElementType explicit = ElementalDamageUtils.getElementType(stack);
+        if (explicit != ElementType.NONE) return explicit;
+        return getBookElement(stack);
+    }
+
+    private static int getStackElementLevel(ItemStack stack) {
+        int level = ElementalDamageUtils.getElementLevel(stack);
+        if (level > 0) return level;
+        return getStackElement(stack) != ElementType.NONE ? 1 : 0;
     }
 }

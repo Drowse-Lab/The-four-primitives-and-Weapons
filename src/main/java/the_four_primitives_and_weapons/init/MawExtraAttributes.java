@@ -58,6 +58,8 @@ public class MawExtraAttributes {
     public static final RegistryObject<Attribute> MIASMA_APTITUDE = aptitude("miasma");
     public static final RegistryObject<Attribute> BLOOD_APTITUDE = aptitude("blood");
     public static final RegistryObject<Attribute> ERASURE_APTITUDE = aptitude("erasure");
+    public static final RegistryObject<Attribute> SOUL_APTITUDE = aptitude("soul");
+    public static final RegistryObject<Attribute> SOUL_FIRE_APTITUDE = aptitude("soul_fire");
     public static final RegistryObject<Attribute> CURSE_APTITUDE = aptitude("curse");
 
     private static RegistryObject<Attribute> aptitude(String name) {
@@ -85,6 +87,8 @@ public class MawExtraAttributes {
             case MIASMA: return MIASMA_APTITUDE.get();
             case BLOOD: return BLOOD_APTITUDE.get();
             case ERASURE: return ERASURE_APTITUDE.get();
+            case SOUL: return SOUL_APTITUDE.get();
+            case SOUL_FIRE: return SOUL_FIRE_APTITUDE.get();
             default: return null;
         }
     }
@@ -113,6 +117,8 @@ public class MawExtraAttributes {
         event.add(EntityType.PLAYER, MIASMA_APTITUDE.get());
         event.add(EntityType.PLAYER, BLOOD_APTITUDE.get());
         event.add(EntityType.PLAYER, ERASURE_APTITUDE.get());
+        event.add(EntityType.PLAYER, SOUL_APTITUDE.get());
+        event.add(EntityType.PLAYER, SOUL_FIRE_APTITUDE.get());
         event.add(EntityType.PLAYER, CURSE_APTITUDE.get());
     }
 }

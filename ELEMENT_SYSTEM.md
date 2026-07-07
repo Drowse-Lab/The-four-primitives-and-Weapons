@@ -15,6 +15,8 @@
 | 闇 | DARK | DarknessItem | HOLY |
 | 瘴気 | MIASMA | MiasmaBookItem | HOLY |
 | 消滅 | ERASURE | ErasureBookItem | NONE |
+| 魂 | SOUL | SoulBookItem / datapack | HOLY |
+| 燐火 | SOUL_FIRE | SoulFireBookItem / RinkaBookItem / datapack | WATER |
 
 ---
 
@@ -84,6 +86,21 @@
 - MobEffectを使わず `LivingEntity#heal` への独自介入で回復量を減らす
 - Lv4以上で回復完全ブロック
 
+### 魂 (SOUL)
+- 基本倍率: 1.05x + レベルごとに最大+0.40x
+- 対象の残り体力が少ないほど最大+0.35xまで追加
+- `the_four_primitives_and_weapons:soul` の独自DamageTypeを使う
+- 魂系パーティクルを表示
+- カウンター属性は聖
+
+### 燐火 (SOUL_FIRE)
+- 炎 + 魂の合成属性
+- 基本倍率: 1.08x + レベルごとに最大+0.35x
+- 対象を青白い魂の炎で燃やす
+- 対象の残り体力が少ないほど最大+0.25xまで追加
+- `the_four_primitives_and_weapons:soul_fire` の独自DamageTypeを使う
+- カウンター属性は水
+
 ### 消滅 (ERASURE)
 - 攻撃時は通常攻撃として扱う
 - 防御側が消滅属性を持つ場合、遠距離攻撃、属性攻撃、属性武器/魔導書を持つ相手からの攻撃を無効化する
@@ -121,6 +138,8 @@
 | DARK | 1.1x | 暗所 | 1.4x | 1.54x |
 | MIASMA | 1.1x | - | - | 1.1x |
 | ERASURE | 1.0x | 防御側で属性/遠距離攻撃を無効化 | - | 1.0x |
+| SOUL | 1.05x | 対象の体力低下 | +0.35x | 1.8x |
+| SOUL_FIRE | 1.08x | 対象の体力低下 + 青白い炎上 | +0.25x | 1.68x |
 
 ---
 
@@ -174,11 +193,18 @@
 | `the_four_primitives_and_weapons:thunder_aptitude` | 雷: 防具強度低下 |
 | `the_four_primitives_and_weapons:electric_aptitude` | 電気: 攻撃速度低下、導体防具装備時の感電ダメージ |
 | `the_four_primitives_and_weapons:corrosion_aptitude` | 侵食: 防御力低下 |
-| `the_four_primitives_and_weapons:holy_aptitude` | 聖: 独自glowing tag + 光粒子 |
+| `the_four_primitives_and_weapons:holy_aptitude` | 聖: 満腹度exhaustion増加 + アンデッドから見つかりやすくなる |
 | `the_four_primitives_and_weapons:dark_aptitude` | 闇: 攻撃力低下 + 黒霧粒子 |
 | `the_four_primitives_and_weapons:miasma_aptitude` | 瘴気: 回復量低下 |
 | `the_four_primitives_and_weapons:blood_aptitude` | 血: 微量DoT |
 | `the_four_primitives_and_weapons:erasure_aptitude` | 消滅: 独自の操作揺らし + 消滅粒子 |
+| `the_four_primitives_and_weapons:soul_aptitude` | 魂: 最大体力低下 + 魂粒子 |
+| `the_four_primitives_and_weapons:soul_fire_aptitude` | 燐火: 青白い炎反動 + 最大体力低下 |
 | `the_four_primitives_and_weapons:curse_aptitude` | 呪: 体力低下/攻撃上昇 |
 
 アドオン装備は通常の attribute modifier でこれらの適性を付与できる。
+
+## 属性合成
+
+レアリティ強化台で中央のアイテムと触媒枠の片方が `FIRE` + `SOUL` の組み合わせになると、出力は `SOUL_FIRE` (燐火) になる。
+武器・魔導書・NBTで属性が付いたaddonアイテムのどれでも判定される。
