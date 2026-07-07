@@ -19,7 +19,6 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 import the_four_primitives_and_weapons.util.SayaRegistry;
 
 import javax.annotation.Nullable;
@@ -39,9 +38,6 @@ import java.util.Random;
  */
 @OnlyIn(Dist.CLIENT)
 public class SayaModelWrapper implements BakedModel {
-
-    private static final ResourceLocation SPECIAL_SEAL_SAYA_MODEL = new ResourceLocation(
-            TheFourPrimitivesAndWeaponsMod.MODID, "custom/saya/katana/saya_special_seal_any_katana");
 
     private final BakedModel wrapped;
     private final SayaRegistry.SayaType sayaType;
@@ -98,12 +94,6 @@ public class SayaModelWrapper implements BakedModel {
             // 納刀中の武器を取り出して SayaRegistry から Entry を引く
             ItemStack stored = getStoredWeapon(stack, outer.sayaType);
             if (!stored.isEmpty()) {
-                ResourceLocation specialSealModel = specialSealModel(stack);
-                if (specialSealModel != null) {
-                    BakedModel themed = resolveCachedModel(specialSealModel, stack, level, entity, seed);
-                    if (themed != null) return themed;
-                }
-
                 SayaRegistry.Entry e = SayaRegistry.getEntry(outer.sayaType, stored);
                 if (e != null && e.hasCustomModel()) {
                     BakedModel custom = resolveCachedModel(e.modelLocation(), stack, level, entity, seed);
@@ -132,14 +122,6 @@ public class SayaModelWrapper implements BakedModel {
                 if (resolved != null) return resolved;
             }
             return custom;
-        }
-
-        @Nullable
-        private ResourceLocation specialSealModel(ItemStack sayaStack) {
-            if (outer.sayaType != SayaRegistry.SayaType.KATANA) return null;
-            CompoundTag tag = sayaStack.getTag();
-            if (tag == null || !"sigiled".equals(tag.getString("Feyn"))) return null;
-            return SPECIAL_SEAL_SAYA_MODEL;
         }
 
         /** ベースモデルの鞘本体 wrap を 仕立て ( 木目/着せ/刻/石目/鮫/漆系 ) のテクスチャへ差し替える。 */

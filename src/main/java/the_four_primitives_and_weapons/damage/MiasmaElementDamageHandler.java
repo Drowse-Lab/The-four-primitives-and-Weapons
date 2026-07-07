@@ -5,7 +5,6 @@ import the_four_primitives_and_weapons.util.VersionHelper;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
@@ -25,15 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
  *        Lv3 = 75%カット  持続 11秒
  *        Lv4+ = 100%カット (完全阻害) 持続 14秒〜
  *
- *   2. 回復系 MobEffect の即時除去 — 命中時に下記を removeEffect:
- *        - Absorption (衝撃吸収)
- *        - Regeneration (再生能力)
- *        - Heal       (即時回復)
- *        - Saturation (満腹度回復)
- *
- *   3. ビジュアル — 紫系 dust + WITCH パーティクル
+ *   2. ビジュアル — 紫系 dust + WITCH パーティクル
  *
  * 旧仕様の DoT (毒様の継続ダメージ) と Wither effect は使用しない。
+ * MobEffect の除去/付与にも依存しない。
  */
 public class MiasmaElementDamageHandler {
 
@@ -102,16 +96,8 @@ public class MiasmaElementDamageHandler {
     }
 
     // ────────────────────────────────────────────────────────────────
-    // 内部: 回復系 effect 除去 + ビジュアル
+    // 内部: ビジュアル
     // ────────────────────────────────────────────────────────────────
-
-    private static void stripHealEffects(LivingEntity target) {
-        // try/ignore で個別失敗を吸収
-        try { target.removeEffect(MobEffects.ABSORPTION); } catch (Throwable ignored) {}
-        try { target.removeEffect(MobEffects.REGENERATION); } catch (Throwable ignored) {}
-        try { target.removeEffect(MobEffects.HEAL); } catch (Throwable ignored) {}
-        try { target.removeEffect(MobEffects.SATURATION); } catch (Throwable ignored) {}
-    }
 
     private static void spawnMiasmaParticles(LivingEntity target) {
         try {
@@ -143,7 +129,7 @@ public class MiasmaElementDamageHandler {
 
     /**
      * 瘴気属性ダメージを計算して返す。
-     * 命中時に回復阻害 + 回復系 effect 除去 + ビジュアルを行う。 DoT は付与しない。
+     * 命中時に独自回復阻害 + ビジュアルを行う。 DoT は付与しない。
      */
     public static float handleMiasmaDamage(LivingEntity attacker,
                                            LivingEntity target,
@@ -156,10 +142,7 @@ public class MiasmaElementDamageHandler {
         float reductionRate  = Math.min(REDUCTION_PER_LEVEL * level, REDUCTION_MAX);
         apply(target, healDuration, reductionRate);
 
-        // 2. 回復系 effect の即時除去
-        stripHealEffects(target);
-
-        // 3. パーティクル
+        // 2. パーティクル
         spawnMiasmaParticles(target);
 
         return baseDmg * BASE_MULTIPLIER;

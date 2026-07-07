@@ -1,13 +1,9 @@
 package the_four_primitives_and_weapons.damage;
 
-import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class DarkElementDamageHandler {
 
@@ -17,9 +13,9 @@ public class DarkElementDamageHandler {
     private static final float DARKNESS_MULTIPLIER      = 1.4f;
     private static final int   DARKNESS_LIGHT_THRESHOLD = 7;
 
-    // Blindness持続時間(tick)
-    private static final int BASE_BLINDNESS_DURATION    = 60;  // 3秒
-    private static final int BLINDNESS_DURATION_PER_LV  = 40;  // +2秒/Lv
+    // MobEffectではなく、独自の攻撃力低下 + 黒霧粒子として扱う。
+    private static final int BASE_SHROUD_DURATION    = 60;  // 3秒
+    private static final int SHROUD_DURATION_PER_LV  = 40;  // +2秒/Lv
 
     // 持続ダメージ設定
     private static final int   DOT_MIN_LEVEL          = 3;    // 発動最低レベル
@@ -56,12 +52,10 @@ public class DarkElementDamageHandler {
             multiplier = DARKNESS_MULTIPLIER;
         }
 
-        // Blindness付与 (ambient=true / visible=false で swirl パーティクルを抑制し、
-        // ユーザー要望の「モヤを出さない」を満たす。 BLINDNESS のゲーム挙動は保持)
-        int blindDuration = BASE_BLINDNESS_DURATION
-                + BLINDNESS_DURATION_PER_LV * Math.max(level - 1, 0);
-        target.addEffect(new MobEffectInstance(
-                MobEffects.BLINDNESS, blindDuration, 0, true, false));
+        int shroudDuration = BASE_SHROUD_DURATION
+                + SHROUD_DURATION_PER_LV * Math.max(level - 1, 0);
+        SpecialDebuffHandler.applyWeakness(target, shroudDuration, Math.max(1, level));
+        spawnDarkShroudParticles(target, level);
 
         // 独自持続ダメージ（Wither effect / wither source 不使用）
         if (level >= DOT_MIN_LEVEL) {
@@ -72,42 +66,19 @@ public class DarkElementDamageHandler {
             ElementalDoTHandler.apply(target, duration, dmgPerTick, ElementType.DARK);
         }
 
-        // 既存デバフを強化
-        amplifyDebuffs(target, level);
-
         return baseDmg * multiplier;
     }
 
     // ────────────────────────────────────────────────────────────────
 
-    /**
-     * ターゲットの既存デバフ（有害エフェクト）を強化する。
-     * 連続ヒットで延長・増幅が無制限に積み上がらないよう上限を設ける。
-     */
-    // 延長後の最大持続 (連打しても 30 秒で頭打ち)
-    private static final int MAX_EXTENDED_DURATION = 600;
-    // 増幅可能な amplifier の上限 (Slowness II 等のバニラ上限を超える事故防止)
-    private static final int MAX_AMPLIFIER = 4;
-
-    private static void amplifyDebuffs(LivingEntity target, int level) {
-        List<MobEffectInstance> debuffs = new ArrayList<>();
-        for (MobEffectInstance effect : target.getActiveEffects()) {
-            if (effect.getEffect().getCategory() == MobEffectCategory.HARMFUL) {
-                debuffs.add(effect);
-            }
-        }
-        for (MobEffectInstance debuff : debuffs) {
-            int extendedDuration = Math.min(debuff.getDuration() + 40 * level, MAX_EXTENDED_DURATION);
-            int newAmplifier     = Math.min(debuff.getAmplifier() + (level >= 3 ? 1 : 0), MAX_AMPLIFIER);
-            // 元より短くなるなら何もしない (MC の addEffect が無視するので無害だが明示)
-            if (extendedDuration <= debuff.getDuration() && newAmplifier <= debuff.getAmplifier()) continue;
-            target.addEffect(new MobEffectInstance(
-                    debuff.getEffect(),
-                    extendedDuration,
-                    newAmplifier,
-                    debuff.isAmbient(),
-                    debuff.isVisible()
-            ));
-        }
+    private static void spawnDarkShroudParticles(LivingEntity target, int level) {
+        if (!(target.level() instanceof ServerLevel serverLevel)) return;
+        double mid = target.getY() + target.getBbHeight() * 0.55;
+        serverLevel.sendParticles(ParticleTypes.SQUID_INK,
+                target.getX(), mid, target.getZ(),
+                Math.min(16, 4 + level), 0.3, 0.45, 0.3, 0.03);
+        serverLevel.sendParticles(ParticleTypes.SMOKE,
+                target.getX(), mid, target.getZ(),
+                Math.min(12, 3 + level), 0.4, 0.35, 0.4, 0.04);
     }
 }

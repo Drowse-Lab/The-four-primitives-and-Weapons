@@ -21,6 +21,7 @@
 
     "_comment_iron": "===== 鉄の剣相当 (耐久250, エンチャ14) =====",
     "the_four_primitives_and_weapons:iron_katana":          { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "the_four_primitives_and_weapons:reitou":               { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:iron_tyokuto":         { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
 
     "_comment_dagger": "===== ダガー: 低ダメージ・高速・短リーチ。thrust は JSON 突き技用の個別設定 =====",
@@ -50,7 +51,6 @@
     "the_four_primitives_and_weapons:sword_of_night":     { "durability": 0, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:rivers_of_blood":    { "durability": 0, "enchantability": 4,  "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:old_katana":         { "durability": 0, "enchantability": 2,  "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:reitou":             { "durability": 0, "enchantability": 3,  "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:luna":               { "durability": 0, "enchantability": 2,  "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:kurikaraken":        { "durability": 0, "enchantability": 9,  "damage_bonus": 3, "attack_speed": -2.4 },
     "the_four_primitives_and_weapons:kurikarakensword":   { "durability": 0, "enchantability": 9,  "damage_bonus": 3, "attack_speed": -2.4 },

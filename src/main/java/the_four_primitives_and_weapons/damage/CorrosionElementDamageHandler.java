@@ -6,8 +6,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import org.joml.Vector3f;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -24,8 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 侵食/闇属性ダメージハンドラー
  * - 防御力を一時的に落とす（ダメージに比例）
- * - 高レベルでは ElementalDoTHandler で独自持続ダメージを付与
- *   （Wither effect も wither DamageSource も使用しない）
+ * - MobEffectには依存せず、Attributes.ARMOR の一時modifierで管理
  */
 public class CorrosionElementDamageHandler {
 
@@ -38,14 +35,6 @@ public class CorrosionElementDamageHandler {
     private static final int    ARMOR_REDUCTION_DURATION     = 100; // 5秒(tick)
     private static final UUID   ARMOR_REDUCTION_UUID         =
             UUID.fromString("a3b4c5d6-e7f8-9012-3456-789abcdef012");
-
-    // 攻撃力減少 (旧 WEAKNESS MobEffect の代替 — 牛乳で消えない attribute modifier)
-    private static final double ATTACK_REDUCTION_PER_LEVEL   = 0.5; // -0.5 / Lv
-    private static final double ATTACK_REDUCTION_MAX         = 4.0; // 上限
-    private static final UUID   ATTACK_REDUCTION_UUID        =
-            UUID.fromString("b4c5d6e7-f8a9-0123-4567-89abcdef0123");
-
-    // (旧: 持続ダメージ設定を保持していたが、 ユーザー要望で DoT を撤廃したので削除)
 
     // 防御力減少タイマー
     private static final Map<UUID, Integer> armorReductionTimers = new ConcurrentHashMap<>();
@@ -118,35 +107,6 @@ public class CorrosionElementDamageHandler {
                 catch (Throwable ignored) {}
             }
         } catch (Throwable ignored) {}
-        try {
-            AttributeInstance atk = entity.getAttribute(Attributes.ATTACK_DAMAGE);
-            if (atk != null) {
-                try { atk.removeModifier(ATTACK_REDUCTION_UUID); }
-                catch (Throwable ignored) {}
-            }
-        } catch (Throwable ignored) {}
-    }
-
-    private static void applyAttackReduction(LivingEntity entity, double amount, int duration) {
-        if (entity == null) return;
-        AttributeInstance attr = entity.getAttribute(Attributes.ATTACK_DAMAGE);
-        if (attr == null) return;
-        AttributeModifier existing = attr.getModifier(ATTACK_REDUCTION_UUID);
-        if (existing != null) {
-            try { attr.removeModifier(existing); } catch (Throwable ignored) {}
-        }
-        try {
-            attr.addTransientModifier(new AttributeModifier(
-                    ATTACK_REDUCTION_UUID,
-                    "corrosion_attack_reduction",
-                    -amount,
-                    AttributeModifier.Operation.ADDITION
-            ));
-        } catch (IllegalArgumentException dup) {
-            // 既に付与済 → そのまま継続 (timer 共有で expire 時に両方除去される)
-        }
-        // armorReductionTimers にエントリがあれば自動で attribute modifier が removeModifier される (同じ timer 管理に乗せる)
-        armorReductionTimers.put(entity.getUUID(), duration);
     }
 
     private static void applyArmorReduction(LivingEntity entity, double amount, int duration) {
@@ -203,7 +163,7 @@ public class CorrosionElementDamageHandler {
                 }
             });
 
-            // 期限切れ entry: ARMOR / ATTACK_DAMAGE 両 modifier を取り除く + マップから削除
+            // 期限切れ entry: ARMOR modifier を取り除く + マップから削除
             for (java.util.UUID id : toExpire) {
                 try {
                     for (ServerLevel level : event.getServer().getAllLevels()) {
@@ -212,11 +172,6 @@ public class CorrosionElementDamageHandler {
                             AttributeInstance armorAttr = living.getAttribute(Attributes.ARMOR);
                             if (armorAttr != null) {
                                 try { armorAttr.removeModifier(ARMOR_REDUCTION_UUID); }
-                                catch (Throwable ignored) {}
-                            }
-                            AttributeInstance atkAttr = living.getAttribute(Attributes.ATTACK_DAMAGE);
-                            if (atkAttr != null) {
-                                try { atkAttr.removeModifier(ATTACK_REDUCTION_UUID); }
                                 catch (Throwable ignored) {}
                             }
                             break;

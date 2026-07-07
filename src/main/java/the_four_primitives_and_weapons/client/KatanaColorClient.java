@@ -1,7 +1,6 @@
 package the_four_primitives_and_weapons.client;
 
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
-import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
 import the_four_primitives_and_weapons.util.KatanaFittings;
 
 import net.minecraftforge.api.distmarker.Dist;
@@ -36,13 +35,7 @@ public class KatanaColorClient {
 	/** 本MODの 刀/直刀/レイピア系 + addon の SwordItem 系。 dyeable 可否は tag/NBT 評価時に判定する。 */
 	static net.minecraft.world.item.Item[] fittingWeaponItems() {
 		return ForgeRegistries.ITEMS.getValues().stream()
-				.filter(item -> item instanceof net.minecraft.world.item.SwordItem
-						|| TheFourPrimitivesAndWeaponsModItems.REGISTRY.getEntries().stream().anyMatch(ro -> {
-							if (ro.get() != item) return false;
-							String n = ro.getId().getPath();
-							return !n.contains("saya")
-									&& (n.contains("katana") || n.contains("tyokuto") || n.contains("rapier") || n.contains("dagger"));
-				}))
+				.filter(KatanaFittings::isPotentialFittingWeaponItem)
 				.toArray(net.minecraft.world.item.Item[]::new);
 	}
 

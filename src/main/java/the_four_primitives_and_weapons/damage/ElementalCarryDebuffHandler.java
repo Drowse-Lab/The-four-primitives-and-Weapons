@@ -2,10 +2,11 @@ package the_four_primitives_and_weapons.damage;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -18,6 +19,7 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import the_four_primitives_and_weapons.init.MawExtraAttributes;
+import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModDamageTypes;
 import the_four_primitives_and_weapons.util.CuriosScabbardHelper;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
@@ -51,14 +53,20 @@ public class ElementalCarryDebuffHandler {
             UUID.fromString("55555555-5555-5555-5555-555555555555");
     private static final UUID THUNDER_TOUGHNESS_MODIFIER_UUID =
             UUID.fromString("66666666-6666-6666-6666-666666666666");
+    private static final UUID DARK_ATTACK_DAMAGE_MODIFIER_UUID =
+            UUID.fromString("77777777-7777-7777-7777-777777777777");
 
     private static final int FIRE_BACKLASH_COOLDOWN_TICKS = 60;
+    private static final int ELECTRIC_CONDUCTION_INTERVAL_TICKS = 60;
     private static final int WATER_AIR_DRAIN_INTERVAL = 10;
     private static final int BLOOD_DRAIN_INTERVAL_TICKS = 100;
-    private static final int EFFECT_REFRESH_INTERVAL = 20;
+    private static final int VISUAL_REFRESH_INTERVAL = 20;
+    private static final int ERASURE_INSTABILITY_INTERVAL_TICKS = 80;
 
     private static final Map<UUID, Long> LAST_FIRE_BACKLASH_TICK = new ConcurrentHashMap<>();
+    private static final Map<UUID, Long> LAST_ELECTRIC_CONDUCTION_TICK = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> LAST_BLOOD_DRAIN_TICK = new ConcurrentHashMap<>();
+    private static final Map<UUID, Boolean> HOLY_GLOW_PREVIOUS_STATE = new ConcurrentHashMap<>();
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -68,17 +76,21 @@ public class ElementalCarryDebuffHandler {
 
         CarryState state = collectState(player);
 
+        int electricLevel = effectiveDebuffLevel(player, state, ElementType.ELECTRIC);
+        int darkLevel = effectiveDebuffLevel(player, state, ElementType.DARK);
         boolean cursed = state.cursed && getCurseAptitude(player) < 1.0D;
         boolean changed = syncCursedModifiers(player, cursed);
         changed |= syncIceModifier(player, effectiveDebuffLevel(player, state, ElementType.ICE));
-        changed |= syncElectricModifier(player, effectiveDebuffLevel(player, state, ElementType.ELECTRIC));
+        changed |= syncElectricModifier(player, electricLevel);
         changed |= syncCorrosionModifier(player, effectiveDebuffLevel(player, state, ElementType.CORROSION));
         changed |= syncThunderModifier(player, effectiveDebuffLevel(player, state, ElementType.THUNDER));
+        changed |= syncDarkModifier(player, darkLevel);
 
         applyWindExhaustion(player, effectiveDebuffLevel(player, state, ElementType.WIND));
+        applyElectricConductionDamage(player, electricLevel);
         applyWaterAirDrain(player, effectiveDebuffLevel(player, state, ElementType.WATER));
-        applyHolyGlow(player, effectiveDebuffLevel(player, state, ElementType.HOLY));
-        applyDarkness(player, effectiveDebuffLevel(player, state, ElementType.DARK));
+        syncHolyGlow(player, effectiveDebuffLevel(player, state, ElementType.HOLY));
+        applyDarkShroud(player, darkLevel);
         applyBloodDrain(player, effectiveDebuffLevel(player, state, ElementType.BLOOD));
         applyErasureInstability(player, effectiveDebuffLevel(player, state, ElementType.ERASURE));
 
@@ -178,6 +190,16 @@ public class ElementalCarryDebuffHandler {
                 "Thunder Toughness Down", toughnessDown, AttributeModifier.Operation.ADDITION);
     }
 
+    private static boolean syncDarkModifier(Player player, int level) {
+        if (level <= 0) {
+            return removeModifier(player, Attributes.ATTACK_DAMAGE, DARK_ATTACK_DAMAGE_MODIFIER_UUID);
+        }
+
+        double attackDown = -Math.min(0.3, 0.03 + level * 0.01);
+        return syncModifier(player, Attributes.ATTACK_DAMAGE, DARK_ATTACK_DAMAGE_MODIFIER_UUID,
+                "Dark Attack Focus Down", attackDown, AttributeModifier.Operation.MULTIPLY_TOTAL);
+    }
+
     private static void applyWindExhaustion(Player player, int level) {
         if (level <= 0 || player.isCreative() || player.isSpectator()) return;
 
@@ -194,19 +216,65 @@ public class ElementalCarryDebuffHandler {
         player.setAirSupply(Math.max(-20, player.getAirSupply() - extraDrain));
     }
 
-    private static void applyHolyGlow(Player player, int level) {
-        if (level <= 0) return;
-        if (player.tickCount % EFFECT_REFRESH_INTERVAL != 0) return;
+    private static void applyElectricConductionDamage(Player player, int level) {
+        if (level <= 0 || player.isCreative() || player.isSpectator()) return;
 
-        player.addEffect(new MobEffectInstance(MobEffects.GLOWING, 60, 0, true, false));
+        int conductiveArmorPieces = ElectricElementDamageHandler.countConductiveArmorPieces(player);
+        if (conductiveArmorPieces <= 0) return;
+
+        long gameTime = player.level().getGameTime();
+        Long lastTick = LAST_ELECTRIC_CONDUCTION_TICK.get(player.getUUID());
+        if (lastTick != null && gameTime - lastTick < ELECTRIC_CONDUCTION_INTERVAL_TICKS) return;
+
+        LAST_ELECTRIC_CONDUCTION_TICK.put(player.getUUID(), gameTime);
+        float damage = Math.min(6.0F, 0.25F + 0.08F * Math.max(1, level) * conductiveArmorPieces);
+        DamageSource source = ModDamageSources.of(player.level(), TheFourPrimitivesAndWeaponsModDamageTypes.ELECTRIC);
+
+        if (player.hurt(source, damage) && player.level() instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK,
+                    player.getX(), player.getY() + player.getBbHeight() * 0.5, player.getZ(),
+                    6 + conductiveArmorPieces * 3, 0.35, 0.45, 0.35, 0.08);
+        }
     }
 
-    private static void applyDarkness(Player player, int level) {
-        if (level <= 0) return;
-        if (player.tickCount % EFFECT_REFRESH_INTERVAL != 0) return;
+    private static void syncHolyGlow(Player player, int level) {
+        UUID id = player.getUUID();
+        if (level <= 0) {
+            Boolean previous = HOLY_GLOW_PREVIOUS_STATE.remove(id);
+            if (previous != null) {
+                player.setGlowingTag(previous);
+            }
+            return;
+        }
 
-        int duration = Math.min(100, 40 + level * 2);
-        player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, duration, 0, true, false));
+        HOLY_GLOW_PREVIOUS_STATE.putIfAbsent(id, player.isCurrentlyGlowing());
+        player.setGlowingTag(true);
+
+        if (player.tickCount % VISUAL_REFRESH_INTERVAL != 0) return;
+        if (player.level() instanceof ServerLevel serverLevel) {
+            double mid = player.getY() + player.getBbHeight() * 0.5;
+            serverLevel.sendParticles(ParticleTypes.GLOW,
+                    player.getX(), mid, player.getZ(),
+                    Math.min(16, 4 + level), 0.35, 0.45, 0.35, 0.04);
+            serverLevel.sendParticles(ParticleTypes.WAX_ON,
+                    player.getX(), mid, player.getZ(),
+                    Math.min(10, 2 + level), 0.3, 0.35, 0.3, 0.03);
+        }
+    }
+
+    private static void applyDarkShroud(Player player, int level) {
+        if (level <= 0) return;
+        if (player.tickCount % VISUAL_REFRESH_INTERVAL != 0) return;
+
+        if (player.level() instanceof ServerLevel serverLevel) {
+            double mid = player.getY() + player.getBbHeight() * 0.6;
+            serverLevel.sendParticles(ParticleTypes.SQUID_INK,
+                    player.getX(), mid, player.getZ(),
+                    Math.min(12, 3 + level), 0.28, 0.35, 0.28, 0.02);
+            serverLevel.sendParticles(ParticleTypes.SMOKE,
+                    player.getX(), mid, player.getZ(),
+                    Math.min(10, 2 + level), 0.35, 0.35, 0.35, 0.03);
+        }
     }
 
     private static void applyBloodDrain(Player player, int level) {
@@ -224,10 +292,27 @@ public class ElementalCarryDebuffHandler {
 
     private static void applyErasureInstability(Player player, int level) {
         if (level <= 0) return;
-        if (player.tickCount % 80 != 0) return;
+        if (player.isCreative() || player.isSpectator()) return;
+        if (player.tickCount % ERASURE_INSTABILITY_INTERVAL_TICKS != 0) return;
 
-        int duration = Math.min(160, 60 + level * 5);
-        player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, duration, 0, true, false));
+        long seed = player.level().getGameTime() ^ player.getUUID().getLeastSignificantBits();
+        double angle = (seed & 1023L) * (Math.PI * 2.0D / 1024.0D);
+        double strength = Math.min(0.25D, 0.035D + level * 0.005D);
+        player.setDeltaMovement(player.getDeltaMovement().add(
+                Math.cos(angle) * strength,
+                0.0D,
+                Math.sin(angle) * strength));
+        player.hurtMarked = true;
+
+        if (player.level() instanceof ServerLevel serverLevel) {
+            double mid = player.getY() + player.getBbHeight() * 0.5;
+            serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                    player.getX(), mid, player.getZ(),
+                    Math.min(18, 5 + level), 0.35, 0.45, 0.35, 0.04);
+            serverLevel.sendParticles(ParticleTypes.CRIT,
+                    player.getX(), mid, player.getZ(),
+                    Math.min(8, 2 + level / 2), 0.25, 0.3, 0.25, 0.08);
+        }
     }
 
     private static CarryState collectState(Player player) {
@@ -275,6 +360,13 @@ public class ElementalCarryDebuffHandler {
 
     private static void collectFromDirectWeapon(CarryState state, ItemStack stack) {
         if (stack.isEmpty()) return;
+
+        if (CuriosScabbardHelper.isScabbard(stack)) {
+            if (!isSealedScabbard(stack) && CuriosScabbardHelper.hasStoredWeapon(stack)) {
+                collectFromDirectWeapon(state, CuriosScabbardHelper.extractWeaponFromScabbard(stack));
+            }
+            return;
+        }
 
         if (hasCursedFeyn(stack)) {
             state.cursed = true;

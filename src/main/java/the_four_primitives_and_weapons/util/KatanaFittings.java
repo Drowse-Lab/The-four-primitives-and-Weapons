@@ -1,5 +1,8 @@
 package the_four_primitives_and_weapons.util;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -7,6 +10,14 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 刀の拵え ( こしらえ ): 柄 ( つか ) と 鍔 ( つば ) の色を NBT に保存するヘルパー。
@@ -25,13 +36,29 @@ public final class KatanaFittings {
 	public static final TagKey<Item> NO_FITTING_DYE_TAG = TagKey.create(
 			ForgeRegistries.ITEMS.getRegistryKey(),
 			new ResourceLocation(the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod.MODID, "koshirae/no_fitting_dye"));
+	/** 木刀など 練習用武器。 拵えの染色/差し替え も 納刀 も 一切できない ( 最優先で除外 )。 */
+	public static final TagKey<Item> PRACTICE_WEAPON_TAG = TagKey.create(
+			ForgeRegistries.ITEMS.getRegistryKey(),
+			new ResourceLocation(the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod.MODID, "koshirae/practice_weapon"));
+
+	/** 木刀など ( {@link #PRACTICE_WEAPON_TAG} ) か。 染色不可・納刀不可の判定に使う。 */
+	public static boolean isPracticeWeapon(ItemStack s) {
+		return s != null && !s.isEmpty() && s.is(PRACTICE_WEAPON_TAG);
+	}
+
+	private static final Map<Item, Boolean> OWN_MODEL_FITTING_CACHE = new ConcurrentHashMap<>();
+	private static final Map<Item, Boolean> MODEL_FITTING_CACHE = new ConcurrentHashMap<>();
+	private static final Map<ResourceLocation, JsonObject> MODEL_JSON_CACHE = new ConcurrentHashMap<>();
 
 	/** 拵え ( 柄/鍔/頭 ) を着せ替え・染色できる武器か。
 	 *  本MODの 名前に katana / tyokuto / rapier を含む武器 全種 ( saya は除く )。 */
 	public static boolean isFittingWeapon(ItemStack s) {
 		if (s == null || s.isEmpty()) return false;
-		if (s.is(NO_FITTING_DYE_TAG)) return false;
+		if (s.is(PRACTICE_WEAPON_TAG)) return false; // 木刀など は 最優先で染色/差し替え不可
 		if (s.is(FITTING_DYEABLE_TAG)) return true;
+		if (hasOwnCompleteFittingModel(s.getItem())) return true;
+		if (s.is(NO_FITTING_DYE_TAG)) return false;
+		if (hasCompleteFittingModel(s.getItem())) return true;
 		net.minecraft.resources.ResourceLocation id =
 				net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(s.getItem());
 		if (id == null || !id.getNamespace().equals(the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod.MODID))
@@ -39,6 +66,122 @@ public final class KatanaFittings {
 		String n = id.getPath();
 		if (n.contains("saya")) return false;
 		return n.contains("katana") || n.contains("tyokuto") || n.contains("rapier") || n.contains("dagger");
+	}
+
+	/**
+	 * Client registration 用の広めの候補判定。
+	 * 実際に染色するかは {@link #isFittingWeapon(ItemStack)} がタグ/NBT/モデルで再判定する。
+	 */
+	public static boolean isPotentialFittingWeaponItem(Item item) {
+		if (item == null) return false;
+		ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
+		if (id == null) return false;
+		String n = id.getPath();
+		if (n.contains("saya")) return false;
+		if (hasCompleteFittingModel(item)) return true;
+		if (item instanceof net.minecraft.world.item.SwordItem) return true;
+		return id.getNamespace().equals(the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod.MODID)
+				&& (n.contains("katana") || n.contains("tyokuto") || n.contains("rapier") || n.contains("dagger"));
+	}
+
+	/** item model json 自身に刀身/鍔/頭/柄の4テクスチャが揃っているか。 no_fitting_dye より優先する。 */
+	public static boolean hasOwnCompleteFittingModel(Item item) {
+		return OWN_MODEL_FITTING_CACHE.computeIfAbsent(item, KatanaFittings::detectOwnCompleteFittingModel);
+	}
+
+	/** 親モデル継承後も含め、刀身/鍔/頭/柄の4テクスチャが揃っているか。 addon 自動対応用。 */
+	public static boolean hasCompleteFittingModel(Item item) {
+		return MODEL_FITTING_CACHE.computeIfAbsent(item, KatanaFittings::detectCompleteFittingModel);
+	}
+
+	private static boolean detectOwnCompleteFittingModel(Item item) {
+		ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(item);
+		if (itemId == null) return false;
+		JsonObject model = readModel(new ResourceLocation(itemId.getNamespace(), "item/" + itemId.getPath()));
+		if (model == null) return false;
+		return hasCompleteFittingTextureSet(readTextures(model));
+	}
+
+	private static boolean detectCompleteFittingModel(Item item) {
+		ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(item);
+		if (itemId == null) return false;
+		Map<String, String> textures = collectTextures(new ResourceLocation(itemId.getNamespace(), "item/" + itemId.getPath()), 0);
+		return hasCompleteFittingTextureSet(textures);
+	}
+
+	private static Map<String, String> collectTextures(ResourceLocation modelId, int depth) {
+		Map<String, String> out = new HashMap<>();
+		if (modelId == null || depth > 16) return out;
+		JsonObject model = readModel(modelId);
+		if (model == null) return out;
+
+		JsonElement parent = model.get("parent");
+		if (parent != null && parent.isJsonPrimitive()) {
+			ResourceLocation parentId = ResourceLocation.tryParse(parent.getAsString());
+			if (parentId != null) {
+				out.putAll(collectTextures(parentId, depth + 1));
+			}
+		}
+		out.putAll(readTextures(model));
+		return out;
+	}
+
+	private static Map<String, String> readTextures(JsonObject model) {
+		Map<String, String> out = new HashMap<>();
+		if (model == null || !model.has("textures") || !model.get("textures").isJsonObject()) return out;
+		JsonObject textures = model.getAsJsonObject("textures");
+		for (Map.Entry<String, JsonElement> entry : textures.entrySet()) {
+			JsonElement value = entry.getValue();
+			if (value != null && value.isJsonPrimitive()) {
+				out.put(entry.getKey(), value.getAsString());
+			}
+		}
+		return out;
+	}
+
+	private static boolean hasCompleteFittingTextureSet(Map<String, String> textures) {
+		if (textures == null || textures.isEmpty()) return false;
+		boolean blade = textures.containsKey("0") || containsPath(textures, "blade/");
+		boolean tsuba = textures.containsKey("1") || containsAnyPath(textures, "katana_fitting/tsuba", "/tsuba/", "/tuba/", "guard");
+		boolean kashira = textures.containsKey("3") || containsAnyPath(textures, "katana_fitting/kasira", "/kasira/", "kashira", "pommel");
+		boolean tsuka = textures.containsKey("4") || containsAnyPath(textures, "katana_fitting/tsuka", "/tsuka/", "/tuka/", "grip");
+		return blade && tsuba && kashira && tsuka;
+	}
+
+	private static boolean containsAnyPath(Map<String, String> textures, String... needles) {
+		for (String needle : needles) {
+			if (containsPath(textures, needle)) return true;
+		}
+		return false;
+	}
+
+	private static boolean containsPath(Map<String, String> textures, String needle) {
+		String lowerNeedle = needle.toLowerCase(Locale.ROOT);
+		for (String value : textures.values()) {
+			if (value != null && value.toLowerCase(Locale.ROOT).contains(lowerNeedle)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static JsonObject readModel(ResourceLocation modelId) {
+		if (modelId == null) return null;
+		if (modelId.getPath().startsWith("builtin/")) return null;
+		return MODEL_JSON_CACHE.computeIfAbsent(modelId, KatanaFittings::loadModelJson);
+	}
+
+	private static JsonObject loadModelJson(ResourceLocation modelId) {
+		String path = "assets/" + modelId.getNamespace() + "/models/" + modelId.getPath() + ".json";
+		try (InputStream in = KatanaFittings.class.getClassLoader().getResourceAsStream(path)) {
+			if (in == null) return null;
+			try (InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+				JsonElement parsed = JsonParser.parseReader(reader);
+				return parsed != null && parsed.isJsonObject() ? parsed.getAsJsonObject() : null;
+			}
+		} catch (Exception ignored) {
+			return null;
+		}
 	}
 
 	/** 柄巻きの色 ( 0xRRGGBB )。 */

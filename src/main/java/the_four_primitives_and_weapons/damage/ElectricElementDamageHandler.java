@@ -3,15 +3,19 @@ package the_four_primitives_and_weapons.damage;
 import the_four_primitives_and_weapons.util.VersionHelper;
 
 import org.joml.Vector3f;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
+import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +36,10 @@ public class ElectricElementDamageHandler {
     // 導体装備1つあたりのダメージ倍率
     private static final float CONDUCTOR_DAMAGE_MULTIPLIER = 0.3f;
 
+    public static final TagKey<Item> CONDUCTIVE_ARMOR_TAG = TagKey.create(
+            Registries.ITEM,
+            new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "electric_conductive_armor"));
+
     // 導体となるアイテムのセット（デフォルト）
     private static final Set<String> CONDUCTOR_ITEMS = new HashSet<>();
 
@@ -45,6 +53,10 @@ public class ElectricElementDamageHandler {
         CONDUCTOR_ITEMS.add("minecraft:chainmail_chestplate");
         CONDUCTOR_ITEMS.add("minecraft:chainmail_leggings");
         CONDUCTOR_ITEMS.add("minecraft:chainmail_boots");
+        CONDUCTOR_ITEMS.add("minecraft:golden_helmet");
+        CONDUCTOR_ITEMS.add("minecraft:golden_chestplate");
+        CONDUCTOR_ITEMS.add("minecraft:golden_leggings");
+        CONDUCTOR_ITEMS.add("minecraft:golden_boots");
         CONDUCTOR_ITEMS.add("minecraft:iron_sword");
         CONDUCTOR_ITEMS.add("minecraft:iron_axe");
     }
@@ -57,6 +69,44 @@ public class ElectricElementDamageHandler {
         CONDUCTOR_ITEMS.addAll(itemIds);
     }
 
+    public static boolean isConductiveItem(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        if (stack.is(CONDUCTIVE_ARMOR_TAG)) return true;
+
+        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        if (itemId == null) return false;
+        if (CONDUCTOR_ITEMS.contains(itemId.toString())) return true;
+
+        String path = itemId.getPath();
+        return path.contains("iron")
+                || path.contains("chainmail")
+                || path.contains("chain")
+                || path.contains("golden")
+                || path.contains("gold")
+                || path.contains("copper")
+                || path.contains("steel")
+                || path.contains("bronze")
+                || path.contains("silver")
+                || path.contains("electrum");
+    }
+
+    private static boolean isRegisteredConductorItem(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        if (itemId == null) return false;
+        return CONDUCTOR_ITEMS.contains(itemId.toString());
+    }
+
+    public static int countConductiveArmorPieces(LivingEntity entity) {
+        int count = 0;
+        for (ItemStack armor : entity.getArmorSlots()) {
+            if (isConductiveItem(armor)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     /**
      * エンティティが身につけている導体の数を取得
      */
@@ -66,11 +116,10 @@ public class ElectricElementDamageHandler {
         // 装備スロットをチェック
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemStack stack = entity.getItemBySlot(slot);
-            if (!stack.isEmpty()) {
-                ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
-                if (CONDUCTOR_ITEMS.contains(itemId.toString())) {
-                    count++;
-                }
+            if (slot.getType() == EquipmentSlot.Type.ARMOR
+                    ? isConductiveItem(stack)
+                    : isRegisteredConductorItem(stack)) {
+                count++;
             }
         }
 

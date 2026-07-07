@@ -28,27 +28,27 @@
 ### 氷 (ICE)
 - 基本倍率: 1.5x
 - レベルごとに+0.25x追加倍率
-- 移動速度低下(Slowness)を付与(60tick)
-- 既存のSlownessを増幅
-- Slowness持続時間に応じて最大+0.5xボーナス
+- MobEffectを使わない独自凍結状態を付与(60tick)
+- 移動速度低下は `Attributes.MOVEMENT_SPEED` の一時modifierで管理
+- 独自凍結状態の残り時間に応じて最大+0.5xボーナス
 - 凍結エフェクト表示
 
 ### 水 (WATER)
 - 基本倍率: 1.0x
-- 移動速度低下II(Slowness II)を80tick(4秒)付与
+- MobEffectを使わない移動速度低下を80tick(4秒)付与
 - レベルごとに+40tick(2秒)追加
 
 ### 風 (WIND)
 - 基本倍率: 1.0x
-- 攻撃ブースト: 基本+20%、レベルごとに+10%
-- 攻撃者にStrength効果を100tick付与
-- レベルごとに+40tick追加、Lv2以上でStrength II
+- MobEffectを使わず、命中ダメージに直接追加ダメージを加算
+- Lv1 = +1.0、Lv5 = +5.0、Lv10 = +10.0
 
 ### 雷 (THUNDER)
 - 基本倍率: 1.2x
 - 水中ボーナス: 1.5x倍率
 - 水中AoE: 半径3ブロック内の敵に50%ダメージ
 - 導体防具ボーナス: 鉄/金防具1個につき+0.3x
+- 命中対象にMobEffectを使わない短時間の移動速度低下と水平減速を付与
 
 ### 電気 (ELECTRIC)
 - 基本倍率: 1.2x
@@ -60,28 +60,28 @@
 - 基本倍率: 1.1x
 - 防御力削減: 2.0 + (ダメージ x 0.5) x (1.0 + レベル x 0.2)
 - 削減持続: 100tick(5秒)
-- Weakness付与(増幅: min(レベル, 3))
-- Lv2以上でDoT(継続ダメージ): 60tick + レベルごとに+40tick、0.5 + レベルごとに+0.5ダメージ
+- MobEffectを使わず `Attributes.ARMOR` の一時modifierで防御力を下げる
+- 現行仕様では防御力低下のみ
 
 ### 聖 (HOLY)
 - 基本倍率: 1.1x
 - 対アンデッド: 2.5x + (レベル x 0.3x)
-- アンデッドに発光・燃焼効果(Lv2以上)
+- アンデッドに独自時間管理のglowing tagを付与、Lv2以上で炎上
 - 対象アンデッド: ゾンビ、スケルトン、ウィザスケ、ストレイ、ハスク、ファントム、ドラウンド、村人ゾンビ、ゾンビピグリン、ウィザー
 - トーテム貫通: 聖ダメージを2tick追跡
 
 ### 闇 (DARK)
 - 基本倍率: 1.1x
 - 暗所ボーナス(光レベル7以下): 1.4x倍率
-- 盲目付与: 60tick + レベルごとに+40tick
-- Lv3以上でDoT: 60tick + レベルごとに+40tick、0.5 + レベルごとに+0.5ダメージ
-- 既存デバフを増幅: レベルごとに+40tick延長
+- MobEffectを使わない攻撃力低下: 60tick + レベルごとに+40tick
+- Lv3以上で独自DoT: 60tick + レベルごとに+40tick、0.5 + レベルごとに+0.5ダメージ
+- 黒霧パーティクルを表示
 
 ### 瘴気 (MIASMA)
 - 基本倍率: 1.1x
 - 回復阻害: レベルごとに25%回復量削減(Lv4以上で完全阻害)
 - 阻害持続: 100tick + レベルごとに+60tick(5秒 + 3秒/レベル)
-- DoT(常に発動): 60tick + レベルごとに+40tick、0.5 + レベルごとに+0.5ダメージ
+- MobEffectを使わず `LivingEntity#heal` への独自介入で回復量を減らす
 - Lv4以上で回復完全ブロック
 
 ### 消滅 (ERASURE)
@@ -111,7 +111,7 @@
 | 属性 | 基本倍率 | 条件 | 条件倍率 | 最大倍率目安 |
 |------|---------|------|---------|------------|
 | FIRE | 1.0x | - | - | 1.0x |
-| ICE | 1.5x | Slowness中 | +0.5x | 2.0x+ |
+| ICE | 1.5x | 独自凍結中 | +0.5x | 2.0x+ |
 | WATER | 1.0x | - | - | 1.0x |
 | WIND | 1.0x | ブースト | +0.2x~1.2x | 2.2x |
 | THUNDER | 1.2x | 水中 | 1.5x | 1.8x+ |
@@ -157,6 +157,7 @@
 ```
 
 適性値が属性Lv以上なら、その属性の持ち歩きデバフは発生しない。適性値が途中まである場合は、その分だけデバフLvが下がる。呪は `curse_aptitude >= 1` で無効化する。
+持ち歩きデバフはMobEffectではなく、attribute modifier、独自tick処理、独自DamageSource、パーティクルで実装する。
 
 例:
 
@@ -171,13 +172,13 @@
 | `the_four_primitives_and_weapons:wind_aptitude` | 風: 満腹度exhaustion増加 |
 | `the_four_primitives_and_weapons:ice_aptitude` | 氷: 移動速度低下 |
 | `the_four_primitives_and_weapons:thunder_aptitude` | 雷: 防具強度低下 |
-| `the_four_primitives_and_weapons:electric_aptitude` | 電気: 攻撃速度低下 |
+| `the_four_primitives_and_weapons:electric_aptitude` | 電気: 攻撃速度低下、導体防具装備時の感電ダメージ |
 | `the_four_primitives_and_weapons:corrosion_aptitude` | 侵食: 防御力低下 |
-| `the_four_primitives_and_weapons:holy_aptitude` | 聖: 発光 |
-| `the_four_primitives_and_weapons:dark_aptitude` | 闇: Darkness付与 |
+| `the_four_primitives_and_weapons:holy_aptitude` | 聖: 独自glowing tag + 光粒子 |
+| `the_four_primitives_and_weapons:dark_aptitude` | 闇: 攻撃力低下 + 黒霧粒子 |
 | `the_four_primitives_and_weapons:miasma_aptitude` | 瘴気: 回復量低下 |
 | `the_four_primitives_and_weapons:blood_aptitude` | 血: 微量DoT |
-| `the_four_primitives_and_weapons:erasure_aptitude` | 消滅: 混乱 |
+| `the_four_primitives_and_weapons:erasure_aptitude` | 消滅: 独自の操作揺らし + 消滅粒子 |
 | `the_four_primitives_and_weapons:curse_aptitude` | 呪: 体力低下/攻撃上昇 |
 
 アドオン装備は通常の attribute modifier でこれらの適性を付与できる。

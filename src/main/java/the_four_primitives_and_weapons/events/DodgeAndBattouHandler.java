@@ -723,6 +723,12 @@ public class DodgeAndBattouHandler {
         if (!isWeapon(weaponStack) || !isSaya(sheathStack)) return;
         if (weaponHand == sheathHand) return; // 同じ手は不可 (武器消失防止)
 
+        // 木刀など 練習用武器は 納刀できない
+        if (the_four_primitives_and_weapons.util.KatanaFittings.isPracticeWeapon(weaponStack)) {
+            player.displayClientMessage(Component.literal("§cこの武器は納刀できません"), true);
+            return;
+        }
+
         // === 具現化 Magical Katana: 納刀しようとすると砕け散る ( 鞘に入らず消滅 ) ===
         if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(weaponStack)) {
             the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.shatterOnSheathe(player, weaponStack, weaponHand);
@@ -808,12 +814,6 @@ public class DodgeAndBattouHandler {
             CompoundTag weaponData = weaponStack.save(new CompoundTag());
             sheathTag.put("StoredKatana", weaponData);
 
-            // SayaNBTタグを更新 (霊刀スタイル判定用)
-            String weaponItemName = weaponStack.getItem().getClass().getSimpleName();
-            if (weaponItemName.equals("ReitouItem")) {
-                sheathTag.putInt("SayaNBT", 1);
-            }
-
             // 鞘の見た目は SayaModelWrapper が NBT から動的に解決する (CustomModelData は書かない)。
             sheathStack.setTag(sheathTag);
 
@@ -831,8 +831,7 @@ public class DodgeAndBattouHandler {
     private static int getWeaponModelData(ItemStack weapon, CompoundTag sheathTag) {
         String itemName = weapon.getItem().getClass().getSimpleName();
 
-        // 霊刀はSayaNBT + feyn predicateで処理するのでCustomModelDataは0
-        if (itemName.equals("ReitouItem")) return 0;
+        if (itemName.equals("ReitouItem")) return 1;
         if (itemName.equals("IronKatanaItem")) return 1;
         if (itemName.equals("GoldKatanaItem")) return 2;
         if (itemName.equals("StoneKatanaItem")) return 3;

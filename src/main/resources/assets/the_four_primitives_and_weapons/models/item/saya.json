@@ -107,14 +107,14 @@
 			"predicate": {
 				"the_four_primitives_and_weapons:feyn": 1
 			},
-			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_special_seal_empty"
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_katana_kara"
 		},
 		{
 			"predicate": {
 				"the_four_primitives_and_weapons:feyn": 1,
 				"the_four_primitives_and_weapons:saya_nbt": 1
 			},
-			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_special_seal_empty"
+			"model": "the_four_primitives_and_weapons:custom/saya/katana/saya_iron_katana"
 		}
 	]
 }

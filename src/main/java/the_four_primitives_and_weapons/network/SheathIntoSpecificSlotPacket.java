@@ -137,6 +137,12 @@ public class SheathIntoSpecificSlotPacket {
 
     private static void performSheathing(Player player, ItemStack weaponStack,
                                           ItemStack scabbard, InteractionHand weaponHand) {
+        // 木刀など 練習用武器は 納刀できない
+        if (the_four_primitives_and_weapons.util.KatanaFittings.isPracticeWeapon(weaponStack)) {
+            player.displayClientMessage(Component.literal("§cこの武器は納刀できません"), true);
+            return;
+        }
+
         CompoundTag sheathTag = scabbard.getOrCreateTag();
         String storageKey = CuriosScabbardHelper.storageKeyFor(scabbard);
 

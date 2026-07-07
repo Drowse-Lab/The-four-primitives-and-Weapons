@@ -6,12 +6,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.*;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.util.Map;
 import java.util.UUID;
@@ -25,6 +27,8 @@ public class HolyElementDamageHandler {
 
     // 聖属性ダメージを受けたエンティティを追跡（トーテム貫通用）
     private static final Map<UUID, Long> holyDamageTargets = new ConcurrentHashMap<>();
+    private static final Map<UUID, Long> holyGlowTargets = new ConcurrentHashMap<>();
+    private static final Map<UUID, Boolean> holyGlowPreviousState = new ConcurrentHashMap<>();
 
     // 基礎ダメージ倍率
     private static final float BASE_DAMAGE_MULTIPLIER = 1.1f;
@@ -32,6 +36,7 @@ public class HolyElementDamageHandler {
     private static final float UNDEAD_DAMAGE_MULTIPLIER = 2.5f;
     // レベルごとの追加ダメージ倍率
     private static final float LEVEL_DAMAGE_MULTIPLIER = 0.3f;
+    private static final int HOLY_GLOW_DURATION_TICKS = 100;
 
     /**
      * エンティティがアンデットかどうかを判定
@@ -74,9 +79,8 @@ public class HolyElementDamageHandler {
                 target.setSecondsOnFire(5);
             }
 
-            // 発光効果を付与 (旧: setGlowingTag(true) はタイマー無しで永続化していたバグ)
-            // duration 100 tick = 5 秒で自然消滅。 amplifier 0、 ambient false、 visible false、 icon false。
-            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 100, 0, false, false, false));
+            // MobEffect ではなく glowing tag を時間管理して付与する。
+            applyTimedHolyGlow(target, HOLY_GLOW_DURATION_TICKS);
 
             // 聖なる光のパーティクル（アンデッド専用の強化版）
             if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {
@@ -111,6 +115,40 @@ public class HolyElementDamageHandler {
         holyDamageTargets.put(target.getUUID(), target.level().getGameTime());
 
         return originalDamage * damageMultiplier;
+    }
+
+    private static void applyTimedHolyGlow(LivingEntity target, int durationTicks) {
+        if (target == null || target.level().isClientSide()) return;
+        holyGlowPreviousState.putIfAbsent(target.getUUID(), target.isCurrentlyGlowing());
+        target.setGlowingTag(true);
+        long expireTick = target.level().getGameTime() + Math.max(1, durationTicks);
+        holyGlowTargets.merge(target.getUUID(), expireTick, Math::max);
+    }
+
+    @Mod.EventBusSubscriber(modid = "the_four_primitives_and_weapons")
+    public static class HolyGlowTickHandler {
+        @SubscribeEvent
+        public static void onServerTick(TickEvent.ServerTickEvent event) {
+            if (event.phase != TickEvent.Phase.END) return;
+            if (event.getServer() == null) return;
+
+            long now = event.getServer().overworld().getGameTime();
+            holyGlowTargets.entrySet().removeIf(entry -> {
+                Long expireTick = entry.getValue();
+                if (expireTick != null && now < expireTick) return false;
+
+                for (ServerLevel level : event.getServer().getAllLevels()) {
+                    Entity entity = level.getEntity(entry.getKey());
+                    if (entity instanceof LivingEntity living) {
+                        Boolean previous = holyGlowPreviousState.remove(entry.getKey());
+                        living.setGlowingTag(previous != null && previous);
+                        break;
+                    }
+                }
+                holyGlowPreviousState.remove(entry.getKey());
+                return true;
+            });
+        }
     }
 
     /**

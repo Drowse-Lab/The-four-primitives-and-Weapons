@@ -3,15 +3,12 @@ package the_four_primitives_and_weapons.damage;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 import org.joml.Vector3f;
-
-import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModMobEffects;
 
 import java.util.List;
 
@@ -41,25 +38,18 @@ public class ThunderElementDamageHandler {
     }
 
     /**
-     * 命中対象に対する Thunder の視覚 + 状態異常付与。
+     * 命中対象に対する Thunder の視覚 + 独自硬直。
      * 水/雨判定無しで毎回発動 — これで地上でも雷属性らしさを感じられる。
      *   - ELECTRIC_SPARK パーティクル + 黄色 dust
-     *   - THUNDER_HIT 効果 (lv = max(1, elementLevel/2))、 duration 100 tick (5秒)
+     *   - MobEffectではなく、attribute modifierによる短時間の鈍化 + 水平方向の減速
      */
     private static void applyThunderImpact(LivingEntity target, int level) {
         if (target == null || target.level().isClientSide()) return;
 
-        // THUNDER_HIT 効果 (連続攻撃で永続化しないよう ApplyIfNotFresh 風の guard)
-        try {
-            int amp = Math.min(Math.max(1, level / 2), 4); // Lv1-2=1, Lv3-4=1-2, Lv10=5→4
-            MobEffectInstance existing = target.getEffect(
-                    TheFourPrimitivesAndWeaponsModMobEffects.THUNDER_HIT.get());
-            if (existing == null || existing.getAmplifier() < amp || existing.getDuration() < 40) {
-                target.addEffect(new MobEffectInstance(
-                        TheFourPrimitivesAndWeaponsModMobEffects.THUNDER_HIT.get(),
-                        100, amp, true, false));
-            }
-        } catch (Throwable ignored) {}
+        int slowLevel = Math.min(Math.max(1, level / 2), 4);
+        SpecialDebuffHandler.applySlowness(target, 40, slowLevel);
+        target.setDeltaMovement(target.getDeltaMovement().multiply(0.65D, 1.0D, 0.65D));
+        target.hurtMarked = true;
 
         // 視覚エフェクト
         if (target.level() instanceof ServerLevel sl) {
@@ -121,11 +111,11 @@ public class ThunderElementDamageHandler {
             }
         }
 
-        // 導体装備ボーナス（鉄・金・チェーン装備を導体とみなす）
-        int conductorCount = countConductorArmor(target);
+        // 導体装備ボーナス（鉄・金・チェーン装備やタグ指定された防具を導体とみなす）
+        int conductorCount = ElectricElementDamageHandler.countConductiveArmorPieces(target);
         multiplier += CONDUCTOR_BONUS * conductorCount;
 
-        // 命中対象に視覚 + THUNDER_HIT 付与 (場所問わず毎回)
+        // 命中対象に視覚 + 独自硬直を付与 (場所問わず毎回)
         applyThunderImpact(target, weaponLevel);
 
         return baseDmg * multiplier;
@@ -156,23 +146,8 @@ public class ThunderElementDamageHandler {
                 }
             }
         }
-        multiplier += CONDUCTOR_BONUS * countConductorArmor(target);
+        multiplier += CONDUCTOR_BONUS * ElectricElementDamageHandler.countConductiveArmorPieces(target);
         applyThunderImpact(target, level);
         return baseDmg * multiplier;
-    }
-
-    /**
-     * 対象の装備スロットにある導体アイテム（鉄・金・チェーン）の数を返す。
-     */
-    private static int countConductorArmor(LivingEntity entity) {
-        int count = 0;
-        for (ItemStack armor : entity.getArmorSlots()) {
-            if (armor.isEmpty()) continue;
-            String id = armor.getItem().toString();
-            if (id.contains("iron") || id.contains("gold") || id.contains("chain")) {
-                count++;
-            }
-        }
-        return count;
     }
 }

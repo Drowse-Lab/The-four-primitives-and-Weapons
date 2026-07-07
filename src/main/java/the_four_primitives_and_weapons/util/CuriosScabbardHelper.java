@@ -122,6 +122,12 @@ public class CuriosScabbardHelper {
     public static boolean sheathIntoCurioSlot(Player player, ItemStack weaponStack, InteractionHand weaponHand) {
         if (!DodgeAndBattouHandler.isWeapon(weaponStack)) return false;
 
+        // 木刀など 練習用武器は 納刀できない
+        if (the_four_primitives_and_weapons.util.KatanaFittings.isPracticeWeapon(weaponStack)) {
+            player.displayClientMessage(Component.literal("§cこの武器は納刀できません"), true);
+            return false;
+        }
+
         ScabbardSlotInfo info = findEmptyScabbardInCurios(player);
         if (info == null) return false;
 

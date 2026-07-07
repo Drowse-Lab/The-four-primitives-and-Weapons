@@ -6,11 +6,11 @@ Minecraft 1.20.1 Forgeモッド用の属性ダメージシステムです。**NB
 
 ## 実装済み機能
 
-### ✅ 4つの属性
-1. **氷属性 (Ice)** - 凍結エネミーへの追加ダメージ、Slowness効果
+### ✅ 属性
+1. **氷属性 (Ice)** - 独自凍結状態への追加ダメージ、attribute modifierによる移動速度低下
 2. **電気/雷属性 (Electric)** - 水中AOE、導体装備時ボーナス
-3. **侵食/闇属性 (Corrosion)** - 防御力減少、Weakness効果
-4. **聖属性 (Holy)** - アンデッド特効(2.5倍)、高レベルで炎上
+3. **侵食/闇属性 (Corrosion/Dark)** - 防御力低下、攻撃力低下、独自DoT
+4. **聖属性 (Holy)** - アンデッド特効(2.5倍)、独自glowing tag、高レベルで炎上
 
 ### ✅ システム機能
 - **NBTタグベース**: どのアイテムにも属性付与可能
@@ -101,23 +101,27 @@ if (ElementalDamageUtils.hasElement(weapon)) {
 #### 氷属性
 - 基礎倍率: 1.5x
 - レベル倍率: +0.25x/レベル
-- 時間ボーナス: 最大+0.5x (Slowness効果持続時間)
+- 時間ボーナス: 最大+0.5x (独自凍結状態の残り時間)
+- 移動速度低下はMobEffectではなく `Attributes.MOVEMENT_SPEED` の一時modifier
 
 #### 電気/雷属性
 - 基礎倍率: 1.2x
 - 水中倍率: 1.5x
 - 導体倍率: +0.3x/導体アイテム
+- 雷命中時の硬直はMobEffectではなく独自スロー + 水平減速
 
 #### 侵食/闇属性
 - 基礎倍率: 1.1x
 - 防御力減少: 2.0 + (ダメージ × 0.5)
-- Weakness効果、高レベルでWither効果
+- 侵食は `Attributes.ARMOR` の一時modifierで防御力低下
+- 闇は `Attributes.ATTACK_DAMAGE` の一時modifierで攻撃力低下、Lv3以上で独自DoT
 
 #### 聖属性
 - 基礎倍率: 1.1x
 - アンデッド倍率: 2.5x
 - レベル倍率: +0.3x/レベル
-- 高レベルで炎上効果
+- MobEffectではなく独自時間管理のglowing tagを付与
+- 高レベルで炎上
 
 ## ビルドと実行
 
@@ -216,6 +220,7 @@ giveコマンドでNBT指定:
 
 適性値が属性Lv以上なら、その属性の持ち歩きデバフは発生しません。適性値が途中まである場合は、その分だけデバフLvが下がります。
 呪は `curse_aptitude >= 1` で無効化されます。
+持ち歩きデバフはMobEffectではなく、attribute modifier、独自tick処理、独自DamageSource、パーティクルで実装します。
 
 例:
 
@@ -230,13 +235,13 @@ giveコマンドでNBT指定:
 | `the_four_primitives_and_weapons:wind_aptitude` | 風: 満腹度exhaustion増加 |
 | `the_four_primitives_and_weapons:ice_aptitude` | 氷: 移動速度低下 |
 | `the_four_primitives_and_weapons:thunder_aptitude` | 雷: 防具強度低下 |
-| `the_four_primitives_and_weapons:electric_aptitude` | 電気: 攻撃速度低下 |
+| `the_four_primitives_and_weapons:electric_aptitude` | 電気: 攻撃速度低下、導体防具装備時の感電ダメージ |
 | `the_four_primitives_and_weapons:corrosion_aptitude` | 侵食: 防御力低下 |
-| `the_four_primitives_and_weapons:holy_aptitude` | 聖: 発光 |
-| `the_four_primitives_and_weapons:dark_aptitude` | 闇: Darkness付与 |
+| `the_four_primitives_and_weapons:holy_aptitude` | 聖: 独自glowing tag + 光粒子 |
+| `the_four_primitives_and_weapons:dark_aptitude` | 闇: 攻撃力低下 + 黒霧粒子 |
 | `the_four_primitives_and_weapons:miasma_aptitude` | 瘴気: 回復量低下 |
 | `the_four_primitives_and_weapons:blood_aptitude` | 血: 微量DoT |
-| `the_four_primitives_and_weapons:erasure_aptitude` | 消滅: 混乱 |
+| `the_four_primitives_and_weapons:erasure_aptitude` | 消滅: 独自の操作揺らし + 消滅粒子 |
 | `the_four_primitives_and_weapons:curse_aptitude` | 呪: 体力低下/攻撃上昇 |
 
 アドオン装備は通常の attribute modifier でこれらの適性を付与できます。
