@@ -1,9 +1,12 @@
 {
   "format_version": "1.9.0",
   "credit": "Made with Blockbench",
-  "parent": "the_four_primitives_and_weapons:custom/weapon/tyokuto/tyokuto_a_parent",
+  "parent": "the_four_primitives_and_weapons:custom/weapon/tyokuto/tyokuto_b_parent",
   "textures": {
-    "0": "the_four_primitives_and_weapons:blade/tyokuto/stone_tyokuto3d",
+    "1": "the_four_primitives_and_weapons:blade/tyokuto/stone_tyokuto3d",
+    "3": "the_four_primitives_and_weapons:straight_katana_fitting/tsuba/tuba",
+    "4": "the_four_primitives_and_weapons:straight_katana_fitting/kasira/kasira",
+    "6": "the_four_primitives_and_weapons:straight_katana_fitting/tsuka/tuka",
     "particle": "the_four_primitives_and_weapons:blade/tyokuto/stone_tyokuto3d"
   },
   "made": "hrmcngs"
