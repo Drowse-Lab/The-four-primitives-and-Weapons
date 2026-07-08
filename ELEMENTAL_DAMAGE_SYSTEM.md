@@ -269,7 +269,7 @@ giveコマンドでNBT指定:
 
 レアリティ強化台で中央アイテムと触媒枠のどちらかが同レベルの `FIRE` + `SOUL` になると、出力は燐火として表示されます。
 内部NBTは `SOUL_FIRE` に置き換えず、`ElementType: fire`, `ElementLevel: N`, `ElementType2: soul`, `ElementLevel2: N` のように炎と魂を1:1で保持します。
-NBTで属性が付いた武器、魔導書、`book_elements.json` に登録されたaddon魔導書、`SoulBookItem` / `SoulFireBookItem` / `RinkaBookItem` クラス名のaddon本を判定します。
+NBTで属性が付いた武器、魔導書、`book_elements.json` に登録されたaddon魔導書、`SoulBookItem` / `SoulFireBookItem` クラス名のaddon本を判定します。
 
 アドオン装備は通常の attribute modifier でこれらの適性を付与できます。
 

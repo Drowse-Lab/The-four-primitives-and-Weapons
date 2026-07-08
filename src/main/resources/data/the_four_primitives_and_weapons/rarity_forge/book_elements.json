@@ -11,6 +11,8 @@
     "the_four_primitives_and_weapons:thunder_book":   "THUNDER",
     "the_four_primitives_and_weapons:wind_book":      "WIND",
     "the_four_primitives_and_weapons:storm_book":     "THUNDER",
-    "the_four_primitives_and_weapons:darkness_book":  "DARK"
+    "the_four_primitives_and_weapons:darkness_book":  "DARK",
+    "the_four_primitives_and_weapons:soul_book":      "SOUL",
+    "the_four_primitives_and_weapons:soul_fire_book": "SOUL_FIRE"
   }
 }

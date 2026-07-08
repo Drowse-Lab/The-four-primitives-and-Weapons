@@ -134,8 +134,7 @@ public class ElementalCarryDebuffHandler {
         ElementType backlashType = soulFireLevel > 0 ? ElementType.SOUL_FIRE : ElementType.FIRE;
         ElementalDoTHandler.apply(player, duration, damagePerTick, backlashType);
         if (backlashType == ElementType.SOUL_FIRE) {
-            player.setSecondsOnFire(Math.max(1, duration / 20));
-            SoulFireHandler.markSoulSource(player, duration + 10);
+            SoulFireHandler.setSoulFire(player, duration);
         }
     }
 

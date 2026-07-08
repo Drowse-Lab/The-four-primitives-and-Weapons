@@ -32,8 +32,7 @@ public class SoulFireElementDamageHandler {
     public static float calculateDamage(LivingEntity target, float originalDamage, int elementLevel) {
         int level = Math.max(1, elementLevel);
         int fireTicks = Math.min(MAX_FIRE_TICKS, BASE_FIRE_TICKS + FIRE_TICKS_PER_LEVEL * (level - 1));
-        target.setSecondsOnFire(Math.max(1, fireTicks / 20));
-        SoulFireHandler.markSoulSource(target, fireTicks + 10);
+        SoulFireHandler.setSoulFire(target, fireTicks);
         spawnSoulFireParticles(target, level);
 
         float maxHealth = Math.max(1.0f, target.getMaxHealth());

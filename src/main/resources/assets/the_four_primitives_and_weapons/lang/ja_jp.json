@@ -394,6 +394,8 @@
   "item.the_four_primitives_and_weapons.electric_book": "§e電撃の魔導書",
   "item.the_four_primitives_and_weapons.corrosion_book": "§d侵食の魔導書",
   "item.the_four_primitives_and_weapons.holy_book": "§6聖の魔導書",
+  "item.the_four_primitives_and_weapons.soul_book": "§b魂の魔導書",
+  "item.the_four_primitives_and_weapons.soul_fire_book": "§b燐火の魔導書",
   "item.the_four_primitives_and_weapons.reitou": "§5§l霊刀",
   "tooltip.the_four_primitives_and_weapons.reitou.desc1": "狐の信仰の対象",
   "tooltip.the_four_primitives_and_weapons.reitou.desc2": "怨念の力を宿す呪いの刀",

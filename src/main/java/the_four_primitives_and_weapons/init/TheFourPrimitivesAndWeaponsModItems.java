@@ -101,6 +101,8 @@ import the_four_primitives_and_weapons.item.CorrosionBookItem;
 import the_four_primitives_and_weapons.item.ReitouItem;
 import the_four_primitives_and_weapons.item.ErasureBookItem;
 import the_four_primitives_and_weapons.item.MiasmaBookItem;
+import the_four_primitives_and_weapons.item.SoulBookItem;
+import the_four_primitives_and_weapons.item.SoulFireBookItem;
 import the_four_primitives_and_weapons.item.ElementCleansePotionItem;
 import the_four_primitives_and_weapons.item.FireballItem;
 import the_four_primitives_and_weapons.item.DragonRedArmorItem;
@@ -290,6 +292,8 @@ public class TheFourPrimitivesAndWeaponsModItems {
 	public static final RegistryObject<Item> HOLY_BOOK = REGISTRY.register("holy_book", () -> new HolyBookItem());
 	public static final RegistryObject<Item> ERASURE_BOOK = REGISTRY.register("erasure_book", () -> new ErasureBookItem());
 	public static final RegistryObject<Item> MIASMA_BOOK = REGISTRY.register("miasma_book", () -> new MiasmaBookItem());
+	public static final RegistryObject<Item> SOUL_BOOK = REGISTRY.register("soul_book", () -> new SoulBookItem());
+	public static final RegistryObject<Item> SOUL_FIRE_BOOK = REGISTRY.register("soul_fire_book", () -> new SoulFireBookItem());
 	public static final RegistryObject<Item> ELEMENT_CLEANSE_POTION = REGISTRY.register("element_cleanse_potion", () -> new ElementCleansePotionItem());
 	public static final RegistryObject<Item> REITOU = REGISTRY.register("reitou", () -> new ReitouItem());
 	public static final RegistryObject<Item> OFUDA = REGISTRY.register("ofuda", () -> new OfudaItem());

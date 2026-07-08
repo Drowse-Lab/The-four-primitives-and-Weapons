@@ -394,6 +394,8 @@
   "item.the_four_primitives_and_weapons.corrosion_book": "§dCorrosion Book",
   "item.the_four_primitives_and_weapons.holy_book": "§6Holy Book",
   "item.the_four_primitives_and_weapons.erasure_book": "§4Erasure Book",
+  "item.the_four_primitives_and_weapons.soul_book": "§bSoul Book",
+  "item.the_four_primitives_and_weapons.soul_fire_book": "§bSoul Fire Book",
   "item.the_four_primitives_and_weapons.reitou": "§5§lSacred Sword",
   "tooltip.the_four_primitives_and_weapons.reitou.desc1": "Object of the Fox's Faith",
   "tooltip.the_four_primitives_and_weapons.reitou.desc2": "A cursed blade harboring grudge",

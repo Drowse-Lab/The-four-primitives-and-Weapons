@@ -137,6 +137,8 @@ public final class RarityForgeCenterLogic {
         m.put("the_four_primitives_and_weapons:wind_book",      ElementType.WIND);
         m.put("the_four_primitives_and_weapons:storm_book",     ElementType.THUNDER);
         m.put("the_four_primitives_and_weapons:darkness_book",  ElementType.DARK);
+        m.put("the_four_primitives_and_weapons:soul_book",      ElementType.SOUL);
+        m.put("the_four_primitives_and_weapons:soul_fire_book", ElementType.SOUL_FIRE);
         return m;
     }
 

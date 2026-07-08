@@ -50,6 +50,18 @@ public class SoulFireHandler {
 		SOUL_UNTIL.merge(target.getUUID(), until, Math::max);
 	}
 
+	/**
+	 * Soul Fire ブロックで燃えた時と同じ「青い炎上状態」として扱う。
+	 * ダメージや持ち歩きデバフ側はこの入口を使うことで、通常炎ではなく
+	 * Soul Fire 由来の炎として描画・同期される。
+	 */
+	public static void setSoulFire(LivingEntity target, int ticks) {
+		if (target == null || target.level().isClientSide) return;
+		int safeTicks = Math.max(20, ticks);
+		target.setSecondsOnFire(Math.max(1, (safeTicks + 19) / 20));
+		markSoulSource(target, safeTicks + 10);
+	}
+
 	@SubscribeEvent
 	public static void onLivingTick(LivingEvent.LivingTickEvent event) {
 		LivingEntity entity = event.getEntity();

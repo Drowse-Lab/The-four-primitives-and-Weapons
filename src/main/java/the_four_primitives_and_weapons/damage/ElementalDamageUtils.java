@@ -223,8 +223,7 @@ public class ElementalDamageUtils {
             case "ErasureBookItem":   return ElementType.ERASURE;
             case "MiasmaBookItem":  return ElementType.MIASMA;
             case "SoulBookItem":    return ElementType.SOUL;
-            case "SoulFireBookItem":
-            case "RinkaBookItem":   return ElementType.SOUL_FIRE;
+            case "SoulFireBookItem": return ElementType.SOUL_FIRE;
             default:                return ElementType.NONE;
         }
     }

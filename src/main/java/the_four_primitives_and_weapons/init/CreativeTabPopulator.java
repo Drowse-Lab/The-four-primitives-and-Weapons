@@ -117,6 +117,8 @@ public class CreativeTabPopulator {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.CORROSION_BOOK);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.HOLY_BOOK);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.MIASMA_BOOK);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.SOUL_BOOK);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.SOUL_FIRE_BOOK);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.ELEMENT_CLEANSE_POTION);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.MAGICWAND);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.IMITATION);

@@ -16,7 +16,7 @@
 | 瘴気 | MIASMA | MiasmaBookItem | HOLY |
 | 消滅 | ERASURE | ErasureBookItem | NONE |
 | 魂 | SOUL | SoulBookItem / datapack | HOLY |
-| 燐火 | SOUL_FIRE | SoulFireBookItem / RinkaBookItem / datapack | WATER |
+| 燐火 | SOUL_FIRE | SoulFireBookItem / datapack | WATER |
 
 ---
 
