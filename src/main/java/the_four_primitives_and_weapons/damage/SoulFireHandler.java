@@ -4,12 +4,15 @@ import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 import the_four_primitives_and_weapons.network.SoulFireSyncPacket;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.PacketDistributor;
@@ -35,9 +38,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Mod.EventBusSubscriber
 public class SoulFireHandler {
 
-	/** entityUUID → この gameTime まで炎を魂の炎として扱う。 */
-	private static final Map<UUID, Long> SOUL_UNTIL = new ConcurrentHashMap<>();
-	/** entityUUID → 直近にクライアントへ同期した soul フラグ。差分検出用。 */
+	/**
+	 * エンティティ NBT (ForgeData) に保存する「この gameTime まで魂の炎として扱う」キー。
+	 * static マップだとワールドに入り直す (＝サーバー再起動) と消えてしまい、燃え続けている
+	 * エンティティが再びオレンジ表示になるため、永続化してリロードをまたいで保持する。
+	 */
+	private static final String TAG_SOUL_UNTIL = "TfpwSoulFireUntil";
+
+	/** entityUUID → 直近にクライアントへ同期した soul フラグ。差分検出用 (揮発でよい)。 */
 	private static final Map<UUID, Boolean> LAST_SYNCED = new ConcurrentHashMap<>();
 
 	/**
@@ -47,7 +55,10 @@ public class SoulFireHandler {
 	public static void markSoulSource(LivingEntity target, int ticks) {
 		if (target == null || target.level().isClientSide) return;
 		long until = target.level().getGameTime() + Math.max(1, ticks);
-		SOUL_UNTIL.merge(target.getUUID(), until, Math::max);
+		CompoundTag data = target.getPersistentData();
+		if (until > data.getLong(TAG_SOUL_UNTIL)) {
+			data.putLong(TAG_SOUL_UNTIL, until);
+		}
 	}
 
 	/**
@@ -76,9 +87,11 @@ public class SoulFireHandler {
 		// 1〜数 tick 遅れて揺れるため。 ここで弾いてしまうと standingInSoulFire に到達せず、
 		// 「着火した瞬間だけオレンジ、炎が安定してから青」というちらつきが出る。
 		boolean burning = entity.isOnFire() || entity.getRemainingFireTicks() > 0;
-		if (!burning && !SOUL_UNTIL.containsKey(id) && !LAST_SYNCED.containsKey(id)) {
+		if (!burning && !LAST_SYNCED.containsKey(id)) {
 			return;
 		}
+
+		CompoundTag data = entity.getPersistentData();
 
 		// バニラの Soul Fire ブロック / 点火中 Soul Campfire の上にいる間は、残り炎時間ぶん
 		// 魂扱いを延長する (ブロックから離れても残り火が青いままになるように)。
@@ -86,13 +99,17 @@ public class SoulFireHandler {
 		// 描画される瞬間には既に青が確定している。
 		if (standingInSoulFire(entity)) {
 			long until = now + Math.max(entity.getRemainingFireTicks(), 1) + 5L;
-			SOUL_UNTIL.merge(id, until, Math::max);
+			if (until > data.getLong(TAG_SOUL_UNTIL)) {
+				data.putLong(TAG_SOUL_UNTIL, until);
+			}
 		}
 
-		Long until = SOUL_UNTIL.get(id);
-		boolean isSoul = until != null && now <= until;
-		if (until != null && !isSoul) {
-			SOUL_UNTIL.remove(id);
+		boolean isSoul = false;
+		if (data.contains(TAG_SOUL_UNTIL)) {
+			isSoul = now <= data.getLong(TAG_SOUL_UNTIL);
+			if (!isSoul) {
+				data.remove(TAG_SOUL_UNTIL);
+			}
 		}
 
 		// soul=true は isOnFire() に依存せず送る (炎が無ければクライアントでは何も描かれず無害)。
@@ -114,6 +131,24 @@ public class SoulFireHandler {
 		TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.send(
 				PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
 				new SoulFireSyncPacket(entity.getId(), soul));
+	}
+
+	/**
+	 * プレイヤーがエンティティの追跡を開始したとき、現在の魂フラグを本人へ再送する。
+	 *
+	 * <p>{@link #sync} は状態変化時にしか送らないため、途中で視界に入った / ワールドに
+	 * 入り直して再接続したクライアントには「既に青」の情報が届かない。 追跡開始の時点で
+	 * 現在値を送り直すことで、入り直し後もオレンジに戻らないようにする。</p>
+	 */
+	@SubscribeEvent
+	public static void onStartTracking(PlayerEvent.StartTracking event) {
+		if (!(event.getEntity() instanceof ServerPlayer player)) return;
+		if (!(event.getTarget() instanceof LivingEntity target)) return;
+		if (Boolean.TRUE.equals(LAST_SYNCED.get(target.getUUID()))) {
+			TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.send(
+					PacketDistributor.PLAYER.with(() -> player),
+					new SoulFireSyncPacket(target.getId(), true));
+		}
 	}
 
 	/** エンティティの当たり判定内に Soul Fire ブロック / 点火中 Soul Campfire があるか。 */
