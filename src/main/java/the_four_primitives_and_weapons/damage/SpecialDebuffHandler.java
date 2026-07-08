@@ -7,6 +7,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -45,11 +46,17 @@ public final class SpecialDebuffHandler {
     private static final double WEAK_AMP_PER_LEVEL = 0.5;  // -0.5 atk / level (ADDITION)
     private static final double WEAK_AMP_MAX       = 5.0;
 
+    // ── vulnerability (被ダメ増加 / 防御ダウン) ────────────────────────
+    /** 被ダメ増加の上限 ( +50% )。 */
+    private static final float VULN_PERCENT_MAX = 0.5f;
+
     public static class Entry {
         public int slowRemaining;
         public int weakRemaining;
+        public int vulnRemaining;
+        public float vulnPercent;
     }
-    /** UUID → 残り tick (slow + weak) */
+    /** UUID → 残り tick (slow + weak + vuln) */
     private static final Map<UUID, Entry> map = new ConcurrentHashMap<>();
 
     // ────────────────────────────────────────────────────────────────
@@ -143,6 +150,28 @@ public final class SpecialDebuffHandler {
         } catch (Throwable ignored) {}
     }
 
+    /**
+     * "被ダメ増加 (vulnerability / 防御ダウン)" を付与。 対象が受ける全ダメージを (1 + percent) 倍にする。
+     * Elden Ring の Soul Stifler 相当 ( ゾーンから離れても持続 )。 MobEffect ではないので牛乳で消えない。
+     * @param durationTicks 持続 tick ( 1200 = 60 秒 )
+     * @param percent 増加率 ( 0.15 = +15% )。 上限 {@link #VULN_PERCENT_MAX}。
+     */
+    public static void applyVulnerability(LivingEntity target, int durationTicks, float percent) {
+        if (target == null || target.level().isClientSide()) return;
+        if (durationTicks <= 0 || percent <= 0) return;
+        Entry e = map.computeIfAbsent(target.getUUID(), k -> new Entry());
+        e.vulnRemaining = Math.max(e.vulnRemaining, durationTicks);
+        e.vulnPercent = Math.min(VULN_PERCENT_MAX, Math.max(e.vulnPercent, percent));
+    }
+
+    /** 対象の被ダメ倍率 ( 未付与なら 1.0 )。 */
+    public static float getVulnerabilityMultiplier(LivingEntity target) {
+        if (target == null) return 1.0f;
+        Entry e = map.get(target.getUUID());
+        if (e == null || e.vulnRemaining <= 0 || e.vulnPercent <= 0.0f) return 1.0f;
+        return 1.0f + e.vulnPercent;
+    }
+
     /** ResetMax 等から呼ばれる: 全ての SpecialDebuff を即時解除 */
     public static void clear(LivingEntity target) {
         if (target == null) return;
@@ -165,6 +194,18 @@ public final class SpecialDebuffHandler {
 
     @Mod.EventBusSubscriber(modid = "the_four_primitives_and_weapons")
     public static class SpecialDebuffTickHandler {
+
+        /** 被ダメ増加 (vulnerability) を全ダメージに乗算する。 */
+        @SubscribeEvent
+        public static void onLivingHurt(LivingHurtEvent event) {
+            LivingEntity target = event.getEntity();
+            if (target == null || target.level().isClientSide()) return;
+            float mult = getVulnerabilityMultiplier(target);
+            if (mult != 1.0f) {
+                event.setAmount(event.getAmount() * mult);
+            }
+        }
+
         @SubscribeEvent
         public static void onServerTick(TickEvent.ServerTickEvent event) {
             if (event.phase != TickEvent.Phase.END) return;
@@ -184,7 +225,11 @@ public final class SpecialDebuffHandler {
                     e.weakRemaining--;
                     if (e.weakRemaining <= 0) weakExpired.add(id);
                 }
-                if (e.slowRemaining <= 0 && e.weakRemaining <= 0) {
+                if (e.vulnRemaining > 0) {
+                    e.vulnRemaining--;
+                    if (e.vulnRemaining <= 0) e.vulnPercent = 0.0f;
+                }
+                if (e.slowRemaining <= 0 && e.weakRemaining <= 0 && e.vulnRemaining <= 0) {
                     bothEmpty.add(id);
                 }
             });

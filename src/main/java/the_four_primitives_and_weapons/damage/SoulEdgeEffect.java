@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.Level;
 
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 
@@ -86,15 +85,10 @@ public final class SoulEdgeEffect {
 
     /** 最後の魂の大爆発 (地形破壊なし)。 ブロックを壊さない本物の爆発 + 魂の衝撃波。 */
     private static void burst(ServerLevel level3d, double cx, double cy, double cz, int lv) {
-        // ブロックを壊さない爆発本体: ノックバック・爆発粒子・爆発音つき、地形破壊なし。
-        float power = (float) Math.min(4.0, 2.2 + lv * 0.18);
-        level3d.explode(null, cx, cy, cz, power, Level.ExplosionInteraction.NONE);
-
-        // 大爆発の閃光 + 音 (それぞれ 1 パケット)。
-        level3d.sendParticles(ParticleTypes.EXPLOSION_EMITTER, cx, cy, cz, 1, 0.0, 0.0, 0.0, 0.0);
-        playSound(level3d, cx, cy, cz, SoundEvents.GENERIC_EXPLODE, 1.6f, 0.7f);
-        playSound(level3d, cx, cy, cz, SoundEvents.VEX_DEATH, 1.4f, 0.5f);
-        playSound(level3d, cx, cy, cz, SoundEvents.WITHER_DEATH, 0.6f, 1.5f);
+        // 通常攻撃のたびに出るため、爆発 (ノックバック/ダメージ/爆発粒子/爆発音) は付けない。
+        // 魂テーマの粒子と音だけで締めの一撃を表現する。
+        playSound(level3d, cx, cy, cz, SoundEvents.VEX_DEATH, 1.0f, 0.5f);
+        playSound(level3d, cx, cy, cz, SoundEvents.WITHER_DEATH, 0.4f, 1.5f);
 
         // 拡散粒子は count 指定で 1 パケットにまとめる: 魂の雲 + 魂炎 + 立ち上る柱。
         level3d.sendParticles(ParticleTypes.SOUL, cx, cy, cz, 70, 0.9, 0.7, 0.9, 0.12);

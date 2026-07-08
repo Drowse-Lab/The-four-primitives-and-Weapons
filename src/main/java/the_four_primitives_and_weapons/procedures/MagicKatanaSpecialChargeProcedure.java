@@ -1533,6 +1533,9 @@ public class MagicKatanaSpecialChargeProcedure {
             }
             the_four_primitives_and_weapons.damage.SoulFireHandler
                     .markSoulSource(target, 100 + elementLevel * 8);
+            // Soul Stifler: 直撃した敵にも被ダメ増加 (防御ダウン) を即時付与。
+            the_four_primitives_and_weapons.damage.SpecialDebuffHandler.applyVulnerability(
+                    target, 1200, Math.min(0.25f, 0.15f + Math.max(0, elementLevel - 1) * 0.01f));
 
             Vec3 pull = playerPos.add(0, 0.5, 0).subtract(target.position());
             if (pull.lengthSqr() > 0.001) {
@@ -1562,6 +1565,14 @@ public class MagicKatanaSpecialChargeProcedure {
 
         if (hitCount > 0) {
             player.heal(Math.min(4.0f, 0.5f + hitCount * 0.45f + elementLevel * 0.05f));
+        }
+
+        // Soul Stifler: 儀式の中心に「魂を蝕む瘴気」ゾーンを展開 (10 秒持続)。
+        // 範囲内の敵は被ダメ増加デバフを受け続け、離れても 60 秒持続する。
+        if (world instanceof ServerLevel zoneLevel) {
+            double zoneRadius = 3.0 + Math.min(elementLevel, 10) * 0.2;
+            the_four_primitives_and_weapons.damage.SoulStiflerZone.deploy(
+                    zoneLevel, riteCenter, zoneRadius, 200, player.getUUID(), elementLevel);
         }
 
         if (world instanceof Level level) {
