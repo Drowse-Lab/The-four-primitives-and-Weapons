@@ -1,0 +1,9 @@
+Misaki Font 2021-05-05
+Source: https://littlelimit.net/misaki.htm
+
+These fonts are free software.
+Unlimited permission is granted to use, copy, and distribute them, with or without modification, either commercially or noncommercially.
+THESE FONTS ARE PROVIDED "AS IS" WITHOUT WARRANTY.
+
+Original archive files misaki.txt and readme.txt are included under:
+assets/the_four_primitives_and_weapons/font/

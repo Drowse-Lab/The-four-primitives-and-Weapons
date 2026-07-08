@@ -1,0 +1,23 @@
+{
+  "providers": [
+    {
+      "type": "reference",
+      "id": "minecraft:include/space"
+    },
+    {
+      "type": "ttf",
+      "file": "the_four_primitives_and_weapons:misaki_gothic.ttf",
+      "size": 8.0,
+      "oversample": 1.0,
+      "shift": [0.0, 0.0]
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:include/default"
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:include/unifont"
+    }
+  ]
+}

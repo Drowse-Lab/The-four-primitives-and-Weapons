@@ -68,6 +68,7 @@ public class TheFourPrimitivesAndWeaponsMod {
 		if (net.minecraftforge.fml.loading.FMLEnvironment.dist
 				== net.minecraftforge.api.distmarker.Dist.CLIENT) {
 			the_four_primitives_and_weapons.client.MawDisplayContexts.init();
+			bus.addListener(the_four_primitives_and_weapons.client.MisakiFontPack::onAddPackFinders);
 		}
 
 		TheFourPrimitivesAndWeaponsModTabs.REGISTRY.register(bus);
