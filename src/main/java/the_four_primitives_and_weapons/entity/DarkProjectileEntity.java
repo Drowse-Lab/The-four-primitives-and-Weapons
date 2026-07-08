@@ -68,13 +68,13 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
         // パーティクルエフェクト
         if (VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
             // 闇のパーティクル
-            serverLevel.sendParticles(ParticleTypes.SOUL,
+            serverLevel.sendParticles(ParticleTypes.SMOKE,
                 this.getX(), this.getY(), this.getZ(),
                 2, 0.1, 0.1, 0.1, 0.01);
 
-            serverLevel.sendParticles(ParticleTypes.SMOKE,
+            serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL,
                 this.getX(), this.getY(), this.getZ(),
-                3, 0.2, 0.2, 0.2, 0.02);
+                2, 0.08, 0.08, 0.08, 0.01);
 
             // 軌跡エフェクト
             serverLevel.sendParticles(ParticleTypes.SQUID_INK,
@@ -138,9 +138,9 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
 
             // ヒットエフェクト
             if (VersionHelper.getLevel(this) instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
+                serverLevel.sendParticles(ParticleTypes.SQUID_INK,
                     livingEntity.getX(), livingEntity.getY() + livingEntity.getBbHeight() / 2, livingEntity.getZ(),
-                    20, 0.5, 0.5, 0.5, 0.1);
+                    16, 0.35, 0.45, 0.35, 0.04);
 
                 serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE,
                     livingEntity.getX(), livingEntity.getY() + 1, livingEntity.getZ(),
@@ -206,6 +206,6 @@ public class DarkProjectileEntity extends AbstractHurtingProjectile {
 
     @Override
     protected ParticleOptions getTrailParticle() {
-        return ParticleTypes.SOUL;
+        return ParticleTypes.SMOKE;
     }
 }

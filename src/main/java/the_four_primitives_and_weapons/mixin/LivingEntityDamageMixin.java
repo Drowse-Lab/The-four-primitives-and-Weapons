@@ -96,7 +96,10 @@ public class LivingEntityDamageMixin {
                     modifiedDamage = HolyElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
                     break;
                 case SOUL:
-                    modifiedDamage = SoulElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                    modifiedDamage = SoulElementDamageHandler.calculateDamage(
+                            source.getEntity() instanceof net.minecraft.world.entity.LivingEntity soulAttacker
+                                    ? soulAttacker : null,
+                            target, originalDamage, elementLevel);
                     break;
                 case SOUL_FIRE:
                     modifiedDamage = SoulFireElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);

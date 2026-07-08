@@ -184,7 +184,7 @@ public class ElementalDamageEvent {
                 modifiedDamage = DarkElementDamageHandler.calculateDamage(attacker, target, originalDamage, elementLevel);
                 break;
             case SOUL:
-                modifiedDamage = SoulElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                modifiedDamage = SoulElementDamageHandler.calculateDamage(attacker, target, originalDamage, elementLevel);
                 target.addTag(TAG_SOUL_DAMAGE);
                 // SOUL 属性の攻撃を受けた対象は、この間に炎が付いていれば青い炎で描画する
                 the_four_primitives_and_weapons.damage.SoulFireHandler.markSoulSource(target, 100);

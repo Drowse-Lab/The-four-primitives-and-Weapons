@@ -62,25 +62,37 @@ public class MagicKatanaSpecialChargeProcedure {
     public static void execute(LevelAccessor world, double x, double y, double z, Entity entity, float chargePercent) {
         if (!(entity instanceof Player player)) return;
 
-        // === Magical Katana のため技デフォルト ===
-        //   メインハンドが MagicalKatanaItem の場合は、 インベントリの魔導書を見ずに
-        //   侵食属性の「枝分かれ」 ( = コーン状ブレス ) 攻撃を強制発動する。
-        //   既存の 結晶生成フロー ( 解放後の右クリック特殊技 ) とは別経路。
-        {
-            String mhName = player.getMainHandItem().getItem().getClass().getSimpleName();
+        // プレイヤーのインベントリをチェック
+        ItemStack specialItem = findSpecialItem(player);
+        ItemStack mainHand = player.getMainHandItem();
+        ElementType weaponElement = the_four_primitives_and_weapons.damage.ElementalDamageUtils.getEffectiveElementType(mainHand);
+        int weaponElementLevel = Math.max(1,
+                the_four_primitives_and_weapons.damage.ElementalDamageUtils.getEffectiveElementLevel(mainHand));
+
+        if (specialItem.isEmpty()) {
+            if (weaponElement == ElementType.SOUL) {
+                executeSoulAttack(world, x, y, z, player, chargePercent, weaponElementLevel);
+                setBurstWindow(player);
+                return;
+            }
+            if (weaponElement == ElementType.SOUL_FIRE) {
+                executeSoulFireAttack(world, x, y, z, player, chargePercent, weaponElementLevel);
+                setBurstWindow(player);
+                return;
+            }
+
+            // === Magical Katana のため技デフォルト ===
+            //   本 / 魂 / 燐火の指定がない場合だけ、侵食属性の「枝分かれ」
+            //   ( = コーン状ブレス ) 攻撃を発動する。
+            String mhName = mainHand.getItem().getClass().getSimpleName();
             if ("MagicalKatanaItem".equals(mhName)) {
                 int lv = the_four_primitives_and_weapons.damage.ElementalDamageUtils
-                        .getElementLevel(player.getMainHandItem());
+                        .getElementLevel(mainHand);
                 executeCorrosionAttack(world, x, y, z, player, chargePercent, Math.max(1, lv), true);
                 setBurstWindow(player);
                 return;
             }
-        }
 
-        // プレイヤーのインベントリをチェック
-        ItemStack specialItem = findSpecialItem(player);
-
-        if (specialItem.isEmpty()) {
             // 特殊アイテムがない場合は通常の魔法攻撃
             executeDefaultMagicAttack(world, x, y, z, player, chargePercent);
             return;
@@ -89,7 +101,8 @@ public class MagicKatanaSpecialChargeProcedure {
         String itemName = specialItem.getItem().getClass().getSimpleName();
 
         // 魔導書の属性レベルを取得（ダメージスケーリング用）
-        int elementLevel = the_four_primitives_and_weapons.damage.ElementalDamageUtils.getElementLevel(specialItem);
+        int elementLevel = Math.max(1,
+                the_four_primitives_and_weapons.damage.ElementalDamageUtils.getElementLevel(specialItem));
 
         // アイテムに応じた特殊攻撃を実行
         switch (itemName) {
@@ -128,6 +141,12 @@ public class MagicKatanaSpecialChargeProcedure {
                 break;
             case "MiasmaBookItem":
                 executeMiasmaAttack(world, x, y, z, player, chargePercent, elementLevel);
+                break;
+            case "SoulBookItem":
+                executeSoulAttack(world, x, y, z, player, chargePercent, elementLevel);
+                break;
+            case "SoulFireBookItem":
+                executeSoulFireAttack(world, x, y, z, player, chargePercent, elementLevel);
                 break;
             default:
                 executeDefaultMagicAttack(world, x, y, z, player, chargePercent);
@@ -237,7 +256,8 @@ public class MagicKatanaSpecialChargeProcedure {
                             itemName.equals("BubbleshotItem") || itemName.equals("DarknessItem") ||
                             itemName.equals("IceBookItem") || itemName.equals("ElectricBookItem") ||
                             itemName.equals("CorrosionBookItem") || itemName.equals("HolyBookItem") ||
-                            itemName.equals("ErasureBookItem") || itemName.equals("MiasmaBookItem")) {
+                            itemName.equals("ErasureBookItem") || itemName.equals("MiasmaBookItem") ||
+                            itemName.equals("SoulBookItem") || itemName.equals("SoulFireBookItem")) {
                             specialItem.set(stack);
                             return;
                         }
@@ -548,9 +568,9 @@ public class MagicKatanaSpecialChargeProcedure {
 
         // 発射エフェクト
         if (world instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
+            serverLevel.sendParticles(ParticleTypes.SQUID_INK,
                 startPos.x, startPos.y, startPos.z,
-                20, 0.5, 0.5, 0.5, 0.1);
+                12, 0.25, 0.25, 0.25, 0.03);
 
             serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE,
                 startPos.x, startPos.y, startPos.z,
@@ -1431,6 +1451,335 @@ public class MagicKatanaSpecialChargeProcedure {
     }
 
     /**
+     * SoulBookItem - 霊墓の剣陣
+     * 対象の足元に霊の印を刻み、少し遅れて上空から魂の刃を落とす。
+     */
+    private static void executeSoulAttack(LevelAccessor world, double x, double y, double z,
+                                          Player player, float chargePercent, int elementLevel) {
+        Vec3 eyePos = player.getEyePosition();
+        Vec3 playerPos = player.position();
+        Vec3 forward = player.getLookAngle().normalize();
+        double range = 15.0 + Math.min(elementLevel, 10) * 0.45;
+        double lockRadius = 5.0 + Math.min(elementLevel, 10) * 0.18;
+        int maxTargets = 3 + Math.min(elementLevel / 3, 4);
+
+        List<LivingEntity> targets = new ArrayList<>();
+        LivingEntity primaryTarget = findTargetInSight(world, player, range);
+        Vec3 riteCenter = eyePos.add(forward.scale(range * 0.55));
+        if (primaryTarget != null) {
+            final LivingEntity lockCenter = primaryTarget;
+            riteCenter = lockCenter.position().add(0, 0.08, 0);
+            AABB lockArea = lockCenter.getBoundingBox().inflate(lockRadius);
+            List<LivingEntity> nearby = world.getEntitiesOfClass(LivingEntity.class, lockArea,
+                    entity -> entity != player && entity.isAlive() && entity.distanceTo(lockCenter) <= lockRadius);
+            nearby.sort((a, b) -> Double.compare(a.distanceToSqr(lockCenter), b.distanceToSqr(lockCenter)));
+            for (LivingEntity target : nearby) {
+                if (targets.size() >= maxTargets) break;
+                targets.add(target);
+            }
+        } else {
+            AABB searchArea = new AABB(eyePos, eyePos.add(forward.scale(range))).inflate(2.5);
+            double cosAngle = Math.cos(Math.toRadians(28));
+            List<LivingEntity> nearby = world.getEntitiesOfClass(LivingEntity.class, searchArea,
+                    entity -> {
+                        if (entity == player || !entity.isAlive()) return false;
+                        Vec3 toEntity = entity.getBoundingBox().getCenter().subtract(eyePos);
+                        double dist = toEntity.length();
+                        if (dist < 0.5 || dist > range) return false;
+                        return forward.dot(toEntity.normalize()) >= cosAngle;
+                    });
+            nearby.sort((a, b) -> Double.compare(a.distanceToSqr(player), b.distanceToSqr(player)));
+            for (LivingEntity target : nearby) {
+                if (targets.size() >= maxTargets) break;
+                targets.add(target);
+            }
+        }
+
+        DustParticleOptions soulDust = new DustParticleOptions(
+                new Vector3f(0.35f, 0.9f, 1.0f), 1.05f);
+        DustParticleOptions paleDust = new DustParticleOptions(
+                new Vector3f(0.88f, 1.0f, 1.0f), 0.75f);
+        DustParticleOptions graveDust = new DustParticleOptions(
+                new Vector3f(0.08f, 0.16f, 0.28f), 1.0f);
+
+        if (world instanceof ServerLevel serverLevel) {
+            drawSoulRiteCircle(serverLevel, playerPos.add(0, 0.06, 0), 1.7, soulDust, paleDust, graveDust);
+            drawSoulRiteCircle(serverLevel, riteCenter, targets.isEmpty() ? 1.4 : 2.2, soulDust, paleDust, graveDust);
+
+            serverLevel.sendParticles(ParticleTypes.SOUL,
+                    eyePos.x, eyePos.y - 0.2, eyePos.z,
+                    12, 0.25, 0.25, 0.25, 0.03);
+            serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                    riteCenter.x, riteCenter.y + 0.6, riteCenter.z,
+                    18, 0.45, 0.7, 0.45, 0.04);
+
+            if (targets.isEmpty()) {
+                Vec3 right = getRightVector(forward);
+                drawSoulThread(serverLevel, eyePos, riteCenter.add(0, 1.2, 0), soulDust, paleDust, false);
+                drawSoulBlade(serverLevel, riteCenter.add(0, 3.2, 0), 2.4, right, soulDust, paleDust, graveDust);
+            }
+        }
+
+        float chargeScale = 0.75f + chargePercent * 0.5f;
+        float baseDamage = (2.2f + elementLevel * 0.34f) * chargeScale;
+        float delayedDamage = (3.8f + elementLevel * 0.5f) * chargeScale;
+        int hitCount = 0;
+
+        for (LivingEntity target : targets) {
+            Vec3 targetCenter = target.getBoundingBox().getCenter();
+            target.invulnerableTime = 0;
+            if (hurtElementally(player, target, ElementType.SOUL, elementLevel, baseDamage)) {
+                hitCount++;
+            }
+            the_four_primitives_and_weapons.damage.SoulFireHandler
+                    .markSoulSource(target, 100 + elementLevel * 8);
+
+            Vec3 pull = playerPos.add(0, 0.5, 0).subtract(target.position());
+            if (pull.lengthSqr() > 0.001) {
+                Vec3 pullDir = pull.normalize();
+                target.setDeltaMovement(target.getDeltaMovement().add(
+                        pullDir.x * 0.16, 0.05, pullDir.z * 0.16));
+            }
+
+            if (world instanceof ServerLevel serverLevel) {
+                Vec3 right = getRightVector(forward);
+                drawSoulRiteCircle(serverLevel, target.position().add(0, 0.06, 0),
+                        1.2 + Math.min(elementLevel, 8) * 0.05, soulDust, paleDust, graveDust);
+                drawSoulThread(serverLevel, eyePos, targetCenter, soulDust, paleDust, false);
+                drawSoulBlade(serverLevel, targetCenter.add(0, 3.1, 0), 2.2, right, soulDust, paleDust, graveDust);
+
+                serverLevel.sendParticles(ParticleTypes.SCULK_SOUL,
+                        target.getX(), target.getY() + target.getBbHeight() * 0.55, target.getZ(),
+                        6, 0.18, 0.35, 0.18, 0.025);
+                serverLevel.sendParticles(ParticleTypes.SOUL,
+                        target.getX(), target.getY() + target.getBbHeight() * 0.55, target.getZ(),
+                        6, 0.18, 0.32, 0.18, 0.025);
+
+                activeSoulRiteStrikes.add(new SoulRiteStrike(serverLevel, player.getUUID(),
+                        target.getUUID(), targetCenter, elementLevel, delayedDamage, right));
+            }
+        }
+
+        if (hitCount > 0) {
+            player.heal(Math.min(4.0f, 0.5f + hitCount * 0.45f + elementLevel * 0.05f));
+        }
+
+        if (world instanceof Level level) {
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.SOUL_ESCAPE, SoundSource.PLAYERS, 1.25f, 0.55f);
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.SCULK_BLOCK_BREAK, SoundSource.PLAYERS, 0.95f, 0.75f);
+        }
+    }
+
+    /**
+     * SoulFireBookItem - 燐火連斬
+     * 青白い魂の炎をまとった三連斬で、前方の敵を Soul Fire と同じ炎上状態にする。
+     */
+    private static void executeSoulFireAttack(LevelAccessor world, double x, double y, double z,
+                                              Player player, float chargePercent, int elementLevel) {
+        Vec3 eyePos = player.getEyePosition();
+        Vec3 forward = player.getLookAngle().normalize();
+        Vec3 worldUp = new Vec3(0, 1, 0);
+        if (Math.abs(forward.y) > 0.98) {
+            worldUp = new Vec3(0, 0, 1);
+        }
+        Vec3 right = forward.cross(worldUp).normalize();
+        Vec3 up = right.cross(forward).normalize();
+        double range = 8.0 + Math.min(elementLevel, 10) * 0.4;
+        double slashWidth = 2.8 + Math.min(elementLevel, 10) * 0.12;
+
+        DustParticleOptions blueWhite = new DustParticleOptions(
+                new Vector3f(0.75f, 1.0f, 1.0f), 1.0f);
+        DustParticleOptions cyanCore = new DustParticleOptions(
+                new Vector3f(0.25f, 0.9f, 1.0f), 1.2f);
+
+        if (world instanceof ServerLevel serverLevel) {
+            for (int slash = 0; slash < 3; slash++) {
+                double sideFlip = slash == 1 ? -1.0 : 1.0;
+                double verticalBias = (slash - 1) * 0.22;
+                for (double d = 0.7; d <= range; d += 0.28) {
+                    double t = d / range;
+                    double arc = (t - 0.5) * slashWidth * sideFlip;
+                    double lift = Math.sin(t * Math.PI) * 0.8 + verticalBias;
+                    Vec3 pos = eyePos
+                            .add(forward.scale(d))
+                            .add(right.scale(arc))
+                            .add(up.scale(lift));
+                    serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
+                            pos.x, pos.y, pos.z, 1, 0.02, 0.02, 0.02, 0.01);
+                    if (((int) (d * 10)) % 3 == 0) {
+                        serverLevel.sendParticles(cyanCore,
+                                pos.x, pos.y, pos.z, 1, 0.02, 0.02, 0.02, 0.0);
+                    }
+                    if (((int) (d * 10)) % 5 == 0) {
+                        serverLevel.sendParticles(ParticleTypes.SOUL,
+                                pos.x, pos.y, pos.z, 1, 0.03, 0.03, 0.03, 0.02);
+                    }
+                }
+            }
+            serverLevel.sendParticles(ParticleTypes.FLASH,
+                    eyePos.x + forward.x * 1.5, eyePos.y + forward.y * 1.5, eyePos.z + forward.z * 1.5,
+                    1, 0, 0, 0, 0);
+        }
+
+        AABB searchArea = new AABB(eyePos, eyePos.add(forward.scale(range))).inflate(slashWidth + 1.0);
+        List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
+                entity -> {
+                    if (entity == player || !entity.isAlive()) return false;
+                    Vec3 center = entity.getBoundingBox().getCenter();
+                    Vec3 toEntity = center.subtract(eyePos);
+                    double along = toEntity.dot(forward);
+                    if (along < 0.4 || along > range) return false;
+                    Vec3 closest = eyePos.add(forward.scale(along));
+                    double perpendicular = center.distanceTo(closest);
+                    return perpendicular <= slashWidth + 0.7;
+                });
+
+        float chargeScale = 0.7f + chargePercent * 0.45f;
+        float hitDamage = (1.15f + elementLevel * 0.18f) * chargeScale;
+        int soulFireTicks = 80 + elementLevel * 18;
+
+        for (LivingEntity target : targets) {
+            for (int hit = 0; hit < 3; hit++) {
+                target.invulnerableTime = 0;
+                hurtElementally(player, target, ElementType.SOUL_FIRE, elementLevel, hitDamage);
+            }
+            the_four_primitives_and_weapons.damage.SoulFireHandler.setSoulFire(target, soulFireTicks);
+
+            target.setDeltaMovement(target.getDeltaMovement().add(
+                    forward.x * 0.22, 0.08, forward.z * 0.22));
+
+            if (world instanceof ServerLevel serverLevel) {
+                Vec3 center = target.getBoundingBox().getCenter();
+                drawSoulThread(serverLevel, eyePos, center, cyanCore, blueWhite, true);
+                serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
+                        target.getX(), target.getY() + target.getBbHeight() * 0.55, target.getZ(),
+                        24, 0.3, 0.45, 0.3, 0.05);
+                serverLevel.sendParticles(blueWhite,
+                        target.getX(), target.getY() + target.getBbHeight() * 0.55, target.getZ(),
+                        10, 0.2, 0.3, 0.2, 0.01);
+            }
+        }
+
+        if (world instanceof Level level) {
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1.2f, 1.4f);
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.SOUL_ESCAPE, SoundSource.PLAYERS, 1.0f, 1.25f);
+        }
+    }
+
+    private static boolean hurtElementally(Player player, LivingEntity target,
+                                           ElementType elementType, int elementLevel, float damage) {
+        if (damage <= 0.0f) return false;
+        if (the_four_primitives_and_weapons.damage.ElementalDamageUtils
+                .isElementNullifiedByBook(target, elementType)) {
+            if (target instanceof Player targetPlayer) {
+                targetPlayer.displayClientMessage(Component.literal("§b").append(
+                        Component.translatable("difficulty.the_four_primitives_and_weapons.nullify",
+                                elementType.getName())), true);
+            }
+            target.level().playSound(null, target.getX(), target.getY(), target.getZ(),
+                    SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1.0f, 1.5f);
+            return false;
+        }
+
+        DamageSource source = ModDamageSources.ofElement(player.level(), elementType, player);
+        if (source instanceof the_four_primitives_and_weapons.damage.IElementalDamageSource elementalSource) {
+            elementalSource.setElementType(elementType);
+            elementalSource.setElementLevel(Math.max(1, elementLevel));
+        }
+        return target.hurt(source, damage);
+    }
+
+    private static Vec3 getRightVector(Vec3 forward) {
+        Vec3 worldUp = new Vec3(0, 1, 0);
+        if (Math.abs(forward.normalize().y) > 0.98) {
+            worldUp = new Vec3(0, 0, 1);
+        }
+        Vec3 right = forward.cross(worldUp);
+        if (right.lengthSqr() < 0.001) {
+            return new Vec3(1, 0, 0);
+        }
+        return right.normalize();
+    }
+
+    private static void drawSoulRiteCircle(ServerLevel serverLevel, Vec3 center, double radius,
+                                           DustParticleOptions mainDust,
+                                           DustParticleOptions paleDust,
+                                           DustParticleOptions graveDust) {
+        for (int deg = 0; deg < 360; deg += 12) {
+            double rad = Math.toRadians(deg);
+            double x = center.x + Math.cos(rad) * radius;
+            double z = center.z + Math.sin(rad) * radius;
+            serverLevel.sendParticles(mainDust, x, center.y, z, 1, 0.0, 0.02, 0.0, 0.0);
+            if ((deg % 36) == 0) {
+                serverLevel.sendParticles(paleDust, x, center.y + 0.02, z, 1, 0.0, 0.02, 0.0, 0.0);
+            }
+        }
+        for (int deg = 18; deg < 360; deg += 72) {
+            double rad = Math.toRadians(deg);
+            double x = center.x + Math.cos(rad) * radius * 0.62;
+            double z = center.z + Math.sin(rad) * radius * 0.62;
+            serverLevel.sendParticles(graveDust, x, center.y + 0.05, z, 2, 0.03, 0.01, 0.03, 0.0);
+            serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL, x, center.y + 0.2, z,
+                    1, 0.02, 0.12, 0.02, 0.015);
+        }
+    }
+
+    private static void drawSoulBlade(ServerLevel serverLevel, Vec3 hilt, double length, Vec3 right,
+                                      DustParticleOptions coreDust,
+                                      DustParticleOptions edgeDust,
+                                      DustParticleOptions graveDust) {
+        Vec3 tip = hilt.subtract(0, length, 0);
+        int bladeSteps = Math.max(6, (int) Math.ceil(length * 7.0));
+        for (int i = 0; i <= bladeSteps; i++) {
+            double t = i / (double) bladeSteps;
+            Vec3 pos = hilt.lerp(tip, t);
+            serverLevel.sendParticles(coreDust, pos.x, pos.y, pos.z, 1, 0.015, 0.015, 0.015, 0.0);
+            if ((i % 2) == 0) {
+                serverLevel.sendParticles(edgeDust,
+                        pos.x + right.x * 0.05, pos.y, pos.z + right.z * 0.05,
+                        1, 0.01, 0.01, 0.01, 0.0);
+            }
+        }
+
+        Vec3 guard = hilt.subtract(0, length * 0.18, 0);
+        for (double s = -0.55; s <= 0.55; s += 0.18) {
+            Vec3 pos = guard.add(right.scale(s));
+            serverLevel.sendParticles(graveDust, pos.x, pos.y, pos.z, 1, 0.01, 0.01, 0.01, 0.0);
+        }
+        serverLevel.sendParticles(ParticleTypes.END_ROD,
+                tip.x, tip.y, tip.z, 1, 0.02, 0.02, 0.02, 0.0);
+    }
+
+    private static void drawSoulThread(ServerLevel serverLevel, Vec3 start, Vec3 end,
+                                       DustParticleOptions mainDust,
+                                       DustParticleOptions paleDust,
+                                       boolean soulFire) {
+        double distance = start.distanceTo(end);
+        int steps = Math.max(2, (int) Math.ceil(distance * 4.0));
+        Vec3 step = end.subtract(start).scale(1.0 / steps);
+        for (int i = 0; i <= steps; i++) {
+            Vec3 pos = start.add(step.scale(i));
+            serverLevel.sendParticles(mainDust,
+                    pos.x, pos.y, pos.z, 1, 0.02, 0.02, 0.02, 0.0);
+            if ((i % 3) == 0) {
+                serverLevel.sendParticles(paleDust,
+                        pos.x, pos.y, pos.z, 1, 0.015, 0.015, 0.015, 0.0);
+            }
+            if (soulFire && (i % 4) == 0) {
+                serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
+                        pos.x, pos.y, pos.z, 1, 0.02, 0.02, 0.02, 0.01);
+            } else if (!soulFire && (i % 5) == 0) {
+                serverLevel.sendParticles(ParticleTypes.SOUL,
+                        pos.x, pos.y, pos.z, 1, 0.02, 0.02, 0.02, 0.01);
+            }
+        }
+    }
+
+    /**
      * デフォルトの魔法攻撃
      */
     private static void executeDefaultMagicAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent) {
@@ -1501,6 +1850,87 @@ public class MagicKatanaSpecialChargeProcedure {
     // 侵食技 ( 髭根 ) の 徐々に伸びる アニメーション state + tick
     // ─────────────────────────────────────────────────────────────
 
+    private static final java.util.List<SoulRiteStrike> activeSoulRiteStrikes
+            = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** 魂技の遅延ヒット。対象上空に霊刃を形成してから落とす。 */
+    private static final class SoulRiteStrike {
+        static final int STRIKE_TICK = 8;
+        final ServerLevel level;
+        final java.util.UUID ownerId;
+        final java.util.UUID targetId;
+        final Vec3 fallbackCenter;
+        final int elementLevel;
+        final float damage;
+        final Vec3 right;
+        int age = 0;
+
+        SoulRiteStrike(ServerLevel level, java.util.UUID ownerId, java.util.UUID targetId,
+                       Vec3 fallbackCenter, int elementLevel, float damage, Vec3 right) {
+            this.level = level;
+            this.ownerId = ownerId;
+            this.targetId = targetId;
+            this.fallbackCenter = fallbackCenter;
+            this.elementLevel = elementLevel;
+            this.damage = damage;
+            this.right = right;
+        }
+
+        boolean tickAdvance() {
+            age++;
+
+            Entity targetEntity = level.getEntity(targetId);
+            LivingEntity target = targetEntity instanceof LivingEntity living && living.isAlive()
+                    ? living : null;
+            Vec3 center = target != null ? target.getBoundingBox().getCenter() : fallbackCenter;
+
+            DustParticleOptions core = new DustParticleOptions(
+                    new Vector3f(0.38f, 0.9f, 1.0f), 1.0f);
+            DustParticleOptions pale = new DustParticleOptions(
+                    new Vector3f(0.9f, 1.0f, 1.0f), 0.75f);
+            DustParticleOptions grave = new DustParticleOptions(
+                    new Vector3f(0.08f, 0.14f, 0.26f), 1.0f);
+
+            Vec3 ground = new Vec3(center.x, center.y - 0.9, center.z);
+            drawSoulRiteCircle(level, ground, 1.25, core, pale, grave);
+
+            if (age <= STRIKE_TICK) {
+                double hover = 4.1 - age * 0.16;
+                drawSoulBlade(level, center.add(0, hover, 0), 2.35, right, core, pale, grave);
+                if ((age % 2) == 0) {
+                    level.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                            center.x, center.y + 1.5, center.z,
+                            4, 0.22, 0.7, 0.22, 0.025);
+                }
+                return false;
+            }
+
+            if (age == STRIKE_TICK + 1) {
+                drawSoulBlade(level, center.add(0, 2.1, 0), 3.05, right, core, pale, grave);
+                level.sendParticles(ParticleTypes.FLASH, center.x, center.y + 0.4, center.z,
+                        1, 0, 0, 0, 0);
+                level.sendParticles(ParticleTypes.SCULK_SOUL, center.x, center.y + 0.3, center.z,
+                        14, 0.3, 0.45, 0.3, 0.05);
+                level.sendParticles(ParticleTypes.END_ROD, center.x, center.y + 0.8, center.z,
+                        8, 0.2, 0.45, 0.2, 0.02);
+
+                Entity ownerEntity = level.getPlayerByUUID(ownerId);
+                if (ownerEntity instanceof Player owner && target != null) {
+                    target.invulnerableTime = 0;
+                    hurtElementally(owner, target, ElementType.SOUL, elementLevel, damage);
+                    target.setDeltaMovement(target.getDeltaMovement().add(0.0, -0.18, 0.0));
+                }
+
+                level.playSound(null, center.x, center.y, center.z,
+                        SoundEvents.SOUL_ESCAPE, SoundSource.PLAYERS, 1.0f, 0.45f);
+                level.playSound(null, center.x, center.y, center.z,
+                        SoundEvents.SCULK_BLOCK_BREAK, SoundSource.PLAYERS, 1.0f, 0.65f);
+            }
+
+            return age > STRIKE_TICK + 4 || target == null;
+        }
+    }
+
     private static final java.util.List<CorrosionGrowth> activeGrowths
             = new java.util.concurrent.CopyOnWriteArrayList<>();
 
@@ -1549,14 +1979,22 @@ public class MagicKatanaSpecialChargeProcedure {
         @net.minecraftforge.eventbus.api.SubscribeEvent
         public static void onServerTick(net.minecraftforge.event.TickEvent.ServerTickEvent event) {
             if (event.phase != net.minecraftforge.event.TickEvent.Phase.END) return;
-            if (activeGrowths.isEmpty()) return;
-            java.util.Iterator<CorrosionGrowth> it = activeGrowths.iterator();
-            java.util.List<CorrosionGrowth> done = new java.util.ArrayList<>();
-            while (it.hasNext()) {
-                CorrosionGrowth g = it.next();
-                if (g.tickAdvance()) done.add(g);
+            if (!activeSoulRiteStrikes.isEmpty()) {
+                java.util.List<SoulRiteStrike> done = new java.util.ArrayList<>();
+                for (SoulRiteStrike strike : activeSoulRiteStrikes) {
+                    if (strike.tickAdvance()) done.add(strike);
+                }
+                if (!done.isEmpty()) activeSoulRiteStrikes.removeAll(done);
             }
-            if (!done.isEmpty()) activeGrowths.removeAll(done);
+            if (!activeGrowths.isEmpty()) {
+                java.util.Iterator<CorrosionGrowth> it = activeGrowths.iterator();
+                java.util.List<CorrosionGrowth> done = new java.util.ArrayList<>();
+                while (it.hasNext()) {
+                    CorrosionGrowth g = it.next();
+                    if (g.tickAdvance()) done.add(g);
+                }
+                if (!done.isEmpty()) activeGrowths.removeAll(done);
+            }
         }
     }
 

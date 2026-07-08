@@ -70,33 +70,43 @@ public class SoulFireHandler {
 		UUID id = entity.getUUID();
 		long now = entity.level().getGameTime();
 
-		if (!entity.isOnFire()) {
-			// 燃えていない: 状態をクリアし、必要なら false を送る。
-			SOUL_UNTIL.remove(id);
-			Boolean was = LAST_SYNCED.remove(id);
-			if (Boolean.TRUE.equals(was)) {
-				sync(entity, false);
-			}
+		// 燃えている / 燃えかけている / 既に魂として追跡中のエンティティだけを処理する
+		// (全 LivingEntity で毎 tick ブロック走査しないための安価なゲート)。
+		// isOnFire() ではなく remainingFireTicks も見るのは、着火直後は共有フラグの反映が
+		// 1〜数 tick 遅れて揺れるため。 ここで弾いてしまうと standingInSoulFire に到達せず、
+		// 「着火した瞬間だけオレンジ、炎が安定してから青」というちらつきが出る。
+		boolean burning = entity.isOnFire() || entity.getRemainingFireTicks() > 0;
+		if (!burning && !SOUL_UNTIL.containsKey(id) && !LAST_SYNCED.containsKey(id)) {
 			return;
 		}
 
-		// バニラの Soul Fire ブロックで燃えている間は、残り炎時間ぶん魂扱いを延長する
-		// (ブロックから離れても残り火が青いままになるように)。
+		// バニラの Soul Fire ブロック / 点火中 Soul Campfire の上にいる間は、残り炎時間ぶん
+		// 魂扱いを延長する (ブロックから離れても残り火が青いままになるように)。
+		// 炎フラグを待たずにブロック接触の時点で soul=true を確定させることで、炎オーバーレイが
+		// 描画される瞬間には既に青が確定している。
 		if (standingInSoulFire(entity)) {
-			long until = now + entity.getRemainingFireTicks() + 5L;
+			long until = now + Math.max(entity.getRemainingFireTicks(), 1) + 5L;
 			SOUL_UNTIL.merge(id, until, Math::max);
 		}
 
 		Long until = SOUL_UNTIL.get(id);
 		boolean isSoul = until != null && now <= until;
-		if (until != null && now > until) {
+		if (until != null && !isSoul) {
 			SOUL_UNTIL.remove(id);
 		}
 
+		// soul=true は isOnFire() に依存せず送る (炎が無ければクライアントでは何も描かれず無害)。
+		// false は魂ウィンドウが切れたときに送る。 炎が消えた場合もウィンドウ(残り炎時間+5)が
+		// ほどなく切れて false が飛ぶため、クライアントの isOnFire 遅延に左右されない。
 		Boolean prev = LAST_SYNCED.get(id);
-		if (prev == null || prev.booleanValue() != isSoul) {
-			LAST_SYNCED.put(id, isSoul);
-			sync(entity, isSoul);
+		if (isSoul) {
+			if (!Boolean.TRUE.equals(prev)) {
+				LAST_SYNCED.put(id, Boolean.TRUE);
+				sync(entity, true);
+			}
+		} else if (Boolean.TRUE.equals(prev)) {
+			LAST_SYNCED.remove(id);
+			sync(entity, false);
 		}
 	}
 

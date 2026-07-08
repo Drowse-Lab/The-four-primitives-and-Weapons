@@ -1,7 +1,5 @@
 package the_four_primitives_and_weapons.damage;
 
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -24,14 +22,19 @@ public class SoulElementDamageHandler {
                                          ItemStack weapon,
                                          float baseDmg) {
         int level = ElementalDamageUtils.getElementLevel(weapon);
-        float damage = calculateDamage(target, baseDmg, level);
+        float damage = calculateDamage(attacker, target, baseDmg, level);
         applySoulDamage(target, Math.max(0.0f, damage - baseDmg), attacker, level);
         return damage;
     }
 
     public static float calculateDamage(LivingEntity target, float originalDamage, int elementLevel) {
+        return calculateDamage(null, target, originalDamage, elementLevel);
+    }
+
+    public static float calculateDamage(LivingEntity attacker, LivingEntity target,
+                                        float originalDamage, int elementLevel) {
         int level = Math.max(1, elementLevel);
-        spawnSoulParticles(target, level);
+        SoulEdgeEffect.play(target, attacker, level);
 
         float maxHealth = Math.max(1.0f, target.getMaxHealth());
         float missingHealthRate = Math.max(0.0f, Math.min(1.0f, 1.0f - target.getHealth() / maxHealth));
@@ -50,18 +53,5 @@ public class SoulElementDamageHandler {
             elementalSource.setElementLevel(level);
         }
         target.hurt(ds, damage);
-    }
-
-    private static void spawnSoulParticles(LivingEntity target, int level) {
-        if (!(target.level() instanceof ServerLevel serverLevel)) return;
-
-        double mid = target.getY() + target.getBbHeight() * 0.55;
-        int count = Math.min(18, 5 + Math.max(1, level));
-        serverLevel.sendParticles(ParticleTypes.SOUL,
-                target.getX(), mid, target.getZ(),
-                count, 0.3, 0.45, 0.3, 0.03);
-        serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
-                target.getX(), mid, target.getZ(),
-                Math.max(2, count / 3), 0.22, 0.35, 0.22, 0.02);
     }
 }
