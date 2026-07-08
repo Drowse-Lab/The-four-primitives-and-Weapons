@@ -425,11 +425,22 @@ public class ElementalCarryDebuffHandler {
             state.cursed = true;
         }
 
+        if (ElementalDamageUtils.isOneToOneFireSoul(stack)) {
+            state.addElement(ElementType.SOUL_FIRE, Math.max(1, ElementalDamageUtils.getEffectiveElementLevel(stack)));
+            return;
+        }
+
         ElementType type = ElementalDamageUtils.getElementType(stack);
         if (type == ElementType.NONE) return;
 
         int level = Math.max(1, ElementalDamageUtils.getElementLevel(stack));
         state.addElement(type, level);
+
+        ElementType secondaryType = ElementalDamageUtils.getSecondaryElementType(stack);
+        if (secondaryType != ElementType.NONE) {
+            int secondaryLevel = Math.max(1, ElementalDamageUtils.getSecondaryElementLevel(stack));
+            state.addElement(secondaryType, secondaryLevel);
+        }
     }
 
     private static boolean hasCursedFeyn(ItemStack stack) {

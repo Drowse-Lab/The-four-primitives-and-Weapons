@@ -134,7 +134,8 @@ if (ElementalDamageUtils.hasElement(weapon)) {
 - `the_four_primitives_and_weapons:soul` の専用DamageTypeを使用
 
 #### 燐火属性
-- 炎 + 魂の合成属性
+- 炎 + 魂が同じレベルで 1:1 になった時の合成表示属性
+- 合成後のNBTは `ElementType` / `ElementType2` に `fire` と `soul` を保持し、表示と実効処理だけが燐火になる
 - 基礎倍率: 1.08x
 - レベル倍率: +0.035x/レベル(最大+0.35x)
 - 対象の残り体力が少ないほど最大+0.25x追加
@@ -266,7 +267,8 @@ giveコマンドでNBT指定:
 
 ## 属性合成
 
-レアリティ強化台で中央アイテムと触媒枠のどちらかが `FIRE` + `SOUL` になると、出力は `SOUL_FIRE` (燐火) になります。
+レアリティ強化台で中央アイテムと触媒枠のどちらかが同レベルの `FIRE` + `SOUL` になると、出力は燐火として表示されます。
+内部NBTは `SOUL_FIRE` に置き換えず、`ElementType: fire`, `ElementLevel: N`, `ElementType2: soul`, `ElementLevel2: N` のように炎と魂を1:1で保持します。
 NBTで属性が付いた武器、魔導書、`book_elements.json` に登録されたaddon魔導書、`SoulBookItem` / `SoulFireBookItem` / `RinkaBookItem` クラス名のaddon本を判定します。
 
 アドオン装備は通常の attribute modifier でこれらの適性を付与できます。

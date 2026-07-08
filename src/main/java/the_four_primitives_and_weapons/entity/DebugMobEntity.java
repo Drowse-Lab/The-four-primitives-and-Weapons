@@ -76,8 +76,8 @@ public class DebugMobEntity extends PathfinderMob {
             // 属性ダメージ表示: 攻撃者の武器の属性をチェック
             ItemStack weapon = player.getMainHandItem();
             if (ElementalDamageUtils.hasElement(weapon)) {
-                ElementType elemType = ElementalDamageUtils.getElementType(weapon);
-                int elemLevel = ElementalDamageUtils.getElementLevel(weapon);
+                ElementType elemType = ElementalDamageUtils.getEffectiveElementType(weapon);
+                int elemLevel = ElementalDamageUtils.getEffectiveElementLevel(weapon);
                 String elemColor = getElementColor(elemType);
                 player.displayClientMessage(Component.literal(
                     String.format("§a[Debug] §f属性: %s%s Lv.%d §7(武器NBT)",

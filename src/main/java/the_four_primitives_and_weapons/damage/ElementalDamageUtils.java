@@ -15,6 +15,8 @@ public class ElementalDamageUtils {
     // NBTタグのキー
     private static final String ELEMENT_TYPE_KEY  = "ElementType";
     private static final String ELEMENT_LEVEL_KEY = "ElementLevel";
+    private static final String ELEMENT_TYPE_2_KEY  = "ElementType2";
+    private static final String ELEMENT_LEVEL_2_KEY = "ElementLevel2";
 
     /**
      * アイテムに属性を設定
@@ -27,6 +29,8 @@ public class ElementalDamageUtils {
         CompoundTag tag = stack.getOrCreateTag();
         tag.putString(ELEMENT_TYPE_KEY, elementType.getName());
         tag.putInt(ELEMENT_LEVEL_KEY, level);
+        tag.remove(ELEMENT_TYPE_2_KEY);
+        tag.remove(ELEMENT_LEVEL_2_KEY);
         // Magical Katana 特殊技解放 — CORROSION Lv>=12 セット時に自動 unlock
         // ( MagicalKatanaCrystalHandler を直接参照しないため key 文字列を直書き )
         if (elementType == ElementType.CORROSION && level >= 12) {
@@ -58,6 +62,62 @@ public class ElementalDamageUtils {
         return tag.getInt(ELEMENT_LEVEL_KEY);
     }
 
+    public static void setElementPair(ItemStack stack, ElementType primary, int primaryLevel,
+                                      ElementType secondary, int secondaryLevel) {
+        if (stack.isEmpty()) return;
+        if (primary == null || secondary == null
+                || primary == ElementType.NONE || secondary == ElementType.NONE) {
+            removeElement(stack);
+            return;
+        }
+        CompoundTag tag = stack.getOrCreateTag();
+        tag.putString(ELEMENT_TYPE_KEY, primary.getName());
+        tag.putInt(ELEMENT_LEVEL_KEY, Math.max(1, primaryLevel));
+        tag.putString(ELEMENT_TYPE_2_KEY, secondary.getName());
+        tag.putInt(ELEMENT_LEVEL_2_KEY, Math.max(1, secondaryLevel));
+    }
+
+    public static ElementType getSecondaryElementType(ItemStack stack) {
+        if (stack.isEmpty()) return ElementType.NONE;
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains(ELEMENT_TYPE_2_KEY)) return ElementType.NONE;
+        return ElementType.fromString(tag.getString(ELEMENT_TYPE_2_KEY));
+    }
+
+    public static int getSecondaryElementLevel(ItemStack stack) {
+        if (stack.isEmpty()) return 0;
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains(ELEMENT_LEVEL_2_KEY)) return 0;
+        return tag.getInt(ELEMENT_LEVEL_2_KEY);
+    }
+
+    public static boolean hasSecondaryElement(ItemStack stack) {
+        return getSecondaryElementType(stack) != ElementType.NONE;
+    }
+
+    public static boolean isOneToOneFireSoul(ItemStack stack) {
+        ElementType primary = getElementType(stack);
+        ElementType secondary = getSecondaryElementType(stack);
+        int primaryLevel = getElementLevel(stack);
+        int secondaryLevel = getSecondaryElementLevel(stack);
+        return isFireSoulPair(primary, secondary) && primaryLevel > 0 && primaryLevel == secondaryLevel;
+    }
+
+    public static ElementType getEffectiveElementType(ItemStack stack) {
+        if (isOneToOneFireSoul(stack)) return ElementType.SOUL_FIRE;
+        return getElementType(stack);
+    }
+
+    public static int getEffectiveElementLevel(ItemStack stack) {
+        if (isOneToOneFireSoul(stack)) return getElementLevel(stack);
+        return getElementLevel(stack);
+    }
+
+    private static boolean isFireSoulPair(ElementType left, ElementType right) {
+        return (left == ElementType.FIRE && right == ElementType.SOUL)
+                || (left == ElementType.SOUL && right == ElementType.FIRE);
+    }
+
     /**
      * アイテムに属性があるかチェック
      * @param stack アイテムスタック
@@ -77,6 +137,8 @@ public class ElementalDamageUtils {
         if (tag != null) {
             tag.remove(ELEMENT_TYPE_KEY);
             tag.remove(ELEMENT_LEVEL_KEY);
+            tag.remove(ELEMENT_TYPE_2_KEY);
+            tag.remove(ELEMENT_LEVEL_2_KEY);
         }
     }
 
@@ -101,7 +163,7 @@ public class ElementalDamageUtils {
 
         if (!hasElement(weapon)) return baseDmg;
 
-        ElementType type = getElementType(weapon);
+        ElementType type = getEffectiveElementType(weapon);
 
         switch (type) {
             case ICE:

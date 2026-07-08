@@ -287,12 +287,19 @@ public final class RarityForgeCenterLogic {
         }
         if (fusion == ElementType.NONE || partner.isEmpty()) return ItemStack.EMPTY;
 
-        int lvl = Math.max(getStackElementLevel(center), getStackElementLevel(partner));
-        if (lvl <= 0) lvl = 1;
+        ElementType centerElement = getStackElement(center);
+        ElementType partnerElement = getStackElement(partner);
+        int centerLevel = getStackElementLevel(center);
+        int partnerLevel = getStackElementLevel(partner);
+        if (!isFireSoulPair(centerElement, partnerElement)
+                || centerLevel <= 0
+                || centerLevel != partnerLevel) {
+            return ItemStack.EMPTY;
+        }
 
         ItemStack out = center.copy();
         out.setCount(1);
-        ElementalDamageUtils.setElement(out, fusion, lvl);
+        ElementalDamageUtils.setElementPair(out, centerElement, centerLevel, partnerElement, partnerLevel);
         return out;
     }
 
@@ -300,7 +307,11 @@ public final class RarityForgeCenterLogic {
         if (a.isEmpty() || b.isEmpty()) return ElementType.NONE;
         ElementType left = getStackElement(a);
         ElementType right = getStackElement(b);
-        if (isFireSoulPair(left, right)) return ElementType.SOUL_FIRE;
+        int leftLevel = getStackElementLevel(a);
+        int rightLevel = getStackElementLevel(b);
+        if (isFireSoulPair(left, right) && leftLevel > 0 && leftLevel == rightLevel) {
+            return ElementType.SOUL_FIRE;
+        }
         return ElementType.NONE;
     }
 

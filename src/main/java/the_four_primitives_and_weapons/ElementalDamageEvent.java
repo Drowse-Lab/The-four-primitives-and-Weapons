@@ -75,8 +75,8 @@ public class ElementalDamageEvent {
         boolean fromBook = false;
 
         // 武器の属性を取得 (NBT 読み取りのみ、軽量)
-        ElementType weaponType = ElementalDamageUtils.getElementType(weapon);
-        int weaponLevel = ElementalDamageUtils.getElementLevel(weapon);
+        ElementType weaponType = ElementalDamageUtils.getEffectiveElementType(weapon);
+        int weaponLevel = ElementalDamageUtils.getEffectiveElementLevel(weapon);
 
         // 魔導書属性: 武器側で既に属性が確定しており、かつ本スロット不要な場合は
         // Curios 走査を完全スキップ。
@@ -389,7 +389,7 @@ public class ElementalDamageEvent {
 
         ItemStack targetWeapon = target.getMainHandItem();
         if (ElementalDamageUtils.hasElement(targetWeapon)) {
-            targetElement = ElementalDamageUtils.getElementType(targetWeapon);
+            targetElement = ElementalDamageUtils.getEffectiveElementType(targetWeapon);
         } else if (target instanceof Player targetPlayer) {
             // 旧 getBookSlotElement (Curios 単独走査) → 統合アクセサ
             targetElement = ElementalDamageUtils.getBookSlotInfo(targetPlayer).type;

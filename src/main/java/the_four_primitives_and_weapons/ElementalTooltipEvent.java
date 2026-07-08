@@ -27,8 +27,8 @@ public class ElementalTooltipEvent {
 
         // NBTタグから属性情報を取得
         if (ElementalDamageUtils.hasElement(stack)) {
-            ElementType type = ElementalDamageUtils.getElementType(stack);
-            int level = ElementalDamageUtils.getElementLevel(stack);
+            ElementType type = ElementalDamageUtils.getEffectiveElementType(stack);
+            int level = ElementalDamageUtils.getEffectiveElementLevel(stack);
 
             // 属性表示コンポーネントを作成
             String translationKey = getElementTranslationKey(type);

@@ -37,8 +37,8 @@ public class LivingEntityDamageMixin {
 
             // アイテムに属性が設定されているかチェック
             if (ElementalDamageUtils.hasElement(weapon)) {
-                ElementType elementType = ElementalDamageUtils.getElementType(weapon);
-                int elementLevel = ElementalDamageUtils.getElementLevel(weapon);
+                ElementType elementType = ElementalDamageUtils.getEffectiveElementType(weapon);
+                int elementLevel = ElementalDamageUtils.getEffectiveElementLevel(weapon);
 
                 // bookスロットの魔導書でカウンター属性を持っていれば無効化
                 if (ElementalDamageUtils.isElementNullifiedByBook(target, elementType)) {
