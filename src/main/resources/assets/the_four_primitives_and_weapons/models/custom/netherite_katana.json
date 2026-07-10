@@ -1,9 +1,9 @@
 {
   "format_version": "1.9.0",
   "credit": "Made with Blockbench",
-  "parent": "the_four_primitives_and_weapons:custom/weapon/katana/katana_b_parent",
+  "parent": "the_four_primitives_and_weapons:custom/weapon/katana/katana_a_parent",
   "textures": {
-    "1": "the_four_primitives_and_weapons:blade/katana/netherite_katana",
+    "0": "the_four_primitives_and_weapons:blade/katana/netherite_katana",
     "particle": "the_four_primitives_and_weapons:blade/katana/netherite_katana"
   }
 }
