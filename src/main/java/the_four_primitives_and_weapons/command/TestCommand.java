@@ -69,8 +69,9 @@ public class TestCommand {
     private static final List<String> TRAIT_NAMES = Arrays.stream(MobTrait.values())
         .map(t -> t.name().toLowerCase()).collect(Collectors.toList());
 
+    /** 補完候補。 NONE は「無属性」で付与できないため除外し、それ以外 (ERASURE 含む) は全て出す。 */
     private static final List<String> ELEMENT_NAMES = Arrays.stream(ElementType.values())
-        .filter(e -> e != ElementType.NONE && e != ElementType.ERASURE)
+        .filter(e -> e != ElementType.NONE)
         .map(ElementType::getName).collect(Collectors.toList());
 
     private static final List<String> DIFF_NAMES = Arrays.stream(CustomDifficulty.values())
@@ -360,7 +361,7 @@ public class TestCommand {
         int count = 0;
         String baseName;
         for (ElementType elem : ElementType.values()) {
-            if (elem == ElementType.NONE || elem == ElementType.ERASURE) continue;
+            if (elem == ElementType.NONE) continue;
             ItemStack stack;
             try {
                 stack = (itemInput != null)
@@ -524,7 +525,7 @@ public class TestCommand {
 
         int count = 0;
         for (ElementType elem : ElementType.values()) {
-            if (elem == ElementType.NONE || elem == ElementType.ERASURE) continue;
+            if (elem == ElementType.NONE) continue;
             net.minecraft.world.damagesource.DamageSource ds =
                 ModDamageSources.ofElement(target.level(), elem, source.getEntity());
             if (ds instanceof IElementalDamageSource elemSource) {
