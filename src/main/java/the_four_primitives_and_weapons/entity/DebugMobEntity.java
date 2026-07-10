@@ -60,32 +60,37 @@ public class DebugMobEntity extends PathfinderMob {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
+        // デバッグMobは無敵時間(ダメージクールダウン)を無視して、毎回フルに計測する。
+        this.invulnerableTime = 0;
+        float hpBefore = this.getHealth();
         boolean result = super.hurt(source, amount);
 
         if (!this.level().isClientSide && source.getEntity() instanceof Player player) {
             String damageType = source.type().msgId();
-            float currentHP = this.getHealth();
             float maxHP = this.getMaxHealth();
+            // 実際にHPが減った量 = 属性倍率・防具などを反映した「実ダメージ」。
+            float actualDamage = Math.max(0.0f, hpBefore - this.getHealth());
 
-            // 基本ダメージ表示
+            // 基本ダメージ表示: 実ダメージ (属性込み) と 入力ダメージ (素の値) の両方。
             player.displayClientMessage(Component.literal(
-                String.format("§a[Debug] §fダメージ: §c%.1f §7(種類: %s) §fHP: §e%.1f§7/§e%.0f",
-                    amount, damageType, currentHP, maxHP)
+                String.format("§a[Debug] §fダメージ: §c%.1f §7(入力: %.1f / 種類: %s) §fHP: §e%.1f§7/§e%.0f",
+                    actualDamage, amount, damageType, this.getHealth(), maxHP)
             ), false);
 
-            // 属性ダメージ表示: 攻撃者の武器の属性をチェック
+            // 属性ダメージ表示: 攻撃者の武器に属性があれば「属性分 = 実ダメージ − 入力」を出す。
             ItemStack weapon = player.getMainHandItem();
             if (ElementalDamageUtils.hasElement(weapon)) {
                 ElementType elemType = ElementalDamageUtils.getEffectiveElementType(weapon);
                 int elemLevel = ElementalDamageUtils.getEffectiveElementLevel(weapon);
                 String elemColor = getElementColor(elemType);
+                float elemBonus = actualDamage - amount;
                 player.displayClientMessage(Component.literal(
-                    String.format("§a[Debug] §f属性: %s%s Lv.%d §7(武器NBT)",
-                        elemColor, elemType.getName().toUpperCase(), elemLevel)
+                    String.format("§a[Debug] §f属性: %s%s Lv.%d §7属性分: §c%+.1f §7(実ダメージ %.1f)",
+                        elemColor, elemType.getName().toUpperCase(), elemLevel, elemBonus, actualDamage)
                 ), false);
             }
 
-            // DamageSource自体に属性が付いている場合（属性追加ダメージ等）
+            // DamageSource自体に属性が付いている場合（別枠の属性ダメージ hurt など）
             if (source instanceof IElementalDamageSource elemSource) {
                 ElementType srcType = elemSource.getElementType();
                 if (srcType != null && srcType != ElementType.NONE) {
@@ -93,7 +98,7 @@ public class DebugMobEntity extends PathfinderMob {
                     String srcColor = getElementColor(srcType);
                     player.displayClientMessage(Component.literal(
                         String.format("§a[Debug] §f属性DmgSrc: %s%s Lv.%d §c%.1fダメージ",
-                            srcColor, srcType.getName().toUpperCase(), srcLevel, amount)
+                            srcColor, srcType.getName().toUpperCase(), srcLevel, actualDamage)
                     ), false);
                 }
             }

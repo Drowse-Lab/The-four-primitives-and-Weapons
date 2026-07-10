@@ -120,6 +120,11 @@ public class SoulFireHandler {
 			if (!Boolean.TRUE.equals(prev)) {
 				LAST_SYNCED.put(id, Boolean.TRUE);
 				sync(entity, true);
+			} else if ((now & 15L) == 0L) {
+				// 保険の定期再送 (約 16 tick 毎)。 状態変化時の 1 回きりだと、ワールドに
+				// 入り直した瞬間などにクライアントのロードと競合して取りこぼされ、以後
+				// 再送されずオレンジのままになる。 魂が続く間は再送し続けて青へ復帰させる。
+				sync(entity, true);
 			}
 		} else if (Boolean.TRUE.equals(prev)) {
 			LAST_SYNCED.remove(id);
