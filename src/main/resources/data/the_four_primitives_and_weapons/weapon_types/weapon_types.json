@@ -159,7 +159,7 @@
       }
     },
     "small_sword": {
-      "display_name": "小剣",
+      "display_name": "短刀",
       "items": [
         "the_four_primitives_and_weapons:small_sword",
         "the_four_primitives_and_weapons:warabitetou"
