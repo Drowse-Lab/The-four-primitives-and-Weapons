@@ -44,7 +44,12 @@ public final class JsonThrustProcedure {
         Level world = player.level();
         if (world.isClientSide) return;
 
-        double range = cfg.range * (1.0 + chargePercent * 0.3); // チャージで少しだけ伸びる
+        // 突きの奥行き = thrust.range に、武器の attack_range ボーナス ( タイプ既定/item上書き ) を加算。
+        // これで attack_range を変えれば突きの長さも一緒に伸縮する。 最低 0.5 は確保。
+        // チャージでは範囲は伸ばさない ( チャージはダメージのみ強化 )。
+        double reachBonus = the_four_primitives_and_weapons.skill.WeaponStatsRegistry
+                .attackRangeBonus(player.getMainHandItem());
+        double range = Math.max(0.5, cfg.range + reachBonus);
 
         // 1ヒットのダメージ: JSON指定が無ければ武器の攻撃力
         float dmg = cfg.damage > 0f
@@ -128,12 +133,9 @@ public final class JsonThrustProcedure {
         world.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.6f, 1.45f + hitIndex * 0.12f);
         if (world instanceof ServerLevel sl) {
-            double side = (hitIndex % 2 == 0) ? -0.18 : 0.18;
-            Vec3 right = new Vec3(-look.z, 0, look.x).normalize();
-            for (double d = 0.5; d <= session.range; d += 0.35) {
-                Vec3 p = eye.add(look.scale(d));
-                p = p.add(right.scale(side * d));
-                sl.sendParticles(ParticleTypes.CRIT, p.x, p.y, p.z, 3, 0.03, 0.03, 0.03, 0.0);
+            // 全ての突き共通の見た目 ( 斜め切りと同じ dust 扇 )。 連撃なので初段のみ。
+            if (hitIndex == 0) {
+                the_four_primitives_and_weapons.skill.MotionExecutor.slashCloudFan(sl, player, look, player.position(), 0.0);
             }
             if (session.chargePercent >= 0.75f && session.doneHits >= session.totalHits) {
                 Vec3 p = eye.add(look.scale(session.range));

@@ -10,50 +10,67 @@
     "special":   "耐久0(無限), 特殊武器"
   },
 
+  "_comment_types": "武器タイプ別の既定値。 weapon_types.json の全タイプIDを列挙。 空 {} は未設定(=既定/item任せ)。 同じフィールドが weapons(item別)にあればそちらが優先。 設定可: attack_speed / attack_damage / damage_bonus / attack_range / durability / enchantability / thrust。 addon で新タイプを足したら、ここに \"<typeId>\": { ... } を1行足すだけでそのタイプ全アイテムに効く。",
+  "types": {
+    "katana":         { "attack_speed": -2.4 },
+    "rapier":         {},
+    "straight_sword": { "attack_speed": -2.4 },
+    "sword":          { "attack_speed": -2.4 },
+    "small_sword":    { "attack_speed": -2.4, "attack_range": -1.0 },
+    "nata":           { "attack_speed": -2.4 },
+    "greatsword":     { "attack_range": 1.5 },
+    "dagger":         { "attack_speed": -1.2, "attack_range": -2.0 },
+    "shield":         {},
+    "bow":            {},
+    "crossbow":       {},
+    "throwing":       {},
+    "trident":        {}
+  },
+
   "weapons": {
 
     "_comment_gold": "===== 金の剣相当 (耐久32, エンチャ22) =====",
-    "the_four_primitives_and_weapons:gold_katana":    { "durability": 32,  "enchantability": 22, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:gold_tyokuto":   { "durability": 32,  "enchantability": 22, "damage_bonus": 3, "attack_speed": -2.4 },
+    "the_four_primitives_and_weapons:gold_katana":    { "durability": 32,  "enchantability": 22, "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:gold_tyokuto":   { "durability": 32,  "enchantability": 22, "damage_bonus": 3 },
 
     "_comment_stone": "===== 石の剣相当 (耐久131, エンチャ5) =====",
-    "the_four_primitives_and_weapons:stone_katana":   { "durability": 131, "enchantability": 5,  "damage_bonus": 3, "attack_speed": -2.4 },
+    "the_four_primitives_and_weapons:stone_katana":   { "durability": 131, "enchantability": 5,  "damage_bonus": 3 },
 
     "_comment_iron": "===== 鉄の剣相当 (耐久250, エンチャ14) =====",
-    "the_four_primitives_and_weapons:iron_katana":          { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:reitou":               { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:iron_tyokuto":         { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "the_four_primitives_and_weapons:iron_katana":          { "durability": 250, "enchantability": 14, "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:reitou":               { "durability": 250, "enchantability": 14, "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:iron_tyokuto":         { "durability": 250, "enchantability": 14, "damage_bonus": 3 },
 
     "_comment_dagger": "===== ダガー: 低ダメージ・高速・短リーチ。thrust は JSON 突き技用の個別設定 =====",
     "_comment_dagger_keys": "attack_damage=総攻撃力 / attack_speed=攻撃速度(大きいほど速い) / attack_range=近接リーチ加算(マイナスで短い) / thrust=JSON突き技設定(range=奥行き, hits=連撃数, knockback, dash=踏込, damage=1ヒット;0で武器攻撃力)",
-    "the_four_primitives_and_weapons:iron_dagger":          { "durability": 200, "enchantability": 14, "attack_damage": 2.0, "attack_speed": -1.2, "attack_range": -1.0, "thrust": { "range": 2.5, "hits": 4, "knockback": 0.25, "dash": 0.45, "damage": 0 } },
-    "the_four_primitives_and_weapons:wither_katana":        { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:darkness_katana":      { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:magical_katana":       { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:magischesfeen_katana": { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "the_four_primitives_and_weapons:iron_dagger":          { "durability": 200, "enchantability": 14, "attack_damage": 2.0, "attack_range": -2.0, "thrust": { "range": 3.5, "hits": 4, "knockback": 0.25, "dash": 0.0, "damage": 0 } },
+    "the_four_primitives_and_weapons:wither_katana":        { "durability": 250, "enchantability": 14, "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:darkness_katana":      { "durability": 250, "enchantability": 14, "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:magical_katana":       { "durability": 250, "enchantability": 14, "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:magischesfeen_katana": { "durability": 250, "enchantability": 14, "damage_bonus": 3 },
     "the_four_primitives_and_weapons:ninjatou":             { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:machete":              { "durability": 250, "enchantability": 14, "damage_bonus": 1, "attack_speed": -2.4 },
+    "the_four_primitives_and_weapons:machete":              { "durability": 250, "enchantability": 14, "damage_bonus": 1 },
     "the_four_primitives_and_weapons:scythe":               { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:warabitetou":          { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
+    "the_four_primitives_and_weapons:warabitetou":          { "durability": 250, "enchantability": 14, "damage_bonus": 3 },
     "the_four_primitives_and_weapons:halloween_2023_10_31_sickle": { "durability": 250, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:replica_sword_of_light":      { "durability": 250, "enchantability": 14, "damage_bonus": 0, "attack_speed": -2.4 },
+    "the_four_primitives_and_weapons:replica_sword_of_light":      { "durability": 250, "enchantability": 14, "damage_bonus": 0 },
 
     "_comment_diamond": "===== ダイヤの剣相当 (耐久250, エンチャ10) =====",
-    "the_four_primitives_and_weapons:prototype_katana":   { "durability": 250, "enchantability": 10, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:my_test_iron_katana": { "durability": 250, "enchantability": 10, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:small_sword":        { "durability": 250, "enchantability": 10, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:katana_nigu_humerus": { "durability": 250, "enchantability": 10, "damage_bonus": 3, "attack_speed": -2.4 },
+    "the_four_primitives_and_weapons:prototype_katana":   { "durability": 250, "enchantability": 10, "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:my_test_iron_katana": { "durability": 250, "enchantability": 10, "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:small_sword":        { "durability": 250, "enchantability": 10, "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:katana_nigu_humerus": { "durability": 250, "enchantability": 10, "damage_bonus": 3 },
 
     "_comment_netherite": "===== ネザライトの剣相当 (耐久2031, エンチャ15) =====",
-    "the_four_primitives_and_weapons:netherite_katana": { "durability": 2031, "enchantability": 15, "damage_bonus": 3, "attack_speed": -2.4 },
+    "the_four_primitives_and_weapons:netherite_katana": { "durability": 2031, "enchantability": 15, "damage_bonus": 3 },
 
     "_comment_special": "===== 特殊武器 (耐久無限, 固有エンチャ適性) =====",
-    "the_four_primitives_and_weapons:sword_of_night":     { "durability": 0, "enchantability": 14, "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:rivers_of_blood":    { "durability": 0, "enchantability": 4,  "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:old_katana":         { "durability": 0, "enchantability": 2,  "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:luna":               { "durability": 0, "enchantability": 2,  "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:kurikaraken":        { "durability": 0, "enchantability": 9,  "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:kurikarakensword":   { "durability": 0, "enchantability": 9,  "damage_bonus": 3, "attack_speed": -2.4 },
-    "the_four_primitives_and_weapons:kurikarakenutigatana": { "durability": 0, "enchantability": 9, "damage_bonus": 3, "attack_speed": -2.4 }
+    "the_four_primitives_and_weapons:sword_of_night":     { "durability": 0, "enchantability": 14, "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:rivers_of_blood":    { "durability": 0, "enchantability": 4,  "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:old_katana":         { "durability": 0, "enchantability": 2,  "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:luna":               { "durability": 0, "enchantability": 2,  "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:kurikaraken":        { "durability": 0, "enchantability": 9,  "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:kurikarakensword":   { "durability": 0, "enchantability": 9,  "damage_bonus": 3 },
+    "the_four_primitives_and_weapons:kurikarakenutigatana": { "durability": 0, "enchantability": 9, "damage_bonus": 3 }
   }
 }

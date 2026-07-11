@@ -44,6 +44,9 @@ public class MotionExecutor {
             return;
         }
 
+        // スキル ( モーション ) に武器の属性パーティクルを載せる。 全スキル共通。
+        spawnMotionElementParticle(player);
+
         // クロスヘア Attack Cooldown ゲージをキャプチャしてスキル全体に damage scale を適用。
         // ゲージが満タン (1.0) なら 100%、空 (0.0) なら 20% のダメージ。
         // ※ 短時間で連続発動されるとゲージが 0 のままになるため、以前は resetAttackStrengthTicker
@@ -92,7 +95,18 @@ public class MotionExecutor {
             Vec3 playerPos = player.position();
 
             switch (motionId) {
-                case "thrust" -> the_four_primitives_and_weapons.procedures.TyokutouThrustAttackProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
+                case "thrust" -> {
+                    // weapon_stats に "thrust" 設定を持つ武器 ( ダガー等 ) は、通常突きも
+                    // 短reachのJSON突き ( thrust.range + attack_range ) を使う。
+                    // 持たない武器 ( 刀/直刀等 ) は従来の長reach突き。
+                    the_four_primitives_and_weapons.skill.WeaponStatsRegistry.WeaponStats st =
+                            the_four_primitives_and_weapons.skill.WeaponStatsRegistry.getStats(player.getMainHandItem());
+                    if (st != null && st.thrust != null) {
+                        the_four_primitives_and_weapons.procedures.JsonThrustProcedure.execute(player, chargePercent, st.thrust);
+                    } else {
+                        the_four_primitives_and_weapons.procedures.TyokutouThrustAttackProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
+                    }
+                }
                 case "upper_left_slash" -> performUpperLeftSlash(player, world, lookVec, playerPos, chargePercent);
                 case "upper_right_slash" -> performUpperRightSlash(player, world, lookVec, playerPos, chargePercent);
                 case "horizontal_slash" -> performHorizontalSlash(player, world, lookVec, playerPos, chargePercent);
@@ -124,6 +138,22 @@ public class MotionExecutor {
             if (dislikedContext) DamageCalculator.clearDislikedContext();
             DamageCalculator.clearCooldownScaleContext();
         }
+    }
+
+    /**
+     * スキル発動時に、武器に載った属性のパーティクルを前方へ弧状に出す。
+     * 通常攻撃だけでなくチャージ/ダッシュ/特殊など全スキルに属性色を乗せる。
+     */
+    private static void spawnMotionElementParticle(Player player) {
+        if (!(player.level() instanceof ServerLevel sl)) return;
+        the_four_primitives_and_weapons.damage.ElementType elem =
+                the_four_primitives_and_weapons.damage.ElementalDamageUtils.getEffectiveElementType(player.getMainHandItem());
+        if (elem == the_four_primitives_and_weapons.damage.ElementType.NONE) return;
+
+        // 前方に 1 回だけ属性色をまとめて出す ( パケット削減; 斬撃の弧の形は slashCloudFan が担当 )。
+        Vec3 look = player.getLookAngle();
+        Vec3 c = player.getEyePosition().add(look.scale(1.5)).subtract(0.0, 0.35, 0.0);
+        the_four_primitives_and_weapons.damage.ElementalParticles.spawn(sl, elem, c.x, c.y, c.z, 6);
     }
 
     // === 突き ===
@@ -465,7 +495,8 @@ public class MotionExecutor {
      * 前方3ブロックに 左/中/右 の3クラスタを斜めに配置し、 各50個の dust を横に広く散布。
      * @param tilt 斜め具合 ( 0=横一文字 / 負=左が高い(\) / 正=右が高い(/) )。 端の高さ差 = tilt。
      */
-    private static void slashCloudFan(ServerLevel sw, Player player, Vec3 look, Vec3 playerPos, double tilt) {
+    /** 斬撃/突き共通の 3クラスタ dust 扇。 全ての突きの見た目統一にも使う ( 突きは tilt=0 )。 */
+    public static void slashCloudFan(ServerLevel sw, Player player, Vec3 look, Vec3 playerPos, double tilt) {
         Vec3 right = new Vec3(-look.z, 0, look.x).normalize();
         // 武器の攻撃範囲 ( attack_range ) でパーティクルの広がりをスケール ( 範囲が広い武器ほど大きく )
         double bonus = the_four_primitives_and_weapons.skill.WeaponStatsRegistry.attackRangeBonus(player.getMainHandItem());

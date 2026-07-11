@@ -23,13 +23,29 @@ import java.util.*;
  * 耐久値とエンチャント適性はMixinで上書きする。
  */
 @Mod.EventBusSubscriber(modid = "the_four_primitives_and_weapons")
-public class WeaponStatsRegistry extends SimplePreparableReloadListener<Map<String, WeaponStatsRegistry.WeaponStats>> {
+public class WeaponStatsRegistry extends SimplePreparableReloadListener<WeaponStatsRegistry.Prepared> {
 
     private static final Gson GSON = new GsonBuilder().create();
     private static final WeaponStatsRegistry INSTANCE = new WeaponStatsRegistry();
 
-    // アイテムID → ステータス
+    // アイテムID → ステータス ( "weapons" セクション )
     private static final Map<String, WeaponStats> STATS = new HashMap<>();
+    // 武器タイプID → 既定ステータス ( "types" セクション )。 item に値が無いフィールドはこちらで補完。
+    private static final Map<String, WeaponStats> TYPE_STATS = new HashMap<>();
+    // item別×type別のマージ結果キャッシュ ( getStats は高頻度呼び出しなので毎回 merge しない )。
+    // reload の apply でクリア。 "ステータス無し" は NONE_STATS を入れて null 再計算も防ぐ。
+    private static final Map<String, WeaponStats> MERGED_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final WeaponStats NONE_STATS = new WeaponStats(-1, -1, Float.NaN, Float.NaN);
+
+    /** reload の prepare→apply 間で item別 / type別 の両マップを受け渡す。 */
+    public static class Prepared {
+        final Map<String, WeaponStats> items;
+        final Map<String, WeaponStats> types;
+        Prepared(Map<String, WeaponStats> items, Map<String, WeaponStats> types) {
+            this.items = items;
+            this.types = types;
+        }
+    }
 
     public static class WeaponStats {
         public final int durability;
@@ -83,56 +99,82 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<Map<Stri
 
     @Nonnull
     @Override
-    protected Map<String, WeaponStats> prepare(@Nonnull ResourceManager manager, @Nonnull ProfilerFiller profiler) {
-        Map<String, WeaponStats> result = new HashMap<>();
+    protected Prepared prepare(@Nonnull ResourceManager manager, @Nonnull ProfilerFiller profiler) {
+        Map<String, WeaponStats> items = new HashMap<>();
+        Map<String, WeaponStats> types = new HashMap<>();
 
         manager.listResources("weapon_stats", loc -> loc.getPath().endsWith(".json")).forEach((location, resource) -> {
             try (Reader reader = new InputStreamReader(resource.open())) {
                 JsonObject root = GSON.fromJson(reader, JsonObject.class);
-                if (root == null || !root.has("weapons")) return;
-
-                JsonObject weapons = root.getAsJsonObject("weapons");
-                for (Map.Entry<String, JsonElement> entry : weapons.entrySet()) {
-                    String itemId = entry.getKey();
-                    // _comment_* などオブジェクトでないエントリはスキップ ( コメント行 )。
-                    if (!entry.getValue().isJsonObject()) continue;
-                    JsonObject stats = entry.getValue().getAsJsonObject();
-
-                    int durability = stats.has("durability") ? stats.get("durability").getAsInt() : -1;
-                    int enchant = stats.has("enchantability") ? stats.get("enchantability").getAsInt() : -1;
-                    float damage = stats.has("damage_bonus") ? stats.get("damage_bonus").getAsFloat() : Float.NaN;
-                    float speed = stats.has("attack_speed") ? stats.get("attack_speed").getAsFloat() : Float.NaN;
-                    float atkDamage = stats.has("attack_damage") ? stats.get("attack_damage").getAsFloat() : Float.NaN;
-                    float atkRange = stats.has("attack_range") ? stats.get("attack_range").getAsFloat() : Float.NaN;
-
-                    ThrustConfig thrust = null;
-                    if (stats.has("thrust") && stats.get("thrust").isJsonObject()) {
-                        JsonObject th = stats.getAsJsonObject("thrust");
-                        boolean enabled = !th.has("enabled") || th.get("enabled").getAsBoolean();
-                        if (enabled) {
-                            double range = th.has("range") ? th.get("range").getAsDouble() : 3.0;
-                            int hits = th.has("hits") ? th.get("hits").getAsInt() : 3;
-                            double kb = th.has("knockback") ? th.get("knockback").getAsDouble() : 0.3;
-                            double dash = th.has("dash") ? th.get("dash").getAsDouble() : 0.5;
-                            float dmg = th.has("damage") ? th.get("damage").getAsFloat() : 0f;
-                            thrust = new ThrustConfig(range, hits, kb, dash, dmg);
-                        }
-                    }
-
-                    result.put(itemId, new WeaponStats(durability, enchant, damage, speed, atkDamage, atkRange, thrust));
-                }
+                if (root == null) return;
+                // "weapons": item別 ( 最優先 ) / "types": 武器タイプ別の既定値。
+                parseSection(root, "weapons", items);
+                parseSection(root, "types", types);
             } catch (Exception e) {
                 // パースエラーは無視
             }
         });
 
-        return result;
+        return new Prepared(items, types);
+    }
+
+    /** root の {@code section} オブジェクトを走査し、key→WeaponStats を {@code out} に格納する。 */
+    private static void parseSection(JsonObject root, String section, Map<String, WeaponStats> out) {
+        if (root == null || !root.has(section) || !root.get(section).isJsonObject()) return;
+        JsonObject obj = root.getAsJsonObject(section);
+        for (Map.Entry<String, JsonElement> entry : obj.entrySet()) {
+            // _comment_* などオブジェクトでないエントリはスキップ ( コメント行 )。
+            if (!entry.getValue().isJsonObject()) continue;
+            out.put(entry.getKey(), parseStats(entry.getValue().getAsJsonObject()));
+        }
+    }
+
+    /** JSON 1 エントリを WeaponStats へ。 未設定フィールドは番兵値 ( -1 / NaN / null )。 */
+    private static WeaponStats parseStats(JsonObject stats) {
+        int durability = stats.has("durability") ? stats.get("durability").getAsInt() : -1;
+        int enchant = stats.has("enchantability") ? stats.get("enchantability").getAsInt() : -1;
+        float damage = stats.has("damage_bonus") ? stats.get("damage_bonus").getAsFloat() : Float.NaN;
+        float speed = stats.has("attack_speed") ? stats.get("attack_speed").getAsFloat() : Float.NaN;
+        float atkDamage = stats.has("attack_damage") ? stats.get("attack_damage").getAsFloat() : Float.NaN;
+        float atkRange = stats.has("attack_range") ? stats.get("attack_range").getAsFloat() : Float.NaN;
+
+        ThrustConfig thrust = null;
+        if (stats.has("thrust") && stats.get("thrust").isJsonObject()) {
+            JsonObject th = stats.getAsJsonObject("thrust");
+            boolean enabled = !th.has("enabled") || th.get("enabled").getAsBoolean();
+            if (enabled) {
+                double range = th.has("range") ? th.get("range").getAsDouble() : 3.0;
+                int hits = th.has("hits") ? th.get("hits").getAsInt() : 3;
+                double kb = th.has("knockback") ? th.get("knockback").getAsDouble() : 0.3;
+                double dash = th.has("dash") ? th.get("dash").getAsDouble() : 0.5;
+                float dmg = th.has("damage") ? th.get("damage").getAsFloat() : 0f;
+                thrust = new ThrustConfig(range, hits, kb, dash, dmg);
+            }
+        }
+        return new WeaponStats(durability, enchant, damage, speed, atkDamage, atkRange, thrust);
     }
 
     @Override
-    protected void apply(@Nonnull Map<String, WeaponStats> prepared, @Nonnull ResourceManager manager, @Nonnull ProfilerFiller profiler) {
+    protected void apply(@Nonnull Prepared prepared, @Nonnull ResourceManager manager, @Nonnull ProfilerFiller profiler) {
         STATS.clear();
-        STATS.putAll(prepared);
+        STATS.putAll(prepared.items);
+        TYPE_STATS.clear();
+        TYPE_STATS.putAll(prepared.types);
+        MERGED_CACHE.clear();
+    }
+
+    /** item別ステータスを type別既定で補完する ( item に値のあるフィールドが優先 )。 */
+    private static WeaponStats merge(WeaponStats item, WeaponStats type) {
+        if (type == null) return item;
+        if (item == null) return type;
+        return new WeaponStats(
+                item.durability != -1 ? item.durability : type.durability,
+                item.enchantability != -1 ? item.enchantability : type.enchantability,
+                !Float.isNaN(item.damageBonus) ? item.damageBonus : type.damageBonus,
+                !Float.isNaN(item.attackSpeed) ? item.attackSpeed : type.attackSpeed,
+                !Float.isNaN(item.attackDamage) ? item.attackDamage : type.attackDamage,
+                !Float.isNaN(item.attackRange) ? item.attackRange : type.attackRange,
+                item.thrust != null ? item.thrust : type.thrust);
     }
 
     // === 公開API ===
@@ -141,11 +183,30 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<Map<Stri
         if (stack.isEmpty()) return null;
         ResourceLocation regName = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (regName == null) return null;
-        return STATS.get(regName.toString());
+        String id = regName.toString();
+
+        WeaponStats cached = MERGED_CACHE.get(id);
+        if (cached != null) return cached == NONE_STATS ? null : cached;
+
+        WeaponStats item = STATS.get(id);
+        WeaponStats type = null;
+        if (!TYPE_STATS.isEmpty()) {
+            WeaponTypeRegistry.WeaponTypeData td = WeaponTypeRegistry.getTypeForItem(stack);
+            if (td != null) type = TYPE_STATS.get(td.getId());
+        }
+        WeaponStats merged = merge(item, type);
+        MERGED_CACHE.put(id, merged == null ? NONE_STATS : merged);
+        return merged;
     }
 
+    /** item別のみ ( type別既定は ItemStack が要るため補完しない )。 */
     public static WeaponStats getStats(String itemId) {
         return STATS.get(itemId);
+    }
+
+    /** 武器タイプID直指定で type別既定を取得 ( 無ければ null )。 */
+    public static WeaponStats getTypeStats(String typeId) {
+        return TYPE_STATS.get(typeId);
     }
 
     /**

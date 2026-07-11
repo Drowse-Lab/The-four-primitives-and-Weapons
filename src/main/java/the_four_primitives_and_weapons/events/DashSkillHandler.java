@@ -335,10 +335,12 @@ public class DashSkillHandler {
         ServerLevel serverWorld = (ServerLevel) player.level();
         Vec3 pos = player.position();
 
-        // プレイヤー周辺の敵にダメージ（同じ敵に2回当たらない）
+        // プレイヤー周辺の敵にダメージ（同じ敵に2回当たらない）。 武器の attack_range で半径を伸縮。
+        double reach = Math.max(0.5, 1.5 + the_four_primitives_and_weapons.skill.WeaponStatsRegistry
+                .attackRangeBonus(player.getItemInHand(InteractionHand.MAIN_HAND)));
         AABB hitBox = new AABB(
-                pos.x - 1.5, pos.y, pos.z - 1.5,
-                pos.x + 1.5, pos.y + 2, pos.z + 1.5);
+                pos.x - reach, pos.y, pos.z - reach,
+                pos.x + reach, pos.y + 2, pos.z + reach);
         List<LivingEntity> targets = player.level().getEntitiesOfClass(LivingEntity.class, hitBox,
                 e -> e != player && !state.hitEntities.contains(e.getId()));
 

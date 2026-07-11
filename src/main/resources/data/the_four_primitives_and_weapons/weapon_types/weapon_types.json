@@ -158,6 +158,25 @@
         "charged": "thrust_combo"
       }
     },
+    "small_sword": {
+      "display_name": "小剣",
+      "items": [
+        "the_four_primitives_and_weapons:small_sword",
+        "the_four_primitives_and_weapons:warabitetou"
+      ],
+      "motions": {
+        "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash"],
+        "dash": ["dash_rush", "leap_slash", "shadow_step"],
+        "right_click": ["dodge", "none_right", "spell"],
+        "shift_right_click": ["guard", "none_shift"]
+      },
+      "default_motions": {
+        "first_hit": "upper_left_slash",
+        "second_hit": "upper_right_slash",
+        "third_hit": "horizontal_slash",
+        "charged": "thrust"
+      }
+    },
     "shield": {
       "display_name": "盾",
       "items": [

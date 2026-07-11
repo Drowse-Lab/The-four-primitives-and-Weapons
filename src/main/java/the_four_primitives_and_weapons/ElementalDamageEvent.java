@@ -197,6 +197,9 @@ public class ElementalDamageEvent {
                 break;
         }
 
+        // 攻撃に載った属性のパーティクルをヒット位置に出す (全属性で統一)。
+        spawnElementHitParticle(target, elementType, elementLevel);
+
         // カウンターボーナスを加算
         modifiedDamage += counterBonus;
 
@@ -204,6 +207,17 @@ public class ElementalDamageEvent {
         if (modifiedDamage != originalDamage) {
             event.setAmount(modifiedDamage);
         }
+    }
+
+    /**
+     * 攻撃に載った属性のパーティクルを、被弾したエンティティ位置に出す。
+     * 全属性で統一的に呼ばれるので、どの属性を載せても「その属性の粒子」が攻撃に付く。
+     */
+    private static void spawnElementHitParticle(LivingEntity target, ElementType type, int level) {
+        if (!(target.level() instanceof ServerLevel sl)) return;
+        int n = Math.min(16, 6 + Math.max(0, level));      // 個数は Lv で緩やかに増加
+        ElementalParticles.spawn(sl, type,
+                target.getX(), target.getY() + target.getBbHeight() * 0.6, target.getZ(), n);
     }
 
     /**

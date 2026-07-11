@@ -98,38 +98,30 @@ public class TyokutouThrustAttackProcedure {
         if (entity == null || !(entity instanceof Player player))
             return;
 
-        double range = 7.0;  // 他の刀と同じ範囲
+        // 武器ごとの attack_range を反映 ( タイプ既定/item上書き )。 マイナスで短い突きに。
+        double range = Math.max(1.0, 7.0 + the_four_primitives_and_weapons.skill.WeaponStatsRegistry
+                .attackRangeBonus(player.getMainHandItem()));
         double damage = 18.0;  // 他の刀と同じダメージ
 
         Vec3 lookVec = the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
-        Vec3 startPos = player.position().add(0, player.getEyeHeight(), 0);
 
-        // 突進エフェクト
+        // 全ての突き共通の見た目 ( 斜め切りと同じ dust 扇 )。
         if (world instanceof ServerLevel serverLevel) {
-            for (int i = 0; i < 10; i++) {
-                double d = i * 0.6;
-                serverLevel.sendParticles(
-                    ParticleTypes.SWEEP_ATTACK,
-                    startPos.x + lookVec.x * d,
-                    startPos.y + lookVec.y * d,
-                    startPos.z + lookVec.z * d,
-                    2, 0, 0, 0, 0
-                );
-
-                if (i % 2 == 0) {
-                    serverLevel.sendParticles(
-                        ParticleTypes.CLOUD,
-                        startPos.x + lookVec.x * d,
-                        startPos.y + lookVec.y * d,
-                        startPos.z + lookVec.z * d,
-                        3, 0.3, 0, 0.3, 0.01
-                    );
-                }
-            }
+            the_four_primitives_and_weapons.skill.MotionExecutor.slashCloudFan(
+                    serverLevel, player, lookVec, player.position(), 0.0);
         }
 
-        // 前方への突進移動（他の刀と同じ）
-        player.setDeltaMovement(player.getDeltaMovement().add(lookVec.scale(1.8)));
+        // 前方への突進移動。 thrust 設定を持つ武器 ( ダガー等 ) は thrust.dash を踏み込み量に使う
+        // ( dash=0 なら移動しない )。 持たない武器 ( 刀/直刀 ) は従来の 1.8。
+        double lunge = 1.8;
+        the_four_primitives_and_weapons.skill.WeaponStatsRegistry.WeaponStats lst =
+                the_four_primitives_and_weapons.skill.WeaponStatsRegistry.getStats(player.getMainHandItem());
+        if (lst != null && lst.thrust != null) {
+            lunge = lst.thrust.dash;
+        }
+        if (lunge != 0.0) {
+            player.setDeltaMovement(player.getDeltaMovement().add(lookVec.scale(lunge)));
+        }
 
         // 前方の敵を検索（他の刀と同じ判定）
         Vec3 playerPos = player.position();

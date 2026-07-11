@@ -447,8 +447,12 @@ public class UndeadArmyEvent {
         int base = 4 + wave * 2 + aiLevel * 2;
         // 進行度ボーナス: 10ごとに +1体（上限+20体）
         int extra = Math.min(20, ProgressionTracker.getBaseLevelBonus() / 10);
-        return base + extra;
+        // 1ウェーブの上限。 これを超えると多数のMobでラグの原因になるためキャップ ( 調整可 )。
+        return Math.min(MAX_WAVE_SIZE, base + extra);
     }
+
+    /** 1 ウェーブあたりの最大スポーン数 ( ラグ対策の上限 )。 */
+    private static final int MAX_WAVE_SIZE = 40;
 
     /** aiLevelごとの発動確率（1分あたり） */
     private static float triggerChance(int aiLevel) {
@@ -552,6 +556,9 @@ public class UndeadArmyEvent {
             }
             if (!(player.level() instanceof ServerLevel level)) continue;
 
+            // パスファインドは重いので 1 回の呼び出しで上限を設ける ( 大軍団でのパス計算の嵐を防ぐ )。
+            // 上限超過ぶんは次回 ( 10tick 後 ) に回る。 setTarget は軽いので全体に適用。
+            int pathfinds = 0;
             for (UUID id : raid.aliveEntities) {
                 Entity e = level.getEntity(id);
                 if (!(e instanceof Mob mob)) continue;
@@ -561,9 +568,10 @@ public class UndeadArmyEvent {
                 if (cur != player) {
                     mob.setTarget(player);
                 }
-                // 遠距離でも諦めない: ナビゲーション強制
-                if (mob.distanceToSqr(player) > 64.0 && mob.getNavigation().isDone()) {
+                // 遠距離でも諦めない: ナビゲーション強制 ( ただし 1 回あたり最大 8 体まで )。
+                if (pathfinds < 8 && mob.distanceToSqr(player) > 64.0 && mob.getNavigation().isDone()) {
                     mob.getNavigation().moveTo(player, 1.2);
+                    pathfinds++;
                 }
             }
         }

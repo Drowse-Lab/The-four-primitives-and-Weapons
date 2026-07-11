@@ -483,6 +483,9 @@ public class ChargedAttackHandler {
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         String itemName = mainHand.getItem().getClass().getSimpleName();
 
+        // 属性パーティクルは MotionExecutor.executeMotion 側で全スキル共通に出す
+        // ( 通常攻撃もモーション経由なので二重にしない )。
+
         // 禁忌レアリティ: 通常攻撃時に飛び道具反射
         the_four_primitives_and_weapons.item.rarity.WeaponRarity normalRarity =
                 the_four_primitives_and_weapons.item.rarity.WeaponRarity.getFromStack(mainHand);
@@ -534,7 +537,7 @@ public class ChargedAttackHandler {
         // コンボカウンターを増やす
         data.comboCounter++;
     }
-    
+
     private static void displayChargeEffect(Player player, int chargeTime) {
         if (player.level().isClientSide) return;
         
