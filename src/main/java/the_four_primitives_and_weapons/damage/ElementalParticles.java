@@ -1,8 +1,10 @@
 package the_four_primitives_and_weapons.damage;
 
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Blocks;
 
 import org.joml.Vector3f;
 
@@ -19,7 +21,7 @@ import org.joml.Vector3f;
  *       その属性のアイデンティティなので themed 粒子のみで表現する。</li>
  *   <li>それ以外の属性 … <b>色を変えた dust</b> が主役。
  *       氷 / 電気 / 雷 / 水 / 血 だけは質感を出すため、専用パーティクル
- *       ( 雪片 / 電光 / 水しぶき / 滴る赤 ) を少量アクセントに重ねる。</li>
+ *       ( 雪片 / 電光 / 水しぶき / レッドストーンブロックの破片 ) を少量アクセントに重ねる。</li>
  * </ul></p>
  */
 public final class ElementalParticles {
@@ -31,6 +33,10 @@ public final class ElementalParticles {
 
     /** dust の粒サイズ。 */
     private static final float DUST_SIZE = 1.3f;
+
+    /** 血属性のアクセント: レッドストーンブロックの破壊パーティクル ( 赤い破片 )。 */
+    private static final BlockParticleOption BLOOD_CHUNK =
+            new BlockParticleOption(ParticleTypes.BLOCK, Blocks.REDSTONE_BLOCK.defaultBlockState());
 
     private ElementalParticles() {}
 
@@ -114,7 +120,7 @@ public final class ElementalParticles {
                     sl.sendParticles(ParticleTypes.SPLASH, x, y, z, sub, dxz, dy, dxz, 0.05);
                     break;
                 case BLOOD:
-                    sl.sendParticles(ParticleTypes.FALLING_LAVA, x, y, z, Math.max(1, sub / 2), dxz, dy, dxz, 0.0);
+                    sl.sendParticles(BLOOD_CHUNK, x, y, z, sub, dxz, dy, dxz, 0.05);
                     break;
                 default:
                     break;
