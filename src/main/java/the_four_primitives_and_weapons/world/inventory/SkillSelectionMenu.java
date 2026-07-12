@@ -140,7 +140,8 @@ public class SkillSelectionMenu extends AbstractContainerMenu {
                 WeaponLoadout loadout = skillData.getLoadoutAt(i);
                 if (loadout != null) {
                     for (AttackSlot slot : AttackSlot.values()) {
-                        loadoutMotions[i].put(slot, loadout.getMotion(slot));
+                        // 未設定スロットは実際に発動する技 ( タイプ設定 / JSON既定 ) を表示する。
+                        loadoutMotions[i].put(slot, skillData.getMotionForWeapon(slot, loadout.getWeapon()));
                     }
                 }
             }

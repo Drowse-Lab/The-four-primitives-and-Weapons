@@ -57,7 +57,8 @@ public class OpenSkillScreenPacket {
                     if (loadout != null) {
                         buf.writeBoolean(true);
                         for (AttackSlot slot : AttackSlot.values()) {
-                            buf.writeUtf(loadout.getMotion(slot));
+                            // 未設定スロットは実際に発動する技 ( タイプ設定 / JSON既定 ) を表示する。
+                            buf.writeUtf(skillData.getMotionForWeapon(slot, loadout.getWeapon()));
                         }
                     } else {
                         buf.writeBoolean(false);

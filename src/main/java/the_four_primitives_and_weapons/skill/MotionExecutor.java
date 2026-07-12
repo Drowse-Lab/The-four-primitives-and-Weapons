@@ -37,10 +37,12 @@ public class MotionExecutor {
      * @param chargePercent チャージ率（0.0 = 通常攻撃、0.0～1.0 = チャージ攻撃）
      */
     public static void executeMotion(String motionId, Player player, float chargePercent) {
-        if (motionId == null || motionId.isEmpty()) return;
-
-        // 技 ON/OFF トグル: 無効化されていれば何もしない (通常攻撃にフォールバック)
-        if (!PlayerSkillData.isMotionEnabled(player, motionId)) {
+        // モーション無し / 技 OFF → 素の通常攻撃にフォールバックする。
+        // この場合も「攻撃に載っている属性」は見せたいので、 斬撃の弧ではなく
+        // 武器の前方にコンパクトな属性パーティクルだけ出す。
+        if (motionId == null || motionId.isEmpty()
+                || !PlayerSkillData.isMotionEnabled(player, motionId)) {
+            spawnSwingElementParticle(player);
             return;
         }
 
@@ -144,16 +146,34 @@ public class MotionExecutor {
      * スキル発動時に、武器に載った属性のパーティクルを前方へ弧状に出す。
      * 通常攻撃だけでなくチャージ/ダッシュ/特殊など全スキルに属性色を乗せる。
      */
+    /**
+     * モーションが出ない素の通常攻撃 ( 技 OFF / 未設定 ) 用の属性パーティクル。
+     * 斬撃の弧が無いので、武器の前方に小さくまとめて出す。
+     */
+    private static void spawnSwingElementParticle(Player player) {
+        if (!(player.level() instanceof ServerLevel sl)) return;
+        the_four_primitives_and_weapons.damage.ElementType elem =
+                the_four_primitives_and_weapons.damage.ElementalDamageUtils.getEffectiveElementType(player.getMainHandItem());
+        if (elem == the_four_primitives_and_weapons.damage.ElementType.NONE) return;
+
+        Vec3 look = player.getLookAngle();
+        Vec3 c = player.getEyePosition().add(look.scale(1.5)).subtract(0.0, 0.35, 0.0);
+        the_four_primitives_and_weapons.damage.ElementalParticles.spawn(sl, elem, c.x, c.y, c.z, 8);
+    }
+
     private static void spawnMotionElementParticle(Player player) {
         if (!(player.level() instanceof ServerLevel sl)) return;
         the_four_primitives_and_weapons.damage.ElementType elem =
                 the_four_primitives_and_weapons.damage.ElementalDamageUtils.getEffectiveElementType(player.getMainHandItem());
         if (elem == the_four_primitives_and_weapons.damage.ElementType.NONE) return;
 
-        // 前方に 1 回だけ属性色をまとめて出す ( パケット削減; 斬撃の弧の形は slashCloudFan が担当 )。
-        Vec3 look = player.getLookAngle();
-        Vec3 c = player.getEyePosition().add(look.scale(1.5)).subtract(0.0, 0.35, 0.0);
-        the_four_primitives_and_weapons.damage.ElementalParticles.spawn(sl, elem, c.x, c.y, c.z, 6);
+        // 斬撃の dust ( slashCloudFan ) と同じ扇の 3 クラスタに、同じ散布幅で属性粒子を重ねる。
+        // → 技の軌跡そのものが属性色に染まる ( 前方に 1 塊だけ出すのではなく弧全体に広がる )。
+        double delta = fanSpread(player);
+        for (Vec3 p : fanPoints(player, player.getLookAngle(), player.position(), 0.0)) {
+            the_four_primitives_and_weapons.damage.ElementalParticles.spawnWide(
+                    sl, elem, p.x, p.y, p.z, 16, delta, delta * 0.35);
+        }
     }
 
     // === 突き ===
@@ -497,22 +517,46 @@ public class MotionExecutor {
      */
     /** 斬撃/突き共通の 3クラスタ dust 扇。 全ての突きの見た目統一にも使う ( 突きは tilt=0 )。 */
     public static void slashCloudFan(ServerLevel sw, Player player, Vec3 look, Vec3 playerPos, double tilt) {
-        Vec3 right = new Vec3(-look.z, 0, look.x).normalize();
-        // 武器の攻撃範囲 ( attack_range ) でパーティクルの広がりをスケール ( 範囲が広い武器ほど大きく )
+        double delta = fanSpread(player);
+        for (Vec3 p : fanPoints(player, look, playerPos, tilt)) {
+            // 本家: delta 1 0 1 ( 横に広く・上下は広げない ), speed 0.001, count 50
+            sw.sendParticles(DUST_KATANA, p.x, p.y, p.z, 50, delta, 0.0, delta, 0.001);
+        }
+    }
+
+    /** 武器の攻撃範囲 ( attack_range ) による扇のスケール。 範囲が広い武器ほど大きく描く。 */
+    private static double fanScale(Player player) {
         double bonus = the_four_primitives_and_weapons.skill.WeaponStatsRegistry.attackRangeBonus(player.getMainHandItem());
-        double scale = Math.max(0.4, 1.0 + bonus * 0.25);
+        return Math.max(0.4, 1.0 + bonus * 0.25);
+    }
+
+    /** 扇の各クラスタの散布幅。 */
+    private static double fanSpread(Player player) {
+        return 1.0 * fanScale(player);
+    }
+
+    /**
+     * 斬撃の扇 ( 左 / 中央 / 右 の 3 クラスタ ) の中心座標。
+     * dust ( slashCloudFan ) と属性粒子 ( spawnMotionElementParticle ) が
+     * 同じ弧に重なるよう、形の定義をここに一本化する。
+     *
+     * @param tilt 斜め斬りの傾き ( 左右クラスタの高さ差 )
+     */
+    private static Vec3[] fanPoints(Player player, Vec3 look, Vec3 playerPos, double tilt) {
+        Vec3 right = new Vec3(-look.z, 0, look.x).normalize();
+        double scale = fanScale(player);
         double fwd = 3.0 * scale;                      // ^3 ( 前方 ) を範囲でスケール
         double sideBase = 2.0 * scale;                 // 横の広がり
-        double delta = 1.0 * scale;                    // 各クラスタの散布幅
         double[] sides   = { -sideBase, 0.0, sideBase };
         double[] heights = { 1.2 - tilt, 1.2, 1.2 + tilt }; // ^0.7 / ^1.2 / ^1.7 ( 斜め )
+        Vec3[] pts = new Vec3[3];
         for (int k = 0; k < 3; k++) {
-            double x = playerPos.x + look.x * fwd + right.x * sides[k];
-            double y = playerPos.y + heights[k];
-            double z = playerPos.z + look.z * fwd + right.z * sides[k];
-            // 本家: delta 1 0 1 ( 横に広く・上下は広げない ), speed 0.001, count 50
-            sw.sendParticles(DUST_KATANA, x, y, z, 50, delta, 0.0, delta, 0.001);
+            pts[k] = new Vec3(
+                    playerPos.x + look.x * fwd + right.x * sides[k],
+                    playerPos.y + heights[k],
+                    playerPos.z + look.z * fwd + right.z * sides[k]);
         }
+        return pts;
     }
 
     public static void breakBambooInPath(Level world, Vec3 startPos, Vec3 direction, double range) {

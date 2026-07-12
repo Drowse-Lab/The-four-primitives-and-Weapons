@@ -91,16 +91,14 @@ public class PlayerSkillData {
         private ItemStack weapon;
         private final Map<AttackSlot, String> motions = new EnumMap<>(AttackSlot.class);
 
+        /**
+         * 武器スロットに武器を置いただけの状態では motions は空。
+         * ここで既定技を prefill してしまうと「ユーザーが明示設定した技」と区別が付かず、
+         * 武器タイプ別設定 ( タイプタブ ) や JSON の default_motions を常に握り潰してしまうため、
+         * 明示設定されたスロットだけを保持する。
+         */
         public WeaponLoadout(ItemStack weapon) {
             this.weapon = weapon.copy();
-            // デフォルトモーション
-            motions.put(AttackSlot.FIRST_HIT, "upper_left_slash");
-            motions.put(AttackSlot.SECOND_HIT, "upper_right_slash");
-            motions.put(AttackSlot.THIRD_HIT, "horizontal_slash");
-            motions.put(AttackSlot.CHARGED, "spin_slash");
-            motions.put(AttackSlot.DASH, "dash_rush");
-            motions.put(AttackSlot.RIGHT_CLICK, "dodge");
-            motions.put(AttackSlot.SHIFT_RIGHT_CLICK, "guard");
         }
 
         // NBT復元用
@@ -123,6 +121,16 @@ public class PlayerSkillData {
 
         public String getMotion(AttackSlot slot) {
             return motions.getOrDefault(slot, "thrust");
+        }
+
+        /** このスロットにユーザーが明示設定した技があるか ( 無ければタイプ設定/JSON既定に委ねる )。 */
+        public boolean hasMotion(AttackSlot slot) {
+            return slot != null && motions.containsKey(slot);
+        }
+
+        /** このロードアウトが {@code stack} と同じ武器か ( クラス名ではなくアイテムで判定 )。 */
+        public boolean matchesItem(ItemStack stack) {
+            return stack != null && !stack.isEmpty() && weapon.getItem() == stack.getItem();
         }
 
         public void setMotion(AttackSlot slot, String motionId) {
@@ -251,9 +259,11 @@ public class PlayerSkillData {
                 if (nbtMotion != null) return nbtMotion;
 
                 // 1. 武器スロットの個別設定を確認
-                String weaponClass = heldItem.getItem().getClass().getSimpleName();
+                //    「同じ武器」かつ「そのスロットを明示設定済み」のときだけ採用する。
+                //    ( 武器を置いただけ / 別スロットだけ設定した状態で、タイプ設定や
+                //      JSON の default_motions を握り潰さないため )
                 for (WeaponLoadout loadout : weaponSlots) {
-                    if (loadout != null && loadout.getWeaponClass().equals(weaponClass)) {
+                    if (loadout != null && loadout.matchesItem(heldItem) && loadout.hasMotion(slot)) {
                         return loadout.getMotion(slot);
                     }
                 }
@@ -282,9 +292,8 @@ public class PlayerSkillData {
         public boolean hasExplicitMotion(AttackSlot slot, ItemStack heldItem) {
             if (heldItem == null || heldItem.isEmpty()) return false;
             if (WeaponSkillNBT.getMotion(heldItem, slot) != null) return true;
-            String weaponClass = heldItem.getItem().getClass().getSimpleName();
             for (WeaponLoadout loadout : weaponSlots) {
-                if (loadout != null && loadout.getWeaponClass().equals(weaponClass)) return true;
+                if (loadout != null && loadout.matchesItem(heldItem) && loadout.hasMotion(slot)) return true;
             }
             WeaponTypeRegistry.WeaponTypeData typeData = WeaponTypeRegistry.getTypeForItem(heldItem);
             if (typeData != null) {
