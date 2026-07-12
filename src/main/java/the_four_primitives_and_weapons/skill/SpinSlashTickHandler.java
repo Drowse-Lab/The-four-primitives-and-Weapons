@@ -111,12 +111,13 @@ public class SpinSlashTickHandler {
             final float PARTICLE_ANGLE_GAP = 22.5f;
             float prevSwept = (s.elapsed - 1) * anglePerTick;
             int steps = Math.max(1, Math.round(anglePerTick / PARTICLE_ANGLE_GAP));
+            net.minecraft.core.particles.ParticleOptions dust = MotionExecutor.slashDust(p);
             for (int i = 0; i < steps; i++) {
                 float frac = (i + 0.5f) / steps;   // step 中央に 1 つずつ配置
                 float sweptAt = prevSwept + anglePerTick * frac;
                 double rad = Math.toRadians(s.startYaw + sweptAt + 90);
                 double r = s.range * 0.75;          // ring を 1 本に集約
-                sw.sendParticles(MotionExecutor.DUST_KATANA,   // 13-mystic-swords katana と同じ dust
+                sw.sendParticles(dust,              // 属性が載っていれば属性色 dust
                     p.getX() + Math.cos(rad) * r,
                     p.getY() + 1.1,
                     p.getZ() + Math.sin(rad) * r,
@@ -181,7 +182,7 @@ public class SpinSlashTickHandler {
                 s.hitEntities.add(target.getUUID());
 
                 if (world instanceof ServerLevel sw) {
-                    sw.sendParticles(MotionExecutor.DUST_KATANA,
+                    sw.sendParticles(MotionExecutor.slashDust(player),
                         target.getX(), target.getY() + target.getBbHeight() / 2, target.getZ(),
                         5, 0.2, 0.2, 0.2, 0.001);
                 }

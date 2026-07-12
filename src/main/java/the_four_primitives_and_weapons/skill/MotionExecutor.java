@@ -153,7 +153,7 @@ public class MotionExecutor {
     private static void spawnSwingElementParticle(Player player) {
         if (!(player.level() instanceof ServerLevel sl)) return;
         the_four_primitives_and_weapons.damage.ElementType elem =
-                the_four_primitives_and_weapons.damage.ElementalDamageUtils.getEffectiveElementType(player.getMainHandItem());
+                the_four_primitives_and_weapons.damage.ElementalDamageUtils.getAttackElementType(player);
         if (elem == the_four_primitives_and_weapons.damage.ElementType.NONE) return;
 
         Vec3 look = player.getLookAngle();
@@ -161,18 +161,22 @@ public class MotionExecutor {
         the_four_primitives_and_weapons.damage.ElementalParticles.spawn(sl, elem, c.x, c.y, c.z, 8);
     }
 
+    /**
+     * 全スキル共通の属性パーティクル。
+     * 斬撃の弧を描く技は {@link #slashCloudFan} 側が属性色の弧を出すので、
+     * ここは弧を持たない技 ( 回転斬り / 振り下ろし / ダッシュ等 ) でも属性が乗るようにする保険。
+     */
     private static void spawnMotionElementParticle(Player player) {
         if (!(player.level() instanceof ServerLevel sl)) return;
         the_four_primitives_and_weapons.damage.ElementType elem =
-                the_four_primitives_and_weapons.damage.ElementalDamageUtils.getEffectiveElementType(player.getMainHandItem());
+                the_four_primitives_and_weapons.damage.ElementalDamageUtils.getAttackElementType(player);
         if (elem == the_four_primitives_and_weapons.damage.ElementType.NONE) return;
 
-        // 斬撃の dust ( slashCloudFan ) と同じ扇の 3 クラスタに、同じ散布幅で属性粒子を重ねる。
-        // → 技の軌跡そのものが属性色に染まる ( 前方に 1 塊だけ出すのではなく弧全体に広がる )。
         double delta = fanSpread(player);
         for (Vec3 p : fanPoints(player, player.getLookAngle(), player.position(), 0.0)) {
+            // 範囲は灰色 dust と同じ ( 横に広く・上下は広げない )。
             the_four_primitives_and_weapons.damage.ElementalParticles.spawnWide(
-                    sl, elem, p.x, p.y, p.z, 16, delta, delta * 0.35);
+                    sl, elem, p.x, p.y, p.z, 10, delta, 0.0);
         }
     }
 
@@ -339,10 +343,11 @@ public class MotionExecutor {
         // 開始時の小さな視覚フラッシュ (足元のリング)
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
-            // 全周に katana dust のリング ( 13-mystic-swords と同じ色 )
+            // 全周に dust のリング ( 属性が載っていれば属性色 )
+            net.minecraft.core.particles.ParticleOptions ringDust = slashDust(player);
             for (int i = 0; i < 360; i += 30) {
                 double rad = Math.toRadians(i);
-                serverWorld.sendParticles(DUST_KATANA,
+                serverWorld.sendParticles(ringDust,
                     playerPos.x + Math.cos(rad) * range * 0.7,
                     playerPos.y + 1.0,
                     playerPos.z + Math.sin(rad) * range * 0.7,
@@ -498,13 +503,26 @@ public class MotionExecutor {
     static final net.minecraft.core.particles.DustParticleOptions DUST_KATANA =
             new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.867f, 0.835f, 0.835f), 1.0f);
 
-    /** 突き系の見た目: 前方に katana dust のクラスタを3つ ( 手前→奥 ) 並べる。 */
+    /**
+     * 斬撃の粉。 攻撃に属性が載っていれば <b>属性色の dust</b>、 無属性なら既定の灰色 katana dust。
+     * 属性は「武器 → 魔導書スロット」の順で解決するので、 本だけでも色が乗る。
+     */
+    public static net.minecraft.core.particles.ParticleOptions slashDust(Player player) {
+        the_four_primitives_and_weapons.damage.ElementType elem =
+                the_four_primitives_and_weapons.damage.ElementalDamageUtils.getAttackElementType(player);
+        net.minecraft.core.particles.DustParticleOptions colored =
+                the_four_primitives_and_weapons.damage.ElementalParticles.dustOf(elem);
+        return colored != null ? colored : DUST_KATANA;
+    }
+
+    /** 突き系の見た目: 前方に dust のクラスタを3つ ( 手前→奥 ) 並べる ( 属性が載っていれば属性色 )。 */
     private static void katanaDustForward(ServerLevel sw, Player player, Vec3 look, Vec3 playerPos, double range) {
         double y = playerPos.y + player.getEyeHeight() * 0.85;
         double far = Math.max(2.0, range);
+        net.minecraft.core.particles.ParticleOptions dust = slashDust(player);
         for (int k = 0; k < 3; k++) {
             double d = 1.5 + k * (far - 1.5) / 2.0;
-            sw.sendParticles(DUST_KATANA,
+            sw.sendParticles(dust,
                 playerPos.x + look.x * d, y, playerPos.z + look.z * d,
                 40, 0.5, 0.3, 0.5, 0.002);
         }
@@ -518,9 +536,21 @@ public class MotionExecutor {
     /** 斬撃/突き共通の 3クラスタ dust 扇。 全ての突きの見た目統一にも使う ( 突きは tilt=0 )。 */
     public static void slashCloudFan(ServerLevel sw, Player player, Vec3 look, Vec3 playerPos, double tilt) {
         double delta = fanSpread(player);
+        // 攻撃に属性が載っているなら、 元の灰色 dust は出さず属性パーティクルだけで弧を描く。
+        the_four_primitives_and_weapons.damage.ElementType elem =
+                the_four_primitives_and_weapons.damage.ElementalDamageUtils.getAttackElementType(player);
+        boolean elemental = elem != the_four_primitives_and_weapons.damage.ElementType.NONE;
+
         for (Vec3 p : fanPoints(player, look, playerPos, tilt)) {
-            // 本家: delta 1 0 1 ( 横に広く・上下は広げない ), speed 0.001, count 50
-            sw.sendParticles(DUST_KATANA, p.x, p.y, p.z, 50, delta, 0.0, delta, 0.001);
+            if (elemental) {
+                // 灰色 dust と全く同じ範囲に撒く ( delta 1 0 1 = 横に広く・上下は広げない )。
+                // 個数も emit の 1.5 倍補正込みで灰色 dust の 50 個相当になるよう 32 を渡す。
+                the_four_primitives_and_weapons.damage.ElementalParticles.spawnWide(
+                        sw, elem, p.x, p.y, p.z, 32, delta, 0.0);
+            } else {
+                // 本家: delta 1 0 1 ( 横に広く・上下は広げない ), speed 0.001, count 50
+                sw.sendParticles(DUST_KATANA, p.x, p.y, p.z, 50, delta, 0.0, delta, 0.001);
+            }
         }
     }
 

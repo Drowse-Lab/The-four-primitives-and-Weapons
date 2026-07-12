@@ -113,6 +113,21 @@ public class ElementalDamageUtils {
         return getElementLevel(stack);
     }
 
+    /**
+     * プレイヤーの攻撃に実際に載る属性 ( 武器 → 無ければ魔導書スロット )。
+     *
+     * <p>{@link the_four_primitives_and_weapons.ElementalDamageEvent} のダメージ側と
+     * 同じ優先順位 ( 武器優先、武器が無属性なら本 ) なので、
+     * 「本だけで攻撃したときもその属性のパーティクルが出る」ようになる。</p>
+     */
+    public static ElementType getAttackElementType(net.minecraft.world.entity.player.Player player) {
+        if (player == null) return ElementType.NONE;
+        ElementType weaponType = getEffectiveElementType(player.getMainHandItem());
+        if (weaponType != ElementType.NONE) return weaponType;
+        BookSlotInfo info = getBookSlotInfo(player);
+        return info != null ? info.type : ElementType.NONE;
+    }
+
     private static boolean isFireSoulPair(ElementType left, ElementType right) {
         return (left == ElementType.FIRE && right == ElementType.SOUL)
                 || (left == ElementType.SOUL && right == ElementType.FIRE);

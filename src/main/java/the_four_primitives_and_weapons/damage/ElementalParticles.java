@@ -15,13 +15,12 @@ import org.joml.Vector3f;
  * 通常攻撃のスイング時、 スキル発動時 ({@code MotionExecutor}) から呼ばれ、
  * 「攻撃に載っている属性のパーティクルが攻撃に付く」表現を一元化する。</p>
  *
- * <p>表現方針:
+ * <p>表現方針: <b>どの属性でも「属性色の dust」が土台</b> ( 斬撃の灰色 dust の置き換え )。
+ * その上に、質感を出す専用パーティクルをアクセントとして少量重ねる。
  * <ul>
- *   <li>炎 / 魂 / 燐火 … 専用パーティクル ( FLAME / SOUL / SOUL_FIRE_FLAME ) が
- *       その属性のアイデンティティなので themed 粒子のみで表現する。</li>
- *   <li>それ以外の属性 … <b>色を変えた dust</b> が主役。
- *       氷 / 電気 / 雷 / 水 / 血 だけは質感を出すため、専用パーティクル
- *       ( 雪片 / 電光 / 水しぶき / レッドストーンブロックの破片 ) を少量アクセントに重ねる。</li>
+ *   <li>氷=雪片 / 電気・雷=電光 / 水=水しぶき / 血=レッドストーンブロックの破片</li>
+ *   <li>炎=FLAME / 魂=SOUL+SCULK_SOUL / 燐火=SOUL_FIRE_FLAME+SOUL</li>
+ *   <li>風 / 聖 / 闇 / 消滅 / 侵食 / 瘴気 … dust のみ</li>
  * </ul></p>
  */
 public final class ElementalParticles {
@@ -39,16 +38,6 @@ public final class ElementalParticles {
             new BlockParticleOption(ParticleTypes.BLOCK, Blocks.REDSTONE_BLOCK.defaultBlockState());
 
     private ElementalParticles() {}
-
-    /**
-     * 専用パーティクルで表現する属性か。
-     * ( 炎 / 魂 / 燐火 のみ。 それ以外は色付き dust で表現する )
-     */
-    public static boolean usesThemedParticles(ElementType type) {
-        return type == ElementType.FIRE
-            || type == ElementType.SOUL
-            || type == ElementType.SOUL_FIRE;
-    }
 
     /** 属性の色 ( dust 用 )。 {@code NONE} は null。 */
     public static Vector3f colorOf(ElementType type) {
@@ -103,46 +92,40 @@ public final class ElementalParticles {
         int main = n + Math.max(1, n / 2);     // 主役の粒子は多め (約 1.5 倍)
         int sub = Math.max(2, n / 2);          // 添えの粒子
 
-        // 炎 / 魂 / 燐火 以外は「色を変えた dust」が主役。
-        // ただし 氷 / 電気 / 雷 / 水 / 血 は dust だけだと質感が出ないので、
-        // 専用パーティクルをアクセントとして少量重ねる。
-        if (!usesThemedParticles(type)) {
-            sl.sendParticles(dustOf(type), x, y, z, main, dxz, dy, dxz, 0.01);
-            switch (type) {
-                case ICE:
-                    sl.sendParticles(ParticleTypes.SNOWFLAKE, x, y, z, sub, dxz, dy, dxz, 0.02);
-                    break;
-                case ELECTRIC:
-                case THUNDER:
-                    sl.sendParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, sub, dxz, dy, dxz, 0.06);
-                    break;
-                case WATER:
-                    sl.sendParticles(ParticleTypes.SPLASH, x, y, z, sub, dxz, dy, dxz, 0.05);
-                    break;
-                case BLOOD:
-                    sl.sendParticles(BLOOD_CHUNK, x, y, z, sub, dxz, dy, dxz, 0.05);
-                    break;
-                default:
-                    break;
-            }
-            return;
-        }
+        // 全属性で「属性色の dust」が土台 ( = 灰色 dust の置き換え )。
+        // 斬撃の粉としての見た目はこれが担うので、どの属性でも必ず出す。
+        sl.sendParticles(dustOf(type), x, y, z, main, dxz, dy, dxz, 0.01);
 
+        // その上に、属性の質感を出す専用パーティクルをアクセントとして重ねる。
         switch (type) {
+            case ICE:
+                sl.sendParticles(ParticleTypes.SNOWFLAKE, x, y, z, sub, dxz, dy, dxz, 0.02);
+                break;
+            case ELECTRIC:
+            case THUNDER:
+                sl.sendParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, sub, dxz, dy, dxz, 0.06);
+                break;
+            case WATER:
+                sl.sendParticles(ParticleTypes.SPLASH, x, y, z, sub, dxz, dy, dxz, 0.05);
+                break;
+            case BLOOD:
+                sl.sendParticles(BLOOD_CHUNK, x, y, z, sub, dxz, dy, dxz, 0.05);
+                break;
             case FIRE:
-                sl.sendParticles(ParticleTypes.FLAME, x, y, z, main, dxz, dy, dxz, 0.02);
+                sl.sendParticles(ParticleTypes.FLAME, x, y, z, sub, dxz, dy, dxz, 0.02);
                 break;
             case SOUL:
-                // 魂: 青白い魂の霊気 (SOUL) + 青みの強い SCULK_SOUL でしっかり見えるように。
-                sl.sendParticles(ParticleTypes.SOUL, x, y, z, main, dxz, dy, dxz, 0.02);
-                sl.sendParticles(ParticleTypes.SCULK_SOUL, x, y, z, sub, dxz, dy, dxz, 0.015);
+                // 魂: 青白い魂の霊気 (SOUL) + 青みの強い SCULK_SOUL。
+                sl.sendParticles(ParticleTypes.SOUL, x, y, z, sub, dxz, dy, dxz, 0.02);
+                sl.sendParticles(ParticleTypes.SCULK_SOUL, x, y, z, Math.max(1, sub / 2), dxz, dy, dxz, 0.015);
                 break;
             case SOUL_FIRE:
-                // 燐火: 青い魂炎 (SOUL_FIRE_FLAME) を主役に、魂の霊気 (SOUL) を添える。
-                sl.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, x, y, z, main, dxz, dy, dxz, 0.02);
-                sl.sendParticles(ParticleTypes.SOUL, x, y, z, sub, dxz, dy, dxz, 0.02);
+                // 燐火: 青い魂炎 (SOUL_FIRE_FLAME) + 魂の霊気 (SOUL)。
+                sl.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, x, y, z, sub, dxz, dy, dxz, 0.02);
+                sl.sendParticles(ParticleTypes.SOUL, x, y, z, Math.max(1, sub / 2), dxz, dy, dxz, 0.02);
                 break;
             default:
+                // 風 / 聖 / 闇 / 消滅 / 侵食 / 瘴気 は dust のみ。
                 break;
         }
     }
