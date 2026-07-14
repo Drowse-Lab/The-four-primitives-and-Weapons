@@ -40,9 +40,6 @@ doragon Armorのtextureはここからダウンロードしました
 https://youtu.be/nA6a7O3jBJo?si=NzeW23jMIkDXOmv3  
 ### sword of night
 https://youtu.be/i-ItAsrIK7U?si=f5FXomJLYBK7GmQ9  
-### True-Crafter
-https://github.com/Chuzume/True-Crafter-Mode  
-https://youtu.be/7oI4bwtSQUQ  
 ***
 
 dagger鞘をslot backとbeltに入れても3Dmodelが出ない
