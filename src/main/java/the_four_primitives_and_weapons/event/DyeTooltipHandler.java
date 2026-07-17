@@ -1,6 +1,7 @@
 package the_four_primitives_and_weapons.event;
 
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
+import the_four_primitives_and_weapons.item.GloveItem;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -29,7 +30,9 @@ public class DyeTooltipHandler {
 	public static void onTooltip(ItemTooltipEvent event) {
 		ItemStack stack = event.getItemStack();
 		if (!(stack.getItem() instanceof DyeableLeatherItem dye)) return;
-		if (!dye.hasCustomColor(stack)) return;
+		// 手袋 ( GloveItem ) は未染色でも常に現在色 ( defaultColor ) を表示する
+		boolean isGlove = stack.getItem() instanceof GloveItem;
+		if (!dye.hasCustomColor(stack) && !isGlove) return;
 
 		// HideFlags:64 で非表示
 		int hideFlags = (stack.getTag() != null && stack.getTag().contains("HideFlags", 99))
@@ -41,9 +44,13 @@ public class DyeTooltipHandler {
 		tip.removeIf(c -> isKey(c, "item.dyed") || isKey(c, "item.color"));
 
 		int color = dye.getColor(stack) & 0xFFFFFF;
-		boolean glove = stack.getTag() != null && stack.getTag().contains("GloveColor", 3); // 本MODの制服 = 手袋色
+		boolean glove = isGlove
+				|| (stack.getTag() != null && stack.getTag().contains("GloveColor", 3)); // GloveColor タグ = 手袋色
 		String key = glove ? KEY_GLOVE : KEY_COLOR;
-		tip.add(Component.translatable(key, String.format("#%06X", color)).withStyle(ChatFormatting.GRAY));
+		// カラーコード部分は実際の色で表示する
+		Component hex = Component.literal(String.format("#%06X", color))
+				.withStyle(style -> style.withColor(color));
+		tip.add(Component.translatable(key, hex).withStyle(ChatFormatting.GRAY));
 	}
 
 	private static boolean isKey(Component c, String key) {

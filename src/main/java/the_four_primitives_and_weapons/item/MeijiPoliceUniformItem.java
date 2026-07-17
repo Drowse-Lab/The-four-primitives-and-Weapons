@@ -17,21 +17,17 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.world.item.DyeableLeatherItem;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 
 import the_four_primitives_and_weapons.client.model.MeijiUniformArmorModels;
 
 import java.util.function.Consumer;
 
 /**
- * 明治警官 制服 — カスタム3D（手は白手袋・染色可）。 軽装（革～銅程度）。
+ * 明治警官 制服 — カスタム3D。 軽装（革～銅程度）。
  */
 public abstract class MeijiPoliceUniformItem extends ArmorItem {
 
 	private static final String TEXTURE = "the_four_primitives_and_weapons:textures/entities/meiji_police_uniform.png";
-	private static final String GLOVES = "the_four_primitives_and_weapons:textures/entities/meiji_police_gloves.png";
 
 	public MeijiPoliceUniformItem(ArmorItem.Type type, Item.Properties properties) {
 		super(new ArmorMaterial() {
@@ -95,7 +91,7 @@ public abstract class MeijiPoliceUniformItem extends ArmorItem {
 		public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) { return TEXTURE; }
 	}
 
-	public static class Chestplate extends MeijiPoliceUniformItem implements DyeableLeatherItem {
+	public static class Chestplate extends MeijiPoliceUniformItem {
 		public Chestplate() { super(ArmorItem.Type.CHESTPLATE, new Item.Properties()); }
 
 		@Override
@@ -109,53 +105,8 @@ public abstract class MeijiPoliceUniformItem extends ArmorItem {
 			});
 		}
 
-		// 色はバニラの display.color ではなく独自タグに保存する。
-		// ( display.color に入れるとバニラが「Dyed」 と表示してしまうため )
-		private static final String COLOR_TAG = "GloveColor";
-
 		@Override
-		public boolean hasCustomColor(ItemStack stack) {
-			CompoundTag tag = stack.getTag();
-			if (tag != null && tag.contains(COLOR_TAG, Tag.TAG_INT)) return true;
-			return displayColor(stack) >= 0; // 皮装備方式 display.color でも可
-		}
-
-		/** 手袋の色。 未染色なら白。 */
-		@Override
-		public int getColor(ItemStack stack) {
-			CompoundTag tag = stack.getTag();
-			if (tag != null && tag.contains(COLOR_TAG, Tag.TAG_INT)) return tag.getInt(COLOR_TAG);
-			int d = displayColor(stack);
-			return d >= 0 ? d : 0xFFFFFF;
-		}
-
-		/** /give …{display:{color:N}} で入れた色。 無ければ -1。 */
-		private static int displayColor(ItemStack stack) {
-			CompoundTag tag = stack.getTag();
-			if (tag != null && tag.contains("display", 10)) {
-				CompoundTag d = tag.getCompound("display");
-				if (d.contains("color", 99)) return d.getInt("color") & 0xFFFFFF;
-			}
-			return -1;
-		}
-
-		@Override
-		public void setColor(ItemStack stack, int color) {
-			stack.getOrCreateTag().putInt(COLOR_TAG, color);
-		}
-
-		@Override
-		public void clearColor(ItemStack stack) {
-			CompoundTag tag = stack.getTag();
-			if (tag != null) tag.remove(COLOR_TAG);
-		}
-		// 色(16進数)のツールチップ表示は DyeTooltipHandler で一括処理する
-
-		// type=="overlay" → 制服本体(非染色) / それ以外(=染色される層) → 手袋
-		@Override
-		public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
-			return "overlay".equals(type) ? TEXTURE : GLOVES;
-		}
+		public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) { return TEXTURE; }
 	}
 
 	public static class Leggings extends MeijiPoliceUniformItem {

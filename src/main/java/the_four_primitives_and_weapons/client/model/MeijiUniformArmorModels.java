@@ -66,6 +66,20 @@ public final class MeijiUniformArmorModels {
 		return finish(model, living, def);
 	}
 
+	/**
+	 * 手袋 ( GloveItem, Curios hands スロット ) 用 — 両腕スロットに手袋ジオメトリのみ。
+	 * 腕幅が変わるので slim/wide を切り替える。
+	 */
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	public static HumanoidModel gloves(LivingEntity living, HumanoidModel def) {
+		ModelMeijiUniform<?> m = bakedFor(living);
+		HumanoidModel model = new HumanoidModel(new ModelPart(Collections.emptyList(), Map.of(
+				"head", empty(), "hat", empty(), "body", empty(),
+				"right_arm", m.right_glove, "left_arm", m.left_glove,
+				"right_leg", empty(), "left_leg", empty())));
+		return finish(model, living, def);
+	}
+
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public static HumanoidModel leggings(LivingEntity living, HumanoidModel def) {
 		ModelMeijiUniform<?> m = baked();

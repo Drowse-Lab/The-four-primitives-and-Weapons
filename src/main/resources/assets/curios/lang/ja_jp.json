@@ -1,5 +1,7 @@
 {
   "curios.identifier.book": "魔法書",
   "curios.identifier.belt": "ベルト",
-  "curios.identifier.back": "背中"
+  "curios.identifier.back": "背中",
+  "curios.identifier.elytra": "エリトラ",
+  "curios.identifier.hands": "手"
 }

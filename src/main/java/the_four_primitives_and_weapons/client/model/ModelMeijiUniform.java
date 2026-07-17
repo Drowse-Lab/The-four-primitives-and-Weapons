@@ -44,6 +44,8 @@ public class ModelMeijiUniform<T extends Entity> extends EntityModel<T> {
 	public final ModelPart left_leg;
 	public final ModelPart right_boot;
 	public final ModelPart left_boot;
+	public final ModelPart right_glove;
+	public final ModelPart left_glove;
 
 	public ModelMeijiUniform(ModelPart root) {
 		this.head = root.getChild("head");
@@ -54,6 +56,8 @@ public class ModelMeijiUniform<T extends Entity> extends EntityModel<T> {
 		this.left_leg = root.getChild("left_leg");
 		this.right_boot = root.getChild("right_boot");
 		this.left_boot = root.getChild("left_boot");
+		this.right_glove = root.getChild("right_glove");
+		this.left_glove = root.getChild("left_glove");
 	}
 
 	public static LayerDefinition createBodyLayer() {
@@ -93,10 +97,9 @@ public class ModelMeijiUniform<T extends Entity> extends EntityModel<T> {
 						.texOffs(48, 76).addBox(-0.5F, 1.0F, -2.95F, 1.0F, 10.0F, 1.0F, new CubeDeformation(0.0F)),
 				PartPose.offset(0.0F, 0.0F, 0.0F));
 
-		// === 袖 : スリム + 肩章 + 袖口 + 白手袋 ===
-		// 袖は手首(y6)で終わらせ、 手の位置に手袋キューブ。
-		//   袖/肩章/袖口 = uniform テクスチャ（overlay, 非染色）
-		//   手袋(glove)  = gloves テクスチャ（染色される層）  texOffs(60/76,64)
+		// === 袖 : スリム + 肩章 + 袖口 ===
+		// 袖は手首(y6)で終わらせる。 手袋は制服には含めず、 別アイテム ( GloveItem ) の
+		// Curios 描画用に right_glove / left_glove パーツとして分離してある。
 		// 腕は slim ( Alex = 3px ) と wide ( Steve = 4px ) で形を変える。
 		//   slim: 袖/手袋を 3px に、 ピボット y を +0.5 ( バニラ slim 腕に合わせる )。 外側端は wide と同じ。
 		float armW = slim ? 3.0F : 4.0F;   // 袖/手袋の幅
@@ -114,13 +117,20 @@ public class ModelMeijiUniform<T extends Entity> extends EntityModel<T> {
 		PartDefinition right_arm = root.addOrReplaceChild("right_arm", CubeListBuilder.create()
 						.texOffs(40, 16).addBox(rArmX, -2.0F, -2.0F, armW, 8.0F, 4.0F, new CubeDeformation(0.45F)) // 袖 y-2..6
 						.texOffs(0, 92).addBox(rEpX, -2.8F, -2.5F, ovW, 1.0F, 5.0F, new CubeDeformation(0.18F))  // 肩章 (net 20x6 @0,92)
-						.texOffs(0, 76).addBox(rCuffX, 4.0F, -2.4F, ovW, 2.0F, 5.0F, new CubeDeformation(0.18F))   // 袖口 y4..6
-						.texOffs(60, 64).addBox(rArmX, 6.0F, -2.0F, armW, 4.0F, 4.0F, new CubeDeformation(0.4F)),  // 手袋 y6..10 (底=腕底に合わせ浮き防止)
+						.texOffs(0, 76).addBox(rCuffX, 4.0F, -2.4F, ovW, 2.0F, 5.0F, new CubeDeformation(0.18F)),   // 袖口 y4..6
 				PartPose.offset(-5.0F, armPivotY, 0.0F));
 		PartDefinition left_arm = root.addOrReplaceChild("left_arm", CubeListBuilder.create().mirror()
 						.texOffs(40, 16).addBox(lArmX, -2.0F, -2.0F, armW, 8.0F, 4.0F, new CubeDeformation(0.45F))
 						.texOffs(20, 92).addBox(lEpX, -2.8F, -2.5F, ovW, 1.0F, 5.0F, new CubeDeformation(0.18F)) // 肩章 (net 20x6 @20,92)
-						.texOffs(20, 76).addBox(lCuffX, 4.0F, -2.4F, ovW, 2.0F, 5.0F, new CubeDeformation(0.18F))
+						.texOffs(20, 76).addBox(lCuffX, 4.0F, -2.4F, ovW, 2.0F, 5.0F, new CubeDeformation(0.18F)),
+				PartPose.offset(5.0F, armPivotY, 0.0F));
+
+		// === 手袋 ( 別アイテム GloveItem の Curios 描画用パーツ。 制服の描画には含めない ) ===
+		// 腕と同じピボットで y6..10 ( 底 = 腕底に合わせ浮き防止 )。 texOffs(60/76,64)
+		PartDefinition right_glove = root.addOrReplaceChild("right_glove", CubeListBuilder.create()
+						.texOffs(60, 64).addBox(rArmX, 6.0F, -2.0F, armW, 4.0F, 4.0F, new CubeDeformation(0.4F)),
+				PartPose.offset(-5.0F, armPivotY, 0.0F));
+		PartDefinition left_glove = root.addOrReplaceChild("left_glove", CubeListBuilder.create().mirror()
 						.texOffs(76, 64).addBox(lArmX, 6.0F, -2.0F, armW, 4.0F, 4.0F, new CubeDeformation(0.4F)),
 				PartPose.offset(5.0F, armPivotY, 0.0F));
 

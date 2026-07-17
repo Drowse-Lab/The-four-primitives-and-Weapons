@@ -1,6 +1,9 @@
 {
-  "replace": "false",
+  "replace": false,
   "values": [
-    "minecraft:air"
+    "the_four_primitives_and_weapons:gloves",
+    "the_four_primitives_and_weapons:leather_gloves",
+    "the_four_primitives_and_weapons:archer_glove",
+    "the_four_primitives_and_weapons:iron_gauntlets"
   ]
 }

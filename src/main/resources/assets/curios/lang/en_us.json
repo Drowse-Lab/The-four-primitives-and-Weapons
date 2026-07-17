@@ -1,5 +1,7 @@
 {
   "curios.identifier.book": "magic book",
   "curios.identifier.belt": "Belt",
-  "curios.identifier.back": "Back"
+  "curios.identifier.back": "Back",
+  "curios.identifier.elytra": "Elytra",
+  "curios.identifier.hands": "Hands"
 }

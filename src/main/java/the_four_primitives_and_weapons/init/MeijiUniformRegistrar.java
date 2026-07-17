@@ -6,9 +6,14 @@ import the_four_primitives_and_weapons.item.BattoutaiUniformItem;
 import the_four_primitives_and_weapons.item.MeijiPoliceUniformItem;
 import the_four_primitives_and_weapons.item.KeishiPatrolUniformItem;
 import the_four_primitives_and_weapons.item.KeishiOfficerUniformItem;
+import the_four_primitives_and_weapons.item.GloveItem;
+import the_four_primitives_and_weapons.item.ArcherGloveItem;
+import the_four_primitives_and_weapons.item.IronGauntletsItem;
 
 import net.minecraft.world.item.Item;
+import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
@@ -76,7 +81,31 @@ public final class MeijiUniformRegistrar {
 	public static final RegistryObject<Item> KEISHI_OFFICER_BOOTS =
 			ITEMS.register("keishi_officer_boots", KeishiOfficerUniformItem.Boots::new);
 
+	// === 手袋類 ( 制服から分離した独立アイテム。 Curios hands スロットに装備 ) ===
+	/** 白手袋 ( 染色可 ) */
+	public static final RegistryObject<Item> GLOVES =
+			ITEMS.register("gloves", GloveItem::new);
+	/** 革手袋 ( 染色可。 未染色 = 革色 ) */
+	public static final RegistryObject<Item> LEATHER_GLOVES =
+			ITEMS.register("leather_gloves", () -> new GloveItem(0xA06540));
+	/** 弓懸 ( ゆがけ ) — 弓の引き絞り加速。 染色可 ( 未染色 = 鹿革色 ) */
+	public static final RegistryObject<Item> ARCHER_GLOVE =
+			ITEMS.register("archer_glove", ArcherGloveItem::new);
+	/** 鉄の籠手 — 防御 +1。 染色不可 */
+	public static final RegistryObject<Item> IRON_GAUNTLETS =
+			ITEMS.register("iron_gauntlets", IronGauntletsItem::new);
+
 	private MeijiUniformRegistrar() {}
+
+	/** 水入り大釜での「洗浄」( 色落とし ) をバニラの革防具と同様に有効化する ( 染色可の手袋のみ )。 */
+	@SubscribeEvent
+	public static void onCommonSetup(FMLCommonSetupEvent event) {
+		event.enqueueWork(() -> {
+			CauldronInteraction.WATER.put(GLOVES.get(), CauldronInteraction.DYED_ITEM);
+			CauldronInteraction.WATER.put(LEATHER_GLOVES.get(), CauldronInteraction.DYED_ITEM);
+			CauldronInteraction.WATER.put(ARCHER_GLOVE.get(), CauldronInteraction.DYED_ITEM);
+		});
+	}
 
 	/** TAB_ARMOR に12アイテムを追加 */
 	@SubscribeEvent
@@ -102,5 +131,9 @@ public final class MeijiUniformRegistrar {
 		event.accept(KEISHI_OFFICER_TUNIC);
 		event.accept(KEISHI_OFFICER_TROUSERS);
 		event.accept(KEISHI_OFFICER_BOOTS);
+		event.accept(GLOVES);
+		event.accept(LEATHER_GLOVES);
+		event.accept(ARCHER_GLOVE);
+		event.accept(IRON_GAUNTLETS);
 	}
 }
