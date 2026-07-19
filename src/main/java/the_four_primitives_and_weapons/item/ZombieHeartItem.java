@@ -84,15 +84,15 @@ public abstract class ZombieHeartItem extends ArmorItem {
 			super(ArmorItem.Type.HELMET, new Item.Properties());
 		}
 
+		// 最大体力 +4 は ZombieHeartHandler ( 装備イベント方式 ) で付与する。
+		// ここでの getDefaultAttributeModifiers 上書きは、アイテムに AttributeModifiers NBT が
+		// 付くと丸ごと無視される等の不確実さがあるため使わない。
 		@Override
-		public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot equipmentSlot) {
-			if (equipmentSlot == EquipmentSlot.HEAD) {
-				ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
-				builder.putAll(super.getDefaultAttributeModifiers(equipmentSlot));
-				builder.put(Attributes.MAX_HEALTH, new AttributeModifier(MAX_HEALTH_UUID, "Armor modifier", 4d, AttributeModifier.Operation.ADDITION));
-				return builder.build();
-			}
-			return super.getDefaultAttributeModifiers(equipmentSlot);
+		public void appendHoverText(ItemStack stack, net.minecraft.world.level.Level level,
+				java.util.List<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+			super.appendHoverText(stack, level, tooltip, flag);
+			tooltip.add(net.minecraft.network.chat.Component.literal("装備中: 最大体力 +4")
+					.withStyle(net.minecraft.ChatFormatting.AQUA));
 		}
 
 		@Override
