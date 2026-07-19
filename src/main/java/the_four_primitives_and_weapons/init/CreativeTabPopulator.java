@@ -181,6 +181,7 @@ public class CreativeTabPopulator {
 		if (event.getTab() == TheFourPrimitivesAndWeaponsModTabs.TAB_EVENT.get()) {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.HARVEST_MOON_2023929);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.PUMPKIN_HEAD_HELMET);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.ZOMBIE_HEART);
 		}
 
 		// === TAB_DRAGON_ARMOR_TAB ===

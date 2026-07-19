@@ -54,6 +54,7 @@ public class TheFourPrimitivesAndWeaponsModModels {
 		event.registerLayerDefinition(Modeltyokusenarrowonverted.LAYER_LOCATION, Modeltyokusenarrowonverted::createBodyLayer);
 		event.registerLayerDefinition(Modelmahouzinn.LAYER_LOCATION, Modelmahouzinn::createBodyLayer);
 		event.registerLayerDefinition(Modelhead_player_converted.LAYER_LOCATION, Modelhead_player_converted::createBodyLayer);
+		event.registerLayerDefinition(the_four_primitives_and_weapons.client.model.Modelzombie_heart_head.LAYER_LOCATION, the_four_primitives_and_weapons.client.model.Modelzombie_heart_head::createBodyLayer);
 		event.registerLayerDefinition(Modelstray_outer_Converted.LAYER_LOCATION, Modelstray_outer_Converted::createBodyLayer);
 		event.registerLayerDefinition(Modelillusioner_armor_layer_3_Converted.LAYER_LOCATION, Modelillusioner_armor_layer_3_Converted::createBodyLayer);
 		event.registerLayerDefinition(Modelwarden_armor_layer_3.LAYER_LOCATION, Modelwarden_armor_layer_3::createBodyLayer);

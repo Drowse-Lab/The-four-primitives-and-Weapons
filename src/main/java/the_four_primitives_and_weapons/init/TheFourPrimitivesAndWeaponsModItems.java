@@ -52,6 +52,7 @@ import the_four_primitives_and_weapons.item.Reset1Item;
 import the_four_primitives_and_weapons.item.ReplicaSwordOfLightItem;
 import the_four_primitives_and_weapons.item.QuestbookItem;
 import the_four_primitives_and_weapons.item.PumpkinHeadItem;
+import the_four_primitives_and_weapons.item.ZombieHeartItem;
 import the_four_primitives_and_weapons.item.PrototypeKatanaItem;
 import the_four_primitives_and_weapons.item.PillagerArmorItem;
 import the_four_primitives_and_weapons.item.OninomenItem;
@@ -267,6 +268,7 @@ public class TheFourPrimitivesAndWeaponsModItems {
 	public static final RegistryObject<Item> WITHER_BONE = REGISTRY.register("wither_bone", () -> new WitherBoneItem());
 	public static final RegistryObject<Item> METEOR_ARROW_SPAWN_EGG = REGISTRY.register("meteor_arrow_spawn_egg", () -> new ForgeSpawnEggItem(TheFourPrimitivesAndWeaponsModEntities.METEOR_ARROW, -1, -1, new Item.Properties()));
 	public static final RegistryObject<Item> PUMPKIN_HEAD_HELMET = REGISTRY.register("pumpkin_head_helmet", () -> new PumpkinHeadItem.Helmet());
+	public static final RegistryObject<Item> ZOMBIE_HEART = REGISTRY.register("zombie_heart", () -> new ZombieHeartItem.Helmet());
 	public static final RegistryObject<Item> TUKAENA = REGISTRY.register("tukaena", () -> new TukaenaItem());
 	public static final RegistryObject<Item> ITEM_STAN = block(TheFourPrimitivesAndWeaponsModBlocks.ITEM_STAN, TheFourPrimitivesAndWeaponsModTabs.TAB_MAGIC_BOOKS);
 	public static final RegistryObject<Item> ALCHEMY_CRAFT_BLOCK = block(TheFourPrimitivesAndWeaponsModBlocks.ALCHEMY_CRAFT_BLOCK, null);
