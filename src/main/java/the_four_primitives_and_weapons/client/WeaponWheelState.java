@@ -131,19 +131,13 @@ public class WeaponWheelState {
     private static List<SpecialAction> buildSpecialActionsForDraw(Player player) {
         List<SpecialAction> actions = new ArrayList<>();
         ItemStack mkIcon = new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get());
-        // 「結晶化」 entry は常時表示。 server 側 handleSpawnCrystal が手 / インベ / saya 内 / Curios を
-        // 全部走査して Magical Katana を探す。 見つからなければメッセージで案内する。
-        List<String> slots = findMagicalKatanaSlotLabels(player);
-        if (slots.isEmpty()) {
+        // 「結晶化」 entry は結晶化アイテムがある時のみ表示 ( = Magical Katana を収納した結晶ポーチが
+        //  インベントリにある )。 server 側 spawnCrystal の発動条件と一致させ、 無い時は entry を
+        //  出さない。 これで抜刀ホイールが空になり、 Backpack-Arsenal 等のアドオン抜刀へ譲れる。
+        if (canCrystallize(player)) {
             actions.add(new SpecialAction(
                     MagicalKatanaActionPacket.Action.SPAWN_CRYSTAL,
-                    mkIcon, "§d結晶化", "[?]"));
-        } else {
-            for (String slot : slots) {
-                actions.add(new SpecialAction(
-                        MagicalKatanaActionPacket.Action.SPAWN_CRYSTAL,
-                        mkIcon, "§d結晶化", slot));
-            }
+                    mkIcon, "§d結晶化", "[結晶ポーチ]"));
         }
         // 自分の UUID 付き具現化版が世界 ( client 可視範囲 ) にあれば 「全破壊」
         if (hasOwnMaterializedInWorld(player)) {
@@ -155,62 +149,13 @@ public class WeaponWheelState {
     }
 
     /**
-     * Magical Katana ( 直接 or saya 内 ) が存在する全ての場所のラベル list を返す。
-     * 同じ場所に複数あっても 1 個だけ表示 ( 重複排除 )。
+     * 結晶化 ( 具現化 ) を発動できるか ( = server 側 {@code spawnCrystal} の発動条件 )。
+     * インベントリに「Magical Katana を収納した結晶ポーチ」がある時のみ true。
      */
-    private static List<String> findMagicalKatanaSlotLabels(Player player) {
-        List<String> labels = new ArrayList<>();
-        if (player == null) return labels;
-        java.util.Set<String> seen = new java.util.HashSet<>();
-
-        // 手持ち
-        ItemStack main = player.getMainHandItem();
-        if (containsMagicalKatana(main) && seen.add("メインハンド")) labels.add("メインハンド");
-        ItemStack off = player.getOffhandItem();
-        if (containsMagicalKatana(off) && seen.add("オフハンド")) labels.add("オフハンド");
-
-        // インベントリ ( ホットバー含む )
-        net.minecraft.world.entity.player.Inventory inv = player.getInventory();
-        for (int i = 0; i < inv.getContainerSize(); i++) {
-            ItemStack s = inv.getItem(i);
-            if (containsMagicalKatana(s) && seen.add("インベントリ")) {
-                labels.add("インベントリ");
-                break;
-            }
-        }
-        return labels;
-    }
-
-    /** stack が Magical Katana 自身 もしくは saya に納刀された Magical Katana か。 */
-    private static boolean containsMagicalKatana(ItemStack stack) {
-        if (stack.isEmpty()) return false;
-        if (MagicalKatanaCrystalHandler.isMagicalKatana(stack)) return true;
-        if (CuriosScabbardHelper.isScabbard(stack) && CuriosScabbardHelper.hasStoredWeapon(stack)) {
-            ItemStack stored = CuriosScabbardHelper.extractWeaponFromScabbard(stack);
-            return MagicalKatanaCrystalHandler.isMagicalKatana(stored);
-        }
-        return false;
-    }
-
-    /**
-     * 自分のインベントリ全体 ( 手 + ホットバー + メイン inventory ) に Magical Katana があるか。
-     * 直接置かれた Magical Katana だけでなく、 saya に納刀された Magical Katana も検出。
-     */
-    private static boolean hasMagicalKatanaInInventory(Player player) {
-        if (player == null) return false;
-        net.minecraft.world.entity.player.Inventory inv = player.getInventory();
-        for (int i = 0; i < inv.getContainerSize(); i++) {
-            ItemStack s = inv.getItem(i);
-            if (MagicalKatanaCrystalHandler.isMagicalKatana(s)) {
-                return true;
-            }
-            // saya に納刀された武器 も覗く
-            if (CuriosScabbardHelper.isScabbard(s) && CuriosScabbardHelper.hasStoredWeapon(s)) {
-                ItemStack stored = CuriosScabbardHelper.extractWeaponFromScabbard(s);
-                if (MagicalKatanaCrystalHandler.isMagicalKatana(stored)) return true;
-            }
-        }
-        return false;
+    private static boolean canCrystallize(Player player) {
+        return player != null
+                && !the_four_primitives_and_weapons.item.MaterializedPouchItem
+                        .findPouchWithMagicalKatana(player).isEmpty();
     }
 
     /**
@@ -227,7 +172,8 @@ public class WeaponWheelState {
                         MagicalKatanaActionPacket.Action.SHATTER,
                         new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get()),
                         "§c破壊"));
-            } else if (MagicalKatanaCrystalHandler.isUnlocked(weaponStack)) {
+            } else if (MagicalKatanaCrystalHandler.isUnlocked(weaponStack) && canCrystallize(player)) {
+                // 結晶化アイテム ( Magical Katana 入り結晶ポーチ ) がある時のみ表示
                 actions.add(new SpecialAction(
                         MagicalKatanaActionPacket.Action.SPAWN_CRYSTAL,
                         new ItemStack(TheFourPrimitivesAndWeaponsModItems.MAGICAL_KATANA.get()),
@@ -389,6 +335,10 @@ public class WeaponWheelState {
         }
 
         // 0.5秒以上長押しでホイール表示開始 (マウス解放もこのタイミング)
+        //   ネイティブのエントリが 0 でもホイールは開く。 Backpack-Arsenal の
+        //   VoltaicBladeWheelInjector は「ホイール表示中」の tick に backpack エントリを
+        //   drawableWeapons へ注入するため、 ここで開かないと backpack の抜刀/納刀 UI が
+        //   出なくなる ( エントリ数で開閉を判定しない )。
         if (!wheelVisible && System.currentTimeMillis() - pressStartTime >= WHEEL_DELAY_MS) {
             wheelVisible = true;
             mc.mouseHandler.releaseMouse();

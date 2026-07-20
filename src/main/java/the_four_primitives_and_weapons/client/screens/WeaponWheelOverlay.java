@@ -120,6 +120,10 @@ public class WeaponWheelOverlay {
     }
 
     private static String getSlotLabel(DrawableWeaponInfo info) {
+        // アドオン等が指定したラベル上書きを優先 ( 例: backpack 抜刀エントリ )
+        if (info.slotLabelOverride != null && !info.slotLabelOverride.isEmpty()) {
+            return info.slotLabelOverride;
+        }
         switch (info.location) {
             case CURIOS:
                 if ("belt".equals(info.curioSlotId)) return "ベルト";

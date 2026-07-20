@@ -426,6 +426,28 @@ public class MaterializedPouchItem extends Item {
         return ItemStack.EMPTY;
     }
 
+    /** ポーチのいずれかのスロットに Magical Katana ( 通常版 ) が収納されているか。 */
+    public static boolean hasStoredMagicalKatana(ItemStack pouch) {
+        if (pouch.isEmpty() || !(pouch.getItem() instanceof MaterializedPouchItem)) return false;
+        for (ItemStack s : getLoadout(pouch)) {
+            if (MagicalKatanaCrystalHandler.isMagicalKatana(s)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * インベントリ内で「Magical Katana を収納している結晶ポーチ」を返す ( 無ければ EMPTY )。
+     * 結晶化 ( 具現化 ) の発動条件判定に使う。
+     */
+    public static ItemStack findPouchWithMagicalKatana(Player player) {
+        var inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (s.getItem() instanceof MaterializedPouchItem && hasStoredMagicalKatana(s)) return s;
+        }
+        return ItemStack.EMPTY;
+    }
+
     // --- 収納バー / ツールチップ ------------------------------------------
 
     @Override

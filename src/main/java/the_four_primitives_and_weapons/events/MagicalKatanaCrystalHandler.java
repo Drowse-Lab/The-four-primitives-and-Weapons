@@ -569,6 +569,19 @@ public class MagicalKatanaCrystalHandler {
             return;
         }
 
+        // 結晶化には「Magical Katana を収納した結晶ポーチ」がインベントリに必要
+        //   ( ポーチが無い / ポーチに Magical Katana が入っていない場合は結晶化不可 )
+        if (the_four_primitives_and_weapons.item.MaterializedPouchItem.findPouchWithMagicalKatana(player).isEmpty()) {
+            if (player instanceof net.minecraft.server.level.ServerPlayer spPouch) {
+                boolean hasPouch = !the_four_primitives_and_weapons.item.MaterializedPouchItem.findFirst(player).isEmpty();
+                spPouch.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                        hasPouch
+                                ? "§c結晶ポーチに Magical Katana が入っていないため結晶化できません"
+                                : "§c結晶ポーチが無いため結晶化できません"), true);
+            }
+            return;
+        }
+
         // 具現化できる本数 = 登録武器ロードアウト数。 既に上限なら結晶を生成しない。
         if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
             // 登録武器数に応じて増えるが、 未登録 (0本) でも最低 1 本は具現化できるようにする

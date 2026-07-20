@@ -506,14 +506,28 @@ public class CuriosScabbardHelper {
         @Nullable
         public final String curioSlotId;
         public final int slotIndex;
+        /**
+         * ホイール UI のスロットラベル上書き ( 任意 )。 非 null なら location から導出する
+         * 既定ラベル ( 「インベントリ」「背中」等 ) の代わりにこれを表示する。
+         * アドオン ( Backpack-Arsenal 等 ) が「backpack」等の独自ラベルを出すために使う。
+         */
+        @Nullable
+        public final String slotLabelOverride;
 
         public DrawableWeaponInfo(ItemStack scabbardStack, ItemStack weaponStack,
                                   ScabbardLocation location, @Nullable String curioSlotId, int slotIndex) {
+            this(scabbardStack, weaponStack, location, curioSlotId, slotIndex, null);
+        }
+
+        public DrawableWeaponInfo(ItemStack scabbardStack, ItemStack weaponStack,
+                                  ScabbardLocation location, @Nullable String curioSlotId, int slotIndex,
+                                  @Nullable String slotLabelOverride) {
             this.scabbardStack = scabbardStack;
             this.weaponStack = weaponStack;
             this.location = location;
             this.curioSlotId = curioSlotId;
             this.slotIndex = slotIndex;
+            this.slotLabelOverride = slotLabelOverride;
         }
     }
 }
