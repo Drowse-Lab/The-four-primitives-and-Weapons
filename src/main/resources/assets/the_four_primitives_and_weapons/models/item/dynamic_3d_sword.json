@@ -2,8 +2,8 @@
   "parent": "the_four_primitives_and_weapons:custom/katanairon3d",
   "textures": {
     "0": "the_four_primitives_and_weapons:blade/katana/katanairon3d",
-    "1": "the_four_primitives_and_weapons:katana_fitting/tsuba/iron_tuba",
-    "3": "the_four_primitives_and_weapons:katana_fitting/kasira/iron_kasira",
+    "1": "the_four_primitives_and_weapons:katana_fitting/tsuba/wooden_tuba",
+    "3": "the_four_primitives_and_weapons:katana_fitting/kasira/wooden_kasira",
     "4": "the_four_primitives_and_weapons:katana_fitting/tsuka/wooden_tuka",
     "particle": "the_four_primitives_and_weapons:blade/katana/katanairon3d"
   },

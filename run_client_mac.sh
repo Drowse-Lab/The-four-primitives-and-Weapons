@@ -2,9 +2,10 @@
 # Minecraftクライアントを起動するスクリプト（mac / WSL / Windows Git Bash 対応）
 #
 # 使い方:
-#   bash run_client_mac.sh                通常 ( オンライン、 TLS workaround on )
+#   bash run_client_mac.sh                通常 ( オンライン、 TLS workaround は回線を実測して自動判定 )
 #   bash run_client_mac.sh offline        オフライン ( キャッシュ済み依存のみ )
-#   bash run_client_mac.sh notls          テザリング等 ( workaround off で素の TLS )
+#   bash run_client_mac.sh notls          テザリング等 ( workaround off を強制 — 素の TLS )
+#   bash run_client_mac.sh tls            Cisco Umbrella 検査回線 ( workaround on を強制 )
 #   bash run_client_mac.sh offline notls  併用も可
 #   bash run_client_mac.sh keepdaemon     gradle daemon を kill しない ( デフォルトは kill )
 #
@@ -14,7 +15,7 @@
 cd "$(dirname "$0")"
 
 GRADLE_ARGS="runClient"
-USE_TLS_WORKAROUND="yes"
+USE_TLS_WORKAROUND="auto"   # auto = 回線を実測して自動判定 ( notls / tls で明示上書き可 )
 KILL_DAEMON="yes"   # JAVA_TOOL_OPTIONS / gradle.properties 変更が daemon に反映されない問題対策
 for arg in "$@"; do
     case "$arg" in
@@ -26,11 +27,32 @@ for arg in "$@"; do
             USE_TLS_WORKAROUND="no"
             echo "=== TLS workaround OFF (デフォルト TLS で接続 — テザリング等 直接回線向け) ==="
             ;;
+        tls|force-tls|forcetls)
+            USE_TLS_WORKAROUND="yes"
+            echo "=== TLS workaround ON (強制 — Cisco Umbrella 検査回線向け) ==="
+            ;;
         keepdaemon|keep-daemon)
             KILL_DAEMON="no"
             ;;
     esac
 done
+
+# --- TLS workaround 自動判定 ---
+# 引数で notls / tls を明示しなかった場合、実際に素の TLS で Mojang の
+# メタサーバへ到達できるかを curl で 1 回だけ試す。
+#   到達できる ( テザリング等 直接回線 )        → workaround OFF
+#   到達できない ( Cisco Umbrella 検査回線など ) → workaround ON
+# これで `bash run_client_mac.sh` を引数なしで両方の回線に対応させる。
+if [ "$USE_TLS_WORKAROUND" = "auto" ]; then
+    echo "=== TLS 回線を自動判定中 (piston-meta.mojang.com へ素の TLS で接続テスト) ==="
+    if curl -s -o /dev/null --max-time 8 https://piston-meta.mojang.com/mc/game/version_manifest_v2.json 2>/dev/null; then
+        USE_TLS_WORKAROUND="no"
+        echo "=== 判定: 素の TLS で到達可能 → TLS workaround OFF ==="
+    else
+        USE_TLS_WORKAROUND="yes"
+        echo "=== 判定: 素の TLS が不通 → TLS workaround ON (Cisco Umbrella 検査回線とみなす) ==="
+    fi
+fi
 
 # --- gradle daemon を停止 ( JVM 引数 / 環境変数の変更を確実に反映させる ) ---
 # 起動毎に 5 秒前後余分にかかるが、 「daemon が古い JAVA_TOOL_OPTIONS を保持していて
