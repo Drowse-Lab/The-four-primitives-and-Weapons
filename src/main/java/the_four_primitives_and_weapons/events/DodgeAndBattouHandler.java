@@ -690,6 +690,12 @@ public class DodgeAndBattouHandler {
     public static boolean isWeapon(ItemStack stack) {
         if (stack.isEmpty()) return false;
 
+        // NBTフラグによる近接無効化 (アドオン契約):
+        //   maw:no_melee=1b のアイテムは近接武器として扱わない。
+        //   例: gun_and_weapon のガンブレードは射撃モード中このフラグを立て、
+        //   コンボ/チャージ/回避が銃操作と同時発動しないようにする。
+        if (stack.hasTag() && stack.getTag().getBoolean("maw:no_melee")) return false;
+
         // SwordItemまたはカタナ系アイテムかチェック
         if (stack.getItem() instanceof SwordItem) return true;
         // トライデントも武器扱い（スキル選択の右クリックスロットで

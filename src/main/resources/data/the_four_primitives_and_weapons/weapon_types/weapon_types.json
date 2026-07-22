@@ -108,7 +108,7 @@
       "default_motions": {
         "first_hit": "upper_left_slash",
         "second_hit": "upper_right_slash",
-        "third_hit": "slam_down",
+        "third_hit": "horizontal_slash",
         "charged": "slam_down"
       }
     },

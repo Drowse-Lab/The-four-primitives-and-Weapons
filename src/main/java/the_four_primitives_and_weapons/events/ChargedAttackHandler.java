@@ -563,6 +563,12 @@ public class ChargedAttackHandler {
     private static boolean isWeapon(ItemStack stack) {
         if (stack.isEmpty()) return false;
 
+        // NBTフラグによる近接無効化 (アドオン契約):
+        //   maw:no_melee=1b のアイテムは近接武器として扱わない。
+        //   例: gun_and_weapon のガンブレードは射撃モード中このフラグを立て、
+        //   コンボ/チャージ/回避が銃操作と同時発動しないようにする。
+        if (stack.hasTag() && stack.getTag().getBoolean("maw:no_melee")) return false;
+
         // 他MOD（TACZ等の銃MOD）のアイテムは除外
         String className = stack.getItem().getClass().getName();
         if (className.contains("tacz") || className.contains("cgm")) return false;
@@ -571,6 +577,12 @@ public class ChargedAttackHandler {
         if (stack.getItem() instanceof SwordItem) return true;
         // トライデントも左クリック通常攻撃・コンボ・チャージの対象
         if (stack.getItem() instanceof net.minecraft.world.item.TridentItem) return true;
+
+        // data/<namespace>/weapon_types/*.json に登録された addon 武器も武器扱い
+        // (DodgeAndBattouHandler.isWeapon と同じ扱い)
+        if (the_four_primitives_and_weapons.skill.WeaponTypeRegistry.getTypeForItem(stack) != null) {
+            return true;
+        }
 
         String itemName = stack.getItem().getClass().getSimpleName();
         return itemName.contains("Katana") || itemName.contains("Sword") ||

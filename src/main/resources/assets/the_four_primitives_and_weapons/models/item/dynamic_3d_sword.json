@@ -1,11 +1,11 @@
 {
-  "parent": "the_four_primitives_and_weapons:custom/katanairon3d",
+  "parent": "the_four_primitives_and_weapons:custom/weapon/sword/sword_parent",
   "textures": {
-    "0": "the_four_primitives_and_weapons:blade/katana/katanairon3d",
-    "1": "the_four_primitives_and_weapons:katana_fitting/tsuba/wooden_tuba",
-    "3": "the_four_primitives_and_weapons:katana_fitting/kasira/wooden_kasira",
-    "4": "the_four_primitives_and_weapons:katana_fitting/tsuka/wooden_tuka",
-    "particle": "the_four_primitives_and_weapons:blade/katana/katanairon3d"
+    "0": "minecraft:item/iron_sword",
+    "3": "the_four_primitives_and_weapons:sword_fitting/tsuba/wooden_light",
+    "4": "the_four_primitives_and_weapons:sword_fitting/kasira/wooden_light",
+    "6": "the_four_primitives_and_weapons:sword_fitting/tsuka/wooden_light",
+    "particle": "minecraft:item/iron_sword"
   },
   "overrides": [
     {
