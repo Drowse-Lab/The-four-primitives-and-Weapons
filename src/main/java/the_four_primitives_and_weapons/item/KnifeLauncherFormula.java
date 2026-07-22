@@ -116,12 +116,13 @@ public final class KnifeLauncherFormula {
         };
     }
 
-    public static double manaCostFor(KnifeType mode) {
+    /** 1 本あたりの満腹度コスト (肉アイコン半分 = 1.0) */
+    public static double hungerCostFor(KnifeType mode) {
         return switch (mode) {
-            case STUN   -> getDouble("mana-stun",   25.0);
-            case SCREW  -> getDouble("mana-screw",  10.0);
-            case HOMING -> getDouble("mana-homing", 30.0);
-            default     -> getDouble("mana-normal", 0.0);
+            case STUN   -> getDouble("hunger-stun",   2.5);
+            case SCREW  -> getDouble("hunger-screw",  1.0);
+            case HOMING -> getDouble("hunger-homing", 3.0);
+            default     -> getDouble("hunger-normal", 0.0);
         };
     }
 

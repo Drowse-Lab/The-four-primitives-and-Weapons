@@ -5,7 +5,7 @@ import com.google.common.collect.Multimap;
 
 import the_four_primitives_and_weapons.entity.ThrowingKnifeEntity;
 import the_four_primitives_and_weapons.entity.ThrowingKnifeEntity.KnifeType;
-import the_four_primitives_and_weapons.mana.ManaHelper;
+import the_four_primitives_and_weapons.compat.FarmersDelightCompat;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -33,10 +33,13 @@ import java.util.List;
 /**
  * 投げナイフアイテム — 右クリック投擲 / 左クリック近接攻撃 (トライデント風)
  *
- *  右クリック: 飛翔体を投擲 (1個消費 / cooldown / MP消費)
+ *  右クリック: 飛翔体を投擲 (1個消費 / cooldown / 食料ゲージ消費)
  *  左クリック: 通常の近接攻撃 (攻撃力 +3.0 / 攻撃速度 やや早め)
  *
- * サブクラスは getKnifeType() / manaCost() / cooldown() / meleeBonus() をオーバーライド。
+ * サブクラスは getKnifeType() / hungerCost() / cooldown() / meleeBonus() をオーバーライド。
+ *
+ * 消費は MP ではなく **食料ゲージ**。ただし Farmer's Delight の「満腹 (Nourishment)」
+ * エフェクト中は消費しない。
  */
 public class ThrowingKnifeItem extends Item {
 
@@ -58,8 +61,8 @@ public class ThrowingKnifeItem extends Item {
 
     /** サブクラスが上書き — 飛翔体に渡すKnifeType */
     public KnifeType getKnifeType() { return KnifeType.NORMAL; }
-    /** 1投あたりMP消費 (>0なら不足時投げない) */
-    public double manaCost() { return 0; }
+    /** 1投あたりの食料ゲージ消費 (肉アイコン半分=1.0 / >0なら不足時投げない) */
+    public float hungerCost() { return 0; }
     /** クールダウン(tick) */
     public int cooldown() { return 8; }
     /** スタック消費 (false = 弾切れ無視 = 永続。STUN等は1消費) */
@@ -73,15 +76,17 @@ public class ThrowingKnifeItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        double cost = manaCost();
-        boolean needsMp = cost > 0 && !player.getAbilities().instabuild;
+        float cost = hungerCost();
+        // Farmer's Delight の「満腹」中は食料ゲージを消費しない (未導入なら常に false)
+        boolean needsFood = cost > 0 && !player.getAbilities().instabuild
+            && !FarmersDelightCompat.hasNourishment(player);
 
-        // MP チェックは両サイドで実施 (UI の即時フィードバックのため)。ただし
-        // 消費はサーバー側のみで行う。両サイドで tryConsume すると Attribute 同期の
-        // タイムラグで片側だけ failして片側成功する "不発" が発生する。
-        if (needsMp && ManaHelper.getMana(player) < cost) {
+        // 空腹チェックは両サイドで実施 (UI の即時フィードバックのため)。ただし
+        // 消費はサーバー側のみで行う。両サイドで消費すると同期のタイムラグで
+        // 片側だけ fail して片側成功する "不発" が発生する。
+        if (needsFood && foodTotal(player) < cost) {
             if (!level.isClientSide) {
-                player.displayClientMessage(Component.literal("§b✦ MP不足 (" + (int)cost + ")"), true);
+                player.displayClientMessage(Component.literal("§6🍖 空腹 (必要: " + fmt(cost) + ")"), true);
             }
             return InteractionResultHolder.fail(stack);
         }
@@ -93,9 +98,10 @@ public class ThrowingKnifeItem extends Item {
             0.4f / (level.getRandom().nextFloat() * 0.4f + 0.8f));
 
         if (!level.isClientSide) {
-            // サーバーのみで MP 消費 (権威あり)
-            if (needsMp) {
-                ManaHelper.setMana(player, ManaHelper.getMana(player) - cost);
+            // サーバーのみで食料ゲージ消費 (権威あり)。
+            // 満腹度4.0 = 肉アイコン半分1.0 分。まず隠し満腹度(saturation)から削られる。
+            if (needsFood) {
+                player.causeFoodExhaustion(cost * 4.0f);
             }
 
             ThrowingKnifeEntity knife = new ThrowingKnifeEntity(level, player);
@@ -134,6 +140,15 @@ public class ThrowingKnifeItem extends Item {
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }
 
+    /** 食料ゲージ + 隠し満腹度 の合計 (肉アイコン半分=1.0 換算) */
+    private static float foodTotal(Player player) {
+        return player.getFoodData().getFoodLevel() + player.getFoodData().getSaturationLevel();
+    }
+
+    private static String fmt(float v) {
+        return v == (int) v ? String.valueOf((int) v) : String.valueOf(v);
+    }
+
     private LivingEntity pickHomingTarget(Player player) {
         Vec3 look = player.getLookAngle();
         Vec3 eye = player.getEyePosition();
@@ -151,8 +166,9 @@ public class ThrowingKnifeItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
-        if (manaCost() > 0) {
-            tooltip.add(Component.literal("§b✦ MP消費: §f" + (int)manaCost()));
+        if (hungerCost() > 0) {
+            tooltip.add(Component.literal("§6🍖 満腹度消費: §f" + fmt(hungerCost())));
+            tooltip.add(Component.literal("§8(満腹エフェクト中は消費なし)"));
         }
     }
 }

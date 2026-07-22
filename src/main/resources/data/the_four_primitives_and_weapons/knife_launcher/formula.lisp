@@ -16,11 +16,11 @@
 (define cooldown-screw  10)
 (define cooldown-homing 12)
 
-;; --- モード別の 1 本あたりの MP コスト ---
-(define mana-normal 0)
-(define mana-stun   25)
-(define mana-screw  10)
-(define mana-homing 30)
+;; --- モード別の 1 本あたりの満腹度コスト (肉アイコン半分 = 1.0) ---
+(define hunger-normal 0)
+(define hunger-stun   2.5)
+(define hunger-screw  1.0)
+(define hunger-homing 3.0)
 
 ;; --- スポーン位置のランダムオフセット最大 (ブロック単位) ---
 ;; プレイヤー視線に垂直な方向に左右/上下へこの値×±1 ぶんずれる

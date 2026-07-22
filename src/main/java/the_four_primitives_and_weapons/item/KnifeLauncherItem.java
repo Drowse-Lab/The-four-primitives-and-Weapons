@@ -3,7 +3,7 @@ package the_four_primitives_and_weapons.item;
 import the_four_primitives_and_weapons.entity.ThrowingKnifeEntity;
 import the_four_primitives_and_weapons.entity.ThrowingKnifeEntity.KnifeType;
 import the_four_primitives_and_weapons.init.CustomEntityInit;
-import the_four_primitives_and_weapons.mana.ManaHelper;
+import the_four_primitives_and_weapons.compat.FarmersDelightCompat;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
@@ -386,9 +386,18 @@ public class KnifeLauncherItem extends Item {
         return CustomEntityInit.THROWING_KNIFE.get();
     }
 
-    /** 1本あたりのMP消費 (formula.lisp の mana-xxx で調整可能) */
-    public static double manaCostPer(KnifeType mode) {
-        return KnifeLauncherFormula.manaCostFor(mode);
+    /** 1本あたりの満腹度消費 (肉アイコン半分=1.0 / formula.lisp の hunger-xxx で調整可能) */
+    public static double hungerCostPer(KnifeType mode) {
+        return KnifeLauncherFormula.hungerCostFor(mode);
+    }
+
+    /** 食料ゲージ + 隠し満腹度 の合計 (肉アイコン半分=1.0 換算) */
+    private static float foodTotal(Player player) {
+        return player.getFoodData().getFoodLevel() + player.getFoodData().getSaturationLevel();
+    }
+
+    private static String fmtHunger(double v) {
+        return v == (int) v ? String.valueOf((int) v) : String.valueOf((float) v);
     }
 
     /** クールダウン (tick) — formula.lisp の cooldown-xxx で調整可能 */
@@ -458,13 +467,15 @@ public class KnifeLauncherItem extends Item {
             return InteractionResultHolder.fail(stack);
         }
 
-        // MP チェック (数分まとめて) — サーバー消費のみ
-        double totalMp = manaCostPer(mode) * toThrow;
-        boolean needsMp = totalMp > 0 && !creative;
-        if (needsMp && ManaHelper.getMana(player) < totalMp) {
+        // 満腹度チェック (投げる本数分まとめて) — サーバー消費のみ。
+        // Farmer's Delight の「満腹」中は消費なし (未導入なら常に false)。
+        double totalHunger = hungerCostPer(mode) * toThrow;
+        boolean needsFood = totalHunger > 0 && !creative
+            && !FarmersDelightCompat.hasNourishment(player);
+        if (needsFood && foodTotal(player) < totalHunger) {
             if (!level.isClientSide) {
                 player.displayClientMessage(
-                    Component.literal("§b✦ MP不足 (" + (int)totalMp + ")"),
+                    Component.literal("§6🍖 空腹 (必要: " + fmtHunger(totalHunger) + ")"),
                     true);
             }
             return InteractionResultHolder.fail(stack);
@@ -476,8 +487,9 @@ public class KnifeLauncherItem extends Item {
             0.4f / (level.getRandom().nextFloat() * 0.4f + 0.8f));
 
         if (!level.isClientSide) {
-            if (needsMp) {
-                ManaHelper.setMana(player, ManaHelper.getMana(player) - totalMp);
+            // 満腹度4.0 = 肉アイコン半分1.0 分。まず隠し満腹度(saturation)から削られる。
+            if (needsFood) {
+                player.causeFoodExhaustion((float) (totalHunger * 4.0));
             }
 
             // 全員同じ方向 (プレイヤーの視線) に飛ぶが、スポーン位置を視線に対して
@@ -671,9 +683,10 @@ public class KnifeLauncherItem extends Item {
         tooltip.add(Component.literal("§8シフト+左クリック: 技選択画面"));
         tooltip.add(Component.literal("§8シフト+右クリック: ナイフ出し入れ"));
         tooltip.add(Component.literal("§8右クリック: 投擲 (内蔵→インベントリ の順に消費)"));
-        double mp = manaCostPer(mode);
-        if (mp > 0) {
-            tooltip.add(Component.literal("§b✦ MP消費: §f" + (int)mp + " §8/本"));
+        double hunger = hungerCostPer(mode);
+        if (hunger > 0) {
+            tooltip.add(Component.literal("§6🍖 満腹度消費: §f" + fmtHunger(hunger) + " §8/本"));
+            tooltip.add(Component.literal("§8(満腹エフェクト中は消費なし)"));
         }
     }
 }

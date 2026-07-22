@@ -45,4 +45,10 @@ authors="hiromichi-ngs"
     versionRange="[0,)"
     ordering="NONE"
     side="BOTH"
+[[dependencies.the_four_primitives_and_weapons]]
+    modId="farmersdelight"
+    mandatory=false
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"
 
