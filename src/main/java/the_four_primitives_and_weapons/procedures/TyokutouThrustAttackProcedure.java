@@ -143,8 +143,8 @@ public class TyokutouThrustAttackProcedure {
             ItemStack weapon = player.getMainHandItem();
             DamageCalculator.dealDamage(player, target, (float)damage, weapon);
 
-            // ノックバック（他の刀と同じ）
-            target.setDeltaMovement(lookVec.scale(1.5).add(0, 0.4, 0));
+            // ノックバック（他の刀と同じ・耐性考慮）
+            DamageCalculator.setKnockbackVelocity(target, lookVec.scale(1.5).add(0, 0.4, 0));
 
             // ヒットエフェクト
             if (world instanceof ServerLevel serverLevel) {
@@ -294,9 +294,9 @@ public class TyokutouThrustAttackProcedure {
                 );
             }
 
-            // 超強力なノックバック
+            // 超強力なノックバック（耐性考慮）
             double knockbackPower = 4.0 + chargePercent * 2.0;  // 4.0～6.0
-            target.setDeltaMovement(lookVec.scale(knockbackPower).add(0, 0.6 + chargePercent * 0.4, 0));
+            DamageCalculator.setKnockbackVelocity(target, lookVec.scale(knockbackPower).add(0, 0.6 + chargePercent * 0.4, 0));
 
             // チャージ最大時は追加効果 — 移動低下は attribute modifier ベースに置換
             if (chargePercent >= 1.0f) {
@@ -409,8 +409,8 @@ public class TyokutouThrustAttackProcedure {
             ItemStack weapon = player.getMainHandItem();
             DamageCalculator.dealDamage(player, target, (float)damage, weapon);
 
-            // ノックバック
-            target.setDeltaMovement(lookVec.scale(0.8).add(0, 0.2, 0));
+            // ノックバック（耐性考慮）
+            DamageCalculator.setKnockbackVelocity(target, lookVec.scale(0.8).add(0, 0.2, 0));
 
             // エフェクト
             if (world instanceof ServerLevel serverLevel) {
@@ -922,9 +922,9 @@ public class TyokutouThrustAttackProcedure {
             // DamageCalculatorを基準にダメージ計算＋武器効果適用
             DamageCalculator.dealDamage(player, target, damage, weapon);
 
-            // 小さなノックバック
+            // 小さなノックバック（耐性考慮）
             Vec3 knockback = target.position().subtract(start).normalize().scale(0.3);
-            target.setDeltaMovement(target.getDeltaMovement().add(knockback));
+            DamageCalculator.addKnockbackVelocity(target, knockback);
         }
     }
 }

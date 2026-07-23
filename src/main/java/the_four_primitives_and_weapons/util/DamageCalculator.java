@@ -115,6 +115,25 @@ public class DamageCalculator {
     }
 
     /**
+     * setDeltaMovement による直接ノックバックを knockback_resistance を考慮して行う。
+     * ( 素の setDeltaMovement は耐性を無視してしまい、 アイアンゴーレム等の
+     *   「ノックバックしないはずのmob」 まで吹き飛ばしてしまうため、 突き/ダッシュ技はこれを使う )
+     * 耐性 1.0 なら動かさない。 部分耐性は速度をその分弱める。
+     */
+    public static void setKnockbackVelocity(LivingEntity target, Vec3 velocity) {
+        double factor = 1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+        if (factor <= 0) return;
+        target.setDeltaMovement(velocity.scale(factor));
+    }
+
+    /** {@link #setKnockbackVelocity} の加算版 ( 既存の速度に足す )。 */
+    public static void addKnockbackVelocity(LivingEntity target, Vec3 velocity) {
+        double factor = 1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+        if (factor <= 0) return;
+        target.setDeltaMovement(target.getDeltaMovement().add(velocity.scale(factor)));
+    }
+
+    /**
      * 現在の Attack cooldown スケール context を取得（複数tick skill が damage に焼き込むのに使う）。
      * @return context 値、未セットなら null
      */

@@ -349,10 +349,10 @@ public class DashSkillHandler {
             ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
             DamageCalculator.dealDamage(player, target, state.baseDamage, weapon);
 
-            // ノックバック（WATER: 強化ノックバック）
+            // ノックバック（WATER: 強化ノックバック・耐性考慮）
             double knockScale = state.element == ElementType.WATER ? 1.2 : 0.5;
             Vec3 knockback = target.position().subtract(pos).normalize().scale(knockScale);
-            target.setDeltaMovement(knockback.x, 0.3, knockback.z);
+            DamageCalculator.setKnockbackVelocity(target, new Vec3(knockback.x, 0.3, knockback.z));
 
             // FIRE: 引火
             if (state.element == ElementType.FIRE) {
@@ -438,9 +438,9 @@ public class DashSkillHandler {
                 if (state.element == ElementType.FIRE) {
                     target.setSecondsOnFire(3);
                 } else {
-                    // WATER: ノックバック
+                    // WATER: ノックバック（耐性考慮）
                     Vec3 knockback = target.position().subtract(pos).normalize().scale(1.0);
-                    target.setDeltaMovement(knockback.x, 0.3, knockback.z);
+                    DamageCalculator.setKnockbackVelocity(target, new Vec3(knockback.x, 0.3, knockback.z));
                 }
             }
         }
