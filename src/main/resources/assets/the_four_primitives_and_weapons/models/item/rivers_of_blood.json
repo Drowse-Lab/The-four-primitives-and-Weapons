@@ -1,7 +1,10 @@
 {
   "parent": "the_four_primitives_and_weapons:custom/katanairon3dblood",
   "textures": {
-    "4": "the_four_primitives_and_weapons:block/bloodkatana",
+    "1": "the_four_primitives_and_weapons:katana_fitting/tsuka/bloodkatana_tuka",
+    "2": "the_four_primitives_and_weapons:block/bloodkatana",
+    "3": "the_four_primitives_and_weapons:katana_fitting/tsuba/bloodkatana_tuba",
+    "4": "the_four_primitives_and_weapons:katana_fitting/kasira/bloodkatana_kasira",
     "particle": "the_four_primitives_and_weapons:item/bloodkatana"
   }
 }

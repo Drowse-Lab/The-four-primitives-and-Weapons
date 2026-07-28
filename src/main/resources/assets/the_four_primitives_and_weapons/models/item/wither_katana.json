@@ -1,7 +1,10 @@
 {
   "parent": "the_four_primitives_and_weapons:custom/witherkatana3d",
   "textures": {
-    "1": "the_four_primitives_and_weapons:blade/katana/witherkatana3d",
+    "1": "the_four_primitives_and_weapons:katana_fitting/tsuka/witherkatana_tuka",
+    "2": "the_four_primitives_and_weapons:blade/katana/witherkatana3d",
+    "3": "the_four_primitives_and_weapons:katana_fitting/tsuba/witherkatana_tua",
+    "4": "the_four_primitives_and_weapons:katana_fitting/kasira/witherkatana_kasira",
     "particle": "the_four_primitives_and_weapons:item/aaaaa"
   }
 }
