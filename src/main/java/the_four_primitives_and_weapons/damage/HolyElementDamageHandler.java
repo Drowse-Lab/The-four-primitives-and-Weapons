@@ -38,6 +38,15 @@ public class HolyElementDamageHandler {
     private static final float LEVEL_DAMAGE_MULTIPLIER = 0.3f;
     private static final int HOLY_GLOW_DURATION_TICKS = 100;
 
+    // ── 回復阻害 ( 聖なる裁き ) ──────────────────────────────────────
+    // 瘴気と同じ回復阻害 state ( MiasmaHealMixin が参照 ) を共有するが、
+    // 聖は完全阻害せず 上限 60% / 持続も短め。 瘴気の方が強い場合は上書きしない。
+    private static final int   HEAL_BLOCK_DURATION_BASE      = 80;   // 4秒
+    private static final int   HEAL_BLOCK_DURATION_PER_LEVEL = 40;   // +2秒/Lv
+    private static final int   HEAL_BLOCK_DURATION_MAX       = 240;  // 12秒
+    private static final float HEAL_BLOCK_RATE_PER_LEVEL     = 0.12f;
+    private static final float HEAL_BLOCK_RATE_MAX           = 0.60f;
+
     /**
      * エンティティがアンデットかどうかを判定
      * @param entity 判定するエンティティ
@@ -111,10 +120,33 @@ public class HolyElementDamageHandler {
             }
         }
 
+        // 聖なる裁き: 対象の回復を阻害する
+        applyHealBlock(target, elementLevel);
+
         // トーテム貫通用: このエンティティが聖属性ダメージを受けたことを記録
         holyDamageTargets.put(target.getUUID(), target.level().getGameTime());
 
         return originalDamage * damageMultiplier;
+    }
+
+    /**
+     * 回復阻害を付与する。 瘴気と同じ state ( {@link MiasmaElementDamageHandler#apply} ) を使うので
+     * {@code MiasmaHealMixin} がそのまま回復量をカットし、 属性デバフ消去ポーション等でも解除できる。
+     * 既に強い阻害 ( = 瘴気 ) が乗っている場合は弱めない ( apply が max を採用 )。
+     */
+    private static void applyHealBlock(LivingEntity target, int elementLevel) {
+        if (target == null || elementLevel <= 0) return;
+
+        int duration = Math.min(HEAL_BLOCK_DURATION_MAX,
+                HEAL_BLOCK_DURATION_BASE + HEAL_BLOCK_DURATION_PER_LEVEL * (elementLevel - 1));
+        float rate = Math.min(HEAL_BLOCK_RATE_MAX, HEAL_BLOCK_RATE_PER_LEVEL * elementLevel);
+        MiasmaElementDamageHandler.apply(target, duration, rate);
+
+        if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {
+            serverLevel.sendParticles(ParticleTypes.WAX_OFF,
+                    target.getX(), target.getY() + target.getBbHeight() * 0.7, target.getZ(),
+                    6, 0.25, 0.3, 0.25, 0.02);
+        }
     }
 
     private static void applyTimedHolyGlow(LivingEntity target, int durationTicks) {

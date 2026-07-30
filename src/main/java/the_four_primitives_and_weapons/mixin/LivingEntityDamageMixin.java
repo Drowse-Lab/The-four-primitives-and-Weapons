@@ -101,6 +101,15 @@ public class LivingEntityDamageMixin {
                                     ? soulAttacker : null,
                             target, originalDamage, elementLevel);
                     break;
+                case MIASMA:
+                    modifiedDamage = MiasmaElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                    break;
+                case BLOOD:
+                    modifiedDamage = BloodElementDamageHandler.calculateDamage(
+                            source.getEntity() instanceof net.minecraft.world.entity.LivingEntity bloodAttacker
+                                    ? bloodAttacker : null,
+                            target, originalDamage, elementLevel);
+                    break;
                 case SOUL_FIRE:
                     modifiedDamage = SoulFireElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
                     break;

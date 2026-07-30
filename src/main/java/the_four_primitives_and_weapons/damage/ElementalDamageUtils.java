@@ -201,6 +201,8 @@ public class ElementalDamageUtils {
                 return DarkElementDamageHandler.handleDarkDamage(attacker, target, weapon, baseDmg);
             case MIASMA:
                 return MiasmaElementDamageHandler.handleMiasmaDamage(attacker, target, weapon, baseDmg);
+            case BLOOD:
+                return BloodElementDamageHandler.handleBloodDamage(attacker, target, weapon, baseDmg);
             case SOUL:
                 return SoulElementDamageHandler.handleSoulDamage(attacker, target, weapon, baseDmg);
             case SOUL_FIRE:

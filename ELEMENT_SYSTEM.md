@@ -14,6 +14,7 @@
 | 聖 | HOLY | HolyBookItem | DARK |
 | 闇 | DARK | DarknessItem | HOLY |
 | 瘴気 | MIASMA | MiasmaBookItem | HOLY |
+| 血 | BLOOD | (なし / NBT・血属性武器) | HOLY |
 | 消滅 | ERASURE | ErasureBookItem | NONE |
 | 魂 | SOUL | SoulBookItem / datapack | HOLY |
 | 燐火 | SOUL_FIRE | SoulFireBookItem / datapack | WATER |
@@ -71,6 +72,9 @@
 - アンデッドに独自時間管理のglowing tagを付与、Lv2以上で炎上
 - 対象アンデッド: ゾンビ、スケルトン、ウィザスケ、ストレイ、ハスク、ファントム、ドラウンド、村人ゾンビ、ゾンビピグリン、ウィザー
 - トーテム貫通: 聖ダメージを2tick追跡
+- 回復阻害(聖なる裁き): レベルごとに12%回復量削減(上限60%、完全阻害はしない)
+- 阻害持続: 80tick + レベルごとに+40tick(上限240tick)
+- 瘴気と同じ回復阻害stateを共有(`MiasmaHealMixin`)。瘴気の方が強い場合は弱めない
 
 ### 闇 (DARK)
 - 基本倍率: 1.1x
@@ -85,6 +89,15 @@
 - 阻害持続: 100tick + レベルごとに+60tick(5秒 + 3秒/レベル)
 - MobEffectを使わず `LivingEntity#heal` への独自介入で回復量を減らす
 - Lv4以上で回復完全ブロック
+- 魔導書経由だけでなく、NBTで瘴気属性を付けた武器の通常命中でも発動する
+
+### 血 (BLOOD)
+- 基本倍率: 1.1x / 既に出血中の対象へは 1.15x
+- 出血(Bleed): `blood_dot` の独自DoT。60tick + レベルごとに+20tick(最大200tick)、0.5 + レベルごとに+0.15ダメージ/tick
+- 出血は連撃で加算されるが 2.5ダメージ/tick で打ち止め (`ElementalDoTHandler.applyCapped`)
+- 吸血: 与ダメージの4%/レベル(最大30%)を攻撃者に還元。1撃あたり最大4.0回復
+- 血の無い対象(`MobType.UNDEAD`)には出血・吸血が乗らず、倍率も0.9xに下がる
+- MobEffectは使わない。持ち歩きデバフ(自傷の微量DoT)は `ElementalCarryDebuffHandler` 側
 
 ### 魂 (SOUL)
 - 基本倍率: 1.05x + レベルごとに最大+0.40x
@@ -138,6 +151,7 @@
 | HOLY | 1.1x | 対アンデッド | 2.5x | 3.4x |
 | DARK | 1.1x | 暗所 | 1.4x | 1.54x |
 | MIASMA | 1.1x | - | - | 1.1x |
+| BLOOD | 1.1x | 出血中の対象 / 対アンデッド | 1.15x / 0.9x | 1.15x |
 | ERASURE | 1.0x | 防御側で属性/遠距離攻撃を無効化 | - | 1.0x |
 | SOUL | 1.05x | 対象の体力低下 | +0.35x | 1.8x |
 | SOUL_FIRE | 1.08x | 対象の体力低下 + 青白い炎上 | +0.25x | 1.68x |

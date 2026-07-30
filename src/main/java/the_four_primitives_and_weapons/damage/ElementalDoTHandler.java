@@ -107,6 +107,26 @@ public class ElementalDoTHandler {
     }
 
     /**
+     * 上限付きで持続ダメージを付与する。
+     * 加算後の1tickあたりダメージを {@code maxDmgPerTick} で打ち止めにするので、
+     * 刀のような連撃武器でもDoTが無限に積み上がらない。
+     *
+     * @param maxDmgPerTick 加算後の1tickあたりダメージの上限
+     */
+    public static void applyCapped(LivingEntity target, int duration,
+                                   float dmgPerTick, ElementType element, float maxDmgPerTick) {
+        UUID id = target.getUUID();
+        DoTEntry existing = dotMap.get(id);
+
+        if (existing != null && existing.element == element) {
+            existing.remainingTick = Math.max(existing.remainingTick, duration);
+            existing.dmgPerTick = Math.min(maxDmgPerTick, existing.dmgPerTick + dmgPerTick);
+        } else {
+            dotMap.put(id, new DoTEntry(duration, Math.min(maxDmgPerTick, dmgPerTick), element));
+        }
+    }
+
+    /**
      * 対象エンティティのDoTを即時解除する。
      */
     public static void clear(LivingEntity target) {
@@ -118,6 +138,14 @@ public class ElementalDoTHandler {
      */
     public static boolean isActive(LivingEntity target) {
         return dotMap.containsKey(target.getUUID());
+    }
+
+    /**
+     * 対象が指定属性のDoT中かどうかを返す。
+     */
+    public static boolean isActive(LivingEntity target, ElementType element) {
+        DoTEntry entry = dotMap.get(target.getUUID());
+        return entry != null && entry.element == element;
     }
 
     // ────────────────────────────────────────────────────────────────

@@ -81,14 +81,14 @@ public class MagicKatanaSpecialChargeProcedure {
                 return;
             }
 
-            // === Magical Katana のため技デフォルト ===
-            //   本 / 魂 / 燐火の指定がない場合だけ、侵食属性の「枝分かれ」
-            //   ( = コーン状ブレス ) 攻撃を発動する。
-            String mhName = mainHand.getItem().getClass().getSimpleName();
-            if ("MagicalKatanaItem".equals(mhName)) {
-                int lv = the_four_primitives_and_weapons.damage.ElementalDamageUtils
-                        .getElementLevel(mainHand);
-                executeCorrosionAttack(world, x, y, z, player, chargePercent, Math.max(1, lv), true);
+            // === Magical Katana + 侵食属性のため技 ===
+            //   本の指定がなく、武器自体に侵食属性が付いている時は「結晶の棘」を飛ばす。
+            //   棘の本数は属性レベルで増える ( executeCorrosionThornVolley )。
+            //   属性が付いていない Magical Katana は下の通常魔法攻撃になる。
+            if (weaponElement == ElementType.CORROSION
+                    && the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler
+                            .isMagicalKatana(mainHand)) {
+                executeCorrosionThornVolley(world, player, chargePercent, weaponElementLevel);
                 setBurstWindow(player);
                 return;
             }
@@ -795,17 +795,8 @@ public class MagicKatanaSpecialChargeProcedure {
      *       具現化武器が手に入る ( {@link the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler} )。
      */
     private static void executeCorrosionAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent, int elementLevel) {
-        executeCorrosionAttack(world, x, y, z, player, chargePercent, elementLevel, false);
-    }
-
-    /**
-     * @param forceConeBreath true の時は Magical Katana 分岐 ( 結晶生成 ) を スキップして
-     *                        必ずコーンブレス側を 実行する ( = ため技デフォルト用 )。
-     */
-    private static void executeCorrosionAttack(LevelAccessor world, double x, double y, double z, Player player, float chargePercent, int elementLevel, boolean forceConeBreath) {
-        // === Magical Katana 分岐: 結晶生成モード ( forceConeBreath=true ならスキップ ) ===
-        if (!forceConeBreath
-                && the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMagicalKatana(player.getMainHandItem())
+        // === Magical Katana 分岐: 結晶生成モード ===
+        if (the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMagicalKatana(player.getMainHandItem())
                 && !the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isMaterialized(player.getMainHandItem())) {
             // 未解放 ( = 具現化版破壊歴なし / Lv12 未付与 ) では特殊技を出さない
             if (!the_four_primitives_and_weapons.events.MagicalKatanaCrystalHandler.isUnlocked(player.getMainHandItem())) {
@@ -952,6 +943,67 @@ public class MagicKatanaSpecialChargeProcedure {
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.AMETHYST_CLUSTER_PLACE, SoundSource.PLAYERS, 1.5f, 0.4f);
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Magical Katana + 侵食属性: 結晶の棘 ( Crystal Thorn Volley )
+    // ─────────────────────────────────────────────────────────────
+
+    /** 棘の本数 = BASE + 属性Lv ( 上限 {@link #THORN_MAX_COUNT} )。 */
+    private static final int    THORN_BASE_COUNT   = 3;
+    private static final int    THORN_MAX_COUNT    = 16;
+    /** 1 tick に射出する本数 ( 残りは次の tick へ → 連射に見える )。 */
+    private static final int    THORN_PER_TICK     = 2;
+    private static final double THORN_SPEED        = 1.15;  // ブロック / tick
+    private static final double THORN_MAX_DISTANCE = 26.0;
+    private static final double THORN_HIT_RADIUS   = 0.7;
+    private static final float  THORN_BASE_DAMAGE  = 2.5f;
+    /** 1 回の斉射で同じ相手にダメージが入る最大回数 ( 密着で全弾命中しても過剰にならないように )。 */
+    private static final int    THORN_MAX_HITS_PER_TARGET = 3;
+
+    /**
+     * 侵食属性を付けた Magical Katana のため技。
+     * 視線方向に結晶の棘を扇状に連射する。 棘の本数と貫通数は属性レベルで増える。
+     */
+    private static void executeCorrosionThornVolley(LevelAccessor world, Player player,
+                                                    float chargePercent, int elementLevel) {
+        if (!(world instanceof ServerLevel sl)) return;
+
+        int count = Math.min(THORN_MAX_COUNT, THORN_BASE_COUNT + elementLevel);
+        int pierce = 1 + elementLevel / 6;                       // Lv12 = 3体貫通
+        float damage = THORN_BASE_DAMAGE * (1.0f + elementLevel * 0.2f)
+                * (0.7f + 0.3f * chargePercent);
+
+        Vec3 forward = player.getLookAngle().normalize();
+        Vec3 right = getRightVector(forward);
+        Vec3 coneUp = right.cross(forward).normalize();
+        Vec3 origin = player.getEyePosition().add(forward.scale(0.8));
+
+        // 本数が増えるほど扇の広がりも少しだけ大きくする
+        double spreadH = Math.toRadians(Math.min(22.0, 7.0 + elementLevel * 1.0));
+        double spreadV = Math.toRadians(6.0);
+        java.util.Random rnd = new java.util.Random();
+        // 斉射単位で「誰に何回入ったか」を共有する ( 全弾が 1 体に集中しても上限で止まる )
+        java.util.Map<Integer, Integer> volleyHits = new java.util.HashMap<>();
+
+        for (int i = 0; i < count; i++) {
+            // 扇状に等間隔 + わずかなランダム
+            double t = count == 1 ? 0.0 : (i / (double) (count - 1)) * 2.0 - 1.0;
+            double aH = t * spreadH + (rnd.nextDouble() - 0.5) * Math.toRadians(3.0);
+            double aV = (rnd.nextDouble() - 0.5) * 2 * spreadV;
+            Vec3 dir = forward
+                    .add(right.scale(Math.tan(aH)))
+                    .add(coneUp.scale(Math.tan(aV)))
+                    .normalize();
+
+            activeThorns.add(new CrystalThorn(sl, player.getUUID(), origin, dir,
+                    damage, elementLevel, pierce, i / THORN_PER_TICK, volleyHits));
+        }
+
+        sl.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.AMETHYST_CLUSTER_BREAK, SoundSource.PLAYERS, 1.6f, 0.7f);
+        sl.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.0f, 0.6f);
     }
 
     /**
@@ -1985,6 +2037,119 @@ public class MagicKatanaSpecialChargeProcedure {
         }
     }
 
+    private static final java.util.List<CrystalThorn> activeThorns
+            = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /**
+     * 飛翔中の結晶の棘 1 本。 1 tick ごとに {@link #THORN_SPEED} ブロック進み、
+     * 命中 / 着弾 / 射程切れで終了する ( エンティティ登録なしのパーティクル弾 )。
+     */
+    private static final class CrystalThorn {
+        final ServerLevel level;
+        final java.util.UUID ownerId;
+        final float damage;
+        final int elementLevel;
+        final int pierce;
+        final java.util.Set<Integer> hitIds = new java.util.HashSet<>();
+        /** 同じ斉射の全ての棘で共有する 命中回数 ( entityId → 回数 )。 */
+        final java.util.Map<Integer, Integer> volleyHits;
+        Vec3 pos;
+        final Vec3 dir;
+        int delay;
+        double traveled = 0.0;
+        int hits = 0;
+
+        CrystalThorn(ServerLevel level, java.util.UUID ownerId, Vec3 origin, Vec3 dir,
+                     float damage, int elementLevel, int pierce, int delay,
+                     java.util.Map<Integer, Integer> volleyHits) {
+            this.level = level;
+            this.ownerId = ownerId;
+            this.pos = origin;
+            this.dir = dir;
+            this.damage = damage;
+            this.elementLevel = elementLevel;
+            this.pierce = pierce;
+            this.delay = delay;
+            this.volleyHits = volleyHits;
+        }
+
+        /** 1 tick 分 前進。 終わったら true を返す。 */
+        boolean tickAdvance() {
+            if (delay > 0) {
+                delay--;
+                return false;
+            }
+
+            Player owner = level.getPlayerByUUID(ownerId);
+            Vec3 next = pos.add(dir.scale(THORN_SPEED));
+
+            // ブロックに当たったらそこで砕ける
+            boolean blocked = false;
+            if (owner != null) {
+                net.minecraft.world.phys.BlockHitResult clip = level.clip(
+                        new net.minecraft.world.level.ClipContext(pos, next,
+                                net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                                net.minecraft.world.level.ClipContext.Fluid.NONE, owner));
+                if (clip.getType() != net.minecraft.world.phys.HitResult.Type.MISS) {
+                    blocked = true;
+                    next = clip.getLocation();
+                }
+            }
+
+            drawThornSegment(level, pos, next);
+
+            AABB box = new AABB(pos, next).inflate(THORN_HIT_RADIUS);
+            for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, box,
+                    e -> e.isAlive() && e != owner && !hitIds.contains(e.getId()))) {
+                hitIds.add(target.getId());
+                int alreadyHit = volleyHits.getOrDefault(target.getId(), 0);
+                if (owner != null && alreadyHit < THORN_MAX_HITS_PER_TARGET) {
+                    volleyHits.put(target.getId(), alreadyHit + 1);
+                    target.invulnerableTime = 0;
+                    hurtElementally(owner, target, ElementType.CORROSION, elementLevel, damage);
+                }
+                burstThorn(level, target.getBoundingBox().getCenter());
+                if (++hits >= pierce) return true;
+            }
+
+            traveled += pos.distanceTo(next);
+            pos = next;
+
+            if (blocked) {
+                burstThorn(level, pos);
+                return true;
+            }
+            return traveled >= THORN_MAX_DISTANCE;
+        }
+    }
+
+    /** 棘 1 セグメント ( pos → next ) を結晶色の粒で描画。 */
+    private static void drawThornSegment(ServerLevel sl, Vec3 start, Vec3 end) {
+        DustParticleOptions body = new DustParticleOptions(
+                new Vector3f(0.75f, 0.1f, 0.55f), 1.1f);
+        DustParticleOptions tip = new DustParticleOptions(
+                new Vector3f(1.0f, 0.35f, 0.7f), 0.7f);
+
+        int steps = 5;
+        Vec3 step = end.subtract(start).scale(1.0 / steps);
+        for (int i = 0; i <= steps; i++) {
+            Vec3 p = start.add(step.scale(i));
+            sl.sendParticles(body, p.x, p.y, p.z, 1, 0.02, 0.02, 0.02, 0.0);
+        }
+        // 先端を明るく ( 棘の穂先 )
+        sl.sendParticles(tip, end.x, end.y, end.z, 2, 0.03, 0.03, 0.03, 0.0);
+    }
+
+    /** 棘が砕けた時の結晶片。 */
+    private static void burstThorn(ServerLevel sl, Vec3 at) {
+        DustParticleOptions shard = new DustParticleOptions(
+                new Vector3f(0.75f, 0.1f, 0.55f), 1.3f);
+        sl.sendParticles(shard, at.x, at.y, at.z, 14, 0.25, 0.25, 0.25, 0.05);
+        sl.sendParticles(ParticleTypes.CHERRY_LEAVES, at.x, at.y, at.z, 4, 0.2, 0.2, 0.2, 0.0);
+        sl.playSound(null, at.x, at.y, at.z,
+                SoundEvents.AMETHYST_BLOCK_BREAK, SoundSource.PLAYERS, 0.7f, 1.4f);
+    }
+
     @net.minecraftforge.fml.common.Mod.EventBusSubscriber(modid = "the_four_primitives_and_weapons")
     public static class GrowthTickHandler {
         @net.minecraftforge.eventbus.api.SubscribeEvent
@@ -2005,6 +2170,13 @@ public class MagicKatanaSpecialChargeProcedure {
                     if (g.tickAdvance()) done.add(g);
                 }
                 if (!done.isEmpty()) activeGrowths.removeAll(done);
+            }
+            if (!activeThorns.isEmpty()) {
+                java.util.List<CrystalThorn> done = new java.util.ArrayList<>();
+                for (CrystalThorn thorn : activeThorns) {
+                    if (thorn.tickAdvance()) done.add(thorn);
+                }
+                if (!done.isEmpty()) activeThorns.removeAll(done);
             }
         }
     }

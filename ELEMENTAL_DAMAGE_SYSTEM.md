@@ -33,6 +33,7 @@ src/main/java/the_four_primitives_and_weapons/damage/
 ├── CorrosionElementDamageHandler.java  # 侵食属性ハンドラー
 ├── HolyElementDamageHandler.java       # 聖属性ハンドラー
 ├── SoulElementDamageHandler.java       # 魂属性ハンドラー
+├── BloodElementDamageHandler.java      # 血属性ハンドラー (出血DoT + 吸血)
 └── SoulFireElementDamageHandler.java   # 燐火属性ハンドラー
 
 src/main/java/the_four_primitives_and_weapons/mixin/

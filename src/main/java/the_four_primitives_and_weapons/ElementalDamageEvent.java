@@ -183,6 +183,12 @@ public class ElementalDamageEvent {
             case DARK:
                 modifiedDamage = DarkElementDamageHandler.calculateDamage(attacker, target, originalDamage, elementLevel);
                 break;
+            case MIASMA:
+                modifiedDamage = MiasmaElementDamageHandler.calculateDamage(target, originalDamage, elementLevel);
+                break;
+            case BLOOD:
+                modifiedDamage = BloodElementDamageHandler.calculateDamage(attacker, target, originalDamage, elementLevel);
+                break;
             case SOUL:
                 modifiedDamage = SoulElementDamageHandler.calculateDamage(attacker, target, originalDamage, elementLevel);
                 target.addTag(TAG_SOUL_DAMAGE);

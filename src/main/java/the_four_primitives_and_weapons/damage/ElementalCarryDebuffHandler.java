@@ -328,6 +328,13 @@ public class ElementalCarryDebuffHandler {
         int duration = Math.min(50, 20 + level);
         float damagePerTick = Math.min(0.025F, 0.003F * Math.max(1, level));
         ElementalDoTHandler.apply(player, duration, damagePerTick, ElementType.BLOOD);
+
+        // 出血の原因が分かるように血属性の粒子を出す (闇/消滅/魂と同じ視覚フィードバック)。
+        if (player.level() instanceof ServerLevel serverLevel) {
+            ElementalParticles.spawn(serverLevel, ElementType.BLOOD,
+                    player.getX(), player.getY() + player.getBbHeight() * 0.5, player.getZ(),
+                    Math.min(10, 3 + level / 2));
+        }
     }
 
     private static void applyErasureInstability(Player player, int level) {

@@ -237,6 +237,7 @@ public class DebugMobEntity extends PathfinderMob {
             case WIND:      return "§a";  // 緑
             case WATER:     return "§9";  // 青
             case MIASMA:    return "§5";  // 暗紫
+            case BLOOD:     return "§4";  // 血の赤
             case SOUL:      return "§b";  // 青白
             case SOUL_FIRE: return "§b";  // 燐火
             default:        return "§7";  // グレー

@@ -135,7 +135,16 @@ public class MiasmaElementDamageHandler {
                                            LivingEntity target,
                                            ItemStack weapon,
                                            float baseDmg) {
-        int level = ElementalDamageUtils.getElementLevel(weapon);
+        return calculateDamage(target, baseDmg,
+                ElementalDamageUtils.getEffectiveElementLevel(weapon));
+    }
+
+    /**
+     * レベル指定で瘴気属性ダメージ計算（魔導書 / NBT属性武器経由用）。
+     * 命中時に回復阻害 + ビジュアルを行う。 DoT は付与しない。
+     */
+    public static float calculateDamage(LivingEntity target, float baseDmg, int level) {
+        if (target == null || level <= 0) return baseDmg;
 
         // 1. 回復阻害
         int   healDuration   = HEAL_DURATION_BASE + HEAL_DURATION_PER_LEVEL * (level - 1);
