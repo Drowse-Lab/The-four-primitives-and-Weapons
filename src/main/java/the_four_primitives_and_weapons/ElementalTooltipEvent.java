@@ -2,6 +2,8 @@ package the_four_primitives_and_weapons;
 
 import the_four_primitives_and_weapons.damage.ElementType;
 import the_four_primitives_and_weapons.damage.ElementalDamageUtils;
+import the_four_primitives_and_weapons.damage.ElementalParticles;
+import org.joml.Vector3f;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -96,27 +98,29 @@ public class ElementalTooltipEvent {
         }
     }
 
+    /** ツールチップで読める最低限の明るさ ( 闇や消滅の粒子色は暗すぎるため持ち上げる )。 */
+    private static final float MIN_TOOLTIP_BRIGHTNESS = 0.75f;
+
     /**
-     * 属性の色（16進数）を取得
+     * 属性の色（16進数）を取得。
+     * 攻撃/ヒット時のパーティクル色 ({@link ElementalParticles#colorOf}) を唯一の基準にして、
+     * 表示と粒子で属性の色がずれないようにする。 暗い属性色だけ読める明るさまで持ち上げる。
      */
     private static String getElementColorHex(ElementType type) {
-        switch (type) {
-            case ICE:       return "#55FFFF";  // 水色
-            case FIRE:      return "#FF5555";  // 赤
-            case WATER:     return "#5555FF";  // 青
-            case WIND:      return "#55FF55";  // 緑
-            case THUNDER:   return "#FFFF55";  // 黄色
-            case DARK:      return "#AA00AA";  // 紫
-            case ELECTRIC:  return "#FFFF55";  // 黄色
-            case CORROSION: return "#BF198C";  // 赤紫 (マゼンタ — 通常パーティクル色と統一)
-            case HOLY:      return "#FFAA00";  // 金色
-            case ERASURE:     return "#FF0000";  // 赤
-            case MIASMA:    return "#550088";  // 暗紫
-            case BLOOD:     return "#8C0004";  // 血の赤 (パーティクル色と統一)
-            case SOUL:      return "#66CCFF";  // 青白
-            case SOUL_FIRE: return "#7FFFD4";  // 燐火
-            default: return "#AAAAAA";         // グレー
-        }
+        Vector3f color = ElementalParticles.colorOf(type);
+        if (color == null) return "#AAAAAA";   // NONE
+
+        float max = Math.max(color.x(), Math.max(color.y(), color.z()));
+        float scale = max < MIN_TOOLTIP_BRIGHTNESS && max > 0.0f
+                ? MIN_TOOLTIP_BRIGHTNESS / max
+                : 1.0f;
+
+        return String.format("#%02X%02X%02X",
+                toByte(color.x() * scale), toByte(color.y() * scale), toByte(color.z() * scale));
+    }
+
+    private static int toByte(float value) {
+        return Math.max(0, Math.min(255, Math.round(value * 255.0f)));
     }
 
     /**

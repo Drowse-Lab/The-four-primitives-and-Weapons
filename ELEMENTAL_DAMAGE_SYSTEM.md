@@ -260,7 +260,7 @@ giveコマンドでNBT指定:
 | `the_four_primitives_and_weapons:holy_aptitude` | 聖: 満腹度exhaustion増加 + アンデッドから見つかりやすくなる |
 | `the_four_primitives_and_weapons:dark_aptitude` | 闇: 攻撃力低下 + 黒霧粒子 |
 | `the_four_primitives_and_weapons:miasma_aptitude` | 瘴気: 回復量低下 |
-| `the_four_primitives_and_weapons:blood_aptitude` | 血: 微量DoT |
+| `the_four_primitives_and_weapons:blood_aptitude` | 血: 被ダメージ増加 |
 | `the_four_primitives_and_weapons:erasure_aptitude` | 消滅: 独自の操作揺らし + 消滅粒子 |
 | `the_four_primitives_and_weapons:soul_aptitude` | 魂: 最大体力低下 + 魂粒子 |
 | `the_four_primitives_and_weapons:soul_fire_aptitude` | 燐火: 青白い炎反動 + 最大体力低下 |

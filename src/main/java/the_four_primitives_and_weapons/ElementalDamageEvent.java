@@ -213,6 +213,10 @@ public class ElementalDamageEvent {
         if (modifiedDamage != originalDamage) {
             event.setAmount(modifiedDamage);
         }
+
+        // デバッグMob表示用: 「属性が実際に足した分」を記録する
+        // ( 実ダメージ − 入力 では熟練度ペナルティ等の他補正が混ざってしまうため )
+        ElementalDebugTrace.record(target, elementType, elementLevel, modifiedDamage - originalDamage);
     }
 
     /**

@@ -65,6 +65,9 @@ public class LivingEntityDamageMixin {
                         break;
                 }
 
+                // デバッグMob表示用: 属性が実際に足した分を記録
+                ElementalDebugTrace.record(target, elementType, elementLevel,
+                        modifiedDamage - originalDamage);
                 return modifiedDamage;
             }
         }
@@ -117,6 +120,8 @@ public class LivingEntityDamageMixin {
                     break;
             }
 
+            ElementalDebugTrace.record(target, elementType, elementLevel,
+                    modifiedDamage - originalDamage);
             return modifiedDamage;
         }
 

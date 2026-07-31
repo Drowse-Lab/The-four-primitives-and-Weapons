@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.network.chat.Component;
@@ -19,6 +20,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import the_four_primitives_and_weapons.damage.ElementType;
 import the_four_primitives_and_weapons.damage.ElementalDamageUtils;
+import the_four_primitives_and_weapons.damage.ElementalDebugTrace;
 import the_four_primitives_and_weapons.damage.IElementalDamageSource;
 
 /**
@@ -60,8 +62,17 @@ public class DebugMobEntity extends PathfinderMob {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        // デバッグMobは無敵時間(ダメージクールダウン)を無視して、毎回フルに計測する。
-        this.invulnerableTime = 0;
+        // /kill や奈落など「無敵を貫通する」ダメージだけは通常どおり死なせる
+        // ( Killエンチャントの静音消滅や /test clear を壊さないため )。
+        boolean forcedKill = source.is(DamageTypeTags.BYPASSES_INVULNERABILITY);
+
+        if (!forcedKill) {
+            // デバッグMobは無敵時間(ダメージクールダウン)を無視して、毎回フルに計測する。
+            this.invulnerableTime = 0;
+            // 1発でHPを削り切るダメージでも死なないようにクランプする。
+            amount = Math.min(amount, Math.max(0.0f, this.getHealth() - 1.0f));
+        }
+
         float hpBefore = this.getHealth();
         boolean result = super.hurt(source, amount);
 
@@ -77,16 +88,42 @@ public class DebugMobEntity extends PathfinderMob {
                     actualDamage, amount, damageType, this.getHealth(), maxHP)
             ), false);
 
-            // 属性ダメージ表示: 攻撃者の武器に属性があれば「属性分 = 実ダメージ − 入力」を出す。
+            // DamageSource 自体が属性ダメージ ( 落雷 / AOE / スキル等 ) かどうか。
+            // その場合「入力」の時点で既に属性込みなので、 武器基準の行は出さない
+            // ( 下の 属性DmgSrc 行が同じ内容を担当する )。
+            ElementType sourceElement = source instanceof IElementalDamageSource elemSrc
+                    ? elemSrc.getElementType() : ElementType.NONE;
+            boolean fromElementalSource = sourceElement != null && sourceElement != ElementType.NONE;
+
+            // 属性ダメージ表示。
+            //   「属性分」は 実ダメージ − 入力 ではなく、属性処理そのものが記録した増減を使う。
+            //   前者だと熟練度のチャージ不足ペナルティ・特性の軽減・防具まで混ざり、
+            //   属性が加算されていてもマイナスで表示されてしまうため。
+            ElementalDebugTrace.Entry trace = ElementalDebugTrace.consume(this);
             ItemStack weapon = player.getMainHandItem();
-            if (ElementalDamageUtils.hasElement(weapon)) {
-                ElementType elemType = ElementalDamageUtils.getEffectiveElementType(weapon);
-                int elemLevel = ElementalDamageUtils.getEffectiveElementLevel(weapon);
-                String elemColor = getElementColor(elemType);
-                float elemBonus = actualDamage - amount;
+
+            if (!fromElementalSource && trace != null) {
                 player.displayClientMessage(Component.literal(
                     String.format("§a[Debug] §f属性: %s%s Lv.%d §7属性分: §c%+.1f §7(実ダメージ %.1f)",
-                        elemColor, elemType.getName().toUpperCase(), elemLevel, elemBonus, actualDamage)
+                        getElementColor(trace.type), trace.type.getName().toUpperCase(),
+                        trace.level, trace.delta, actualDamage)
+                ), false);
+
+                // 属性以外の増減 ( 熟練度ペナルティ / 特性 / 防具 … ) があれば内訳を出す。
+                float otherModifier = actualDamage - (amount + trace.delta);
+                if (Math.abs(otherModifier) >= 0.05f) {
+                    player.displayClientMessage(Component.literal(
+                        String.format("§a[Debug] §7属性以外の補正: §c%+.1f §7(入力 %.1f + 属性 %+.1f → 実 %.1f)",
+                            otherModifier, amount, trace.delta, actualDamage)
+                    ), false);
+                }
+            } else if (!fromElementalSource && ElementalDamageUtils.hasElement(weapon)) {
+                // 属性処理が動かなかった一撃 ( 属性無効化・非対応の攻撃など )
+                ElementType elemType = ElementalDamageUtils.getEffectiveElementType(weapon);
+                int elemLevel = ElementalDamageUtils.getEffectiveElementLevel(weapon);
+                player.displayClientMessage(Component.literal(
+                    String.format("§a[Debug] §f属性: %s%s Lv.%d §7属性分: §7なし §7(実ダメージ %.1f)",
+                        getElementColor(elemType), elemType.getName().toUpperCase(), elemLevel, actualDamage)
                 ), false);
             }
 
@@ -97,13 +134,18 @@ public class DebugMobEntity extends PathfinderMob {
                     int srcLevel = elemSource.getElementLevel();
                     String srcColor = getElementColor(srcType);
                     player.displayClientMessage(Component.literal(
-                        String.format("§a[Debug] §f属性DmgSrc: %s%s Lv.%d §c%.1fダメージ",
-                            srcColor, srcType.getName().toUpperCase(), srcLevel, actualDamage)
+                        String.format("§a[Debug] §f属性DmgSrc: %s%s Lv.%d §c%.1fダメージ §7(入力 %.1f)",
+                            srcColor, srcType.getName().toUpperCase(), srcLevel, actualDamage, amount)
                     ), false);
                 }
             }
 
-            // HPをリセット（サンドバッグなので常に満タン）
+        }
+
+        // HPをリセット（サンドバッグなので常に満タン）。
+        // 属性DoT ( 闇/出血など攻撃者エンティティを持たないダメージ ) でも回復させるため、
+        // プレイヤー由来かどうかに関係なくここで戻す。
+        if (!forcedKill && !this.level().isClientSide) {
             this.setHealth(this.getMaxHealth());
         }
 
@@ -229,8 +271,9 @@ public class DebugMobEntity extends PathfinderMob {
         switch (type) {
             case ICE:       return "§b";  // 水色
             case ELECTRIC:  return "§e";  // 黄色
-            case THUNDER:   return "§e";  // 黄色
-            case CORROSION: return "§5";  // 紫
+            case THUNDER:   return "§b";  // 青白 (パーティクル色に合わせる)
+            case CORROSION: return "§d";  // 赤紫 (マゼンタ)
+            case ERASURE:   return "§5";  // 濃紫
             case HOLY:      return "§6";  // 金
             case DARK:      return "§8";  // 灰
             case FIRE:      return "§c";  // 赤

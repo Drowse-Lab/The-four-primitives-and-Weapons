@@ -52,6 +52,10 @@
 - 水中AoE: 半径3ブロック内の敵に50%ダメージ
 - 導体防具ボーナス: 鉄/金防具1個につき+0.3x
 - 命中対象にMobEffectを使わない短時間の移動速度低下と水平減速を付与
+- 擬似落雷(雨/雷雨の日限定): 与えた雷ダメージを攻撃者ごとに蓄積し、一定量で命中対象へ落雷
+  - 必要蓄積量: 雨=40 / 雷雨=20、レベルごとに-1.5(下限8)
+  - 落雷ダメージ: 5 + レベルx1.0(上限20)、雷雨は1.5倍。半径3ブロックに50%の余波
+  - バニラの落雷は `setVisualOnly(true)` で見た目と音のみ(着火/変身なし)、実ダメージはthunder DamageType
 
 ### 電気 (ELECTRIC)
 - 基本倍率: 1.2x
@@ -97,7 +101,7 @@
 - 出血は連撃で加算されるが 2.5ダメージ/tick で打ち止め (`ElementalDoTHandler.applyCapped`)
 - 吸血: 与ダメージの4%/レベル(最大30%)を攻撃者に還元。1撃あたり最大4.0回復
 - 血の無い対象(`MobType.UNDEAD`)には出血・吸血が乗らず、倍率も0.9xに下がる
-- MobEffectは使わない。持ち歩きデバフ(自傷の微量DoT)は `ElementalCarryDebuffHandler` 側
+- MobEffectは使わない。持ち歩きデバフ(被ダメージ増加)は `ElementalCarryDebuffHandler` 側
 
 ### 魂 (SOUL)
 - 基本倍率: 1.05x + レベルごとに最大+0.40x
@@ -211,7 +215,7 @@
 | `the_four_primitives_and_weapons:holy_aptitude` | 聖: 満腹度exhaustion増加 + アンデッドから見つかりやすくなる |
 | `the_four_primitives_and_weapons:dark_aptitude` | 闇: 攻撃力低下 + 黒霧粒子 |
 | `the_four_primitives_and_weapons:miasma_aptitude` | 瘴気: 回復量低下 |
-| `the_four_primitives_and_weapons:blood_aptitude` | 血: 微量DoT |
+| `the_four_primitives_and_weapons:blood_aptitude` | 血: 被ダメージ増加 |
 | `the_four_primitives_and_weapons:erasure_aptitude` | 消滅: 独自の操作揺らし + 消滅粒子 |
 | `the_four_primitives_and_weapons:soul_aptitude` | 魂: 最大体力低下 + 魂粒子 |
 | `the_four_primitives_and_weapons:soul_fire_aptitude` | 燐火: 青白い炎反動 + 最大体力低下 |

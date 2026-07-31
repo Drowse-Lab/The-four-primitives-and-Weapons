@@ -64,14 +64,19 @@ public class ElementalCarryDebuffHandler {
     private static final int FIRE_BACKLASH_COOLDOWN_TICKS = 60;
     private static final int ELECTRIC_CONDUCTION_INTERVAL_TICKS = 60;
     private static final int WATER_AIR_DRAIN_INTERVAL = 10;
-    private static final int BLOOD_DRAIN_INTERVAL_TICKS = 100;
     private static final int VISUAL_REFRESH_INTERVAL = 20;
+    /** 闇の黒霧は視界の邪魔になりやすいので、 他のビジュアルより間隔を空ける。 */
+    private static final int DARK_SHROUD_INTERVAL = 40;
     private static final int ERASURE_INSTABILITY_INTERVAL_TICKS = 80;
     private static final int HOLY_UNDEAD_LURE_INTERVAL_TICKS = 20;
 
+    // 血: 持ち歩き中は「傷が深くなる」= 被ダメージ増加。 定期的な自傷ダメージは行わない。
+    private static final float BLOOD_VULNERABILITY_BASE      = 0.03F;
+    private static final float BLOOD_VULNERABILITY_PER_LEVEL = 0.02F;
+    private static final float BLOOD_VULNERABILITY_MAX       = 0.30F;
+
     private static final Map<UUID, Long> LAST_FIRE_BACKLASH_TICK = new ConcurrentHashMap<>();
     private static final Map<UUID, Long> LAST_ELECTRIC_CONDUCTION_TICK = new ConcurrentHashMap<>();
-    private static final Map<UUID, Long> LAST_BLOOD_DRAIN_TICK = new ConcurrentHashMap<>();
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -102,7 +107,6 @@ public class ElementalCarryDebuffHandler {
         applyHolyExhaustion(player, holyLevel);
         lureUndeadToHolyBearer(player, holyLevel);
         applyDarkShroud(player, darkLevel);
-        applyBloodDrain(player, effectiveDebuffLevel(player, state, ElementType.BLOOD));
         applyErasureInstability(player, effectiveDebuffLevel(player, state, ElementType.ERASURE));
         applySoulEcho(player, soulLikeLevel);
 
@@ -119,6 +123,10 @@ public class ElementalCarryDebuffHandler {
         if (player.level().isClientSide || event.getAmount() <= 0.0F) return;
 
         CarryState state = collectState(player);
+
+        // 血: 定期的な自傷ダメージの代わりに、 受けたダメージを増幅する。
+        applyBloodVulnerability(player, event, effectiveDebuffLevel(player, state, ElementType.BLOOD));
+
         int fireLevel = effectiveDebuffLevel(player, state, ElementType.FIRE);
         int soulFireLevel = effectiveDebuffLevel(player, state, ElementType.SOUL_FIRE);
         if (fireLevel <= 0 && soulFireLevel <= 0) return;
@@ -304,32 +312,31 @@ public class ElementalCarryDebuffHandler {
 
     private static void applyDarkShroud(Player player, int level) {
         if (level <= 0) return;
-        if (player.tickCount % VISUAL_REFRESH_INTERVAL != 0) return;
+        if (player.tickCount % DARK_SHROUD_INTERVAL != 0) return;
 
         if (player.level() instanceof ServerLevel serverLevel) {
             double mid = player.getY() + player.getBbHeight() * 0.6;
             serverLevel.sendParticles(ParticleTypes.SQUID_INK,
                     player.getX(), mid, player.getZ(),
-                    Math.min(12, 3 + level), 0.28, 0.35, 0.28, 0.02);
+                    Math.min(4, 1 + level / 3), 0.22, 0.3, 0.22, 0.01);
             serverLevel.sendParticles(ParticleTypes.SMOKE,
                     player.getX(), mid, player.getZ(),
-                    Math.min(10, 2 + level), 0.35, 0.35, 0.35, 0.03);
+                    Math.min(3, 1 + level / 4), 0.28, 0.3, 0.28, 0.02);
         }
     }
 
-    private static void applyBloodDrain(Player player, int level) {
+    /**
+     * 血の持ち歩きデバフ: 定期的な自傷ダメージは行わず、 受けたダメージを増幅する。
+     * ( 傷が塞がりにくくなるイメージ。 何もしていないのに減っていく現象を無くすための仕様 )
+     */
+    private static void applyBloodVulnerability(Player player, LivingHurtEvent event, int level) {
         if (level <= 0 || player.isCreative() || player.isSpectator()) return;
 
-        long gameTime = player.level().getGameTime();
-        Long lastTick = LAST_BLOOD_DRAIN_TICK.get(player.getUUID());
-        if (lastTick != null && gameTime - lastTick < BLOOD_DRAIN_INTERVAL_TICKS) return;
+        float amplify = Math.min(BLOOD_VULNERABILITY_MAX,
+                BLOOD_VULNERABILITY_BASE + BLOOD_VULNERABILITY_PER_LEVEL * level);
+        event.setAmount(event.getAmount() * (1.0F + amplify));
 
-        LAST_BLOOD_DRAIN_TICK.put(player.getUUID(), gameTime);
-        int duration = Math.min(50, 20 + level);
-        float damagePerTick = Math.min(0.025F, 0.003F * Math.max(1, level));
-        ElementalDoTHandler.apply(player, duration, damagePerTick, ElementType.BLOOD);
-
-        // 出血の原因が分かるように血属性の粒子を出す (闇/消滅/魂と同じ視覚フィードバック)。
+        // 増幅されたことが分かるように血属性の粒子を出す
         if (player.level() instanceof ServerLevel serverLevel) {
             ElementalParticles.spawn(serverLevel, ElementType.BLOOD,
                     player.getX(), player.getY() + player.getBbHeight() * 0.5, player.getZ(),
