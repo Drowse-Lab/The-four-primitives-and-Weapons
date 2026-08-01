@@ -158,6 +158,50 @@ public class ElementalDamageUtils {
     }
 
     // ─────────────────────────────────────────────────────────────
+    // 属性レベルによるダメージスケーリング
+    // ─────────────────────────────────────────────────────────────
+
+    /** 属性が足した分の、レベル1超過1あたりの伸び率。 */
+    private static final float LEVEL_GROWTH_PER_LEVEL = 0.03f;
+    /** 伸び率の上限 ( +60% )。 */
+    private static final float LEVEL_GROWTH_MAX       = 0.60f;
+    /** 倍率がほぼ等倍の属性でもレベルで伸びるようにする下限。 素ダメージに対する割合 / Lv。 */
+    private static final float LEVEL_FLOOR_PER_LEVEL  = 0.06f;
+    /** 下限の上限 ( 素ダメージの 150% )。 */
+    private static final float LEVEL_FLOOR_MAX        = 1.50f;
+
+    /**
+     * 属性が足したダメージをレベルで底上げする。
+     *
+     * <p>属性ごとのハンドラは、氷や魂のようにレベルで伸びるものと、
+     * 炎 / 水 / 侵食 / 闇 / 瘴気 / 電気のように<b>倍率が固定</b>のものが混在していた。
+     * ここで共通の底上げを掛けることで、どの属性でもレベルを上げた分だけダメージが増える。</p>
+     *
+     * <ul>
+     *   <li>既に伸びる属性 … 属性分を Lv で最大 +60% まで増幅</li>
+     *   <li>倍率固定の属性 … 素ダメージ × 6%/Lv ( 上限 150% ) を最低保証</li>
+     * </ul>
+     *
+     * <p>Lv1 では何も変わらない ( 従来どおり )。 属性側が意図的にダメージを<b>下げている</b>場合
+     * ( 血属性の対アンデッド 0.9x など ) は底上げしない。</p>
+     *
+     * @param elementBonus 属性処理が足した分 ( 最終ダメージ − 素ダメージ )
+     * @param baseDamage   属性が乗る前の素ダメージ
+     * @param level        属性レベル
+     * @return レベルで底上げした「属性が足す分」
+     */
+    public static float scaleElementBonusByLevel(float elementBonus, float baseDamage, int level) {
+        if (level <= 1 || elementBonus < 0.0f || baseDamage <= 0.0f) return elementBonus;
+
+        int overLevel = level - 1;
+        float grown = elementBonus
+                * (1.0f + Math.min(LEVEL_GROWTH_MAX, LEVEL_GROWTH_PER_LEVEL * overLevel));
+        float floor = baseDamage
+                * Math.min(LEVEL_FLOOR_MAX, LEVEL_FLOOR_PER_LEVEL * overLevel);
+        return Math.max(grown, floor);
+    }
+
+    // ─────────────────────────────────────────────────────────────
     // 属性ダメージ dispatch
     // ─────────────────────────────────────────────────────────────
 

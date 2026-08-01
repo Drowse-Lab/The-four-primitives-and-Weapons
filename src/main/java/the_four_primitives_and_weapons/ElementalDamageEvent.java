@@ -206,6 +206,12 @@ public class ElementalDamageEvent {
         // 攻撃に載った属性のパーティクルをヒット位置に出す (全属性で統一)。
         spawnElementHitParticle(target, elementType, elementLevel);
 
+        // 属性レベルによる底上げ。
+        //   ハンドラ側は氷/魂のようにレベルで伸びるものと、炎/水/侵食/闇/瘴気/電気のように
+        //   倍率固定のものが混在しているので、「属性が足した分」をここで共通にスケールする。
+        modifiedDamage = originalDamage + ElementalDamageUtils.scaleElementBonusByLevel(
+                modifiedDamage - originalDamage, originalDamage, elementLevel);
+
         // カウンターボーナスを加算
         modifiedDamage += counterBonus;
 
