@@ -35,6 +35,10 @@ public class ElectricElementDamageHandler {
     private static final float WATER_DAMAGE_MULTIPLIER = 1.5f;
     // 導体装備1つあたりのダメージ倍率
     private static final float CONDUCTOR_DAMAGE_MULTIPLIER = 0.3f;
+    // 属性レベル 1 を超えるごとの追加ダメージ倍率 ( 属性分を伸ばす。 Lv1 = 据え置き )。
+    // 呼び出し側 ( ElementalDamageEvent line 212 / Mixin ) がベースを保持し属性分だけ
+    // スケールするので、 ここで倍率を盛ってもベース ( 非属性 ) は増えない。
+    private static final float PER_LEVEL_DAMAGE_MULTIPLIER = 0.3f;
 
     public static final TagKey<Item> CONDUCTIVE_ARMOR_TAG = TagKey.create(
             Registries.ITEM,
@@ -148,6 +152,8 @@ public class ElectricElementDamageHandler {
         if (conductorCount > 0) {
             damageMultiplier += (conductorCount * CONDUCTOR_DAMAGE_MULTIPLIER);
         }
+        // 属性レベルスケーリング ( 属性分を伸ばす )。 呼び出し側がベースを保持するので非属性は不変。
+        damageMultiplier += Math.max(0, elementLevel - 1) * PER_LEVEL_DAMAGE_MULTIPLIER;
 
         // 電気のパーティクルエフェクト（ターゲット本体）
         if (VersionHelper.getLevel(target) instanceof ServerLevel serverLevel) {

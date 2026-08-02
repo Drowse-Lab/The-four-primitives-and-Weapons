@@ -25,6 +25,8 @@ public class ThunderElementDamageHandler {
     private static final float BASE_MULTIPLIER        = 1.2f;
     private static final float WATER_MULTIPLIER       = 1.5f;
     private static final float CONDUCTOR_BONUS        = 0.3f;
+    // 属性レベル 1 を超えるごとの追加ダメージ倍率 ( 属性分のみ。 呼び出し側がベースを保持 )。
+    private static final float PER_LEVEL_MULTIPLIER   = 0.3f;
 
     // ── 擬似落雷 ( 雨 / 雷雨の日限定 ) ────────────────────────────────
     /** 雨の日に落雷が起きるまでの累計ダメージ。 */
@@ -329,6 +331,8 @@ public class ThunderElementDamageHandler {
             }
         }
         multiplier += CONDUCTOR_BONUS * ElectricElementDamageHandler.countConductiveArmorPieces(target);
+        // 属性レベルスケーリング ( 属性分を伸ばす )。 呼び出し側がベースを保持するので非属性は不変。
+        multiplier += Math.max(0, level - 1) * PER_LEVEL_MULTIPLIER;
         applyThunderImpact(target, level);
 
         float finalDamage = baseDmg * multiplier;

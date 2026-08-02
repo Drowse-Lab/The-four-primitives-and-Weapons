@@ -65,6 +65,13 @@ public class LivingEntityDamageMixin {
                         break;
                 }
 
+                // 属性レベルによる底上げ ( ElementalDamageEvent line 212 と同一 )。
+                // ベース ( 非属性 ) は保持し、 属性が足した分だけレベルでスケールする。
+                // これが無いと Mixin 経路では属性がレベルで伸びず、 逆に倍率に level を足すと
+                // ベースごと増えてしまうため、 ここで一元的に「属性分のみ」スケールする。
+                modifiedDamage = originalDamage + ElementalDamageUtils.scaleElementBonusByLevel(
+                        modifiedDamage - originalDamage, originalDamage, elementLevel);
+
                 // デバッグMob表示用: 属性が実際に足した分を記録
                 ElementalDebugTrace.record(target, elementType, elementLevel,
                         modifiedDamage - originalDamage);
@@ -119,6 +126,10 @@ public class LivingEntityDamageMixin {
                 default:
                     break;
             }
+
+            // 属性レベルによる底上げ ( ベースは保持し属性分のみスケール )。
+            modifiedDamage = originalDamage + ElementalDamageUtils.scaleElementBonusByLevel(
+                    modifiedDamage - originalDamage, originalDamage, elementLevel);
 
             ElementalDebugTrace.record(target, elementType, elementLevel,
                     modifiedDamage - originalDamage);
