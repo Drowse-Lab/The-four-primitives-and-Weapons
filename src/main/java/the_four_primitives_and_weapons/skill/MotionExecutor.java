@@ -129,12 +129,10 @@ public class MotionExecutor {
                 default -> performThrust(player, world, lookVec, playerPos, chargePercent);
             }
         } finally {
-            // 得意な突き技は後硬直を解除して即連発可能にする（レイピア・直刀・槍など）。
-            // spin_slash 等の長尺モーションでリセットすると連結処理と競合するため、
-            // 短時間で完結する thrust に限定する。
-            if (preferredContext && "thrust".equals(motionId)) {
-                player.resetAttackStrengthTicker();
-            }
+            // ※ ここで得意な突きだけ resetAttackStrengthTicker() していたが削除。
+            //    このメソッドはゲージを 0 にする ( = 次の一撃の cooldownScale が 0 になる ) ので、
+            //    「即連発可能にする」というコメントとは逆に 得意技ほど次撃が弱くなっていた。
+            //    連発の速さは ChargedAttackHandler のゲージ判定 + 得意技のゲージ充填 1.5 倍で表現する。
             if (chargedContext) DamageCalculator.clearChargeContext();
             if (preferredContext) DamageCalculator.clearPreferredContext();
             if (dislikedContext) DamageCalculator.clearDislikedContext();

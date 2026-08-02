@@ -38,9 +38,7 @@ public class WeaponSpecialtyHandler {
     private static final int DURATION = 30;
 
     private static final Map<UUID, Integer> REMAINING_TICKS = new HashMap<>();
-    /** 各プレイヤーの「最後に適用した持続 modifier 種別」 を覚えて、 不要な再適用を避ける。 */
     private enum SustainedState { NONE, BONUS, PENALTY }
-    private static final Map<UUID, SustainedState> SUSTAINED_STATE = new HashMap<>();
 
     public static void applyBonus(Player player) {
         if (player == null) return;
@@ -113,7 +111,6 @@ public class WeaponSpecialtyHandler {
      * 武器を持ち替えた / motion 設定を変えた / 武器を外したタイミングで自動更新。
      */
     private static void updateSustainedModifier(Player player) {
-        UUID id = player.getUUID();
         AttributeInstance attr = player.getAttribute(Attributes.ATTACK_SPEED);
         if (attr == null) return;
 
@@ -133,7 +130,12 @@ public class WeaponSpecialtyHandler {
             }
         }
 
-        SustainedState current = SUSTAINED_STATE.getOrDefault(id, SustainedState.NONE);
+        // 現在の状態は「キャッシュ」ではなく AttributeInstance の実物から判定する。
+        // キャッシュだと 死亡リスポーン / 再ログイン で AttributeMap が作り直されて
+        // modifier が消えたのに キャッシュだけ残り、 二度と再付与されなくなる。
+        SustainedState current = SustainedState.NONE;
+        if (attr.getModifier(SUSTAINED_BONUS_UUID) != null) current = SustainedState.BONUS;
+        else if (attr.getModifier(SUSTAINED_PENALTY_UUID) != null) current = SustainedState.PENALTY;
         if (current == desired) return; // 変化なし
 
         // 解除してから再適用
@@ -148,6 +150,11 @@ public class WeaponSpecialtyHandler {
                     SUSTAINED_PENALTY_UUID, "weapon_specialty_sustained_penalty",
                     SUSTAINED_PENALTY_AMOUNT, AttributeModifier.Operation.MULTIPLY_TOTAL));
         }
-        SUSTAINED_STATE.put(id, desired);
+    }
+
+    /** ログアウト時に短期 boost のタイマーを破棄 ( UUID キーの静的マップを溜め込まない )。 */
+    @SubscribeEvent
+    public static void onLoggedOut(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
+        REMAINING_TICKS.remove(event.getEntity().getUUID());
     }
 }

@@ -73,6 +73,15 @@ public class ChargedAttackHandler {
     private static final Map<UUID, ChargeData> playerChargeData = new HashMap<>();
     private static final int MAX_CHARGE_TIME = 60; // 3秒 (20 ticks/秒 × 3)
     private static final int MIN_CHARGE_TIME = 20; // 最小チャージ時間 1秒
+    /**
+     * 通常攻撃 ( 技 ) を出せる最低ゲージ量。 これ未満の連打は無視する。
+     *
+     * <p>ゲージの充填速度は ATTACK_SPEED そのものなので、 ここで縛ることで
+     * 武器の攻撃速度と 得意/不得意技のボーナス ( {@link WeaponSpecialtyHandler} ) が
+     * そのまま「技を出せる間隔」になる。 縛らないとクリック速度で撃ち放題になり、
+     * 攻撃速度の差がまったく体感できない。</p>
+     */
+    private static final float ATTACK_GATE_SCALE = 1.0f;
     
     private static class ChargeData {
         boolean isCharging = false;
@@ -227,8 +236,17 @@ public class ChargedAttackHandler {
             // 左クリックが押された瞬間を検出（通常攻撃）— チャージ中は送らない
             if (isLeftClickHeld && !data.wasLeftClickPressed && !data.isCharging) {
                 data.clickReleaseTimer = 0;
-                // サーバーに攻撃パケットを送信
-                TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new AttackPacket(0, 0));
+                // 攻撃ゲージが溜まっていないと技は出せない ( = ATTACK_SPEED が発動間隔になる )。
+                // 0.5 tick 先読みはバニラのクロスヘア表示と同じ基準。
+                if (player.getAttackStrengthScale(0.5f) >= ATTACK_GATE_SCALE) {
+                    // 発動したのでゲージを振り出しに戻す。 これがそのまま次に撃てるまでの待ち時間。
+                    // ( サーバー側のゲージはバニラの Player.attack — エンティティに当てた時 — だけが
+                    //   リセットする。 MotionExecutor では触らない: 以前サーバー側でリセットしていた頃に
+                    //   spin_slash と競合する不具合があったため。 )
+                    player.resetAttackStrengthTicker();
+                    // サーバーに攻撃パケットを送信
+                    TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new AttackPacket(0, 0));
+                }
             }
 
             // チャージ開始（左クリック長押し）- クールダウン中は開始しない。
@@ -512,9 +530,12 @@ public class ChargedAttackHandler {
         UUID playerId = player.getUUID();
         ChargeData data = playerChargeData.computeIfAbsent(playerId, k -> new ChargeData());
 
-        // コンボタイムアウト（20tick = 1秒 攻撃しないとリセット）
+        // コンボタイムアウト。 攻撃ゲージが溜まるまで次の技を出せない ( ATTACK_GATE_SCALE ) ので、
+        // 固定 20 tick だと 遅い武器 / 不得意技 ( ゲージ充填 0.5 倍 ) では 2 撃目に届く前に
+        // 必ずリセットされてしまう。 実際の攻撃間隔に追従させる。
         long now = world.getGameTime();
-        if (now - data.lastAttackTime > 20) {
+        long comboTimeout = Math.max(20L, (long) Math.ceil(player.getCurrentItemAttackStrengthDelay() * 1.6f));
+        if (now - data.lastAttackTime > comboTimeout) {
             data.resetCombo();
         }
         data.lastAttackTime = now;
