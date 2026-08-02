@@ -5,6 +5,9 @@
   "textures": {
     "2": "the_four_primitives_and_weapons:blade/tyokuto/netherite_tyokuto3d",
     "3": "the_four_primitives_and_weapons:saya/tyokuto/saya_tyokuto",
+    "4": "the_four_primitives_and_weapons:straight_katana_fitting/tsuba/netherite_tuba",
+    "5": "the_four_primitives_and_weapons:straight_katana_fitting/tsuka/netherite_tuka",
+    "6": "the_four_primitives_and_weapons:straight_katana_fitting/kasira/netherite_kasira",
     "particle": "the_four_primitives_and_weapons:saya/tyokuto/saya_tyokuto"
   }
 }

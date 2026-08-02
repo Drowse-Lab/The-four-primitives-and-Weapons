@@ -4,9 +4,9 @@
   "parent": "the_four_primitives_and_weapons:custom/weapon/rapier/rapier_parent",
   "textures": {
     "0": "the_four_primitives_and_weapons:blade/rapier/wooden_rapier",
-    "1": "the_four_primitives_and_weapons:rapier_fitting/grip/iron_grip",
-    "2": "the_four_primitives_and_weapons:rapier_fitting/guard/iron_guard",
-    "3": "the_four_primitives_and_weapons:rapier_fitting/pommel/iron_pommel",
+    "1": "the_four_primitives_and_weapons:rapier_fitting/grip/wooden_grip",
+    "2": "the_four_primitives_and_weapons:rapier_fitting/guard/wooden_guard",
+    "3": "the_four_primitives_and_weapons:rapier_fitting/pommel/wooden_pommel",
     "particle": "the_four_primitives_and_weapons:blade/rapier/wooden_rapier"
   },
   "made": "hrmcngs"

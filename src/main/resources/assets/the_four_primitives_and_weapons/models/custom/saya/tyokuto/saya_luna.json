@@ -5,6 +5,9 @@
   "textures": {
     "2": "the_four_primitives_and_weapons:block/luna",
     "3": "the_four_primitives_and_weapons:saya/tyokuto/saya_tyokuto",
+    "4": "the_four_primitives_and_weapons:straight_katana_fitting/tsuba/luna_tuba",
+    "5": "the_four_primitives_and_weapons:straight_katana_fitting/tsuka/luna_tuka",
+    "6": "the_four_primitives_and_weapons:straight_katana_fitting/kasira/luna_kasira",
     "particle": "the_four_primitives_and_weapons:item/luna"
   }
 }
