@@ -1,0 +1,11 @@
+{
+  "format_version": "1.9.0",
+  "credit": "Made with Blockbench",
+  "parent": "the_four_primitives_and_weapons:custom/saya/dagger/saya_dagger_parent",
+  "textures": {
+    "0": "the_four_primitives_and_weapons:dagger_fitting/tuba/stone_tuba",
+    "1": "the_four_primitives_and_weapons:dagger_fitting/grip/stone_grip",
+    "2": "the_four_primitives_and_weapons:saya/dagger/saya_dagger",
+    "particle": "the_four_primitives_and_weapons:saya/dagger/saya_dagger"
+  }
+}

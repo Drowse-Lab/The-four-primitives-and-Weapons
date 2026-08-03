@@ -59,8 +59,10 @@ public class SkillRegistry {
         // === 5つの基本モーション（一撃目〜チャージまで） ===
         register("thrust", "突き", "直線的な突き攻撃",
                 MotionCategory.UNIVERSAL, combatSlots, null);
-        register("thrust_combo", "高速連撃", "一撃目・二撃目・三撃目に設定した技を高速で連続発動する",
-                MotionCategory.UNIVERSAL, combatSlots, null);
+        // 連撃はチャージ専用。 一撃目〜三撃目に置くと「連撃の中身」と自己参照になるうえ、
+        // チャージ時間で段数が伸びる技 ( SkillComboProcedure ) なのでチャージ以外では意味がない。
+        register("thrust_combo", "高速連撃", "チャージ専用。 一撃目・二撃目・三撃目に設定した技を高速で連続発動する ( 溜めるほど段数が増える )",
+                MotionCategory.UNIVERSAL, EnumSet.of(AttackSlot.CHARGED), null);
         register("upper_left_slash", "左上斬り", "左上からの斜め斬り",
                 MotionCategory.UNIVERSAL, combatSlots, null);
         register("upper_right_slash", "右上斬り", "右上からの斜め斬り",

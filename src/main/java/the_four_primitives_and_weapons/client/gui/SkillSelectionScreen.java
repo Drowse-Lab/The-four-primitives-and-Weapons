@@ -573,7 +573,9 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         if (typeData != null) {
             for (String motionId : typeData.getMotionsForSlot(slot)) {
                 MotionInfo info = SkillRegistry.getById(motionId);
-                if (info != null) result.add(info);
+                // そのスロットに置けない技は出さない ( 例: 連撃はチャージ専用 )。
+                // サーバー側も compatibleSlots で弾くので、 出しても選べないボタンになる。
+                if (info != null && info.getCompatibleSlots().contains(slot)) result.add(info);
             }
         }
         return result;

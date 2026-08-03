@@ -35,8 +35,25 @@ public final class SkillComboProcedure {
     private SkillComboProcedure() {}
 
     private static final Map<UUID, ComboSession> ACTIVE = new ConcurrentHashMap<>();
-    private static final int HIT_INTERVAL_TICKS = 2;
+    /**
+     * 1 段ごとの間隔。 回転斬り ( {@link the_four_primitives_and_weapons.skill.SpinSlashTickHandler}
+     * = 720° を 16 tick ) と同じく「発動したらしばらく技を出し続ける」テンポにする。
+     * 2 tick だと一瞬で終わってチャージした実感が無い。
+     */
+    private static final int HIT_INTERVAL_TICKS = 4;
+    /** 初段が出るまでの溜め ( 構え )。 発動 → 即ヒット だと重さが出ないので前置きを入れる。 */
+    private static final int STARTUP_TICKS = 3;
     private static final String COMBO_MOTION_ID = "thrust_combo";
+    /** チャージ 0 のときの段数 ( = 一撃目・二撃目・三撃目 の 1 巡 )。 */
+    private static final int BASE_HITS = 3;
+    /** フルチャージで上乗せされる段数。 3 段 → 最大 8 段。 */
+    private static final int MAX_EXTRA_HITS = 5;
+
+    /** チャージ率から連撃の段数を決める。 3 巡目以降は 一撃目〜三撃目 を繰り返す。 */
+    private static int hitsForCharge(float chargePercent) {
+        float c = Math.max(0.0f, Math.min(1.0f, chargePercent));
+        return BASE_HITS + Math.round(c * MAX_EXTRA_HITS);
+    }
 
     public static void execute(Player player, float chargePercent) {
         if (player == null || player.level().isClientSide) return;
@@ -54,9 +71,30 @@ public final class SkillComboProcedure {
                 resolveMotion(skillData, player, AttackSlot.THIRD_HIT, "upper_right_slash")
         };
 
-        ComboSession session = new ComboSession(motions, chargePercent, daggerPulse, pulseRange, pulseDash);
+        ComboSession session = new ComboSession(motions, hitsForCharge(chargePercent),
+                chargePercent, daggerPulse, pulseRange, pulseDash);
         ACTIVE.put(player.getUUID(), session);
-        runNext(player, session);
+        // 即ヒットさせず、 STARTUP_TICKS 分の構えを挟んでから初段を出す ( onPlayerTick が進行させる )。
+        playStartupCue(player, session);
+    }
+
+    /** 連撃中か ( 他スキルの多重発動を抑止したい場合に参照 )。 */
+    public static boolean isComboing(Player player) {
+        return player != null && ACTIVE.containsKey(player.getUUID());
+    }
+
+    /** 構えの合図。 溜めた分だけ音を高くして、 段数が多いことを分かるようにする。 */
+    private static void playStartupCue(Player player, ComboSession session) {
+        Level world = player.level();
+        world.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.PLAYERS,
+                0.5f, 0.8f + session.chargePercent * 0.5f);
+        if (world instanceof ServerLevel sl) {
+            Vec3 look = MotionExecutor.horizontalLook(player);
+            Vec3 p = player.position().add(0, player.getEyeHeight() * 0.6, 0).add(look.scale(0.7));
+            sl.sendParticles(ParticleTypes.CRIT, p.x, p.y, p.z,
+                    4 + session.totalHits, 0.14, 0.14, 0.14, 0.01);
+        }
     }
 
     @SubscribeEvent
@@ -71,11 +109,22 @@ public final class SkillComboProcedure {
             return;
         }
 
+        // 連撃中は水平移動を殺して、 技を出し切るまでその場に縛る
+        // ( 回転斬りが connection.teleport で位置を固定しているのと同じ意図 )。
+        // 落下は殺さないので空中で止まったりはしない。
+        // ※ 段ごとの踏み込み ( performDaggerPulse の dashStep ) も次 tick で減衰する。
+        //   weapon_stats のダガーは thrust.dash = 0 なので現状は影響なし。
+        Vec3 v = player.getDeltaMovement();
+        player.setDeltaMovement(v.x * 0.2, v.y, v.z * 0.2);
+        player.hurtMarked = true;
+
         session.tick++;
-        if (session.tick < HIT_INTERVAL_TICKS) return;
+        // 初段だけ構え ( STARTUP_TICKS )、 以降は HIT_INTERVAL_TICKS ごと。
+        int wait = (session.index == 0) ? STARTUP_TICKS : HIT_INTERVAL_TICKS;
+        if (session.tick < wait) return;
         session.tick = 0;
         runNext(player, session);
-        if (session.index >= session.motions.length) {
+        if (session.index >= session.totalHits) {
             ACTIVE.remove(player.getUUID());
         }
     }
@@ -90,9 +139,10 @@ public final class SkillComboProcedure {
     }
 
     private static void runNext(Player player, ComboSession session) {
-        if (session.index >= session.motions.length) return;
+        if (session.index >= session.totalHits) return;
         int hitIndex = session.index++;
-        String motionId = session.motions[hitIndex];
+        // 段数がチャージで伸びるので、 一撃目〜三撃目を巡回して出す。
+        String motionId = session.motions[hitIndex % session.motions.length];
         // 連撃は「通常の一撃目〜三撃目」を高速で出す技。チャージ倍率は短剣パルス側にだけ乗せる。
         MotionExecutor.executeMotion(motionId, player, 0.0f);
         if (session.daggerPulse) {
@@ -118,7 +168,7 @@ public final class SkillComboProcedure {
         Vec3 end = origin.add(look.scale(session.pulseRange));
         AABB area = new AABB(origin, end).inflate(0.9, 0.9, 0.9);
 
-        double dashStep = session.pulseDash / Math.max(1, session.motions.length);
+        double dashStep = session.pulseDash / Math.max(1, session.totalHits);
         if (dashStep > 0.0) {
             player.setDeltaMovement(player.getDeltaMovement().add(look.scale(dashStep)));
             player.hurtMarked = true;
@@ -128,8 +178,8 @@ public final class SkillComboProcedure {
         float baseAttack = (float) player.getAttributeValue(Attributes.ATTACK_DAMAGE);
         float pulseDamage = Math.max(0.75f, baseAttack * 0.28f);
         pulseDamage *= 1.0f + session.chargePercent * 0.25f;
-        if (hitIndex == session.motions.length - 1) {
-            pulseDamage *= 1.2f;
+        if (hitIndex == session.totalHits - 1) {
+            pulseDamage *= 1.2f;   // 締めの一撃
         }
 
         int hitCount = 0;
@@ -164,7 +214,7 @@ public final class SkillComboProcedure {
             }
             Vec3 sweep = eye.add(look.scale(0.8 + hitIndex * 0.35)).add(right.scale(side));
             sl.sendParticles(ParticleTypes.SWEEP_ATTACK, sweep.x, sweep.y, sweep.z, 1, 0.04, 0.04, 0.04, 0.0);
-            if (session.chargePercent >= 0.75f && hitIndex == session.motions.length - 1) {
+            if (session.chargePercent >= 0.75f && hitIndex == session.totalHits - 1) {
                 Vec3 finisher = eye.add(look.scale(session.pulseRange));
                 sl.sendParticles(ParticleTypes.ENCHANTED_HIT, finisher.x, finisher.y, finisher.z,
                         10, 0.2, 0.18, 0.2, 0.06);
@@ -174,6 +224,8 @@ public final class SkillComboProcedure {
 
     private static final class ComboSession {
         final String[] motions;
+        /** 実際に出す段数 ( チャージで伸びる )。 motions は 3 つを巡回して使う。 */
+        final int totalHits;
         final float chargePercent;
         final boolean daggerPulse;
         final double pulseRange;
@@ -181,8 +233,10 @@ public final class SkillComboProcedure {
         int tick;
         int index;
 
-        ComboSession(String[] motions, float chargePercent, boolean daggerPulse, double pulseRange, double pulseDash) {
+        ComboSession(String[] motions, int totalHits, float chargePercent,
+                     boolean daggerPulse, double pulseRange, double pulseDash) {
             this.motions = motions;
+            this.totalHits = totalHits;
             this.chargePercent = chargePercent;
             this.daggerPulse = daggerPulse;
             this.pulseRange = pulseRange;

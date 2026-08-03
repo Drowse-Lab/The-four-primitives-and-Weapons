@@ -101,6 +101,10 @@ public class SkillSelectionPacket {
         String typeId = slotId.substring(5); // "type:" を除去
         AttackSlot attackSlot = AttackSlot.fromId(itemId);
         if (attackSlot == null) return;
+        // ロードアウト側 ( handleSelectLoadoutMotion ) と同じく、 そのスロットに置けない技は弾く。
+        // ここに検証が無いと 連撃 ( チャージ専用 ) を一撃目に入れられてしまう。
+        SkillRegistry.MotionInfo motion = SkillRegistry.getById(motionId);
+        if (motion == null || !motion.getCompatibleSlots().contains(attackSlot)) return;
         skillData.setTypeMotion(typeId, attackSlot, motionId);
 
         // タイプ別設定 ( 優先度2 ) より上位の 武器NBT ( 優先度0 ) / 武器スロット ( 優先度1 ) が

@@ -23,7 +23,7 @@
     "shield":         {},
     "bow":            {},
     "crossbow":       {},
-    "throwing":       {},
+    "throwing":       { "attack_speed": -1.2, "attack_range": -2.0 },
     "trident":        {}
   },
 

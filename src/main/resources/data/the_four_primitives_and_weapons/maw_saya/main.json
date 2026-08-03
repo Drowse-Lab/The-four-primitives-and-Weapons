@@ -62,11 +62,11 @@
     "the_four_primitives_and_weapons:netherite_rapier": "the_four_primitives_and_weapons:custom/saya/rapier/saya_netherite_rapier"
   },
   "dagger": {
-    "the_four_primitives_and_weapons:iron_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_dagger_parent",
-    "the_four_primitives_and_weapons:wooden_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_dagger_parent",
-    "the_four_primitives_and_weapons:stone_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_dagger_parent",
-    "the_four_primitives_and_weapons:gold_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_dagger_parent",
-    "the_four_primitives_and_weapons:diamond_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_dagger_parent",
-    "the_four_primitives_and_weapons:netherite_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_dagger_parent"
+    "the_four_primitives_and_weapons:wooden_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_wooden_dagger",
+    "the_four_primitives_and_weapons:stone_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_stone_dagger",
+    "the_four_primitives_and_weapons:iron_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_iron_dagger",
+    "the_four_primitives_and_weapons:gold_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_gold_dagger",
+    "the_four_primitives_and_weapons:diamond_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_diamond_dagger",
+    "the_four_primitives_and_weapons:netherite_dagger": "the_four_primitives_and_weapons:custom/saya/dagger/saya_netherite_dagger"
   }
 }
