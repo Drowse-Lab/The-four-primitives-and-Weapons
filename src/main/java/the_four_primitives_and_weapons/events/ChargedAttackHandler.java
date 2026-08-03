@@ -74,14 +74,18 @@ public class ChargedAttackHandler {
     private static final int MAX_CHARGE_TIME = 60; // 3秒 (20 ticks/秒 × 3)
     private static final int MIN_CHARGE_TIME = 20; // 最小チャージ時間 1秒
     /**
-     * 通常攻撃 ( 技 ) を出せる最低ゲージ量。 これ未満の連打は無視する。
+     * 攻撃ゲージが満タンになるまでの長さにかける倍率。 1.0 = バニラの攻撃クールダウンと同じ。
      *
-     * <p>ゲージの充填速度は ATTACK_SPEED そのものなので、 ここで縛ることで
-     * 武器の攻撃速度と 得意/不得意技のボーナス ( {@link WeaponSpecialtyHandler} ) が
-     * そのまま「技を出せる間隔」になる。 縛らないとクリック速度で撃ち放題になり、
-     * 攻撃速度の差がまったく体感できない。</p>
+     * <p>ゲージが溜まっていなくても技は発動する ( バニラの通常攻撃と同じ ) が、
+     * 溜まり具合に応じてダメージが下がる ( {@code damage * (0.2 + scale^2 * 0.8)} )。
+     * 長さは {@code getCurrentItemAttackStrengthDelay()} ( = 20 / ATTACK_SPEED ) から毎回
+     * 計算するので、 武器の攻撃速度と 得意/不得意技のボーナス ( {@link WeaponSpecialtyHandler} )
+     * がそのまま「連発したときの威力の落ち方」になる。</p>
+     *
+     * <p>※ バニラの {@code attackStrengthTicker} は使えない。 空振りでは減らない一方で
+     * 左クリックした瞬間に ( 当たらなくても ) リセットされるため、 技の連射状況を表さない。</p>
      */
-    private static final float ATTACK_GATE_SCALE = 1.0f;
+    private static final float ATTACK_INTERVAL_SCALE = 1.0f;
     
     private static class ChargeData {
         boolean isCharging = false;
@@ -236,17 +240,9 @@ public class ChargedAttackHandler {
             // 左クリックが押された瞬間を検出（通常攻撃）— チャージ中は送らない
             if (isLeftClickHeld && !data.wasLeftClickPressed && !data.isCharging) {
                 data.clickReleaseTimer = 0;
-                // 攻撃ゲージが溜まっていないと技は出せない ( = ATTACK_SPEED が発動間隔になる )。
-                // 0.5 tick 先読みはバニラのクロスヘア表示と同じ基準。
-                if (player.getAttackStrengthScale(0.5f) >= ATTACK_GATE_SCALE) {
-                    // 発動したのでゲージを振り出しに戻す。 これがそのまま次に撃てるまでの待ち時間。
-                    // ( サーバー側のゲージはバニラの Player.attack — エンティティに当てた時 — だけが
-                    //   リセットする。 MotionExecutor では触らない: 以前サーバー側でリセットしていた頃に
-                    //   spin_slash と競合する不具合があったため。 )
-                    player.resetAttackStrengthTicker();
-                    // サーバーに攻撃パケットを送信
-                    TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new AttackPacket(0, 0));
-                }
+                // ゲージが溜まっていなくても発動させる ( 弱いだけ )。 威力の判定はサーバー側の
+                // ChargedAttackHandler#attackChargeScale が行う。
+                TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new AttackPacket(0, 0));
             }
 
             // チャージ開始（左クリック長押し）- クールダウン中は開始しない。
@@ -530,9 +526,11 @@ public class ChargedAttackHandler {
         UUID playerId = player.getUUID();
         ChargeData data = playerChargeData.computeIfAbsent(playerId, k -> new ChargeData());
 
-        // コンボタイムアウト。 攻撃ゲージが溜まるまで次の技を出せない ( ATTACK_GATE_SCALE ) ので、
-        // 固定 20 tick だと 遅い武器 / 不得意技 ( ゲージ充填 0.5 倍 ) では 2 撃目に届く前に
-        // 必ずリセットされてしまう。 実際の攻撃間隔に追従させる。
+        // 攻撃ゲージの溜まり具合。 lastAttackTime を更新する「前」に取る ( 更新後だと必ず 0 になる )。
+        float chargeScale = attackChargeScale(player, data);
+
+        // コンボタイムアウト。 遅い武器 / 不得意技 ( ゲージ充填 0.5 倍 ) だと固定 20 tick では
+        // 2 撃目がゲージ満タンに間に合わないので、 実際の攻撃間隔に追従させる。
         long now = world.getGameTime();
         long comboTimeout = Math.max(20L, (long) Math.ceil(player.getCurrentItemAttackStrengthDelay() * 1.6f));
         if (now - data.lastAttackTime > comboTimeout) {
@@ -553,10 +551,29 @@ public class ChargedAttackHandler {
 
         // スロットに設定されたモーションを実行
         String motionId = skillData.getMotionForWeapon(slot, player.getMainHandItem());
-        MotionExecutor.executeMotion(motionId, player, 0.0f);
+        MotionExecutor.executeMotion(motionId, player, 0.0f, chargeScale);
 
         // コンボカウンターを増やす
         data.comboCounter++;
+    }
+
+    /**
+     * 通常攻撃 ( 技 ) の攻撃ゲージの溜まり具合 ( 0.0〜1.0 )。
+     *
+     * <p>前回の技発動からの経過 tick を、 その武器の攻撃間隔
+     * ( {@code getCurrentItemAttackStrengthDelay()} = 20 / ATTACK_SPEED ) で割った値。
+     * 満タンでなくても技は発動するが、 この値が {@code DamageCalculator} に渡って
+     * {@code damage * (0.2 + scale^2 * 0.8)} でダメージが落ちる。</p>
+     *
+     * <p>バニラの {@code attackStrengthTicker} を使わない理由: 空振りでは減らないのに
+     * 左クリックした瞬間に ( 当たらなくても ) リセットされるため、 技の連射状況を表さない。</p>
+     */
+    private static float attackChargeScale(Player player, ChargeData data) {
+        if (data == null || data.lastAttackTime == 0L) return 1.0f;
+        long elapsed = player.level().getGameTime() - data.lastAttackTime;
+        if (elapsed < 0L) return 1.0f; // ワールド移動などで gameTime が巻き戻った場合の保険
+        float delay = Math.max(1.0f, player.getCurrentItemAttackStrengthDelay() * ATTACK_INTERVAL_SCALE);
+        return (float) Math.min(1.0, elapsed / (double) delay);
     }
 
     private static void displayChargeEffect(Player player, int chargeTime) {

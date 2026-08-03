@@ -81,7 +81,7 @@ public class SkillSelectionPacket {
                 } else if ("motion_toggle".equals(slotId)) {
                     handleMotionToggle(player);
                 } else if (slotId != null && slotId.startsWith("type:")) {
-                    handleTypeMotion(sd);
+                    handleTypeMotion(sd, player);
                 } else {
                     handleSelectLoadoutMotion(sd, player);
                 }
@@ -96,12 +96,32 @@ public class SkillSelectionPacket {
         PlayerSkillData.setMotionEnabled(player, motionId, enabled);
     }
 
-    private void handleTypeMotion(PlayerSkillData.SkillStorage skillData) {
+    private void handleTypeMotion(PlayerSkillData.SkillStorage skillData, ServerPlayer player) {
         if (slotId == null || motionId == null || itemId == null) return;
         String typeId = slotId.substring(5); // "type:" を除去
         AttackSlot attackSlot = AttackSlot.fromId(itemId);
         if (attackSlot == null) return;
         skillData.setTypeMotion(typeId, attackSlot, motionId);
+
+        // タイプ別設定 ( 優先度2 ) より上位の 武器NBT ( 優先度0 ) / 武器スロット ( 優先度1 ) が
+        // 残っていると、 ここで選び直しても何も起きない。 スキル画面で選んだものが必ず反映される
+        // よう、 このタイプの武器についてだけ上位設定を落とす。
+        skillData.clearLoadoutMotionsForType(typeId, attackSlot);
+        clearNbtMotionForType(player, typeId, attackSlot);
+    }
+
+    /** プレイヤーの持ち物にある「指定タイプの武器」から、 該当スロットの NBT 技設定を消す。 */
+    private static void clearNbtMotionForType(ServerPlayer player, String typeId, AttackSlot attackSlot) {
+        net.minecraft.world.entity.player.Inventory inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            net.minecraft.world.item.ItemStack stack = inv.getItem(i);
+            if (stack.isEmpty()) continue;
+            the_four_primitives_and_weapons.skill.WeaponTypeRegistry.WeaponTypeData type =
+                    the_four_primitives_and_weapons.skill.WeaponTypeRegistry.getTypeForItem(stack);
+            if (type != null && typeId.equals(type.getId())) {
+                the_four_primitives_and_weapons.skill.WeaponSkillNBT.removeMotion(stack, attackSlot);
+            }
+        }
     }
 
     private void handleProficiency(PlayerSkillData.SkillStorage skillData) {
@@ -136,6 +156,13 @@ public class SkillSelectionPacket {
                     the_four_primitives_and_weapons.skill.WeaponTypeRegistry.getTypeForItem(held);
             if (wt != null) {
                 skillData.setTypeMotion(wt.getId(), attackSlot, motionId);
+                // 上位設定 ( 武器NBT / 武器スロット ) が残っていると反映されないので落とす。
+                skillData.clearLoadoutMotionsForType(wt.getId(), attackSlot);
+                clearNbtMotionForType(player, wt.getId(), attackSlot);
+            } else if (!held.isEmpty()) {
+                // タイプ未登録の武器でも、 手持ちの武器の NBT / 武器スロット設定は落としておく。
+                skillData.clearLoadoutMotionsForItem(held.getItem(), attackSlot);
+                the_four_primitives_and_weapons.skill.WeaponSkillNBT.removeMotion(held, attackSlot);
             }
         } else {
             // 特定スロットの設定
@@ -163,12 +190,49 @@ public class SkillSelectionPacket {
             skillData.setLoadoutMotion(loadoutIndex, attackSlot, motionId);
 
             // 武器のNBTにも技設定を保存（アイテムと一緒に永続化）
-            if (player.containerMenu instanceof SkillSelectionMenu) {
-                SkillSelectionMenu skillMenu = (SkillSelectionMenu) player.containerMenu;
-                net.minecraft.world.item.ItemStack weaponInSlot = skillMenu.getSlot(loadoutIndex).getItem();
-                if (!weaponInSlot.isEmpty()) {
-                    the_four_primitives_and_weapons.skill.WeaponSkillNBT.setMotion(weaponInSlot, attackSlot, motionId);
-                }
+            writeMotionToRealWeapons(player, loadout, loadoutIndex, attackSlot, motionId);
+        }
+    }
+
+    /**
+     * 技設定を「実物の武器」の NBT に書く。
+     *
+     * <p>GUI の武器スロットに入っている ItemStack は、 メニューを開き直すたびに
+     * {@code SkillSelectionMenu#populateFromSkillData()} が
+     * {@code WeaponLoadout#getWeapon()} ( = {@code weapon.copy()} ) を入れ直した
+     * 「コピー」であることがある。 そこにだけ NBT を書くとメニューを閉じた時点で捨てられ、
+     * 設定がまったく反映されない。 しかも一度でも実物をスロットに入れて設定した武器は
+     * NBT が焼き付き、 それが {@code getMotionForWeapon} の最優先 ( 優先度0 ) なので、
+     * 以後 GUI から変更できなくなっていた。</p>
+     *
+     * <p>そのため スロットの ItemStack ( 実物を入れている場合はこれ ) に加えて、
+     * プレイヤーの持ち物にある同じアイテムにも書き込む。 ロードアウトの一致判定
+     * ( {@code WeaponLoadout#matchesItem} ) がアイテム単位なので、 対象もアイテム単位で揃える。</p>
+     */
+    private static void writeMotionToRealWeapons(ServerPlayer player, WeaponLoadout loadout,
+                                                 int loadoutIndex, AttackSlot attackSlot, String motionId) {
+        net.minecraft.world.item.Item target = null;
+
+        if (player.containerMenu instanceof SkillSelectionMenu) {
+            SkillSelectionMenu skillMenu = (SkillSelectionMenu) player.containerMenu;
+            net.minecraft.world.item.ItemStack weaponInSlot = skillMenu.getSlot(loadoutIndex).getItem();
+            if (!weaponInSlot.isEmpty()) {
+                // 実物を入れている場合はこれで実物に書ける ( コピーの場合は下のループが拾う )
+                the_four_primitives_and_weapons.skill.WeaponSkillNBT.setMotion(weaponInSlot, attackSlot, motionId);
+                target = weaponInSlot.getItem();
+            }
+        }
+        if (target == null && loadout != null) {
+            net.minecraft.world.item.ItemStack loadoutWeapon = loadout.getWeapon();
+            if (!loadoutWeapon.isEmpty()) target = loadoutWeapon.getItem();
+        }
+        if (target == null) return;
+
+        net.minecraft.world.entity.player.Inventory inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            net.minecraft.world.item.ItemStack stack = inv.getItem(i);
+            if (!stack.isEmpty() && stack.getItem() == target) {
+                the_four_primitives_and_weapons.skill.WeaponSkillNBT.setMotion(stack, attackSlot, motionId);
             }
         }
     }

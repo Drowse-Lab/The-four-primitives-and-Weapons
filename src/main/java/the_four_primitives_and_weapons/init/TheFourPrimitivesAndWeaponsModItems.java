@@ -283,6 +283,11 @@ public class TheFourPrimitivesAndWeaponsModItems {
 	public static final RegistryObject<Item> RARITY_CHARM = REGISTRY.register("rarity_charm", () -> new the_four_primitives_and_weapons.item.RarityCharmItem());
 	public static final RegistryObject<Item> IRON_TYOKUTO = REGISTRY.register("iron_tyokuto", () -> new the_four_primitives_and_weapons.item.IronTyokutoItem());
 	public static final RegistryObject<Item> IRON_DAGGER = REGISTRY.register("iron_dagger", () -> new the_four_primitives_and_weapons.item.IronDaggerItem());
+	public static final RegistryObject<Item> WOODEN_DAGGER = REGISTRY.register("wooden_dagger", () -> new the_four_primitives_and_weapons.item.WoodenDaggerItem());
+	public static final RegistryObject<Item> STONE_DAGGER = REGISTRY.register("stone_dagger", () -> new the_four_primitives_and_weapons.item.StoneDaggerItem());
+	public static final RegistryObject<Item> GOLD_DAGGER = REGISTRY.register("gold_dagger", () -> new the_four_primitives_and_weapons.item.GoldDaggerItem());
+	public static final RegistryObject<Item> DIAMOND_DAGGER = REGISTRY.register("diamond_dagger", () -> new the_four_primitives_and_weapons.item.DiamondDaggerItem());
+	public static final RegistryObject<Item> NETHERITE_DAGGER = REGISTRY.register("netherite_dagger", () -> new the_four_primitives_and_weapons.item.NetheriteDaggerItem());
 	public static final RegistryObject<Item> GOLD_TYOKUTO = REGISTRY.register("gold_tyokuto", () -> new the_four_primitives_and_weapons.item.GoldTyokutoItem());
 	public static final RegistryObject<Item> STONE_TYOKUTO = REGISTRY.register("stone_tyokuto", () -> new the_four_primitives_and_weapons.item.StoneTyokutoItem());
 	public static final RegistryObject<Item> SAYA = REGISTRY.register("saya", () -> new SayaItem());

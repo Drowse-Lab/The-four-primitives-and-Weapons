@@ -57,6 +57,30 @@ public final class WeaponSkillNBT {
     }
 
     /**
+     * 武器のNBTから指定スロットの技設定を消す。
+     *
+     * <p>この NBT は {@link PlayerSkillData.SkillStorage#getMotionForWeapon} の最優先なので、
+     * 残っているとタイプ別設定やデフォルト設定を握り潰してしまう。 スキル画面で
+     * より広い範囲の設定をし直したときは、 こちらで消して新しい設定を効かせる。</p>
+     */
+    public static void removeMotion(ItemStack stack, AttackSlot slot) {
+        try {
+            if (stack == null || stack.isEmpty() || slot == null || !stack.hasTag()) return;
+            CompoundTag tag = stack.getTag();
+            if (tag == null || !tag.contains(TAG_KEY)) return;
+            CompoundTag motions = tag.getCompound(TAG_KEY);
+            motions.remove(slot.getId());
+            if (motions.isEmpty()) {
+                tag.remove(TAG_KEY);
+            } else {
+                tag.put(TAG_KEY, motions);
+            }
+        } catch (Exception e) {
+            // NBT書き込み失敗は無視
+        }
+    }
+
+    /**
      * 武器にSkillMotions NBTがあるか
      */
     public static boolean hasMotions(ItemStack stack) {

@@ -56,7 +56,12 @@ public class CreativeTabPopulator {
 			event.accept(CustomEntityInit.WEAPON_RACK_WARPED);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.WOODEN_TYOKUTO);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.IRON_TYOKUTO);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.WOODEN_DAGGER);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.STONE_DAGGER);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.IRON_DAGGER);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.GOLD_DAGGER);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.DIAMOND_DAGGER);
+			event.accept(TheFourPrimitivesAndWeaponsModItems.NETHERITE_DAGGER);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.GOLD_TYOKUTO);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.STONE_TYOKUTO);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.DIAMOND_TYOKUTO);

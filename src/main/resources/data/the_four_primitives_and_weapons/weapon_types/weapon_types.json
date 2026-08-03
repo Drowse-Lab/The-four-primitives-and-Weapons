@@ -143,7 +143,12 @@
     "dagger": {
       "display_name": "短剣",
       "items": [
-        "the_four_primitives_and_weapons:iron_dagger"
+        "the_four_primitives_and_weapons:wooden_dagger",
+        "the_four_primitives_and_weapons:stone_dagger",
+        "the_four_primitives_and_weapons:iron_dagger",
+        "the_four_primitives_and_weapons:gold_dagger",
+        "the_four_primitives_and_weapons:diamond_dagger",
+        "the_four_primitives_and_weapons:netherite_dagger"
       ],
       "motions": {
         "combat": ["thrust", "thrust_combo", "upper_left_slash", "upper_right_slash"],

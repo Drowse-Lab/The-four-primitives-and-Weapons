@@ -133,10 +133,10 @@ public final class JsonThrustProcedure {
         world.playSound(null, player.getX(), player.getY(), player.getZ(),
                 SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.6f, 1.45f + hitIndex * 0.12f);
         if (world instanceof ServerLevel sl) {
-            // 全ての突き共通の見た目 ( 斜め切りと同じ dust 扇 )。 連撃なので初段のみ。
-            if (hitIndex == 0) {
-                the_four_primitives_and_weapons.skill.MotionExecutor.slashCloudFan(sl, player, look, player.position(), 0.0);
-            }
+            // 全ての突き共通の見た目 ( 前方へ伸びる線 )。 斬撃の扇と区別が付くようにする。
+            // 連撃は段ごとに線が伸びる方が突きらしいので、 初段のみに絞らず毎段出す。
+            the_four_primitives_and_weapons.skill.MotionExecutor.thrustLine(
+                    sl, player, look, player.position(), session.range);
             if (session.chargePercent >= 0.75f && session.doneHits >= session.totalHits) {
                 Vec3 p = eye.add(look.scale(session.range));
                 sl.sendParticles(ParticleTypes.ENCHANTED_HIT, p.x, p.y, p.z, 12, 0.25, 0.2, 0.25, 0.08);

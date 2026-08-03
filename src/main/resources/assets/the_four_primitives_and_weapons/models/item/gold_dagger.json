@@ -1,0 +1,9 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/weapon/dagger/dagger_parent",
+  "textures": {
+    "1": "the_four_primitives_and_weapons:dagger_fitting/tuba/gold_tuba",
+    "2": "the_four_primitives_and_weapons:dagger_fitting/grip/gold_grip",
+    "3": "the_four_primitives_and_weapons:blade/dagger/gold_dagger",
+    "particle": "the_four_primitives_and_weapons:blade/dagger/gold_dagger"
+  }
+}

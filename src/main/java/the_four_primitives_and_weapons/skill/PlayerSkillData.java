@@ -139,6 +139,11 @@ public class PlayerSkillData {
             }
         }
 
+        /** このスロットの明示設定を消す ( タイプ別設定 / JSON既定 に委ねる )。 */
+        public void removeMotion(AttackSlot slot) {
+            if (slot != null) motions.remove(slot);
+        }
+
         @Override
         public CompoundTag serializeNBT() {
             CompoundTag tag = new CompoundTag();
@@ -316,6 +321,42 @@ public class PlayerSkillData {
         public void setTypeMotion(String typeId, AttackSlot slot, String motionId) {
             typeMotions.computeIfAbsent(typeId, k -> new EnumMap<>(AttackSlot.class))
                     .put(slot, motionId);
+        }
+
+        /** タイプ別設定が「明示的に入っているか」だけを見る ( 未設定なら null。 既定へのフォールバックはしない )。 */
+        public String getRawTypeMotion(String typeId, AttackSlot slot) {
+            Map<AttackSlot, String> typeSetting = typeMotions.get(typeId);
+            return typeSetting != null ? typeSetting.get(slot) : null;
+        }
+
+        /** 指定タイプの、 指定スロットのタイプ別設定を消す ( JSON既定 / グローバル既定 に委ねる )。 */
+        public void clearTypeMotion(String typeId, AttackSlot slot) {
+            Map<AttackSlot, String> typeSetting = typeMotions.get(typeId);
+            if (typeSetting != null) typeSetting.remove(slot);
+        }
+
+        /**
+         * 指定タイプの武器を登録している武器スロットから、 該当スロットの明示設定を消す。
+         *
+         * <p>{@link #getMotionForWeapon} は 武器スロット ( 優先度1 ) を タイプ別設定 ( 優先度2 ) より
+         * 優先するため、 これを残したままタイプ別タブで選び直しても何も起きない。 スキル画面で
+         * 選んだものが必ず反映されるよう、 上位の設定を落としてからタイプ別設定を効かせる。</p>
+         */
+        public void clearLoadoutMotionsForType(String typeId, AttackSlot slot) {
+            if (typeId == null) return;
+            for (WeaponLoadout loadout : weaponSlots) {
+                if (loadout == null) continue;
+                WeaponTypeRegistry.WeaponTypeData type = WeaponTypeRegistry.getTypeForItem(loadout.getWeapon());
+                if (type != null && typeId.equals(type.getId())) loadout.removeMotion(slot);
+            }
+        }
+
+        /** 指定アイテムを登録している武器スロットから、 該当スロットの明示設定を消す。 */
+        public void clearLoadoutMotionsForItem(net.minecraft.world.item.Item item, AttackSlot slot) {
+            if (item == null) return;
+            for (WeaponLoadout loadout : weaponSlots) {
+                if (loadout != null && loadout.getWeapon().getItem() == item) loadout.removeMotion(slot);
+            }
         }
 
         /** マルチプレイ同期用: 内部 typeMotions の全体ビューを返す (read-only 想定)。 */

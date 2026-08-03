@@ -37,6 +37,18 @@ public class MotionExecutor {
      * @param chargePercent チャージ率（0.0 = 通常攻撃、0.0～1.0 = チャージ攻撃）
      */
     public static void executeMotion(String motionId, Player player, float chargePercent) {
+        executeMotion(motionId, player, chargePercent, -1.0f);
+    }
+
+    /**
+     * モーションを実行する ( 攻撃ゲージの溜まり具合を呼び出し側が指定する版 )。
+     *
+     * @param cooldownScale 攻撃ゲージ 0.0〜1.0。 負値ならバニラの
+     *        {@code getAttackStrengthScale} を使う ( 従来どおり )。
+     *        通常攻撃は空振りでもバニラのゲージが減らず常に満タン扱いになってしまうため、
+     *        {@code ChargedAttackHandler} が自前で計算した値をここに渡す。
+     */
+    public static void executeMotion(String motionId, Player player, float chargePercent, float cooldownScale) {
         // モーション無し / 技 OFF → 素の通常攻撃にフォールバックする。
         // この場合も「攻撃に載っている属性」は見せたいので、 斬撃の弧ではなく
         // 武器の前方にコンパクトな属性パーティクルだけ出す。
@@ -47,15 +59,16 @@ public class MotionExecutor {
         }
 
         // スキル ( モーション ) に武器の属性パーティクルを載せる。 全スキル共通。
-        spawnMotionElementParticle(player);
+        spawnMotionElementParticle(player, motionId);
 
-        // クロスヘア Attack Cooldown ゲージをキャプチャしてスキル全体に damage scale を適用。
-        // ゲージが満タン (1.0) なら 100%、空 (0.0) なら 20% のダメージ。
-        // ※ 短時間で連続発動されるとゲージが 0 のままになるため、以前は resetAttackStrengthTicker
-        //   していたが、これがスピン斬り (connection.teleport) と競合してたまに回転が止まる事象を
-        //   起こすため削除。スキル使用後に通常攻撃のクールダウンが残るのは仕様。
-        float cooldownScale = player.getAttackStrengthScale(0.5f);
-        DamageCalculator.setCooldownScaleContext(cooldownScale);
+        // 攻撃ゲージをスキル全体の damage scale に適用。 満タン (1.0) なら 100%、空 (0.0) なら 20%。
+        // ゲージが溜まっていなくても技自体は発動する ( 弱いだけ )。
+        // ※ resetAttackStrengthTicker はしない。 以前これがスピン斬り (connection.teleport) と
+        //   競合してたまに回転が止まる事象を起こしたため。 代わりに通常攻撃は
+        //   ChargedAttackHandler が自前でゲージを計算して cooldownScale に渡す。
+        float scale = (cooldownScale >= 0.0f) ? Math.min(1.0f, cooldownScale)
+                                              : player.getAttackStrengthScale(0.5f);
+        DamageCalculator.setCooldownScaleContext(scale);
 
         // チャージ技発動時は DamageCalculator に一律ボーナスを適用させる。
         // これで個別にスケールしていない技も、チャージ発動なら攻撃力が上がる。
@@ -164,11 +177,27 @@ public class MotionExecutor {
      * 斬撃の弧を描く技は {@link #slashCloudFan} 側が属性色の弧を出すので、
      * ここは弧を持たない技 ( 回転斬り / 振り下ろし / ダッシュ等 ) でも属性が乗るようにする保険。
      */
-    private static void spawnMotionElementParticle(Player player) {
+    private static void spawnMotionElementParticle(Player player, String motionId) {
         if (!(player.level() instanceof ServerLevel sl)) return;
         the_four_primitives_and_weapons.damage.ElementType elem =
                 the_four_primitives_and_weapons.damage.ElementalDamageUtils.getAttackElementType(player);
         if (elem == the_four_primitives_and_weapons.damage.ElementType.NONE) return;
+
+        // 突きは扇ではなく線。 ここも扇のままだと せっかく thrustLine を線にしても
+        // 属性粒子が扇を描いてしまい、 見た目が斬撃と区別できない。
+        if ("thrust".equals(motionId)) {
+            Vec3 look = horizontalLook(player);
+            Vec3 pos = player.position();
+            double end = thrustVisualRange(player);
+            double y = pos.y + 1.2;
+            int steps = (int) Math.round((end - 0.6) / 0.25);
+            for (int i = 0; i <= steps; i++) {
+                double d = 0.6 + (end - 0.6) * i / steps;
+                the_four_primitives_and_weapons.damage.ElementalParticles.spawnWide(
+                        sl, elem, pos.x + look.x * d, y, pos.z + look.z * d, 1, 0.05, 0.05);
+            }
+            return;
+        }
 
         double delta = fanSpread(player);
         for (Vec3 p : fanPoints(player, player.getLookAngle(), player.position(), 0.0)) {
@@ -176,6 +205,12 @@ public class MotionExecutor {
             the_four_primitives_and_weapons.damage.ElementalParticles.spawnWide(
                     sl, elem, p.x, p.y, p.z, 10, delta, 0.0);
         }
+    }
+
+    /** 突きの線を描く長さ。 武器の attack_range に追従させる ( performThrust の通常時と同じ基準 )。 */
+    private static double thrustVisualRange(Player player) {
+        return Math.max(1.5, 5.0
+                + the_four_primitives_and_weapons.skill.WeaponStatsRegistry.attackRangeBonus(player.getMainHandItem()));
     }
 
     // === 突き ===
@@ -188,10 +223,10 @@ public class MotionExecutor {
         // 竹破壊
         breakBambooInPath(world, playerPos, lookVec, range);
 
-        // エフェクト ( 13-mystic-swords katana と同じ 3クラスタ dust 扇に統一 )
+        // エフェクト: 突きは扇ではなく前方へ伸びる線
         if (!world.isClientSide) {
             ServerLevel serverWorld = (ServerLevel) world;
-            slashCloudFan(serverWorld, player, lookVec, playerPos, 0.0);
+            thrustLine(serverWorld, player, lookVec, playerPos, range);
             if (isCharged) {
                 serverWorld.sendParticles(ParticleTypes.ENCHANTED_HIT,
                     playerPos.x + lookVec.x * 2, playerPos.y + 1.2, playerPos.z + lookVec.z * 2,
@@ -511,6 +546,29 @@ public class MotionExecutor {
         net.minecraft.core.particles.DustParticleOptions colored =
                 the_four_primitives_and_weapons.damage.ElementalParticles.dustOf(elem);
         return colored != null ? colored : DUST_KATANA;
+    }
+
+    /**
+     * 突きの見た目: 視線方向へ伸びる <b>一本の線</b>。
+     *
+     * <p>斬撃の {@link #slashCloudFan} は左右に広がる扇だが、 突きは前方に一直線なので
+     * 同じ見た目だと区別が付かない。 こちらは 0.25 ブロック刻みで細く撒いて線に見せる。
+     * 属性が載っていれば属性色 ( {@link #slashDust} と同じ解決 ) になる。</p>
+     *
+     * @param range 線の長さ ( 技の実際のリーチをそのまま渡す )
+     */
+    public static void thrustLine(ServerLevel sw, Player player, Vec3 look, Vec3 playerPos, double range) {
+        net.minecraft.core.particles.ParticleOptions dust = slashDust(player);
+        double start = 0.6;                       // プレイヤーの中に湧かせない
+        double end = Math.max(start + 0.5, range);
+        double y = playerPos.y + 1.2;             // 扇 ( fanPoints ) と同じ高さ
+        int steps = (int) Math.round((end - start) / 0.25);
+        for (int i = 0; i <= steps; i++) {
+            double d = start + (end - start) * i / steps;
+            sw.sendParticles(dust,
+                    playerPos.x + look.x * d, y, playerPos.z + look.z * d,
+                    3, 0.05, 0.05, 0.05, 0.0);
+        }
     }
 
     /** 突き系の見た目: 前方に dust のクラスタを3つ ( 手前→奥 ) 並べる ( 属性が載っていれば属性色 )。 */

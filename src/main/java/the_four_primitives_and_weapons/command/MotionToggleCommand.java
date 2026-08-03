@@ -56,7 +56,71 @@ public class MotionToggleCommand {
 
             .then(Commands.literal("list")
                 .executes(ctx -> listDisabled(ctx.getSource())))
+
+            .then(Commands.literal("why")
+                .executes(ctx -> explainMotions(ctx.getSource())))
         );
+    }
+
+    /**
+     * /motion why — 手に持っている武器について、 各スロットの技が
+     * 「どの層から」来ているかを表示する。
+     *
+     * <p>技設定は 武器NBT &gt; 武器スロット &gt; タイプ別 &gt; JSON既定 &gt; グローバル既定 の
+     * 5 層で解決される ( {@link PlayerSkillData.SkillStorage#getMotionForWeapon} )。
+     * 上位に古い設定が残っていると、 スキル画面で下位の層を選び直しても何も起きない。
+     * どの層が勝っているかはゲーム中から見えないため、 切り分け用に出す。</p>
+     */
+    private static int explainMotions(CommandSourceStack source) {
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.literal("§cこのコマンドはプレイヤー専用"));
+            return 0;
+        }
+        net.minecraft.world.item.ItemStack held = player.getMainHandItem();
+        if (held.isEmpty()) {
+            source.sendFailure(Component.literal("§c武器を手に持ってから実行してください"));
+            return 0;
+        }
+
+        PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(player);
+        if (sd == null) {
+            source.sendFailure(Component.literal("§cスキルデータを取得できませんでした"));
+            return 0;
+        }
+
+        the_four_primitives_and_weapons.skill.WeaponTypeRegistry.WeaponTypeData type =
+                the_four_primitives_and_weapons.skill.WeaponTypeRegistry.getTypeForItem(held);
+        source.sendSuccess(() -> Component.literal("§6" + held.getHoverName().getString()
+                + " §7/ タイプ: §e" + (type != null ? type.getId() : "未登録")), false);
+
+        for (PlayerSkillData.AttackSlot slot : PlayerSkillData.AttackSlot.values()) {
+            String actual = sd.getMotionForWeapon(slot, held);
+            String origin;
+
+            String nbt = the_four_primitives_and_weapons.skill.WeaponSkillNBT.getMotion(held, slot);
+            String loadoutMotion = null;
+            for (int i = 0; i < PlayerSkillData.MAX_WEAPON_SLOTS; i++) {
+                PlayerSkillData.WeaponLoadout lo = sd.getLoadoutAt(i);
+                if (lo != null && lo.matchesItem(held) && lo.hasMotion(slot)) {
+                    loadoutMotion = lo.getMotion(slot);
+                    break;
+                }
+            }
+            String typeMotion = (type != null) ? sd.getRawTypeMotion(type.getId(), slot) : null;
+            String jsonDefault = (type != null) ? type.getDefaultMotion(slot) : null;
+
+            if (nbt != null) origin = "§c武器NBT §7(優先度0)";
+            else if (loadoutMotion != null) origin = "§e武器スロット §7(優先度1)";
+            else if (typeMotion != null) origin = "§aタイプ別 §7(優先度2)";
+            else if (jsonDefault != null) origin = "§bJSON既定 §7(優先度3)";
+            else origin = "§7グローバル既定 (優先度4)";
+
+            source.sendSuccess(() -> Component.literal(
+                    "  §f" + slot.getId() + "§7: §f" + actual + " §7← " + origin), false);
+        }
+        source.sendSuccess(() -> Component.literal(
+                "§7※ 上位の層が出ている場合、 スキル画面で下位のタブを選び直しても反映されません"), false);
+        return 1;
     }
 
     private static List<String> allMotionIds() {

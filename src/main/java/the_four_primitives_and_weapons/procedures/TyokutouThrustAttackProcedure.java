@@ -105,10 +105,10 @@ public class TyokutouThrustAttackProcedure {
 
         Vec3 lookVec = the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
 
-        // 全ての突き共通の見た目 ( 斜め切りと同じ dust 扇 )。
+        // 全ての突き共通の見た目 ( 前方へ伸びる線 )。 斬撃の扇と区別が付くようにする。
         if (world instanceof ServerLevel serverLevel) {
-            the_four_primitives_and_weapons.skill.MotionExecutor.slashCloudFan(
-                    serverLevel, player, lookVec, player.position(), 0.0);
+            the_four_primitives_and_weapons.skill.MotionExecutor.thrustLine(
+                    serverLevel, player, lookVec, player.position(), range);
         }
 
         // 前方への突進移動。 thrust 設定を持つ武器 ( ダガー等 ) は thrust.dash を踏み込み量に使う

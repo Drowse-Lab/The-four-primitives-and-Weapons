@@ -1,0 +1,9 @@
+{
+  "parent": "the_four_primitives_and_weapons:custom/weapon/dagger/dagger_parent",
+  "textures": {
+    "1": "the_four_primitives_and_weapons:dagger_fitting/tuba/stone_tuba",
+    "2": "the_four_primitives_and_weapons:dagger_fitting/grip/stone_grip",
+    "3": "the_four_primitives_and_weapons:blade/dagger/stone_dagger",
+    "particle": "the_four_primitives_and_weapons:blade/dagger/stone_dagger"
+  }
+}
