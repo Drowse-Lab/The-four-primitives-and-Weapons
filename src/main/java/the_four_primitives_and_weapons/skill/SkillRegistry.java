@@ -240,7 +240,13 @@ public class SkillRegistry {
                     if (id.equals("spell")
                             && !the_four_primitives_and_weapons.compat.SpellbooksCompat.isLoaded()) continue;
                     MotionInfo info = getById(id);
-                    if (info != null) result.add(info);
+                    if (info == null) continue;
+                    // そのスロットに置けない技は出さない ( 例: 連撃はチャージ専用 )。
+                    // weapon_types の combat リストは 一撃目〜チャージ で共有なので、
+                    // ここで絞らないと 連撃が通常技の選択肢に並んでしまう
+                    // ( クラス名ベースの getAvailableMotions 側は元々絞っている )。
+                    if (!info.compatibleSlots.contains(slot)) continue;
+                    result.add(info);
                 }
                 return result;
             }

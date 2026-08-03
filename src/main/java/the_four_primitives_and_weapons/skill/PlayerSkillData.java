@@ -261,7 +261,7 @@ public class PlayerSkillData {
             if (!heldItem.isEmpty()) {
                 // 0. 武器NBTの技設定を最優先（アイテムに直接保存された設定）
                 String nbtMotion = WeaponSkillNBT.getMotion(heldItem, slot);
-                if (nbtMotion != null) return nbtMotion;
+                if (usableInSlot(slot, nbtMotion)) return nbtMotion;
 
                 // 1. 武器スロットの個別設定を確認
                 //    「同じ武器」かつ「そのスロットを明示設定済み」のときだけ採用する。
@@ -269,7 +269,8 @@ public class PlayerSkillData {
                 //      JSON の default_motions を握り潰さないため )
                 for (WeaponLoadout loadout : weaponSlots) {
                     if (loadout != null && loadout.matchesItem(heldItem) && loadout.hasMotion(slot)) {
-                        return loadout.getMotion(slot);
+                        String m = loadout.getMotion(slot);
+                        if (usableInSlot(slot, m)) return m;
                     }
                 }
 
@@ -277,15 +278,44 @@ public class PlayerSkillData {
                 WeaponTypeRegistry.WeaponTypeData typeData = WeaponTypeRegistry.getTypeForItem(heldItem);
                 if (typeData != null) {
                     Map<AttackSlot, String> typeSetting = typeMotions.get(typeData.getId());
-                    if (typeSetting != null && typeSetting.containsKey(slot)) {
-                        return typeSetting.get(slot);
+                    if (typeSetting != null) {
+                        String m = typeSetting.get(slot);
+                        if (usableInSlot(slot, m)) return m;
                     }
                     // 3. 武器タイプのJSON default_motionsを次点として採用
                     String jsonDefault = typeData.getDefaultMotion(slot);
-                    if (jsonDefault != null) return jsonDefault;
+                    if (usableInSlot(slot, jsonDefault)) return jsonDefault;
                 }
             }
-            return selectedMotions.getOrDefault(slot, "thrust");
+            String def = selectedMotions.get(slot);
+            return usableInSlot(slot, def) ? def : fallbackMotion(slot);
+        }
+
+        /**
+         * そのスロットで実際に発動できる技か。
+         *
+         * <p>スキル画面はスロット互換 ( {@link SkillRegistry.MotionInfo#getCompatibleSlots} ) で
+         * 絞り込むが、 <b>互換を狭めた後も古いセーブには前の設定が残る</b>。 例えば連撃
+         * ( thrust_combo ) をチャージ専用にする前に一撃目へ入れてあると、 発動しても
+         * 自己参照ガードで既定技に化けるだけの「無効な設定」になってしまう。 ここで弾いて
+         * 次の優先度へ落とす。</p>
+         *
+         * <p>未登録の技 ( アドオン等 ) は判定材料が無いのでそのまま通す。</p>
+         */
+        private static boolean usableInSlot(AttackSlot slot, String motionId) {
+            if (motionId == null || motionId.isEmpty()) return false;
+            SkillRegistry.MotionInfo info = SkillRegistry.getById(motionId);
+            return info == null || info.getCompatibleSlots().contains(slot);
+        }
+
+        /** どの層にも有効な設定が無かったときの、 スロットごとの無難な既定。 */
+        private static String fallbackMotion(AttackSlot slot) {
+            switch (slot) {
+                case RIGHT_CLICK:       return "dodge";
+                case SHIFT_RIGHT_CLICK: return "guard";
+                case DASH:              return "dash_rush";
+                default:                return "thrust";
+            }
         }
 
         /**
@@ -296,14 +326,16 @@ public class PlayerSkillData {
          */
         public boolean hasExplicitMotion(AttackSlot slot, ItemStack heldItem) {
             if (heldItem == null || heldItem.isEmpty()) return false;
-            if (WeaponSkillNBT.getMotion(heldItem, slot) != null) return true;
+            // getMotionForWeapon と同じく、 そのスロットで使えない設定は「無い」ものとして扱う。
+            if (usableInSlot(slot, WeaponSkillNBT.getMotion(heldItem, slot))) return true;
             for (WeaponLoadout loadout : weaponSlots) {
-                if (loadout != null && loadout.matchesItem(heldItem) && loadout.hasMotion(slot)) return true;
+                if (loadout != null && loadout.matchesItem(heldItem) && loadout.hasMotion(slot)
+                        && usableInSlot(slot, loadout.getMotion(slot))) return true;
             }
             WeaponTypeRegistry.WeaponTypeData typeData = WeaponTypeRegistry.getTypeForItem(heldItem);
             if (typeData != null) {
                 Map<AttackSlot, String> typeSetting = typeMotions.get(typeData.getId());
-                if (typeSetting != null && typeSetting.containsKey(slot)) return true;
+                if (typeSetting != null && usableInSlot(slot, typeSetting.get(slot))) return true;
             }
             return false;
         }

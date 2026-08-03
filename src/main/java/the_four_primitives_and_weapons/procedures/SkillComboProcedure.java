@@ -102,9 +102,14 @@ public final class SkillComboProcedure {
         if (event.phase != TickEvent.Phase.END) return;
 
         Player player = event.player;
+        // ACTIVE は UUID キーなので、 シングルプレイでは クライアント側プレイヤーの tick でも
+        // 同じセッションが引ける。 そこで remove すると サーバー側が 1 段も出せないまま
+        // セッションが消える ( = ダメージが一切出ない ) ため、 クライアントは何もしない。
+        if (player.level().isClientSide) return;
+
         ComboSession session = ACTIVE.get(player.getUUID());
         if (session == null) return;
-        if (player.level().isClientSide || !player.isAlive()) {
+        if (!player.isAlive()) {
             ACTIVE.remove(player.getUUID());
             return;
         }

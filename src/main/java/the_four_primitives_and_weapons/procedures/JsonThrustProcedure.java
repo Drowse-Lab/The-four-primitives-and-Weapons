@@ -62,7 +62,7 @@ public final class JsonThrustProcedure {
         dmg *= 1.0f + chargePercent * 0.5f;
 
         ACTIVE.put(player.getUUID(), new ComboSession(
-                Math.max(1, cfg.hits),
+                hitsForCharge(cfg, chargePercent),
                 range,
                 Math.max(0.0, cfg.knockback),
                 Math.max(0.0, cfg.dash),
@@ -71,13 +71,30 @@ public final class JsonThrustProcedure {
         doHit(player, ACTIVE.get(player.getUUID()));
     }
 
+    /**
+     * 実際に出す段数。 チャージ 0 ( 通常の一撃目 ) は 1 段、 フルチャージで {@code cfg.hits} 段。
+     *
+     * <p>{@code thrust.hits} は元々「突き連撃」= チャージ攻撃向けの設定だが、
+     * {@code MotionExecutor} の {@code case "thrust"} は通常攻撃の突きもここへ流す。
+     * 段数を固定にすると <b>短押しの一撃目が毎回 4 連打になる</b> ため、 チャージ率で伸ばす。</p>
+     */
+    private static int hitsForCharge(ThrustConfig cfg, float chargePercent) {
+        int max = Math.max(1, cfg.hits);
+        float c = Math.max(0.0f, Math.min(1.0f, chargePercent));
+        return Math.max(1, 1 + Math.round(c * (max - 1)));
+    }
+
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         Player player = event.player;
+        // シングルプレイでは クライアント側プレイヤーも同じ UUID なので、 ここで remove すると
+        // サーバー側の連撃が初段だけで打ち切られる。 クライアントは何もしない。
+        if (player.level().isClientSide) return;
+
         ComboSession session = ACTIVE.get(player.getUUID());
         if (session == null) return;
-        if (player.level().isClientSide || !player.isAlive()) {
+        if (!player.isAlive()) {
             ACTIVE.remove(player.getUUID());
             return;
         }
