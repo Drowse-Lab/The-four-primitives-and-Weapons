@@ -1,6 +1,1 @@
-{
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "the_four_primitives_and_weapons:item/chuzume_husk_leather_leggings"
-  }
-}
+{"parent":"item/generated","textures":{"layer0":"the_four_primitives_and_weapons:item/chuzume_husk_leather_leggings"}}

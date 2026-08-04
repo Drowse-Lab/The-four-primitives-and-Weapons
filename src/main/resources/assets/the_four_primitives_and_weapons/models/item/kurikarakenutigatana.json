@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/kurikarakatana3d",
-  "textures": {
-    "1": "the_four_primitives_and_weapons:blade/katana/kurikarakatana3d",
-    "particle": "the_four_primitives_and_weapons:item/aaaaa"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/kurikarakatana3d","textures":{"1":"the_four_primitives_and_weapons:blade/katana/kurikarakatana3d","particle":"the_four_primitives_and_weapons:item/aaaaa"}}

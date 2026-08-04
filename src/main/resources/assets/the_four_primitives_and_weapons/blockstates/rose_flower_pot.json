@@ -1,7 +1,1 @@
-{
-  "variants": {
-    "": {
-      "model": "the_four_primitives_and_weapons:block/rose_flower_pot"
-    }
-  }
-}
+{"variants":{"":{"model":"the_four_primitives_and_weapons:block/rose_flower_pot"}}}

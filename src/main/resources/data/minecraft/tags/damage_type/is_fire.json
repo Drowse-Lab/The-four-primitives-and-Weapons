@@ -1,7 +1,1 @@
-{
-  "replace": false,
-  "values": [
-    "the_four_primitives_and_weapons:fire",
-    "the_four_primitives_and_weapons:soul_fire"
-  ]
-}
+{"replace":false,"values":["the_four_primitives_and_weapons:fire","the_four_primitives_and_weapons:soul_fire"]}

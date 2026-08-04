@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/swordofnight",
-  "textures": {
-    "2": "the_four_primitives_and_weapons:blade/katana/swordofnight",
-    "particle": "the_four_primitives_and_weapons:item/swordofnight"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/swordofnight","textures":{"2":"the_four_primitives_and_weapons:blade/katana/swordofnight","particle":"the_four_primitives_and_weapons:item/swordofnight"}}

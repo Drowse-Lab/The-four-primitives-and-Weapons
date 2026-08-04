@@ -1,7 +1,1 @@
-{
-	"parent": "the_four_primitives_and_weapons:block/weapon_rack_stand",
-	"textures": {
-		"wood":     "minecraft:block/birch_planks",
-		"particle": "minecraft:block/birch_planks"
-	}
-}
+{"parent":"the_four_primitives_and_weapons:block/weapon_rack_stand","textures":{"wood":"minecraft:block/birch_planks","particle":"minecraft:block/birch_planks"}}

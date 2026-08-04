@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/stonekatanablock",
-  "textures": {
-    "0": "the_four_primitives_and_weapons:block/katana3dstoneblock",
-    "particle": "the_four_primitives_and_weapons:item/hi"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/stonekatanablock","textures":{"0":"the_four_primitives_and_weapons:block/katana3dstoneblock","particle":"the_four_primitives_and_weapons:item/hi"}}

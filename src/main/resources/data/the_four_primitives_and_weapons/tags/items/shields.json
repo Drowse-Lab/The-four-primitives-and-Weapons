@@ -1,9 +1,1 @@
-{
-  "replace": false,
-  "values": [
-    "minecraft:shield",
-    "the_four_primitives_and_weapons:achromatic_shield",
-    "the_four_primitives_and_weapons:nigu_shield",
-    "the_four_primitives_and_weapons:parry_shield"
-  ]
-}
+{"replace":false,"values":["minecraft:shield","the_four_primitives_and_weapons:achromatic_shield","the_four_primitives_and_weapons:nigu_shield","the_four_primitives_and_weapons:parry_shield"]}

@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/arrowitem",
-  "textures": {
-    "0": "the_four_primitives_and_weapons:block/arrow",
-    "particle": "the_four_primitives_and_weapons:item/arrow"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/arrowitem","textures":{"0":"the_four_primitives_and_weapons:block/arrow","particle":"the_four_primitives_and_weapons:item/arrow"}}

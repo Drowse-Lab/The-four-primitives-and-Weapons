@@ -1,11 +1,1 @@
-{
-  "format_version": "1.9.0",
-  "parent": "the_four_primitives_and_weapons:custom/saya/katana/saya_katana_parent",
-  "credit": "Made with Blockbench",
-  "texture_size": [16, 16],
-  "textures": {
-    "0": "the_four_primitives_and_weapons:saya/katana/saya",
-    "1": "the_four_primitives_and_weapons:blade/katana/katanawood3d",
-    "particle": "the_four_primitives_and_weapons:saya/katana/saya"
-  }
-}
+{"format_version":"1.9.0","parent":"the_four_primitives_and_weapons:custom/saya/katana/saya_katana_parent","credit":"Made with Blockbench","texture_size":[16,16],"textures":{"0":"the_four_primitives_and_weapons:saya/katana/saya","1":"the_four_primitives_and_weapons:blade/katana/katanawood3d","particle":"the_four_primitives_and_weapons:saya/katana/saya"}}

@@ -1,7 +1,1 @@
-{
-  "replace": false,
-  "values": [
-    "#the_four_primitives_and_weapons:urushi_logs",
-    "the_four_primitives_and_weapons:urushi_planks"
-  ]
-}
+{"replace":false,"values":["#the_four_primitives_and_weapons:urushi_logs","the_four_primitives_and_weapons:urushi_planks"]}

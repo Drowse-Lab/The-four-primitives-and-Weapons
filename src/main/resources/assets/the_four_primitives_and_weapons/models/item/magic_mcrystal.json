@@ -1,6 +1,1 @@
-{
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "the_four_primitives_and_weapons:item/mahounokesyou"
-  }
-}
+{"parent":"item/generated","textures":{"layer0":"the_four_primitives_and_weapons:item/mahounokesyou"}}

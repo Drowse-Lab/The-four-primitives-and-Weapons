@@ -1,15 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/shiel1dconverted",
-  "textures": {
-    "0": "the_four_primitives_and_weapons:block/shieldb",
-    "particle": "the_four_primitives_and_weapons:item/shieldb"
-  },
-  "overrides": [
-    {
-      "predicate": {
-        "blocking": 1
-      },
-      "model": "the_four_primitives_and_weapons:item/blocking_achromatic_shield"
-    }
-  ]
-}
+{"parent":"the_four_primitives_and_weapons:custom/shiel1dconverted","textures":{"0":"the_four_primitives_and_weapons:block/shieldb","particle":"the_four_primitives_and_weapons:item/shieldb"},"overrides":[{"predicate":{"blocking":1},"model":"the_four_primitives_and_weapons:item/blocking_achromatic_shield"}]}

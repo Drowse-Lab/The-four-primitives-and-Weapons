@@ -1,17 +1,1 @@
-{
-  "replace": false,
-  "values": [
-    "minecraft:iron_helmet",
-    "minecraft:iron_chestplate",
-    "minecraft:iron_leggings",
-    "minecraft:iron_boots",
-    "minecraft:chainmail_helmet",
-    "minecraft:chainmail_chestplate",
-    "minecraft:chainmail_leggings",
-    "minecraft:chainmail_boots",
-    "minecraft:golden_helmet",
-    "minecraft:golden_chestplate",
-    "minecraft:golden_leggings",
-    "minecraft:golden_boots"
-  ]
-}
+{"replace":false,"values":["minecraft:iron_helmet","minecraft:iron_chestplate","minecraft:iron_leggings","minecraft:iron_boots","minecraft:chainmail_helmet","minecraft:chainmail_chestplate","minecraft:chainmail_leggings","minecraft:chainmail_boots","minecraft:golden_helmet","minecraft:golden_chestplate","minecraft:golden_leggings","minecraft:golden_boots"]}

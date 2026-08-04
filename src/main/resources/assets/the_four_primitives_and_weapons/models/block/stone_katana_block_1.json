@@ -1,9 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/stonekatanablock1",
-  "textures": {
-    "all": "the_four_primitives_and_weapons:block/katana3dstoneblock1",
-    "particle": "the_four_primitives_and_weapons:block/aa",
-    "4": "the_four_primitives_and_weapons:block/katana3dstoneblock1"
-  },
-  "render_type": "cutout"
-}
+{"parent":"the_four_primitives_and_weapons:custom/stonekatanablock1","textures":{"all":"the_four_primitives_and_weapons:block/katana3dstoneblock1","particle":"the_four_primitives_and_weapons:block/aa","4":"the_four_primitives_and_weapons:block/katana3dstoneblock1"},"render_type":"cutout"}

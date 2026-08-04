@@ -1,6 +1,1 @@
-{
-  "replace": "false",
-  "values": [
-    "minecraft:air"
-  ]
-}
+{"replace":"false","values":["minecraft:air"]}

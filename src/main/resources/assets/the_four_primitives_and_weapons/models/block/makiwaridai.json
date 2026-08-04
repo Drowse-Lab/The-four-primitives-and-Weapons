@@ -1,9 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/makiwaridai",
-  "textures": {
-    "all": "the_four_primitives_and_weapons:block/makiwaridai",
-    "particle": "the_four_primitives_and_weapons:block/makiwaridai",
-    "0": "the_four_primitives_and_weapons:block/makiwaridai"
-  },
-  "render_type": "solid"
-}
+{"parent":"the_four_primitives_and_weapons:custom/makiwaridai","textures":{"all":"the_four_primitives_and_weapons:block/makiwaridai","particle":"the_four_primitives_and_weapons:block/makiwaridai","0":"the_four_primitives_and_weapons:block/makiwaridai"},"render_type":"solid"}

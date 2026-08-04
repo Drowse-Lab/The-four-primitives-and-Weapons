@@ -1,18 +1,1 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "key": {
-    "I": { "item": "minecraft:iron_ingot" },
-    "L": { "item": "minecraft:leather" },
-    "S": { "item": "minecraft:stick" }
-  },
-  "pattern": [
-    "SSS",
-    "ILI",
-    "SSS"
-  ],
-  "result": {
-    "item": "the_four_primitives_and_weapons:weapon_rack"
-  },
-  "show_notification": true
-}
+{"type":"minecraft:crafting_shaped","category":"misc","key":{"I":{"item":"minecraft:iron_ingot"},"L":{"item":"minecraft:leather"},"S":{"item":"minecraft:stick"}},"pattern":["SSS","ILI","SSS"],"result":{"item":"the_four_primitives_and_weapons:weapon_rack"},"show_notification":true}

@@ -1,6 +1,1 @@
-{
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "the_four_primitives_and_weapons:item/skin_of_dragon"
-  }
-}
+{"parent":"item/generated","textures":{"layer0":"the_four_primitives_and_weapons:item/skin_of_dragon"}}

@@ -1,8 +1,1 @@
-{
-  "replace": false,
-  "values": [
-    "the_four_primitives_and_weapons:wooden_katana",
-    "the_four_primitives_and_weapons:wooden_tyokuto",
-    "the_four_primitives_and_weapons:wooden_rapier"
-  ]
-}
+{"replace":false,"values":["the_four_primitives_and_weapons:wooden_katana","the_four_primitives_and_weapons:wooden_tyokuto","the_four_primitives_and_weapons:wooden_rapier"]}

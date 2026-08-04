@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/hammer",
-  "textures": {
-    "0": "the_four_primitives_and_weapons:block/hammar",
-    "particle": "the_four_primitives_and_weapons:item/aaa"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/hammer","textures":{"0":"the_four_primitives_and_weapons:block/hammar","particle":"the_four_primitives_and_weapons:item/aaa"}}

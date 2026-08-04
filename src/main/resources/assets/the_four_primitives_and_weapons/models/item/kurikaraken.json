@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/swordb",
-  "textures": {
-    "0": "the_four_primitives_and_weapons:blade/katana/katanab",
-    "particle": "the_four_primitives_and_weapons:item/aaaaa"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/swordb","textures":{"0":"the_four_primitives_and_weapons:blade/katana/katanab","particle":"the_four_primitives_and_weapons:item/aaaaa"}}

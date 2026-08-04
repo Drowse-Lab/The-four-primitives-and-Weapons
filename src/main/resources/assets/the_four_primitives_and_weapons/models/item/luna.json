@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/luna",
-  "textures": {
-    "1": "the_four_primitives_and_weapons:block/luna",
-    "particle": "the_four_primitives_and_weapons:item/luna"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/luna","textures":{"1":"the_four_primitives_and_weapons:block/luna","particle":"the_four_primitives_and_weapons:item/luna"}}

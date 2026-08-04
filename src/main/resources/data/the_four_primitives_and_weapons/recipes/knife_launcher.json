@@ -1,17 +1,1 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": [
-    " KI",
-    "KI ",
-    "S  "
-  ],
-  "key": {
-    "K": { "item": "the_four_primitives_and_weapons:throwing_knife" },
-    "I": { "item": "minecraft:iron_ingot" },
-    "S": { "item": "minecraft:stick" }
-  },
-  "result": {
-    "item": "the_four_primitives_and_weapons:knife_launcher",
-    "count": 1
-  }
-}
+{"type":"minecraft:crafting_shaped","pattern":[" KI","KI ","S  "],"key":{"K":{"item":"the_four_primitives_and_weapons:throwing_knife"},"I":{"item":"minecraft:iron_ingot"},"S":{"item":"minecraft:stick"}},"result":{"item":"the_four_primitives_and_weapons:knife_launcher","count":1}}

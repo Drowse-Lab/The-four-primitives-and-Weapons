@@ -1,9 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/zyuzika",
-  "textures": {
-    "all": "the_four_primitives_and_weapons:block/zyuuzika",
-    "particle": "the_four_primitives_and_weapons:block/aa",
-    "0": "the_four_primitives_and_weapons:block/zyuuzika"
-  },
-  "render_type": "cutout"
-}
+{"parent":"the_four_primitives_and_weapons:custom/zyuzika","textures":{"all":"the_four_primitives_and_weapons:block/zyuuzika","particle":"the_four_primitives_and_weapons:block/aa","0":"the_four_primitives_and_weapons:block/zyuuzika"},"render_type":"cutout"}

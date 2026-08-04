@@ -1,12 +1,1 @@
-{
-  "format_version": "1.9.0",
-  "credit": "Made with Blockbench",
-  "parent": "the_four_primitives_and_weapons:custom/weapon/katana/katana_a_parent",
-  "textures": {
-    "0": "the_four_primitives_and_weapons:blade/katana/diamondkatana3d",
-    "1": "the_four_primitives_and_weapons:katana_fitting/tsuba/diamondkatana_tuba",
-    "3": "the_four_primitives_and_weapons:katana_fitting/kasira/diamondkatana_kasira",
-    "4": "the_four_primitives_and_weapons:katana_fitting/tsuka/iron_tuka",
-    "particle": "the_four_primitives_and_weapons:blade/katana/diamondkatana3d"
-  }
-}
+{"format_version":"1.9.0","credit":"Made with Blockbench","parent":"the_four_primitives_and_weapons:custom/weapon/katana/katana_a_parent","textures":{"0":"the_four_primitives_and_weapons:blade/katana/diamondkatana3d","1":"the_four_primitives_and_weapons:katana_fitting/tsuba/diamondkatana_tuba","3":"the_four_primitives_and_weapons:katana_fitting/kasira/diamondkatana_kasira","4":"the_four_primitives_and_weapons:katana_fitting/tsuka/iron_tuka","particle":"the_four_primitives_and_weapons:blade/katana/diamondkatana3d"}}

@@ -1,16 +1,1 @@
-{
-  "variants": {
-    "axis=x": {
-      "model": "the_four_primitives_and_weapons:block/stone_katana_block_1",
-      "x": 90,
-      "y": 90
-    },
-    "axis=y": {
-      "model": "the_four_primitives_and_weapons:block/stone_katana_block_1"
-    },
-    "axis=z": {
-      "model": "the_four_primitives_and_weapons:block/stone_katana_block_1",
-      "x": 90
-    }
-  }
-}
+{"variants":{"axis=x":{"model":"the_four_primitives_and_weapons:block/stone_katana_block_1","x":90,"y":90},"axis=y":{"model":"the_four_primitives_and_weapons:block/stone_katana_block_1"},"axis=z":{"model":"the_four_primitives_and_weapons:block/stone_katana_block_1","x":90}}}

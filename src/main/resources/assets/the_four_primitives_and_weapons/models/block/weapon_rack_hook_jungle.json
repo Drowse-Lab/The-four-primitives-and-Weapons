@@ -1,7 +1,1 @@
-{
-	"parent": "the_four_primitives_and_weapons:block/weapon_rack_hook",
-	"textures": {
-		"wood":     "minecraft:block/jungle_planks",
-		"particle": "minecraft:block/jungle_planks"
-	}
-}
+{"parent":"the_four_primitives_and_weapons:block/weapon_rack_hook","textures":{"wood":"minecraft:block/jungle_planks","particle":"minecraft:block/jungle_planks"}}

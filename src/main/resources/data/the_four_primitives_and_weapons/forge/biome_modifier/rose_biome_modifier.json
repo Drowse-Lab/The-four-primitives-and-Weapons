@@ -1,6 +1,1 @@
-{
-  "type": "forge:add_features",
-  "biomes": "plains",
-  "features": "the_four_primitives_and_weapons:rose",
-  "step": "vegetal_decoration"
-}
+{"type":"forge:add_features","biomes":"plains","features":"the_four_primitives_and_weapons:rose","step":"vegetal_decoration"}

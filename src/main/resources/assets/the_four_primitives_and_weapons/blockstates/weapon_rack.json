@@ -1,5 +1,1 @@
-{
-    "variants": {
-        "": { "model": "the_four_primitives_and_weapons:block/weapon_rack" }
-    }
-}
+{"variants":{"":{"model":"the_four_primitives_and_weapons:block/weapon_rack"}}}

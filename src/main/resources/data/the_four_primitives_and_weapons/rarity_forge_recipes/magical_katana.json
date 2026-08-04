@@ -1,8 +1,1 @@
-{
-  "pattern": ["1", "2", "2"],
-  "key": {
-    "1": "minecraft:amethyst_shard",
-    "2": "minecraft:iron_ingot"
-  },
-  "result": "the_four_primitives_and_weapons:magical_katana"
-}
+{"pattern":["1","2","2"],"key":{"1":"minecraft:amethyst_shard","2":"minecraft:iron_ingot"},"result":"the_four_primitives_and_weapons:magical_katana"}

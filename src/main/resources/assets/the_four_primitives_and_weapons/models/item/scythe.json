@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/oogamab",
-  "textures": {
-    "1": "the_four_primitives_and_weapons:block/oogamab",
-    "particle": "the_four_primitives_and_weapons:item/oogamab"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/oogamab","textures":{"1":"the_four_primitives_and_weapons:block/oogamab","particle":"the_four_primitives_and_weapons:item/oogamab"}}

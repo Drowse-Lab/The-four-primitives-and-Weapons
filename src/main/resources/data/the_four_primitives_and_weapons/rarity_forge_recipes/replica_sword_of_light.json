@@ -1,10 +1,1 @@
-{
-  "pattern": ["121", "131", " 4 "],
-  "key": {
-    "1": "minecraft:iron_ingot",
-    "2": "minecraft:golden_apple",
-    "3": "minecraft:golden_sword",
-    "4": "minecraft:shield"
-  },
-  "result": "the_four_primitives_and_weapons:replica_sword_of_light"
-}
+{"pattern":["121","131"," 4 "],"key":{"1":"minecraft:iron_ingot","2":"minecraft:golden_apple","3":"minecraft:golden_sword","4":"minecraft:shield"},"result":"the_four_primitives_and_weapons:replica_sword_of_light"}

@@ -1,7 +1,1 @@
-{
-  "replace": false,
-  "values": [
-    "the_four_primitives_and_weapons:stone_bricks_trap_door",
-    "the_four_primitives_and_weapons:rose_flower_pot"
-  ]
-}
+{"replace":false,"values":["the_four_primitives_and_weapons:stone_bricks_trap_door","the_four_primitives_and_weapons:rose_flower_pot"]}

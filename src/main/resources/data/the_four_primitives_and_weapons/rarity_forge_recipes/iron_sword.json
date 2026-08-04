@@ -1,8 +1,1 @@
-{
-  "pattern": ["1", "1", "2"],
-  "key": {
-    "1": "minecraft:iron_ingot",
-    "2": "minecraft:stick"
-  },
-  "result": "minecraft:iron_sword"
-}
+{"pattern":["1","1","2"],"key":{"1":"minecraft:iron_ingot","2":"minecraft:stick"},"result":"minecraft:iron_sword"}

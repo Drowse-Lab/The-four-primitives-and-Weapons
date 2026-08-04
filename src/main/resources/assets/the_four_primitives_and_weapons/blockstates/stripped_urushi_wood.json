@@ -1,16 +1,1 @@
-{
-  "variants": {
-    "axis=y": {
-      "model": "the_four_primitives_and_weapons:block/stripped_urushi_wood"
-    },
-    "axis=z": {
-      "model": "the_four_primitives_and_weapons:block/stripped_urushi_wood",
-      "x": 90
-    },
-    "axis=x": {
-      "model": "the_four_primitives_and_weapons:block/stripped_urushi_wood",
-      "x": 90,
-      "y": 90
-    }
-  }
-}
+{"variants":{"axis=y":{"model":"the_four_primitives_and_weapons:block/stripped_urushi_wood"},"axis=z":{"model":"the_four_primitives_and_weapons:block/stripped_urushi_wood","x":90},"axis=x":{"model":"the_four_primitives_and_weapons:block/stripped_urushi_wood","x":90,"y":90}}}

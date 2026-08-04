@@ -1,9 +1,1 @@
-{
-  "_comment": "中央 = SwordItem + 触媒 = 以下の組み合わせ ( 順不同 ) で Unbreakable 化が成立する。 datapack で追加組み合わせを定義可能。",
-  "pairs": [
-    {
-      "cat0": "minecraft:enchanted_golden_apple",
-      "cat1": "the_four_primitives_and_weapons:immortal_core"
-    }
-  ]
-}
+{"_comment":"中央 = SwordItem + 触媒 = 以下の組み合わせ ( 順不同 ) で Unbreakable 化が成立する。 datapack で追加組み合わせを定義可能。","pairs":[{"cat0":"minecraft:enchanted_golden_apple","cat1":"the_four_primitives_and_weapons:immortal_core"}]}

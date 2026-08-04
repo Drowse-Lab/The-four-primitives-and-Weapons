@@ -1,8 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/weapon/knife/knife_parent",
-  "textures": {
-    "0": "the_four_primitives_and_weapons:block/throwingknife",
-    "1": "the_four_primitives_and_weapons:knife_fitting/grip/throwingknife_handle",
-    "particle": "the_four_primitives_and_weapons:item/throwingknife"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/weapon/knife/knife_parent","textures":{"0":"the_four_primitives_and_weapons:block/throwingknife","1":"the_four_primitives_and_weapons:knife_fitting/grip/throwingknife_handle","particle":"the_four_primitives_and_weapons:item/throwingknife"}}

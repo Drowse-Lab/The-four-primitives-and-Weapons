@@ -1,7 +1,1 @@
-{
-  "variants": {
-    "": {
-      "model": "the_four_primitives_and_weapons:block/rarity_forge"
-    }
-  }
-}
+{"variants":{"":{"model":"the_four_primitives_and_weapons:block/rarity_forge"}}}

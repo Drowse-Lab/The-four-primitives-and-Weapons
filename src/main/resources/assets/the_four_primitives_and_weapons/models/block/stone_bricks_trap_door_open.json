@@ -1,8 +1,1 @@
-{
-  "parent": "block/template_orientable_trapdoor_open",
-  "textures": {
-    "texture": "the_four_primitives_and_weapons:block/stone_bricks_talap_dor",
-    "particle": "the_four_primitives_and_weapons:block/stone_bricks_talap_dor"
-  },
-  "render_type": "solid"
-}
+{"parent":"block/template_orientable_trapdoor_open","textures":{"texture":"the_four_primitives_and_weapons:block/stone_bricks_talap_dor","particle":"the_four_primitives_and_weapons:block/stone_bricks_talap_dor"},"render_type":"solid"}

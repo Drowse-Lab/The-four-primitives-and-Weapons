@@ -1,8 +1,1 @@
-{
-  "pattern": ["1", "1", "2"],
-  "key": {
-    "1": "minecraft:oak_planks",
-    "2": "minecraft:stick"
-  },
-  "result": "minecraft:wooden_sword"
-}
+{"pattern":["1","1","2"],"key":{"1":"minecraft:oak_planks","2":"minecraft:stick"},"result":"minecraft:wooden_sword"}

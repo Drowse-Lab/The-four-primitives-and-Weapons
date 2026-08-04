@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/banneritemconverted",
-  "textures": {
-    "2": "the_four_primitives_and_weapons:block/banneritemconverted",
-    "particle": "the_four_primitives_and_weapons:item/evoker_helmet"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/banneritemconverted","textures":{"2":"the_four_primitives_and_weapons:block/banneritemconverted","particle":"the_four_primitives_and_weapons:item/evoker_helmet"}}

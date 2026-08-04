@@ -1,8 +1,1 @@
-{
-  "pattern": ["X", "X", "|"],
-  "key": {
-    "X": "minecraft:netherite_ingot",
-    "|": "minecraft:stick"
-  },
-  "result": "the_four_primitives_and_weapons:netherite_rapier"
-}
+{"pattern":["X","X","|"],"key":{"X":"minecraft:netherite_ingot","|":"minecraft:stick"},"result":"the_four_primitives_and_weapons:netherite_rapier"}

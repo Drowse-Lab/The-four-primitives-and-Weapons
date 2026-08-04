@@ -1,8 +1,1 @@
-{
-  "pattern": ["11", "12", " 2"],
-  "key": {
-    "1": "minecraft:diamond",
-    "2": "minecraft:stick"
-  },
-  "result": "minecraft:diamond_axe"
-}
+{"pattern":["11","12"," 2"],"key":{"1":"minecraft:diamond","2":"minecraft:stick"},"result":"minecraft:diamond_axe"}

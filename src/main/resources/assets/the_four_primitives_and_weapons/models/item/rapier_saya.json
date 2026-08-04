@@ -1,12 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/saya/rapier/saya_rapier_kara",
-  "overrides": [
-    { "predicate": { "custom_model_data": 0 }, "model": "the_four_primitives_and_weapons:custom/saya/rapier/saya_rapier_kara" },
-    { "predicate": { "custom_model_data": 1 }, "model": "the_four_primitives_and_weapons:custom/saya/rapier/saya_wooden_rapier" },
-    { "predicate": { "custom_model_data": 2 }, "model": "the_four_primitives_and_weapons:custom/saya/rapier/saya_stone_rapier" },
-    { "predicate": { "custom_model_data": 3 }, "model": "the_four_primitives_and_weapons:custom/saya/rapier/saya_iron_rapier" },
-    { "predicate": { "custom_model_data": 4 }, "model": "the_four_primitives_and_weapons:custom/saya/rapier/saya_gold_rapier" },
-    { "predicate": { "custom_model_data": 5 }, "model": "the_four_primitives_and_weapons:custom/saya/rapier/saya_diamond_rapier" },
-    { "predicate": { "custom_model_data": 6 }, "model": "the_four_primitives_and_weapons:custom/saya/rapier/saya_netherite_rapier" }
-  ]
-}
+{"parent":"the_four_primitives_and_weapons:custom/saya/rapier/saya_rapier_kara","overrides":[{"predicate":{"custom_model_data":0},"model":"the_four_primitives_and_weapons:custom/saya/rapier/saya_rapier_kara"},{"predicate":{"custom_model_data":1},"model":"the_four_primitives_and_weapons:custom/saya/rapier/saya_wooden_rapier"},{"predicate":{"custom_model_data":2},"model":"the_four_primitives_and_weapons:custom/saya/rapier/saya_stone_rapier"},{"predicate":{"custom_model_data":3},"model":"the_four_primitives_and_weapons:custom/saya/rapier/saya_iron_rapier"},{"predicate":{"custom_model_data":4},"model":"the_four_primitives_and_weapons:custom/saya/rapier/saya_gold_rapier"},{"predicate":{"custom_model_data":5},"model":"the_four_primitives_and_weapons:custom/saya/rapier/saya_diamond_rapier"},{"predicate":{"custom_model_data":6},"model":"the_four_primitives_and_weapons:custom/saya/rapier/saya_netherite_rapier"}]}

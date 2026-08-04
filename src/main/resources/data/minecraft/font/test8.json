@@ -1,11 +1,1 @@
-{
-    "providers": [
-        {
-            "type": "ttf",
-            "file": "minecraft:custom.ttf",
-            "shift": [0.0, -8.0],
-            "size": 8.0,
-            "oversample": 1.0
-        }
-    ]
-}
+{"providers":[{"type":"ttf","file":"minecraft:custom.ttf","shift":[0.0,-8.0],"size":8.0,"oversample":1.0}]}

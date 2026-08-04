@@ -1,12 +1,1 @@
-{
-  "_comment": "任意のSwordItemをUnbreakableにする超高コストレシピ。不死の核が必要。",
-  "unbreakable": true,
-  "pattern": ["NEN", "CIC", "NEN"],
-  "key": {
-    "N": "minecraft:nether_star",
-    "E": "minecraft:enchanted_golden_apple",
-    "C": "the_four_primitives_and_weapons:immortal_core",
-    "I": "#input"
-  },
-  "result": "#input"
-}
+{"_comment":"任意のSwordItemをUnbreakableにする超高コストレシピ。不死の核が必要。","unbreakable":true,"pattern":["NEN","CIC","NEN"],"key":{"N":"minecraft:nether_star","E":"minecraft:enchanted_golden_apple","C":"the_four_primitives_and_weapons:immortal_core","I":"#input"},"result":"#input"}

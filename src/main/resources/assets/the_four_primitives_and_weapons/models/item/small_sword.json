@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/kodachiiron3d",
-  "textures": {
-    "2": "the_four_primitives_and_weapons:block/kodachiiron3d",
-    "particle": "the_four_primitives_and_weapons:item/kodachiiron3d"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/kodachiiron3d","textures":{"2":"the_four_primitives_and_weapons:block/kodachiiron3d","particle":"the_four_primitives_and_weapons:item/kodachiiron3d"}}

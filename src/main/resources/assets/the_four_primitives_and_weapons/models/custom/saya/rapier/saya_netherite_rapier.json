@@ -1,11 +1,1 @@
-{
-	"format_version": "1.9.0",
-	"parent": "the_four_primitives_and_weapons:custom/saya/rapier/saya_rapier_parent",
-	"credit": "Made with Blockbench",
-	"textures": {
-		"1": "the_four_primitives_and_weapons:blade/rapier/netherite_rapier",
-		"2": "the_four_primitives_and_weapons:saya/rapier/saya_rapier",
-		"particle": "the_four_primitives_and_weapons:saya/rapier/saya_rapier"
-	},
-	"made": "hrmcngs"
-}
+{"format_version":"1.9.0","parent":"the_four_primitives_and_weapons:custom/saya/rapier/saya_rapier_parent","credit":"Made with Blockbench","textures":{"1":"the_four_primitives_and_weapons:blade/rapier/netherite_rapier","2":"the_four_primitives_and_weapons:saya/rapier/saya_rapier","particle":"the_four_primitives_and_weapons:saya/rapier/saya_rapier"},"made":"hrmcngs"}

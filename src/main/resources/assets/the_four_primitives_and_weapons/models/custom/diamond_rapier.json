@@ -1,13 +1,1 @@
-{
-  "format_version": "1.9.0",
-  "credit": "Made with Blockbench",
-  "parent": "the_four_primitives_and_weapons:custom/weapon/rapier/rapier_parent",
-  "textures": {
-    "0": "the_four_primitives_and_weapons:blade/rapier/diamond_rapier",
-    "1": "the_four_primitives_and_weapons:rapier_fitting/grip/diamond_grip",
-    "2": "the_four_primitives_and_weapons:rapier_fitting/guard/diamond_guard",
-    "3": "the_four_primitives_and_weapons:rapier_fitting/pommel/diamond_pommel",
-    "particle": "the_four_primitives_and_weapons:blade/rapier/diamond_rapier"
-  },
-  "made": "hrmcngs"
-}
+{"format_version":"1.9.0","credit":"Made with Blockbench","parent":"the_four_primitives_and_weapons:custom/weapon/rapier/rapier_parent","textures":{"0":"the_four_primitives_and_weapons:blade/rapier/diamond_rapier","1":"the_four_primitives_and_weapons:rapier_fitting/grip/diamond_grip","2":"the_four_primitives_and_weapons:rapier_fitting/guard/diamond_guard","3":"the_four_primitives_and_weapons:rapier_fitting/pommel/diamond_pommel","particle":"the_four_primitives_and_weapons:blade/rapier/diamond_rapier"},"made":"hrmcngs"}

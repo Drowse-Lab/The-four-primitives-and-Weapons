@@ -1,7 +1,1 @@
-{
-  "parent": "minecraft:block/cross",
-  "render_type": "minecraft:cutout",
-  "textures": {
-    "cross": "the_four_primitives_and_weapons:block/urushi_sapling"
-  }
-}
+{"parent":"minecraft:block/cross","render_type":"minecraft:cutout","textures":{"cross":"the_four_primitives_and_weapons:block/urushi_sapling"}}

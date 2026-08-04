@@ -1,17 +1,1 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "# #",
-    "###",
-    "###"
-  ],
-  "key": {
-    "#": {
-      "item": "minecraft:yellow_wool"
-    }
-  },
-  "result": {
-    "item": "the_four_primitives_and_weapons:imperial_army_tunic",
-    "count": 1
-  }
-}
+{"type":"minecraft:crafting_shaped","pattern":["# #","###","###"],"key":{"#":{"item":"minecraft:yellow_wool"}},"result":{"item":"the_four_primitives_and_weapons:imperial_army_tunic","count":1}}

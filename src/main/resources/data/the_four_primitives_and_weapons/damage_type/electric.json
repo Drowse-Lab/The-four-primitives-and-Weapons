@@ -1,5 +1,1 @@
-{
-  "message_id": "the_four_primitives_and_weapons.electric",
-  "exhaustion": 0.1,
-  "scaling": "when_caused_by_living_non_player"
-}
+{"message_id":"the_four_primitives_and_weapons.electric","exhaustion":0.1,"scaling":"when_caused_by_living_non_player"}

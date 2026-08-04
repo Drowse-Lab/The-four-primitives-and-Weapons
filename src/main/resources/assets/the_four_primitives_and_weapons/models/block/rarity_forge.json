@@ -1,13 +1,1 @@
-{
-  "parent": "block/cube",
-  "textures": {
-    "down": "the_four_primitives_and_weapons:block/smithing_table_bottom",
-    "up": "the_four_primitives_and_weapons:block/smithing_table_top",
-    "north": "the_four_primitives_and_weapons:block/smithing_table_front",
-    "east": "the_four_primitives_and_weapons:block/smithing_table_side_b",
-    "south": "the_four_primitives_and_weapons:block/smithing_table_back",
-    "west": "the_four_primitives_and_weapons:block/smithing_table_side",
-    "particle": "the_four_primitives_and_weapons:block/smithing_table_bottom"
-  },
-  "render_type": "solid"
-}
+{"parent":"block/cube","textures":{"down":"the_four_primitives_and_weapons:block/smithing_table_bottom","up":"the_four_primitives_and_weapons:block/smithing_table_top","north":"the_four_primitives_and_weapons:block/smithing_table_front","east":"the_four_primitives_and_weapons:block/smithing_table_side_b","south":"the_four_primitives_and_weapons:block/smithing_table_back","west":"the_four_primitives_and_weapons:block/smithing_table_side","particle":"the_four_primitives_and_weapons:block/smithing_table_bottom"},"render_type":"solid"}

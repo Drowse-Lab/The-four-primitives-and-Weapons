@@ -1,9 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/magicpot",
-  "textures": {
-    "all": "the_four_primitives_and_weapons:block/potmahounohead",
-    "particle": "the_four_primitives_and_weapons:block/aa",
-    "0": "the_four_primitives_and_weapons:block/potmahounohead"
-  },
-  "render_type": "solid"
-}
+{"parent":"the_four_primitives_and_weapons:custom/magicpot","textures":{"all":"the_four_primitives_and_weapons:block/potmahounohead","particle":"the_four_primitives_and_weapons:block/aa","0":"the_four_primitives_and_weapons:block/potmahounohead"},"render_type":"solid"}

@@ -1,10 +1,1 @@
-{
-  "format_version": "1.21.11",
-  "credit": "Made with Blockbench",
-  "parent": "the_four_primitives_and_weapons:custom/weapon/katana/katana_b_parent",
-  "textures": {
-    "1": "the_four_primitives_and_weapons:blade/katana/katanawood3d",
-    "particle": "the_four_primitives_and_weapons:blade/katana/katanawood3d"
-  },
-  "made": "hrmcngs"
-}
+{"format_version":"1.21.11","credit":"Made with Blockbench","parent":"the_four_primitives_and_weapons:custom/weapon/katana/katana_b_parent","textures":{"1":"the_four_primitives_and_weapons:blade/katana/katanawood3d","particle":"the_four_primitives_and_weapons:blade/katana/katanawood3d"},"made":"hrmcngs"}

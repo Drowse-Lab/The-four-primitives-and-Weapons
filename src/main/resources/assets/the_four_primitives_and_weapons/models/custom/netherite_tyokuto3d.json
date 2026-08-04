@@ -1,12 +1,1 @@
-{
-  "format_version": "1.9.0",
-  "credit": "Made with Blockbench",
-  "parent": "the_four_primitives_and_weapons:custom/weapon/tyokuto/tyokuto_b_parent",
-  "textures": {
-    "1": "the_four_primitives_and_weapons:blade/tyokuto/netherite_tyokuto3d",
-    "3": "the_four_primitives_and_weapons:straight_katana_fitting/tsuba/netherite_tuba",
-    "4": "the_four_primitives_and_weapons:straight_katana_fitting/kasira/netherite_kasira",
-    "6": "the_four_primitives_and_weapons:straight_katana_fitting/tsuka/netherite_tuka",
-    "particle": "the_four_primitives_and_weapons:blade/tyokuto/netherite_tyokuto3d"
-  }
-}
+{"format_version":"1.9.0","credit":"Made with Blockbench","parent":"the_four_primitives_and_weapons:custom/weapon/tyokuto/tyokuto_b_parent","textures":{"1":"the_four_primitives_and_weapons:blade/tyokuto/netherite_tyokuto3d","3":"the_four_primitives_and_weapons:straight_katana_fitting/tsuba/netherite_tuba","4":"the_four_primitives_and_weapons:straight_katana_fitting/kasira/netherite_kasira","6":"the_four_primitives_and_weapons:straight_katana_fitting/tsuka/netherite_tuka","particle":"the_four_primitives_and_weapons:blade/tyokuto/netherite_tyokuto3d"}}

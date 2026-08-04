@@ -1,16 +1,1 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "FGF",
-    "G F",
-    "FGF"
-  ],
-  "key": {
-    "F": {"item": "minecraft:feather"},
-    "G": {"item": "minecraft:gold_ingot"}
-  },
-  "result": {
-    "item": "the_four_primitives_and_weapons:anti_gravity_bracelet",
-    "count": 1
-  }
-}
+{"type":"minecraft:crafting_shaped","pattern":["FGF","G F","FGF"],"key":{"F":{"item":"minecraft:feather"},"G":{"item":"minecraft:gold_ingot"}},"result":{"item":"the_four_primitives_and_weapons:anti_gravity_bracelet","count":1}}

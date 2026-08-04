@@ -1,17 +1,1 @@
-{
-    "title": "The Ancient Guide",
-    "chapters": [
-        {
-            "title": "Introduction",
-            "content": "Welcome to the world of magic and mystery..."
-        },
-        {
-            "title": "Crafting Basics",
-            "content": "To craft powerful weapons, you will need rare materials..."
-        },
-        {
-            "title": "Secrets of the Ancients",
-            "content": "Legends speak of an ancient artifact hidden deep underground..."
-        }
-    ]
-}
+{"title":"The Ancient Guide","chapters":[{"title":"Introduction","content":"Welcome to the world of magic and mystery..."},{"title":"Crafting Basics","content":"To craft powerful weapons, you will need rare materials..."},{"title":"Secrets of the Ancients","content":"Legends speak of an ancient artifact hidden deep underground..."}]}

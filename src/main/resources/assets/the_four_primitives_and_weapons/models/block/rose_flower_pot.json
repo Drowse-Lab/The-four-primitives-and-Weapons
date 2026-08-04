@@ -1,11 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/fff",
-  "textures": {
-    "all": "the_four_primitives_and_weapons:block/zyuuzika",
-    "particle": "the_four_primitives_and_weapons:block/zyuuzika",
-    "2": "the_four_primitives_and_weapons:block/minecraft-dirt-texture",
-    "3": "the_four_primitives_and_weapons:block/bara",
-    "flowerpot": "the_four_primitives_and_weapons:block/zyuuzika"
-  },
-  "render_type": "cutout"
-}
+{"parent":"the_four_primitives_and_weapons:custom/fff","textures":{"all":"the_four_primitives_and_weapons:block/zyuuzika","particle":"the_four_primitives_and_weapons:block/zyuuzika","2":"the_four_primitives_and_weapons:block/minecraft-dirt-texture","3":"the_four_primitives_and_weapons:block/bara","flowerpot":"the_four_primitives_and_weapons:block/zyuuzika"},"render_type":"cutout"}

@@ -1,9 +1,1 @@
-{
-  "replace": false,
-  "values": [
-    "the_four_primitives_and_weapons:urushi_log",
-    "the_four_primitives_and_weapons:urushi_wood",
-    "the_four_primitives_and_weapons:stripped_urushi_log",
-    "the_four_primitives_and_weapons:stripped_urushi_wood"
-  ]
-}
+{"replace":false,"values":["the_four_primitives_and_weapons:urushi_log","the_four_primitives_and_weapons:urushi_wood","the_four_primitives_and_weapons:stripped_urushi_log","the_four_primitives_and_weapons:stripped_urushi_wood"]}

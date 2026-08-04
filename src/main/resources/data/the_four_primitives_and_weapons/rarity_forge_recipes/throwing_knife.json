@@ -1,8 +1,1 @@
-{
-  "pattern": [" I", "I ", "S "],
-  "key": {
-    "I": "minecraft:iron_ingot",
-    "S": "minecraft:stick"
-  },
-  "result": "the_four_primitives_and_weapons:throwing_knife"
-}
+{"pattern":[" I","I ","S "],"key":{"I":"minecraft:iron_ingot","S":"minecraft:stick"},"result":"the_four_primitives_and_weapons:throwing_knife"}

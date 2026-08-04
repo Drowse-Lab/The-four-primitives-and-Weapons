@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:item/3dmodel/weapon/recross_hookshot/basic",
-  "overrides": [
-    { "predicate": { "pulling": 1 }, "model": "the_four_primitives_and_weapons:item/3dmodel/weapon/recross_hookshot/basic_charged_pull" },
-    { "predicate": { "charged": 1 }, "model": "the_four_primitives_and_weapons:item/3dmodel/weapon/recross_hookshot/basic_charged" }
-  ]
-}
+{"parent":"the_four_primitives_and_weapons:item/3dmodel/weapon/recross_hookshot/basic","overrides":[{"predicate":{"pulling":1},"model":"the_four_primitives_and_weapons:item/3dmodel/weapon/recross_hookshot/basic_charged_pull"},{"predicate":{"charged":1},"model":"the_four_primitives_and_weapons:item/3dmodel/weapon/recross_hookshot/basic_charged"}]}

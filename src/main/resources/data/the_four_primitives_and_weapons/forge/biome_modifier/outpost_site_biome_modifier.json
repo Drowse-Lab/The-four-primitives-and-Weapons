@@ -1,6 +1,1 @@
-{
-  "type": "forge:add_features",
-  "biomes": "old_growth_spruce_taiga",
-  "features": "the_four_primitives_and_weapons:outpost_site",
-  "step": "surface_structures"
-}
+{"type":"forge:add_features","biomes":"old_growth_spruce_taiga","features":"the_four_primitives_and_weapons:outpost_site","step":"surface_structures"}

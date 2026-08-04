@@ -1,12 +1,1 @@
-{
-  "type": "minecraft:crafting_shapeless",
-  "ingredients": [
-    {
-      "tag": "the_four_primitives_and_weapons:urushi_logs"
-    }
-  ],
-  "result": {
-    "item": "the_four_primitives_and_weapons:urushi_planks",
-    "count": 4
-  }
-}
+{"type":"minecraft:crafting_shapeless","ingredients":[{"tag":"the_four_primitives_and_weapons:urushi_logs"}],"result":{"item":"the_four_primitives_and_weapons:urushi_planks","count":4}}

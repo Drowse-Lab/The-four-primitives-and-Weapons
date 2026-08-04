@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/warabite3d",
-  "textures": {
-    "0": "the_four_primitives_and_weapons:blade/katana/warabite3d",
-    "particle": "the_four_primitives_and_weapons:item/aaaaa"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/warabite3d","textures":{"0":"the_four_primitives_and_weapons:blade/katana/warabite3d","particle":"the_four_primitives_and_weapons:item/aaaaa"}}

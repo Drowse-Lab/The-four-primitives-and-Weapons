@@ -1,8 +1,1 @@
-{
-  "pattern": ["1", "1", "2"],
-  "key": {
-    "1": "minecraft:cobblestone",
-    "2": "minecraft:stick"
-  },
-  "result": "the_four_primitives_and_weapons:stone_tyokuto"
-}
+{"pattern":["1","1","2"],"key":{"1":"minecraft:cobblestone","2":"minecraft:stick"},"result":"the_four_primitives_and_weapons:stone_tyokuto"}

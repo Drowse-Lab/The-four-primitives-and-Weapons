@@ -1,7 +1,1 @@
-{
-  "parent": "the_four_primitives_and_weapons:custom/zombie_heart_head_3d",
-  "textures": {
-    "1": "the_four_primitives_and_weapons:entities/zombie_heart",
-    "particle": "the_four_primitives_and_weapons:entities/zombie_heart"
-  }
-}
+{"parent":"the_four_primitives_and_weapons:custom/zombie_heart_head_3d","textures":{"1":"the_four_primitives_and_weapons:entities/zombie_heart","particle":"the_four_primitives_and_weapons:entities/zombie_heart"}}
