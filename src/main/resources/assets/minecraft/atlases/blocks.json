@@ -46,6 +46,16 @@
       "prefix": "saya/"
     },
     {
+      "type": "minecraft:directory",
+      "source": "knife_fitting",
+      "prefix": "knife_fitting/"
+    },
+    {
+      "type": "minecraft:directory",
+      "source": "entities",
+      "prefix": "entities/"
+    },
+    {
       "type": "minecraft:single",
       "resource": "the_four_primitives_and_weapons:block/blue_fire_0"
     },

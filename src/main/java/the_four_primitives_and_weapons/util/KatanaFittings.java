@@ -65,7 +65,19 @@ public final class KatanaFittings {
 			return false;
 		String n = id.getPath();
 		if (n.contains("saya")) return false;
-		return n.contains("katana") || n.contains("tyokuto") || n.contains("rapier") || n.contains("dagger");
+		return n.contains("katana") || n.contains("tyokuto") || n.contains("rapier") || n.contains("dagger")
+				|| isDyeableKnife(n);
+	}
+
+	/**
+	 * 投げナイフ系か ( 柄だけ染色できる )。
+	 *
+	 * <p>ナイフの item model は 刀身 + 柄 の 2 テクスチャしか無いので
+	 * {@link #hasCompleteFittingModel} ( 刀身/鍔/頭/柄 の 4 つを要求 ) を通らない。
+	 * 名前で拾う。 発射装置 ( knife_launcher ) はナイフ本体ではないので除く。</p>
+	 */
+	private static boolean isDyeableKnife(String path) {
+		return path.contains("knife") && !path.contains("launcher");
 	}
 
 	/**
@@ -81,7 +93,8 @@ public final class KatanaFittings {
 		if (hasCompleteFittingModel(item)) return true;
 		if (item instanceof net.minecraft.world.item.SwordItem) return true;
 		return id.getNamespace().equals(the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod.MODID)
-				&& (n.contains("katana") || n.contains("tyokuto") || n.contains("rapier") || n.contains("dagger"));
+				&& (n.contains("katana") || n.contains("tyokuto") || n.contains("rapier") || n.contains("dagger")
+					|| isDyeableKnife(n));
 	}
 
 	/** item model json 自身に刀身/鍔/頭/柄の4テクスチャが揃っているか。 no_fitting_dye より優先する。 */

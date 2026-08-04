@@ -2,11 +2,10 @@ package the_four_primitives_and_weapons.item;
 
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
-public class IronDaggerItem extends SwordItem {
+public class IronDaggerItem extends AbstractDaggerItem {
     public IronDaggerItem() {
         super(new Tier() {
             public int getUses() { return 200; }

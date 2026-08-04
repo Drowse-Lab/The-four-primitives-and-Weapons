@@ -48,7 +48,8 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         }
     }
 
-    private static final float DAMAGE = 6.0f;
+    /** 投げナイフの基礎ダメージ。 種類別の加算は damageFor() 側。 */
+    private static final float DAMAGE = 4.0f;
     /**
      * 刺さった後の存続時間。短くすると同時に存在するスタック数が減って
      * 全体のサーバー/クライアント負荷が下がる。300tick = 15秒。
@@ -101,7 +102,9 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
 
     // @StickParams - 着弾時の調整値 (手動編集してビルド) — 単位: 1 = 1/100ブロック
     public static double STICK_OFFSET_NORMAL  = -5;  // 衝突面の法線方向 (壁から外向き)。+ = 手前に出る/浮く, - = めり込む
-    public static double STICK_OFFSET_FORWARD = 20;  // 進行方向 (投げた方向)。0 = 刃先がブロック表面に接する, + = もっと突き刺さる, - = 手前に止まる
+    public static double STICK_OFFSET_FORWARD = 22;  // 進行方向 (投げた方向)。0 = 刃先がブロック表面に接する, + = もっと突き刺さる, - = 手前に止まる
+                                                     // 37.5 で刀身がちょうど全部埋まる ( 見かけの長さ 0.539 = 刀身 0.375 + 柄 0.164 )。
+                                                     // これを超えると柄まで埋まる。
     // @EndStickParams
     private static final double STICK_UNIT = 0.01;   // 1単位 = 1/100ブロック
     // 0 で刃先がブロック表面に来るよう、エンティティ中心から刃先までの距離を補正で引く
@@ -172,8 +175,17 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
             case HOMING -> DAMAGE;
             default     -> DAMAGE;
         };
-        // レアリティ強化台で付与された WeaponRarity の攻撃力ボーナスを加算
         ItemStack raw = this.getItemRaw();
+        // weapon_stats.json の "throw".damage があれば最優先 ( アイテム別 → タイプ別 )。
+        var cfg = throwConfig();
+        if (cfg != null && !Float.isNaN(cfg.damage)) {
+            dmg = cfg.damage;
+        } else if (!raw.isEmpty()
+                && !(raw.getItem() instanceof the_four_primitives_and_weapons.item.ThrowingKnifeItem)) {
+            // JSON 未設定の投擲武器 ( ダガー等 ) は その武器の攻撃力をそのまま使う。
+            dmg = thrownWeaponDamage(raw);
+        }
+        // レアリティ強化台で付与された WeaponRarity の攻撃力ボーナスを加算
         if (!raw.isEmpty()) {
             the_four_primitives_and_weapons.item.rarity.WeaponRarity r =
                 the_four_primitives_and_weapons.item.rarity.WeaponRarity.getFromStack(raw);
@@ -269,6 +281,60 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
             SoundEvents.ARROW_HIT, SoundSource.PLAYERS, 0.7f, 1.0f);
     }
 
+    /**
+     * この飛翔体の投擲設定 ( weapon_stats.json の "throw" )。 無ければ null。
+     *
+     * <p>NBT を持たない無印の投げナイフは {@code getItemRaw()} が空になるので、
+     * その場合は既定アイテムのスタックで引き直す。</p>
+     */
+    private the_four_primitives_and_weapons.skill.WeaponStatsRegistry.ThrowConfig throwConfig() {
+        ItemStack raw = this.getItemRaw();
+        ItemStack src = raw.isEmpty() ? new ItemStack(getDefaultItem()) : raw;
+        return the_four_primitives_and_weapons.skill.WeaponStatsRegistry.throwConfig(src);
+    }
+
+    /** 刺さってから消えるまでの tick。 JSON の "throw".stuck_lifetime が優先。 */
+    private int stuckLifetime() {
+        var cfg = throwConfig();
+        return (cfg != null && cfg.stuckLifetime > 0) ? cfg.stuckLifetime : STUCK_LIFETIME_TICKS;
+    }
+
+    /** 回収したときに戻すアイテム。 投げた実物 ( ダガー / NBT 付きナイフ ) があればそれ。 */
+    private ItemStack recoveredStack() {
+        ItemStack raw = this.getItemRaw();
+        return raw.isEmpty() ? new ItemStack(CustomEntityInit.THROWING_KNIFE.get()) : raw.copy();
+    }
+
+    /**
+     * 刺さったまま寿命が切れたときの処理。
+     *
+     * <p>投げナイフはスタックする消耗品なので、 同時存在数を抑えるため従来どおり消滅させる。
+     * ダガーのようなスタックできない武器は消すと失われてしまうので、 その場に落とす。</p>
+     */
+    private void expireStuck() {
+        ItemStack recovered = recoveredStack();
+        if (!recovered.isEmpty() && !recovered.isStackable()) {
+            ItemEntity drop = new ItemEntity(this.level(),
+                this.getX(), this.getY(), this.getZ(), recovered);
+            drop.setDefaultPickUpDelay();
+            this.level().addFreshEntity(drop);
+        }
+        this.discard();
+    }
+
+    /** 投擲された近接武器の攻撃力 ( AttributeModifier の ADDITION 合計 + 素手分 1.0 )。 */
+    private static float thrownWeaponDamage(ItemStack stack) {
+        double atk = 1.0;
+        for (net.minecraft.world.entity.ai.attributes.AttributeModifier m :
+                stack.getAttributeModifiers(net.minecraft.world.entity.EquipmentSlot.MAINHAND)
+                     .get(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)) {
+            if (m.getOperation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADDITION) {
+                atk += m.getAmount();
+            }
+        }
+        return (float) Math.max(1.0, atk);
+    }
+
     @Override
     public void tick() {
         if (isStuck()) {
@@ -277,8 +343,8 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
             // どれも変化しない)。唯一必要なのはサーバー側のライフタイム計測と拾得判定のみ。
             if (this.level().isClientSide) return;
             stuckTicks++;
-            if (stuckTicks >= STUCK_LIFETIME_TICKS) {
-                this.discard();
+            if (stuckTicks >= stuckLifetime()) {
+                expireStuck();
                 return;
             }
             // 拾得判定は 3tick に 1 回
@@ -286,7 +352,7 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
             for (Player p : this.level().getEntitiesOfClass(Player.class,
                     this.getBoundingBox().inflate(1.5))) {
                 if (p.isSpectator()) continue;
-                ItemStack knife = new ItemStack(CustomEntityInit.THROWING_KNIFE.get());
+                ItemStack knife = recoveredStack();
                 if (p.isCreative() || p.getInventory().add(knife)) {
                     this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                         SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.4f, 1.4f);

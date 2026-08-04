@@ -27,6 +27,14 @@ public class SkillSelectionMenu extends AbstractContainerMenu {
 
     private final Player player;
     private final ItemStackHandler weaponSlotHandler;
+    /**
+     * メニューを開いた時に {@link #populateFromSkillData()} が自動で入れた「見本」の控え。
+     *
+     * <p>武器スロットの中身は 実体 ( プレイヤーが入れた本物 ) と 見本 ( ロードアウトの copy ) が
+     * 混ざる。 閉じるときに一律で返すと見本が増殖し、 一律で消すと本物が消える。
+     * ここに控えた内容と一致するものだけ「見本」とみなして返さない。</p>
+     */
+    private final ItemStack[] autoFilled = new ItemStack[WEAPON_SLOTS];
 
     // GUI内の武器スロットの配置座標（Screenと共有する定数）
     public static final int WEAPON_SLOT_START_X = 42;
@@ -156,7 +164,11 @@ public class SkillSelectionMenu extends AbstractContainerMenu {
             for (int i = 0; i < WEAPON_SLOTS; i++) {
                 WeaponLoadout loadout = skillData.getLoadoutAt(i);
                 if (loadout != null) {
-                    weaponSlotHandler.setStackInSlot(i, loadout.getWeapon());
+                    // getWeapon() は copy を返す ( = 実体ではない見本 )。
+                    // 閉じるときに返却してしまうと増殖するので、 入れた内容を控えておく。
+                    ItemStack ghost = loadout.getWeapon();
+                    weaponSlotHandler.setStackInSlot(i, ghost);
+                    autoFilled[i] = ghost.copy();
                 }
             }
         });
@@ -240,9 +252,25 @@ public class SkillSelectionMenu extends AbstractContainerMenu {
                 }
             });
 
-            // ハンドラをクリアしてsuper.removed()が不要なドロップをしないようにする
+            // 中身をプレイヤーに返してからクリアする。
+            //
+            // ここは以前 無条件に setStackInSlot(EMPTY) しており、 プレイヤーが自分の武器を
+            // 入れた状態でメニューを閉じる / ワールドから抜けると その武器が消滅していた
+            // ( ロードアウトには copy が保存されるので、 開き直すとスロットには見えるが
+            //   実体はどこにも無い )。 ワールド退出時も PlayerList#remove → doCloseContainer
+            //   経由でここを通るので、 返却しないと失われる。
+            //
+            // ただし 開いた時に自動で入った見本 ( autoFilled ) をそのまま返すと、
+            // 開いて閉じるだけで武器が増えてしまう。 中身が見本と同一のものは返さない。
             for (int i = 0; i < WEAPON_SLOTS; i++) {
+                ItemStack slotContent = weaponSlotHandler.getStackInSlot(i);
                 weaponSlotHandler.setStackInSlot(i, ItemStack.EMPTY);
+                if (slotContent.isEmpty()) continue;
+                ItemStack ghost = autoFilled[i];
+                if (ghost != null && ItemStack.matches(ghost, slotContent)) continue; // 見本 = 実体ではない
+                if (!playerIn.getInventory().add(slotContent)) {
+                    playerIn.drop(slotContent, false);
+                }
             }
         }
 

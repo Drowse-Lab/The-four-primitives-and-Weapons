@@ -232,15 +232,24 @@
     "throwing": {
       "display_name": "投擲",
       "items": [
-        "the_four_primitives_and_weapons:throwing_knife"
+        "the_four_primitives_and_weapons:throwing_knife",
+        "the_four_primitives_and_weapons:grip_knife",
+        "the_four_primitives_and_weapons:homing_knife",
+        "the_four_primitives_and_weapons:screw_knife",
+        "the_four_primitives_and_weapons:stun_knife",
+        "the_four_primitives_and_weapons:explosive_throwing_knife"
       ],
       "motions": {
-        "combat": [],
+        "combat": ["thrust", "thrust_combo", "upper_left_slash", "upper_right_slash"],
         "dash": ["dash_rush", "leap_slash", "shadow_step"],
         "right_click": ["none_right", "dodge"],
         "shift_right_click": ["none_shift"]
       },
       "default_motions": {
+        "first_hit": "thrust",
+        "second_hit": "upper_left_slash",
+        "third_hit": "upper_right_slash",
+        "charged": "thrust_combo",
         "dash": "dash_rush",
         "right_click": "none_right",
         "shift_right_click": "none_shift"

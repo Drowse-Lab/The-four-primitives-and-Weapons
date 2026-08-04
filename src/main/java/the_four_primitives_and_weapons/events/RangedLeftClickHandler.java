@@ -13,9 +13,13 @@ import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 import the_four_primitives_and_weapons.network.DodgeRequestPacket;
 
 /**
- * 遠距離武器（弓/クロスボウ/投げナイフ, トライデント除く）を持っている時:
+ * 遠距離武器（弓/クロスボウ, トライデント除く）を持っている時:
  * - 左クリック押下 → 回避を発動
  * - 右クリックは vanilla のまま（弓の引き絞り/発射）
+ *
+ * <p>投げナイフは除く。 短剣と同じ近接技 ( weapon_types の "throwing" ) を
+ * 左クリックで出すようになったため、 ここで回避も出すと 1 回の左クリックで
+ * 回避と技が同時に走ってしまう。 右クリック＝投擲 はそのまま。</p>
  */
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(value = Dist.CLIENT)
@@ -36,7 +40,9 @@ public class RangedLeftClickHandler {
         }
 
         ItemStack mainHand = player.getMainHandItem();
-        boolean isRanged = DodgeAndBattouHandler.isRangedWeapon(mainHand);
+        // 投げナイフは近接技側 ( ChargedAttackHandler ) が左クリックを使うので対象外。
+        boolean isRanged = DodgeAndBattouHandler.isRangedWeapon(mainHand)
+                && !(mainHand.getItem() instanceof the_four_primitives_and_weapons.item.ThrowingKnifeItem);
         boolean nowDown = mc.options.keyAttack.isDown();
 
         if (!isRanged) {

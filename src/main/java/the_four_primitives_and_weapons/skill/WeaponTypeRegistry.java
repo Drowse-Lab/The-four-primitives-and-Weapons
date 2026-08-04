@@ -355,6 +355,11 @@ public class WeaponTypeRegistry extends SimplePreparableReloadListener<Map<Strin
 
         SPECIAL_WEAPONS.putAll(tempSpecials);
         tempSpecials.clear();
+
+        // weapon_stats の「item別×type別」マージ結果はこのタイプ表に依存している。
+        // ここで捨てないと、 リロード順によっては タイプ表が空だった瞬間の
+        // 結果 ( types セクションが効いていない状態 ) を掴んだままになる。
+        WeaponStatsRegistry.invalidateCache();
     }
 
     // === パーサー ===

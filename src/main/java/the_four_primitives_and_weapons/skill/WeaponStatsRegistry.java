@@ -58,13 +58,20 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<WeaponSt
         public final float attackRange;
         /** チャージ突きの設定 ( null=なし )。 */
         public final ThrustConfig thrust;
+        /** 投擲の設定 ( null=なし )。 */
+        public final ThrowConfig throwCfg;
 
         public WeaponStats(int durability, int enchantability, float damageBonus, float attackSpeed) {
-            this(durability, enchantability, damageBonus, attackSpeed, Float.NaN, Float.NaN, null);
+            this(durability, enchantability, damageBonus, attackSpeed, Float.NaN, Float.NaN, null, null);
         }
 
         public WeaponStats(int durability, int enchantability, float damageBonus, float attackSpeed,
                            float attackDamage, float attackRange, ThrustConfig thrust) {
+            this(durability, enchantability, damageBonus, attackSpeed, attackDamage, attackRange, thrust, null);
+        }
+
+        public WeaponStats(int durability, int enchantability, float damageBonus, float attackSpeed,
+                           float attackDamage, float attackRange, ThrustConfig thrust, ThrowConfig throwCfg) {
             this.durability = durability;
             this.enchantability = enchantability;
             this.damageBonus = damageBonus;
@@ -72,6 +79,7 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<WeaponSt
             this.attackDamage = attackDamage;
             this.attackRange = attackRange;
             this.thrust = thrust;
+            this.throwCfg = throwCfg;
         }
     }
 
@@ -89,6 +97,33 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<WeaponSt
             this.knockback = knockback;
             this.dash = dash;
             this.damage = damage;
+        }
+    }
+
+    /**
+     * 投擲の設定 ( JSON: {@code "throw": { damage, cooldown, velocity, hunger, stuck_lifetime }} )。
+     *
+     * <p>投げナイフと、 右クリックで投げられる武器 ( ダガー ) の両方が参照する。
+     * 各値は「未設定なら Java 側の既定を使う」ため、 書いた項目だけが効く。</p>
+     */
+    public static class ThrowConfig {
+        /** 命中ダメージ ( NaN=未設定 → 武器の攻撃力 / ナイフ既定 )。 */
+        public final float damage;
+        /** 投擲後のクールダウン tick ( -1=未設定 )。 */
+        public final int cooldown;
+        /** 射出初速 ( NaN=未設定 )。 大きいほど速く遠くへ飛ぶ。 */
+        public final float velocity;
+        /** 1投あたりの食料ゲージ消費 ( NaN=未設定 )。 肉アイコン半分=1.0。 */
+        public final float hunger;
+        /** 刺さってから消えるまでの tick ( -1=未設定 )。 */
+        public final int stuckLifetime;
+
+        public ThrowConfig(float damage, int cooldown, float velocity, float hunger, int stuckLifetime) {
+            this.damage = damage;
+            this.cooldown = cooldown;
+            this.velocity = velocity;
+            this.hunger = hunger;
+            this.stuckLifetime = stuckLifetime;
         }
     }
 
@@ -137,6 +172,16 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<WeaponSt
         float speed = stats.has("attack_speed") ? stats.get("attack_speed").getAsFloat() : Float.NaN;
         float atkDamage = stats.has("attack_damage") ? stats.get("attack_damage").getAsFloat() : Float.NaN;
         float atkRange = stats.has("attack_range") ? stats.get("attack_range").getAsFloat() : Float.NaN;
+        ThrowConfig throwCfg = null;
+        if (stats.has("throw") && stats.get("throw").isJsonObject()) {
+            JsonObject tw = stats.getAsJsonObject("throw");
+            throwCfg = new ThrowConfig(
+                    tw.has("damage")         ? tw.get("damage").getAsFloat()        : Float.NaN,
+                    tw.has("cooldown")       ? tw.get("cooldown").getAsInt()        : -1,
+                    tw.has("velocity")       ? tw.get("velocity").getAsFloat()      : Float.NaN,
+                    tw.has("hunger")         ? tw.get("hunger").getAsFloat()        : Float.NaN,
+                    tw.has("stuck_lifetime") ? tw.get("stuck_lifetime").getAsInt()  : -1);
+        }
 
         ThrustConfig thrust = null;
         if (stats.has("thrust") && stats.get("thrust").isJsonObject()) {
@@ -151,7 +196,7 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<WeaponSt
                 thrust = new ThrustConfig(range, hits, kb, dash, dmg);
             }
         }
-        return new WeaponStats(durability, enchant, damage, speed, atkDamage, atkRange, thrust);
+        return new WeaponStats(durability, enchant, damage, speed, atkDamage, atkRange, thrust, throwCfg);
     }
 
     @Override
@@ -174,7 +219,8 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<WeaponSt
                 !Float.isNaN(item.attackSpeed) ? item.attackSpeed : type.attackSpeed,
                 !Float.isNaN(item.attackDamage) ? item.attackDamage : type.attackDamage,
                 !Float.isNaN(item.attackRange) ? item.attackRange : type.attackRange,
-                item.thrust != null ? item.thrust : type.thrust);
+                item.thrust != null ? item.thrust : type.thrust,
+                item.throwCfg != null ? item.throwCfg : type.throwCfg);
     }
 
     // === 公開API ===
@@ -190,13 +236,32 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<WeaponSt
 
         WeaponStats item = STATS.get(id);
         WeaponStats type = null;
-        if (!TYPE_STATS.isEmpty()) {
+        // types セクションの既定は WeaponTypeRegistry でタイプを引いてから当てる。
+        // タイプ表がまだ読み込まれていない間に引くと type=null の結果を
+        // 掴んでしまうので、 その場合はキャッシュに載せない
+        // ( 載せると types の設定が永久に効かなくなる )。
+        boolean typesReady = WeaponTypeRegistry.isLoaded();
+        if (typesReady && !TYPE_STATS.isEmpty()) {
             WeaponTypeRegistry.WeaponTypeData td = WeaponTypeRegistry.getTypeForItem(stack);
             if (td != null) type = TYPE_STATS.get(td.getId());
         }
         WeaponStats merged = merge(item, type);
-        MERGED_CACHE.put(id, merged == null ? NONE_STATS : merged);
+        if (typesReady) {
+            MERGED_CACHE.put(id, merged == null ? NONE_STATS : merged);
+        }
         return merged;
+    }
+
+    /**
+     * item別×type別 のマージ結果キャッシュを捨てる。
+     *
+     * <p>マージ結果は {@link WeaponTypeRegistry} のタイプ表に依存しているので、
+     * そちらが再読み込みされたら必ず呼ぶこと。 呼ばないと リロードの順序次第で
+     * 「タイプ表が空の瞬間に引いた type=null の結果」が残り続け、
+     * types セクションの設定が効かなくなる。</p>
+     */
+    public static void invalidateCache() {
+        MERGED_CACHE.clear();
     }
 
     /** item別のみ ( type別既定は ItemStack が要るため補完しない )。 */
@@ -223,6 +288,12 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<WeaponSt
     public static int getDurability(ItemStack stack) {
         WeaponStats stats = getStats(stack);
         return stats != null ? stats.durability : -1;
+    }
+
+    /** 投擲設定 ( JSONの "throw" )。 未設定なら null。 */
+    public static ThrowConfig throwConfig(ItemStack stack) {
+        WeaponStats s = getStats(stack);
+        return (s != null) ? s.throwCfg : null;
     }
 
     /** 攻撃範囲ボーナス ( JSONの attack_range。 未設定=0 )。 各技の range に加算する用。 */

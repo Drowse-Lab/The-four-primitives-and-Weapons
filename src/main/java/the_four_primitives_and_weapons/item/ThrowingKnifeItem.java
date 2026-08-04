@@ -55,16 +55,39 @@ public class ThrowingKnifeItem extends Item {
         b.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(
             BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", meleeBonus, AttributeModifier.Operation.ADDITION));
         b.put(Attributes.ATTACK_SPEED, new AttributeModifier(
-            BASE_ATTACK_SPEED_UUID, "Weapon modifier", -1.5, AttributeModifier.Operation.ADDITION));
+            // ダガー ( AbstractDaggerItem = SwordItem の -1.8 ) と同値。
+            // 実際には weapon_stats.json の types.throwing.attack_speed が上書きするが、
+            // JSON を外した時の素の値もダガーと揃えておく。
+            BASE_ATTACK_SPEED_UUID, "Weapon modifier", -1.8, AttributeModifier.Operation.ADDITION));
         this.defaultModifiers = b.build();
     }
 
     /** サブクラスが上書き — 飛翔体に渡すKnifeType */
     public KnifeType getKnifeType() { return KnifeType.NORMAL; }
-    /** 1投あたりの食料ゲージ消費 (肉アイコン半分=1.0 / >0なら不足時投げない) */
+    /** 1投あたりの食料ゲージ消費 (肉アイコン半分=1.0 / >0なら不足時投げない)。
+     *  weapon_stats.json の "throw".hunger があればそちらが優先。 */
     public float hungerCost() { return 0; }
-    /** クールダウン(tick) */
+    /** クールダウン(tick)。 weapon_stats.json の "throw".cooldown があればそちらが優先。 */
     public int cooldown() { return 8; }
+    /** 射出初速。 weapon_stats.json の "throw".velocity があればそちらが優先。 */
+    public float throwVelocity() { return 1.6f; }
+
+    /** JSON ( "throw" ) を当てた実効値。 未設定の項目は Java 側の既定にフォールバックする。 */
+    private the_four_primitives_and_weapons.skill.WeaponStatsRegistry.ThrowConfig cfgOf(ItemStack stack) {
+        return the_four_primitives_and_weapons.skill.WeaponStatsRegistry.throwConfig(stack);
+    }
+    private float effHunger(ItemStack stack) {
+        var c = cfgOf(stack);
+        return (c != null && !Float.isNaN(c.hunger)) ? c.hunger : hungerCost();
+    }
+    private int effCooldown(ItemStack stack) {
+        var c = cfgOf(stack);
+        return (c != null && c.cooldown >= 0) ? c.cooldown : cooldown();
+    }
+    private float effVelocity(ItemStack stack) {
+        var c = cfgOf(stack);
+        return (c != null && !Float.isNaN(c.velocity)) ? c.velocity : throwVelocity();
+    }
     /** スタック消費 (false = 弾切れ無視 = 永続。STUN等は1消費) */
     public boolean consumesItem() { return true; }
 
@@ -76,7 +99,7 @@ public class ThrowingKnifeItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        float cost = hungerCost();
+        float cost = effHunger(stack);
         // Farmer's Delight の「満腹」中は食料ゲージを消費しない (未導入なら常に false)
         boolean needsFood = cost > 0 && !player.getAbilities().instabuild
             && !FarmersDelightCompat.hasNourishment(player);
@@ -107,7 +130,7 @@ public class ThrowingKnifeItem extends Item {
             ThrowingKnifeEntity knife = new ThrowingKnifeEntity(level, player);
             knife.setItem(stack);
             knife.setKnifeType(getKnifeType());
-            knife.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0f, 1.6f, 1.0f);
+            knife.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0f, effVelocity(stack), 1.0f);
 
             // HOMING: ロック対象があれば優先追尾、無ければ視線先コーン内の最近接 Mob へ
             // 初期方向を補正しつつ UUID も転写して entity 側の強力追尾を有効化。
@@ -133,10 +156,12 @@ public class ThrowingKnifeItem extends Item {
         }
 
         player.awardStat(Stats.ITEM_USED.get(this));
+        // shrink で空になると getStats が引けなくなるので、 先に確定させる。
+        int cd = effCooldown(stack);
         if (consumesItem() && !player.getAbilities().instabuild) {
             stack.shrink(1);
         }
-        player.getCooldowns().addCooldown(this, cooldown());
+        player.getCooldowns().addCooldown(this, cd);
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }
 
