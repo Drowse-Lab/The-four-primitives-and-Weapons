@@ -1,7 +1,6 @@
 package the_four_primitives_and_weapons.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 
 import the_four_primitives_and_weapons.init.CustomEntityInit;
 
@@ -17,7 +16,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
@@ -56,18 +54,23 @@ public class KnifeHolsterLayer extends RenderLayer<AbstractClientPlayer, PlayerM
         }
 
         pose.pushPose();
-        // 体 (body) の変換を適用してから腰のオフセットで配置
+        // 体 (body) の変換を適用してから腰のアンカーへ下ろす。
+        // ここから先の 位置/角度/大きさ は item JSON の
+        // "the_four_primitives_and_weapons:holster" ( = Blockbench の worn display )
+        // が担当する。 saya の :back / :belt と同じ方式。
         this.getParentModel().body.translateAndRotate(pose);
-        // 腰右側: 右 0.22, 下 0.3 (モデル座標), 奥に少し
-        pose.translate(0.22, 0.30, 0.10);
-        // 斜めに傾けて"ケースを差している"ように
-        pose.mulPose(Axis.ZP.rotationDegrees(45f));
-        pose.mulPose(Axis.YP.rotationDegrees(90f));
-        pose.scale(0.6f, 0.6f, 0.6f);
+        // 腰 (ベルト) の高さ。 ScabbardCurioRenderer の belt と同じ値。
+        //   body pivot は scene y=24 (world 1.406)、 ベルトは y=12 (world 0.703)。
+        //   PoseStack は Y軸反転フレームなので +0.75 で下ろす。
+        pose.translate(0.0, 0.75, 0.0);
+        // Blockbench リファレンス (da.scale 0.625) と Minecraft (PlayerRenderer 0.9375)
+        // の差 1.5 倍を打ち消して、 プラグインで見た大きさと一致させる。
+        final float SCALE_MATCH = 2.0F / 3.0F;
+        pose.scale(SCALE_MATCH, SCALE_MATCH, SCALE_MATCH);
 
         Minecraft.getInstance().getItemRenderer().renderStatic(
             stack,
-            ItemDisplayContext.FIXED,
+            the_four_primitives_and_weapons.client.MawDisplayContexts.HOLSTER,
             packedLight,
             OverlayTexture.NO_OVERLAY,
             pose,

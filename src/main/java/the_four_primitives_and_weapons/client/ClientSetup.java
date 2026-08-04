@@ -15,6 +15,10 @@ import net.minecraftforge.registries.RegistryObject;
 @Mod.EventBusSubscriber(modid = TheFourPrimitivesAndWeaponsMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientSetup {
 
+    /** ナイフホルダーの「手に見えるナイフ本数」の段階数 ( モデル knife_x1..x5 と対応 )。 */
+    public static final int KNIFE_HOLDER_MODEL_STEPS = 5;
+
+
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event) {
         // Saya 用カスタム ItemDisplayContext (SAYA_BACK / SAYA_BELT) を class-init
@@ -58,6 +62,22 @@ public class ClientSetup {
                 new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "charging"),
                 (stack, lvl, entity, seed) ->
                     entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1f : 0f);
+
+            // ナイフホルダー: 装填数に応じて手に持つナイフの本数を増やす。
+            // item/knife_launcher.json の overrides が このプロパティの値でモデルを選ぶ。
+            //   0 本      → 0.0 ( どの override にも当たらず 素のホルダーモデル )
+            //   1〜4 本   → 0.2 ( ナイフ 1 本 )
+            //   5〜8 本   → 0.4 ( 2 本 ) … 以降 4 本ごとに 1 段階
+            //   17 本以上 → 1.0 ( 5 本 = 上限 )
+            ItemProperties.register(
+                CustomEntityInit.KNIFE_LAUNCHER.get(),
+                new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "stored_level"),
+                (stack, lvl, entity, seed) -> {
+                    int stored = the_four_primitives_and_weapons.item.KnifeLauncherItem.getStored(stack);
+                    if (stored <= 0) return 0f;
+                    int level = Math.min(KNIFE_HOLDER_MODEL_STEPS, (stored + 3) / 4);
+                    return level / (float) KNIFE_HOLDER_MODEL_STEPS;
+                });
         });
     }
 }

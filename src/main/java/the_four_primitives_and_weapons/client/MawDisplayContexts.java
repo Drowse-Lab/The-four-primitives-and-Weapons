@@ -37,11 +37,28 @@ public class MawDisplayContexts {
         ItemDisplayContext.THIRD_PERSON_RIGHT_HAND
     );
 
+    /**
+     * ナイフホルダー ( knife_launcher ) を腰に差している見た目
+     * ( {@link the_four_primitives_and_weapons.client.renderer.KnifeHolsterLayer} )。
+     *
+     * <p>item JSON の "display" に "the_four_primitives_and_weapons:holster" を書けば
+     * その rotation/translation/scale が使われる。 saya の :back / :belt と同じく
+     * Blockbench の worn display プラグインから視覚編集できる。</p>
+     *
+     * <p>フォールバックは FIXED。 このキーを持たないモデルは従来どおり
+     * FIXED の transform で描かれる ( レイヤー側の既定オフセットも FIXED 前提 )。</p>
+     */
+    public static final ItemDisplayContext HOLSTER = ItemDisplayContext.create(
+        "MAW_HOLSTER",
+        new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "holster"),
+        ItemDisplayContext.FIXED
+    );
+
     /** 強制的にこのクラスを class load して static フィールドを初期化させる。
      *  MAW の client setup から 1 度呼ぶ。 */
     public static void init() {
-        // SAYA_BACK / SAYA_BELT に touch するだけで static initializer が走る
-        if (SAYA_BACK == null || SAYA_BELT == null) {
+        // SAYA_BACK / SAYA_BELT / HOLSTER に touch するだけで static initializer が走る
+        if (SAYA_BACK == null || SAYA_BELT == null || HOLSTER == null) {
             throw new IllegalStateException("MawDisplayContexts init failed");
         }
     }

@@ -81,12 +81,19 @@ public class KnifeLauncherItem extends Item {
 
     // ----- Bundle 風のインベントリ操作 ------------------------------
 
-    /** 内蔵可能なナイフ種: 通常の投げナイフ + 爆発ナイフ */
+    /**
+     * 内蔵可能な弾: 通常の投げナイフ + 爆発ナイフ + ダガー。
+     *
+     * <p>ダガーはスタックしない武器なので 1 本ずつしか入らないが、
+     * 入れておけば他の弾と同じ LIFO 順で発射され、 発射した個体そのものが飛ぶ
+     * ( エンチャントや拵えの染色も乗ったまま )。</p>
+     */
     public static boolean isStorableKnife(ItemStack s) {
         if (s.isEmpty()) return false;
         Item it = s.getItem();
         return it == CustomEntityInit.THROWING_KNIFE.get()
-            || it == the_four_primitives_and_weapons.init.KnifeExtrasRegistrar.EXPLOSIVE_THROWING_KNIFE.get();
+            || it == the_four_primitives_and_weapons.init.KnifeExtrasRegistrar.EXPLOSIVE_THROWING_KNIFE.get()
+            || it instanceof the_four_primitives_and_weapons.item.AbstractDaggerItem;
     }
 
     private static boolean isAmmo(ItemStack s) { return isStorableKnife(s); }
@@ -522,11 +529,13 @@ public class KnifeLauncherItem extends Item {
             //           その分は爆発ナイフとして発射される)。在庫が尽きたらインベントリの
             //           base ナイフにフォールバック。
             //   - Infinity: 在庫トップのナイフが "種" として全弾に適用される (消費なし)。
-            Item[] perShotItem = new Item[toThrow];
+            //   ※ Item ではなく ItemStack で持つ。 ダガーのようにエンチャントや
+            //     拵えの染色を持つ弾を、 その個体のまま飛ばして回収できるようにするため。
+            ItemStack[] perShotStack = new ItemStack[toThrow];
             java.util.List<ItemStack> storedList = getStoredStacks(stack);
             if (infinite && !storedList.isEmpty()) {
-                Item seed = storedList.get(0).getItem();
-                for (int i = 0; i < toThrow; i++) perShotItem[i] = seed;
+                ItemStack seed = storedList.get(0).copyWithCount(1);
+                for (int i = 0; i < toThrow; i++) perShotStack[i] = seed.copy();
             } else {
                 int si = 0, sc = 0;
                 for (int i = 0; i < toThrow; i++) {
@@ -534,10 +543,10 @@ public class KnifeLauncherItem extends Item {
                         si++; sc = 0;
                     }
                     if (si < storedList.size()) {
-                        perShotItem[i] = storedList.get(si).getItem();
+                        perShotStack[i] = storedList.get(si).copyWithCount(1);
                         sc++;
                     } else {
-                        perShotItem[i] = ammoItem;
+                        perShotStack[i] = new ItemStack(ammoItem);
                     }
                 }
             }
@@ -554,7 +563,7 @@ public class KnifeLauncherItem extends Item {
                 ThrowingKnifeEntity knife = new ThrowingKnifeEntity(level, player);
                 // 実際に消費される/種となるアイテムを setItem — これで ExplosiveThrowingKnifeItem の
                 // onHitBlock 検出が正しく動く。
-                knife.setItem(new ItemStack(perShotItem[i]));
+                knife.setItem(perShotStack[i]);
                 knife.setKnifeType(mode);
                 // HOMING: プレイヤーが数秒カーソルを当てて "ロック" した対象があれば
                 // 各ナイフに UUID を転写して長距離追尾を有効化。
