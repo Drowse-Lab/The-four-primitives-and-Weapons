@@ -14,7 +14,6 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 import the_four_primitives_and_weapons.entity.ThrowingKnifeEntity;
-import the_four_primitives_and_weapons.init.CustomEntityInit;
 
 /**
  * 投げナイフ飛翔体レンダラー — 進行方向に切先を向けて飛び、
@@ -34,10 +33,6 @@ public class ThrowingKnifeRenderer extends EntityRenderer<ThrowingKnifeEntity> {
     // SCREW 回転速度は entity 側に定数があるので、renderer はそれを参照する。
     // (パーティクル渦方向との同期のため一元管理)
 
-    // renderStatic に渡す ItemStack は毎フレームアロケートしていたが、
-    // 描画中に count や NBT を変えないので 1 個を共有して GC 圧を減らす。
-    private static ItemStack sharedStack;
-
     public ThrowingKnifeRenderer(EntityRendererProvider.Context context) {
         super(context);
     }
@@ -45,11 +40,9 @@ public class ThrowingKnifeRenderer extends EntityRenderer<ThrowingKnifeEntity> {
     @Override
     public void render(ThrowingKnifeEntity entity, float entityYaw, float partialTicks,
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        ItemStack stack = sharedStack;
-        if (stack == null) {
-            stack = new ItemStack(CustomEntityInit.THROWING_KNIFE.get());
-            sharedStack = stack;
-        }
+        // 投げた実物の見た目で描く ( ダガーを投げればダガーが飛ぶ )。
+        // entity 側が既定スタックを使い回すので毎フレームのアロケートは無い。
+        ItemStack stack = entity.getItem();
 
         poseStack.pushPose();
 

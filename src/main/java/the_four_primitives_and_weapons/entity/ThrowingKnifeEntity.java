@@ -102,7 +102,8 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
 
     // @StickParams - 着弾時の調整値 (手動編集してビルド) — 単位: 1 = 1/100ブロック
     public static double STICK_OFFSET_NORMAL  = -5;  // 衝突面の法線方向 (壁から外向き)。+ = 手前に出る/浮く, - = めり込む
-    public static double STICK_OFFSET_FORWARD = 22;  // 進行方向 (投げた方向)。0 = 刃先がブロック表面に接する, + = もっと突き刺さる, - = 手前に止まる
+    public static double STICK_OFFSET_FORWARD = 27;  // 進行方向 (投げた方向)。0 = 刃先がブロック表面に接する, + = もっと突き刺さる, - = 手前に止まる
+                                                     // 50 以上にすると forwardAmt が正になり エンティティごとブロック内部へ入って見えなくなる。
                                                      // 37.5 で刀身がちょうど全部埋まる ( 見かけの長さ 0.539 = 刀身 0.375 + 柄 0.164 )。
                                                      // これを超えると柄まで埋まる。
     // @EndStickParams
@@ -262,8 +263,18 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         if (STICK_APPLY_OFFSET) {
             Vec3 hitPos = result.getLocation();
             net.minecraft.core.Direction face = result.getDirection();
-            double normalAmt = STICK_OFFSET_NORMAL * STICK_UNIT;
-            double forwardAmt = (STICK_OFFSET_FORWARD * STICK_UNIT) - BLADE_TIP_LENGTH;
+            // 刀身の長さは武器ごとに違うので、 weapon_stats.json の "throw" で個別指定できる。
+            // 未設定なら下の既定値 ( 投げナイフ基準 )。
+            var scfg = throwConfig();
+            double fwdUnits = (scfg != null && !Float.isNaN(scfg.stickForward))
+                    ? scfg.stickForward : STICK_OFFSET_FORWARD;
+            double nrmUnits = (scfg != null && !Float.isNaN(scfg.stickNormal))
+                    ? scfg.stickNormal : STICK_OFFSET_NORMAL;
+            // 刃先までの距離もモデル依存 ( display.ground を変えると動く )。
+            double tip = (scfg != null && !Float.isNaN(scfg.stickTip))
+                    ? scfg.stickTip : BLADE_TIP_LENGTH;
+            double normalAmt = nrmUnits * STICK_UNIT;
+            double forwardAmt = (fwdUnits * STICK_UNIT) - tip;
             double nx = face.getStepX() * normalAmt;
             double ny = face.getStepY() * normalAmt;
             double nz = face.getStepZ() * normalAmt;
@@ -305,23 +316,6 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         return raw.isEmpty() ? new ItemStack(CustomEntityInit.THROWING_KNIFE.get()) : raw.copy();
     }
 
-    /**
-     * 刺さったまま寿命が切れたときの処理。
-     *
-     * <p>投げナイフはスタックする消耗品なので、 同時存在数を抑えるため従来どおり消滅させる。
-     * ダガーのようなスタックできない武器は消すと失われてしまうので、 その場に落とす。</p>
-     */
-    private void expireStuck() {
-        ItemStack recovered = recoveredStack();
-        if (!recovered.isEmpty() && !recovered.isStackable()) {
-            ItemEntity drop = new ItemEntity(this.level(),
-                this.getX(), this.getY(), this.getZ(), recovered);
-            drop.setDefaultPickUpDelay();
-            this.level().addFreshEntity(drop);
-        }
-        this.discard();
-    }
-
     /** 投擲された近接武器の攻撃力 ( AttributeModifier の ADDITION 合計 + 素手分 1.0 )。 */
     private static float thrownWeaponDamage(ItemStack stack) {
         double atk = 1.0;
@@ -344,7 +338,7 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
             if (this.level().isClientSide) return;
             stuckTicks++;
             if (stuckTicks >= stuckLifetime()) {
-                expireStuck();
+                this.discard();
                 return;
             }
             // 拾得判定は 3tick に 1 回
@@ -697,9 +691,24 @@ public class ThrowingKnifeEntity extends ThrowableItemProjectile implements Item
         if (tag.hasUUID("LockUUID")) this.lockedTargetUuid = tag.getUUID("LockUUID");
     }
 
+    /** 描画用に共有する既定スタック ( 無印の投げナイフ )。 毎フレームのアロケートを避ける。 */
+    @OnlyIn(Dist.CLIENT)
+    private static ItemStack defaultRenderStack;
+
+    /**
+     * 描画に使うアイテム。 投げた実物 ( ダガー / NBT 付きナイフ ) があればそれを返す。
+     *
+     * <p>以前は常に無印の投げナイフを返していたため、 ダガーを投げても
+     * ナイフの見た目で飛んでいた。</p>
+     */
     @Override
     @OnlyIn(Dist.CLIENT)
     public ItemStack getItem() {
-        return new ItemStack(CustomEntityInit.THROWING_KNIFE.get());
+        ItemStack raw = this.getItemRaw();
+        if (!raw.isEmpty()) return raw;
+        if (defaultRenderStack == null) {
+            defaultRenderStack = new ItemStack(CustomEntityInit.THROWING_KNIFE.get());
+        }
+        return defaultRenderStack;
     }
 }

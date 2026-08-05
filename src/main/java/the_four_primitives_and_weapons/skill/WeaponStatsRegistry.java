@@ -117,13 +117,30 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<WeaponSt
         public final float hunger;
         /** 刺さってから消えるまでの tick ( -1=未設定 )。 */
         public final int stuckLifetime;
+        /** 刺さる深さ ( 1 = 1/100 ブロック、 NaN=未設定 )。 大きいほど深く突き刺さる。
+         *  刀身の長さは武器ごとに違うので、 同じ値だと埋まり具合がそろわない。 */
+        public final float stickForward;
+        /** 衝突面の法線方向オフセット ( 1 = 1/100 ブロック、 NaN=未設定 )。 マイナスで壁にめり込む。 */
+        public final float stickNormal;
+        /**
+         * エンティティ原点から刃先までの距離 ( ブロック、 NaN=未設定 → Java 既定の 0.5 )。
+         *
+         * <p>飛翔体は ground display で描かれるので、 モデルの
+         * {@code display.ground} の translation / scale を変えると刃先の位置も動く。
+         * この値がずれていると、 同じ {@code stick_forward} でも刺さり具合が武器ごとに変わる。</p>
+         */
+        public final float stickTip;
 
-        public ThrowConfig(float damage, int cooldown, float velocity, float hunger, int stuckLifetime) {
+        public ThrowConfig(float damage, int cooldown, float velocity, float hunger, int stuckLifetime,
+                           float stickForward, float stickNormal, float stickTip) {
             this.damage = damage;
             this.cooldown = cooldown;
             this.velocity = velocity;
             this.hunger = hunger;
             this.stuckLifetime = stuckLifetime;
+            this.stickForward = stickForward;
+            this.stickNormal = stickNormal;
+            this.stickTip = stickTip;
         }
     }
 
@@ -180,7 +197,10 @@ public class WeaponStatsRegistry extends SimplePreparableReloadListener<WeaponSt
                     tw.has("cooldown")       ? tw.get("cooldown").getAsInt()        : -1,
                     tw.has("velocity")       ? tw.get("velocity").getAsFloat()      : Float.NaN,
                     tw.has("hunger")         ? tw.get("hunger").getAsFloat()        : Float.NaN,
-                    tw.has("stuck_lifetime") ? tw.get("stuck_lifetime").getAsInt()  : -1);
+                    tw.has("stuck_lifetime") ? tw.get("stuck_lifetime").getAsInt()  : -1,
+                    tw.has("stick_forward")  ? tw.get("stick_forward").getAsFloat()  : Float.NaN,
+                    tw.has("stick_normal")   ? tw.get("stick_normal").getAsFloat()   : Float.NaN,
+                    tw.has("stick_tip")      ? tw.get("stick_tip").getAsFloat()      : Float.NaN);
         }
 
         ThrustConfig thrust = null;
