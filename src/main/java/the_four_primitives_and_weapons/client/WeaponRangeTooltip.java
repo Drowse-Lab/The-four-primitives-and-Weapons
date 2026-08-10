@@ -2,11 +2,14 @@ package the_four_primitives_and_weapons.client;
 
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 import the_four_primitives_and_weapons.skill.WeaponStatsRegistry;
+import the_four_primitives_and_weapons.init.MawExtraAttributes;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 
@@ -26,6 +29,9 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = TheFourPrimitivesAndWeaponsMod.MODID, value = Dist.CLIENT)
 public class WeaponRangeTooltip {
 
+    private static final String ATTACK_RANGE_ATTRIBUTE =
+            TheFourPrimitivesAndWeaponsMod.MODID + ":entity_reach";
+
     /** 素の近接攻撃リーチ ( 表示上の基礎値 )。 */
     private static final double BASE_REACH = 3.0;
 
@@ -41,7 +47,7 @@ public class WeaponRangeTooltip {
             boolean hasSlottedRange = stack.hasTag()
                     && stack.getTag().contains("AttributeModifiers", Tag.TAG_LIST)
                     && stack.getTag().getList("AttributeModifiers", Tag.TAG_COMPOUND).stream()
-                    .anyMatch(tag -> "forge:entity_reach".equals(((net.minecraft.nbt.CompoundTag) tag)
+                    .anyMatch(tag -> ATTACK_RANGE_ATTRIBUTE.equals(((net.minecraft.nbt.CompoundTag) tag)
                             .getString("AttributeName")));
 
             // JSON の weapon_stats による自動表示は従来どおりこの MOD のアイテムだけが対象。
@@ -54,15 +60,27 @@ public class WeaponRangeTooltip {
 
             // 自動追加された Reach 系の行を除去 ( 重複防止 )。
             String entityReachName = I18n.get(ForgeMod.ENTITY_REACH.get().getDescriptionId());
+            String customReachName = I18n.get(MawExtraAttributes.ENTITY_REACH.get().getDescriptionId());
             String blockReachName = I18n.get(ForgeMod.BLOCK_REACH.get().getDescriptionId());
             if (hasSlottedRange) {
+                EquipmentSlot currentSlot = null;
                 for (int i = 0; i < tip.size(); i++) {
                     Component old = tip.get(i);
                     String text = old.getString();
-                    if (text.contains(entityReachName)) {
-                        tip.set(i, Component.literal(text.replace(entityReachName,
-                                I18n.get("attribute.name.the_four_primitives_and_weapons.attack_range")))
-                                .withStyle(old.getStyle()));
+                    for (EquipmentSlot slot : EquipmentSlot.values()) {
+                        if (text.equals(I18n.get("item.modifiers." + slot.getName()))) {
+                            currentSlot = slot;
+                            break;
+                        }
+                    }
+                    if (text.contains(entityReachName) || text.contains(customReachName)) {
+                        double range = slottedRange(stack, currentSlot);
+                        Component line = Component.translatable(
+                                "attribute.modifier.equals.0",
+                                ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(range),
+                                Component.translatable("attribute.name.the_four_primitives_and_weapons.attack_range"))
+                                .withStyle(ChatFormatting.DARK_GREEN);
+                        tip.set(i, line);
                     }
                 }
             }
@@ -92,5 +110,27 @@ public class WeaponRangeTooltip {
         } catch (Throwable ignored) {
             // no-op: ツールチップ描画は失敗しても無視 ( クラッシュ防止 )
         }
+    }
+
+    /** 指定部位の reach modifier をバニラの attribute 計算順で基礎値3へ適用する。 */
+    private static double slottedRange(ItemStack stack, EquipmentSlot slot) {
+        double addition = 0.0;
+        double multiplyBase = 0.0;
+        double multiplyTotal = 1.0;
+        var modifiers = stack.getTag().getList("AttributeModifiers", Tag.TAG_COMPOUND);
+        for (int i = 0; i < modifiers.size(); i++) {
+            CompoundTag modifier = modifiers.getCompound(i);
+            if (!ATTACK_RANGE_ATTRIBUTE.equals(modifier.getString("AttributeName"))) continue;
+            String configuredSlot = modifier.getString("Slot");
+            if (!configuredSlot.isEmpty() && (slot == null || !configuredSlot.equals(slot.getName()))) continue;
+            double amount = modifier.getDouble("Amount");
+            switch (modifier.getInt("Operation")) {
+                case 0 -> addition += amount;
+                case 1 -> multiplyBase += amount;
+                case 2 -> multiplyTotal *= 1.0 + amount;
+                default -> { }
+            }
+        }
+        return (BASE_REACH + addition) * (1.0 + multiplyBase) * multiplyTotal;
     }
 }

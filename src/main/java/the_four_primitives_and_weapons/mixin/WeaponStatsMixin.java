@@ -34,6 +34,26 @@ public abstract class WeaponStatsMixin {
     private static final UUID ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
 
     /**
+     * AttributeModifiers の Name は内部識別用に過ぎないため、AttributeName があれば省略可能にする。
+     * バニラが modifier を読む前に、未指定の Name を attribute ID から補完する。
+     */
+    @Inject(method = "getAttributeModifiers", at = @At("HEAD"), require = 0)
+    private void tfpw$fillMissingAttributeModifierNames(EquipmentSlot slot,
+                                                        CallbackInfoReturnable<Multimap<Attribute, AttributeModifier>> cir) {
+        ItemStack self = (ItemStack) (Object) this;
+        if (!self.hasTag() || !self.getTag().contains("AttributeModifiers", net.minecraft.nbt.Tag.TAG_LIST)) return;
+        net.minecraft.nbt.ListTag modifiers = self.getTag().getList(
+                "AttributeModifiers", net.minecraft.nbt.Tag.TAG_COMPOUND);
+        for (int i = 0; i < modifiers.size(); i++) {
+            net.minecraft.nbt.CompoundTag modifier = modifiers.getCompound(i);
+            String attributeName = modifier.getString("AttributeName");
+            if (!attributeName.isEmpty() && modifier.getString("Name").isEmpty()) {
+                modifier.putString("Name", attributeName);
+            }
+        }
+    }
+
+    /**
      * getMaxDamage() を上書き: JSONで定義された耐久値を返す
      */
     @Inject(method = "getMaxDamage", at = @At("RETURN"), cancellable = true, require = 0)

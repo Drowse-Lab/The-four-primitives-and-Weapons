@@ -275,7 +275,7 @@ jar {
     // Mixin 設定を JAR マニフェストに宣言 ( Forge はこれで mixin config を登録する )。
     //   dev では src/main/resources/META-INF/MANIFEST.MF が展開モッドのマニフェストとして読まれる。
     manifest {
-        attributes(["MixinConfigs": "the_four_primitives_and_weapons.melon.mixins.json"])
+        attributes(["MixinConfigs": "the_four_primitives_and_weapons.melon.mixins.json,mixins.the_four_primitives_and_weapons.json"])
     }
     // リソース側 MANIFEST.MF ( dev 用 ) は jar では manifest{} と二重になるため除外。
     exclude 'META-INF/MANIFEST.MF'
@@ -295,4 +295,3 @@ tasks.withType(JavaCompile).configureEach {
 
 apply from: 'mcreator.gradle'
 apply from: 'lock_all_codes.gradle'
-

@@ -202,6 +202,7 @@
   "item.the_four_primitives_and_weapons.diamond_dagger": "ダイヤのダガー",
   "item.the_four_primitives_and_weapons.netherite_dagger": "§8Netherite Dagger",
   "attribute.name.the_four_primitives_and_weapons.attack_range": "攻撃範囲",
+  "attribute.the_four_primitives_and_weapons.entity_reach": "攻撃範囲",
   "item.the_four_primitives_and_weapons.stone_tyokuto": "§7石の直刀",
   "item.the_four_primitives_and_weapons.gold_tyokuto": "§6金の直刀",
   "item.the_four_primitives_and_weapons.gate": "§6Gate",

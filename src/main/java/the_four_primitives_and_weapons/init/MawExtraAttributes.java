@@ -46,6 +46,16 @@ public class MawExtraAttributes {
                 /* max     */ 1000.0
             ).setSyncable(true));
 
+    /** プレイヤーの近接攻撃範囲。Forge の entity reach へ実効値を合成する。 */
+    public static final RegistryObject<Attribute> ENTITY_REACH =
+        ATTRIBUTES.register("entity_reach",
+            () -> new RangedAttribute(
+                "attribute." + TheFourPrimitivesAndWeaponsMod.MODID + ".entity_reach",
+                /* default */ 3.0,
+                /* min     */ 0.0,
+                /* max     */ 1024.0
+            ).setSyncable(true));
+
     public static final RegistryObject<Attribute> FIRE_APTITUDE = aptitude("fire");
     public static final RegistryObject<Attribute> WATER_APTITUDE = aptitude("water");
     public static final RegistryObject<Attribute> WIND_APTITUDE = aptitude("wind");
@@ -105,6 +115,7 @@ public class MawExtraAttributes {
     public static void addAttributes(EntityAttributeModificationEvent event) {
         event.add(EntityType.PLAYER, MANA_MAX.get());
         event.add(EntityType.PLAYER, MANA_REGEN.get());
+        event.add(EntityType.PLAYER, ENTITY_REACH.get());
         event.add(EntityType.PLAYER, FIRE_APTITUDE.get());
         event.add(EntityType.PLAYER, WATER_APTITUDE.get());
         event.add(EntityType.PLAYER, WIND_APTITUDE.get());
