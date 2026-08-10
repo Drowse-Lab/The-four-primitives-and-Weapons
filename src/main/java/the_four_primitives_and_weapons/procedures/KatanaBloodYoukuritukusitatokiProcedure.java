@@ -3,6 +3,7 @@ package the_four_primitives_and_weapons.procedures;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -10,6 +11,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -27,6 +29,7 @@ import the_four_primitives_and_weapons.damage.IElementalDamageSource;
 import the_four_primitives_and_weapons.damage.ModDamageSources;
 import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
+import the_four_primitives_and_weapons.network.BloodTargetGlowPacket;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -39,8 +42,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Rivers of Blood の長押し特殊技 — 多段チャネル → TP 連続 → 最終バースト。
  *
  * フェーズ:
- *   1. CHANNEL  ( ~60 tick ): 自己 slowness + blindness、 半径 30 内の最寄り 3 体を
- *                              glowing でマーク、 周囲に redstone/sweep_attack 粒子。
+ *   1. CHANNEL  ( ~60 tick ): 自己 slowness + blindness、 半径 30 内の全 Mob を
+ *                              赤い glowing でマーク、 周囲に redstone/sweep_attack 粒子。
  *   2. STRIKE   ( ~30 tick ): slowness/blindness 解除、 resistance + slow_falling、
  *                              マーク敵 1 体ずつに TP しながら sweep_attack。
  *   3. BURST    ( 1 tick   ): マーク敵全員に血属性ダメージ + wither + 派手な粒子バースト。
@@ -50,7 +53,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class KatanaBloodYoukuritukusitatokiProcedure {
 
     private static final double SEARCH_RADIUS  = 30.0;
-    private static final int    MAX_TARGETS    = 3;
     private static final int    CHANNEL_TICKS  = 60;   // チャネル ( 自己拘束 )
     private static final int    TICKS_PER_TP   = 5;    // STRIKE 中の TP 間隔
     private static final float  STRIKE_DAMAGE  = 4.0f; // TP 時にも軽くダメージ
@@ -89,10 +91,10 @@ public class KatanaBloodYoukuritukusitatokiProcedure {
 
         Vec3 pos = player.position();
         AABB box = new AABB(
-                pos.x - SEARCH_RADIUS, pos.y - 5, pos.z - SEARCH_RADIUS,
-                pos.x + SEARCH_RADIUS, pos.y + 5, pos.z + SEARCH_RADIUS);
+                pos.x - SEARCH_RADIUS, pos.y - SEARCH_RADIUS, pos.z - SEARCH_RADIUS,
+                pos.x + SEARCH_RADIUS, pos.y + SEARCH_RADIUS, pos.z + SEARCH_RADIUS);
         List<LivingEntity> nearby = world.getEntitiesOfClass(LivingEntity.class, box,
-                e -> e != player && e.isAlive() && e.distanceTo(player) <= SEARCH_RADIUS);
+                e -> e instanceof Mob && e.isAlive() && e.distanceTo(player) <= SEARCH_RADIUS);
         if (nearby.isEmpty()) {
             // ターゲット不在でも自損のみ発動 ( チャネルの「血を流す」 演出 )
             if (world instanceof ServerLevel sl) {
@@ -108,8 +110,8 @@ public class KatanaBloodYoukuritukusitatokiProcedure {
         State s = new State();
         s.originalPos = pos;
         s.targets = new ArrayList<>();
-        for (int i = 0; i < Math.min(nearby.size(), MAX_TARGETS); i++) {
-            s.targets.add(nearby.get(i).getUUID());
+        for (LivingEntity target : nearby) {
+            s.targets.add(target.getUUID());
         }
         s.currentIdx = 0;
         s.tickInPhase = 0;
@@ -120,13 +122,10 @@ public class KatanaBloodYoukuritukusitatokiProcedure {
         // チャネル開始の自己コスト ( slowness + blindness + 微量自損 )
         applySelfChannelCost(player);
 
-        // マーク対象に glowing
+        // 攻撃者本人のクライアントだけに赤いターゲット表示を送る。
         if (world instanceof ServerLevel sl) {
-            for (UUID id : s.targets) {
-                Entity e = sl.getEntity(id);
-                if (e instanceof LivingEntity le) {
-                    le.addEffect(new MobEffectInstance(MobEffects.GLOWING, CHANNEL_TICKS + 60, 0, false, false));
-                }
+            if (player instanceof ServerPlayer serverPlayer) {
+                BloodTargetGlowPacket.show(serverPlayer, nearby);
             }
             spawnInitialBurst(sl, pos);
         }
@@ -170,6 +169,7 @@ public class KatanaBloodYoukuritukusitatokiProcedure {
 
             if (!player.isAlive()) {
                 player.setInvulnerable(s.wasInvulnerable);
+                clearTargetMarks(player);
                 active.remove(player.getUUID());
                 return;
             }
@@ -179,6 +179,7 @@ public class KatanaBloodYoukuritukusitatokiProcedure {
                 ServerLevel slC = (ServerLevel) player.level();
                 player.teleportTo(s.originalPos.x, s.originalPos.y, s.originalPos.z);
                 player.setInvulnerable(s.wasInvulnerable);
+                clearTargetMarks(player);
                 active.remove(player.getUUID());
                 slC.sendParticles(ParticleTypes.SMOKE,
                         s.originalPos.x, s.originalPos.y + 1.0, s.originalPos.z,
@@ -209,12 +210,6 @@ public class KatanaBloodYoukuritukusitatokiProcedure {
             sl.sendParticles(ParticleTypes.SWEEP_ATTACK,
                     p.x, p.y + 0.8, p.z, 1, 0.5, 0.2, 0.5, 0.0);
         }
-        // マーク対象がチャネル中に死んだ場合は除外
-        s.targets.removeIf(id -> {
-            Entity e = sl.getEntity(id);
-            return !(e instanceof LivingEntity le) || !le.isAlive();
-        });
-
         if (s.tickInPhase >= CHANNEL_TICKS) {
             // STRIKE フェーズへ
             s.phase = Phase.STRIKE;
@@ -332,7 +327,14 @@ public class KatanaBloodYoukuritukusitatokiProcedure {
 
         // 終了
         player.setInvulnerable(s.wasInvulnerable);
+        clearTargetMarks(player);
         active.remove(player.getUUID());
+    }
+
+    private static void clearTargetMarks(Player player) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            BloodTargetGlowPacket.clear(serverPlayer);
+        }
     }
 
     private static void applyBloodDamage(LivingEntity target, Player player, float amount, int level) {
