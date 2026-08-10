@@ -46,7 +46,7 @@ public class WeaponRangeTooltip {
             boolean hasSlottedRange = stack.hasTag()
                     && stack.getTag().contains("AttributeModifiers", Tag.TAG_LIST)
                     && stack.getTag().getList("AttributeModifiers", Tag.TAG_COMPOUND).stream()
-                    .anyMatch(tag -> ATTACK_RANGE_ATTRIBUTE.equals(((net.minecraft.nbt.CompoundTag) tag)
+                    .anyMatch(tag -> isAttackRangeAttribute(((net.minecraft.nbt.CompoundTag) tag)
                             .getString("AttributeName")));
 
             // weapon_stats に登録されたアドオン武器も対象にする。
@@ -151,7 +151,7 @@ public class WeaponRangeTooltip {
         var modifiers = stack.getTag().getList("AttributeModifiers", Tag.TAG_COMPOUND);
         for (int i = 0; i < modifiers.size(); i++) {
             CompoundTag modifier = modifiers.getCompound(i);
-            if (!ATTACK_RANGE_ATTRIBUTE.equals(modifier.getString("AttributeName"))) continue;
+            if (!isAttackRangeAttribute(modifier.getString("AttributeName"))) continue;
             String configuredSlot = modifier.getString("Slot");
             if (!configuredSlot.isEmpty() && (slot == null || !configuredSlot.equals(slot.getName()))) continue;
             double amount = modifier.getDouble("Amount");
@@ -163,5 +163,11 @@ public class WeaponRangeTooltip {
             }
         }
         return (BASE_REACH + addition) * (1.0 + multiplyBase) * multiplyTotal;
+    }
+
+    /** 新しいMOD属性IDと、既存アイテムに残るForge旧IDの両方を読む。 */
+    private static boolean isAttackRangeAttribute(String attributeName) {
+        return ATTACK_RANGE_ATTRIBUTE.equals(attributeName)
+                || "forge:entity_reach".equals(attributeName);
     }
 }
