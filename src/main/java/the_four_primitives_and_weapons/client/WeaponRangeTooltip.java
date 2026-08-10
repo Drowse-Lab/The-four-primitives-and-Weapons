@@ -18,7 +18,6 @@ import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 
@@ -50,11 +49,9 @@ public class WeaponRangeTooltip {
                     .anyMatch(tag -> ATTACK_RANGE_ATTRIBUTE.equals(((net.minecraft.nbt.CompoundTag) tag)
                             .getString("AttributeName")));
 
-            // JSON の weapon_stats による自動表示は従来どおりこの MOD のアイテムだけが対象。
-            var id = ForgeRegistries.ITEMS.getKey(stack.getItem());
-            boolean isModItem = id != null
-                    && id.getNamespace().equals(TheFourPrimitivesAndWeaponsMod.MODID);
-            if (!isModItem && !hasSlottedRange) return;
+            // weapon_stats に登録されたアドオン武器も対象にする。
+            boolean hasWeaponStats = WeaponStatsRegistry.getStats(stack) != null;
+            if (!hasWeaponStats && !hasSlottedRange) return;
 
             List<Component> tip = event.getToolTip();
 
@@ -80,7 +77,7 @@ public class WeaponRangeTooltip {
                                 ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(range),
                                 Component.translatable("attribute.name.the_four_primitives_and_weapons.attack_range"))
                                 .withStyle(ChatFormatting.DARK_GREEN);
-                        tip.set(i, line);
+                        tip.set(i, indentAttributeLine(line));
                     }
                 }
             }
@@ -89,15 +86,12 @@ public class WeaponRangeTooltip {
                 return (!hasSlottedRange && s.contains(entityReachName)) || s.contains(blockReachName);
             });
 
+            int idx = normalizeAttackSpeedTooltip(stack, tip);
+
             // 部位別設定は既に各「When in ...」欄へ表示済み。
             if (hasSlottedRange) return;
 
             // 攻撃速度の行を探す ( = 近接武器のとき )。 無ければ範囲は表示しない。
-            String atkSpeedName = I18n.get(Attributes.ATTACK_SPEED.getDescriptionId());
-            int idx = -1;
-            for (int i = 0; i < tip.size(); i++) {
-                if (tip.get(i).getString().contains(atkSpeedName)) { idx = i; break; }
-            }
             if (idx < 0) return;
 
             double range = BASE_REACH + WeaponStatsRegistry.attackRangeBonus(stack);
@@ -106,10 +100,47 @@ public class WeaponRangeTooltip {
                     ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(range),
                     Component.translatable("attribute.name.the_four_primitives_and_weapons.attack_range"))
                     .withStyle(ChatFormatting.DARK_GREEN);
-            tip.add(idx + 1, line);
+            tip.add(idx + 1, indentAttributeLine(line));
         } catch (Throwable ignored) {
             // no-op: ツールチップ描画は失敗しても無視 ( クラッシュ防止 )
         }
+    }
+
+    /** バニラ武器の攻撃力・攻撃速度行と同じ左位置へ揃える。 */
+    private static Component indentAttributeLine(Component line) {
+        return Component.literal("  ").append(line);
+    }
+
+    /** JSON由来の負補正表示を、計算後の攻撃速度を示す緑表示へ揃える。 */
+    private static int normalizeAttackSpeedTooltip(ItemStack stack, List<Component> tip) {
+        String attackSpeedName = I18n.get(Attributes.ATTACK_SPEED.getDescriptionId());
+        int index = -1;
+        for (int i = 0; i < tip.size(); i++) {
+            if (tip.get(i).getString().contains(attackSpeedName)) {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0) return -1;
+
+        boolean hasNbtAttackSpeed = stack.hasTag()
+                && stack.getTag().contains("AttributeModifiers", Tag.TAG_LIST)
+                && stack.getTag().getList("AttributeModifiers", Tag.TAG_COMPOUND).stream()
+                .anyMatch(tag -> {
+                    String attribute = ((CompoundTag) tag).getString("AttributeName");
+                    return "minecraft:generic.attack_speed".equals(attribute)
+                            || "generic.attack_speed".equals(attribute);
+                });
+        WeaponStatsRegistry.WeaponStats stats = WeaponStatsRegistry.getStats(stack);
+        if (!hasNbtAttackSpeed && stats != null && !Float.isNaN(stats.attackSpeed)) {
+            double speed = 4.0 + stats.attackSpeed;
+            tip.set(index, indentAttributeLine(Component.translatable(
+                    "attribute.modifier.equals.0",
+                    ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(speed),
+                    Component.translatable(Attributes.ATTACK_SPEED.getDescriptionId()))
+                    .withStyle(ChatFormatting.DARK_GREEN)));
+        }
+        return index;
     }
 
     /** 指定部位の reach modifier をバニラの attribute 計算順で基礎値3へ適用する。 */

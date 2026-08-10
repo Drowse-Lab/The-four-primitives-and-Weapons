@@ -2,6 +2,7 @@ package the_four_primitives_and_weapons.mixin;
 
 import the_four_primitives_and_weapons.status.BlessingSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * 登録先: mixins.the_four_primitives_and_weapons.json の "client" 配列
  *   "the_four_primitives_and_weapons.mixin.BlessingVisionMixin"
  */
-@Mixin(Minecraft.class)
+@Mixin(GameRenderer.class)
 public abstract class BlessingVisionMixin {
 
     /**
@@ -32,7 +33,7 @@ public abstract class BlessingVisionMixin {
             at = @At("HEAD"),
             cancellable = true
     )
-    private void blessing_suppressNightVision(
+    private static void blessing_suppressNightVision(
             net.minecraft.world.entity.LivingEntity entity,
             float partialTick,
             CallbackInfoReturnable<Float> cir) {
