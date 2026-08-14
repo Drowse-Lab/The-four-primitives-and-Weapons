@@ -1,13 +1,16 @@
 buildscript {
     repositories {
         maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
         mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'eclipse'
 
 // 外部 mod ( libs/local/ 配下の .jar 全部 ) を runClient/runServer に同梱するためのトグル。
@@ -181,6 +184,15 @@ minecraft {
     }
 }
 
+// Generate the SRG refmap required by Mixins in a normal (obfuscated) Minecraft
+// installation. Development runs use Mojang method names and can otherwise hide
+// a missing refmap until the distributed JAR is launched.
+mixin {
+    add sourceSets.main, 'the_four_primitives_and_weapons.refmap.json'
+    config 'the_four_primitives_and_weapons.melon.mixins.json'
+    config 'mixins.the_four_primitives_and_weapons.json'
+}
+
 repositories {
     // libs/ をローカル Maven リポジトリとして登録 ( Backpack-Arsenal と同じ方式 )
     //   libs/local/<artifact>/<version>/<artifact>-<version>.jar が
@@ -220,6 +232,8 @@ configurations.configureEach {
 }
 
 dependencies {
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
     minecraft "net.minecraftforge:forge:${forge_version}"
 
     // ─── 外部 mod 同梱 ( libs/local/ 配下の .jar を Maven 風配置に変換して取り込み ) ──

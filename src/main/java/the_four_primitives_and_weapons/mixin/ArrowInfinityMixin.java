@@ -20,7 +20,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ArrowItem.class)
 public abstract class ArrowInfinityMixin {
 
-    @Inject(method = "isInfinite", at = @At("HEAD"), cancellable = true)
+    // Forge adds this method after Mojang's mappings are produced, so it has no
+    // SRG mapping and keeps the same name in production.
+    @Inject(method = "isInfinite", at = @At("HEAD"), cancellable = true, remap = false)
     private void maw_allowAnyArrowInfinite(ItemStack stack, ItemStack bow, Player player,
                                            CallbackInfoReturnable<Boolean> cir) {
         if (bow.getEnchantmentLevel(Enchantments.INFINITY_ARROWS) > 0) {
