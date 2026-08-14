@@ -202,6 +202,23 @@ repositories {
     maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' } // GeckoLib
 }
 
+// Forge/Minecraft pins older transitive versions of these libraries. Override every
+// configuration so development runs, tests, and packaged runtime resolution all use
+// versions containing the current security fixes.
+def netty_version = project.findProperty('NETTY_VERSION') ?: '4.1.136.Final'
+def log4j_version = project.findProperty('LOG4J_VERSION') ?: '2.25.5'
+configurations.configureEach {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'io.netty') {
+            details.useVersion netty_version
+            details.because 'Netty security fixes through CVE-2026-59901'
+        } else if (details.requested.group == 'org.apache.logging.log4j') {
+            details.useVersion log4j_version
+            details.because 'Log4j security fix for CVE-2026-49844'
+        }
+    }
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${forge_version}"
 
