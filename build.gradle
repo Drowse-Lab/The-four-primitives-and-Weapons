@@ -48,6 +48,42 @@ tasks.register('generateTooltipCornerPngs') {
     }
 }
 
+// ペイント編集用の属性紋様16x16 PNGを生成する。
+tasks.register('generateTooltipElementPngs') {
+    doLast {
+        def outputDir = file('run/config/the_four_primitives_and_weapons/tooltip_elements')
+        outputDir.mkdirs()
+        def colors = [
+                ice: 0xFF9DEBFF, electric: 0xFF5FFFF2, corrosion: 0xFF86B82B,
+                holy: 0xFFFFF2A8, dark: 0xFF7652B8, fire: 0xFFFF5A24,
+                wind: 0xFFB8F2D0, thunder: 0xFFFFE135, water: 0xFF3D9BFF,
+                miasma: 0xFF9A50A8, blood: 0xFFD41432, erasure: 0xFFB8A6D9,
+                soul: 0xFF63D7FF, soul_fire: 0xFF28AFFF
+        ]
+        def pixels = [
+                ice: [[7,3],[7,4],[4,5],[5,5],[6,5],[7,5],[8,5],[9,5],[10,5],[7,6],[7,7],[5,3],[9,3],[5,7],[9,7]],
+                electric: [[5,3],[6,4],[7,5],[6,6],[9,3],[8,5],[9,6],[10,7]],
+                corrosion: [[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[9,4],[10,4],[11,4],[5,5],[5,6],[8,5],[8,6],[8,7],[10,5]],
+                holy: [[4,5],[5,4],[6,4],[7,4],[8,4],[9,4],[10,5],[5,6],[6,6],[7,6],[8,6],[9,6],[7,3],[7,7]],
+                dark: [[6,3],[7,3],[8,3],[5,4],[5,5],[6,6],[7,7],[8,7],[9,6]],
+                fire: [[5,7],[5,6],[6,5],[6,3],[7,4],[8,2],[8,5],[9,4],[10,6],[9,7],[8,8],[7,8],[6,8]],
+                wind: [[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[9,4],[5,6],[6,6],[7,6],[8,6],[9,6],[10,6],[11,6],[9,8],[10,8],[11,8]],
+                thunder: [[8,2],[6,6],[8,6],[6,10],[11,5],[9,5],[10,2]],
+                water: [[3,6],[4,5],[5,5],[6,6],[7,6],[8,5],[9,5],[10,6],[11,6],[4,8],[5,7],[6,7],[7,8],[8,8],[9,7],[10,7],[11,8]],
+                miasma: [[4,4],[7,3],[10,5],[5,7],[8,8],[11,7],[3,9],[6,10],[9,10]],
+                blood: [[7,2],[6,3],[8,3],[5,5],[7,5],[9,5],[4,7],[5,8],[7,7],[7,8],[9,7],[10,8]],
+                erasure: [[3,5],[4,5],[5,5],[7,7],[9,4],[10,4],[11,4]],
+                soul: [[7,2],[6,3],[8,3],[5,5],[6,6],[7,7],[8,6],[9,5],[7,9]],
+                soul_fire: [[5,3],[6,5],[6,7],[8,2],[8,4],[9,6],[10,3],[10,7]]
+        ]
+        colors.each { name, colorValue ->
+            def image = new java.awt.image.BufferedImage(16, 16, java.awt.image.BufferedImage.TYPE_INT_ARGB)
+            pixels[name].each { point -> image.setRGB(point[0] as int, point[1] as int, colorValue as int) }
+            javax.imageio.ImageIO.write(image, 'png', new File(outputDir, "${name}.png"))
+        }
+    }
+}
+
 // 外部 mod ( libs/local/ 配下の .jar 全部 ) を runClient/runServer に同梱するためのトグル。
 //
 // 使い方:

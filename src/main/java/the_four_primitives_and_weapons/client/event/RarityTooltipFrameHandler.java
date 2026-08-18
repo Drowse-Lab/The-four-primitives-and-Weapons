@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.Mod;
 import the_four_primitives_and_weapons.damage.ElementalDamageUtils;
 import the_four_primitives_and_weapons.damage.ElementType;
 import the_four_primitives_and_weapons.client.tooltip.EditableTooltipCornerTextures;
+import the_four_primitives_and_weapons.client.tooltip.EditableTooltipElementTextures;
 import the_four_primitives_and_weapons.item.rarity.WeaponRarity;
 
 /**
@@ -29,8 +30,9 @@ public final class RarityTooltipFrameHandler {
 
     private static final int BACKGROUND_TOP = 0xF0101A2B;
     private static final int BACKGROUND_BOTTOM = 0xF0060D18;
-    /** TooltipPaddingMixin でバニラの3px余白へ追加する幅。 */
-    private static final int EXTRA_PADDING = 13;
+    private static final int HORIZONTAL_PADDING = 13;
+    private static final int TOP_PADDING = 15;
+    private static final int BOTTOM_PADDING = 13;
 
     private RarityTooltipFrameHandler() {
     }
@@ -76,10 +78,10 @@ public final class RarityTooltipFrameHandler {
         }
 
         // TooltipRenderUtil#renderTooltipBackground が実際に描く内側枠の座標。
-        int left = event.getX() - 3 - EXTRA_PADDING;
-        int top = event.getY() - 3 - EXTRA_PADDING;
-        int right = event.getX() + width + 3 + EXTRA_PADDING;
-        int bottom = event.getY() + height + 2 + EXTRA_PADDING;
+        int left = event.getX() - 3 - HORIZONTAL_PADDING;
+        int top = event.getY() - 3 - TOP_PADDING;
+        int right = event.getX() + width + 3 + HORIZONTAL_PADDING;
+        int bottom = event.getY() + height + 2 + BOTTOM_PADDING;
         GuiGraphics graphics = event.getGraphics();
 
         graphics.pose().pushPose();
@@ -100,12 +102,13 @@ public final class RarityTooltipFrameHandler {
         if (secondary == primary) secondary = ElementType.NONE;
 
         int centerX = l + (r - l) / 2;
-        // 上枠へ薄く重ね、本文へは入れない。
+        // 上枠へ重ねず、ツールチップ内側に1px空けて16x16 PNGを描く。
+        int insideTop = t + 1;
         if (secondary == ElementType.NONE) {
-            drawElementGlyph(g, primary, centerX, t - 2, 1);
+            EditableTooltipElementTextures.draw(g, primary, centerX, insideTop);
         } else {
-            drawElementGlyph(g, primary, centerX - 7, t - 2, 1);
-            drawElementGlyph(g, secondary, centerX + 7, t - 2, 1);
+            EditableTooltipElementTextures.draw(g, primary, centerX - 9, insideTop);
+            EditableTooltipElementTextures.draw(g, secondary, centerX + 9, insideTop);
         }
     }
 

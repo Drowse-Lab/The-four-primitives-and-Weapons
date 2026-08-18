@@ -84,3 +84,5 @@ run/config/the_four_primitives_and_weapons/*
 !run/config/the_four_primitives_and_weapons/tooltip_corners/
 !run/config/the_four_primitives_and_weapons/tooltip_corners/*.png
 !run/config/the_four_primitives_and_weapons/tooltip_corners/README.txt
+!run/config/the_four_primitives_and_weapons/tooltip_elements/
+!run/config/the_four_primitives_and_weapons/tooltip_elements/*.png
