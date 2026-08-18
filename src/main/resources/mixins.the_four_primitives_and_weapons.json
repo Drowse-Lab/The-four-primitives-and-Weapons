@@ -10,10 +10,12 @@
     "WeaponStatsMixin",
     "LivingEntityReachMixin",
     "ItemEnchantMixin",
+    "ItemStackRarityMixin",
     "EnchantmentMaxLevelMixin"
   ],
   "client": [
-    "BlessingVisionMixin"
+    "BlessingVisionMixin",
+    "TooltipPaddingMixin"
   ],
   "server": [],
   "injectors": {

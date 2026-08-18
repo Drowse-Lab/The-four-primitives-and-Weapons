@@ -72,3 +72,15 @@ logs/function
 
 # Prevent MCreator regeneration
 the_four_primitives_and_weapons.mcreator.lock
+
+# ツールチップ角枠PNGはペイントで編集し、Gitで共有する設定アセット。
+# run/ のその他のワールド・ログ・ユーザー設定は引き続き無視する。
+!run/
+run/*
+!run/config/
+run/config/*
+!run/config/the_four_primitives_and_weapons/
+run/config/the_four_primitives_and_weapons/*
+!run/config/the_four_primitives_and_weapons/tooltip_corners/
+!run/config/the_four_primitives_and_weapons/tooltip_corners/*.png
+!run/config/the_four_primitives_and_weapons/tooltip_corners/README.txt

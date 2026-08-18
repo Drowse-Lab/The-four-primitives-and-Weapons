@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -139,7 +140,22 @@ public enum WeaponRarity {
         if (stack.isEmpty()) return null;
         CompoundTag tag = stack.getTag();
         if (tag == null || !tag.contains(NBT_KEY)) return null;
-        return fromId(tag.getInt(NBT_KEY));
+        // /give で読み書きしやすい名前形式を優先してサポートする。
+        // 例: {WeaponRarity:"LEGENDARY"}
+        if (tag.contains(NBT_KEY, Tag.TAG_STRING)) {
+            String name = tag.getString(NBT_KEY).trim();
+            for (WeaponRarity rarity : values()) {
+                if (rarity.name().equalsIgnoreCase(name)
+                        || rarity.displayName.equalsIgnoreCase(name)) {
+                    return rarity;
+                }
+            }
+            return null;
+        }
+        if (tag.contains(NBT_KEY, Tag.TAG_ANY_NUMERIC)) {
+            return fromId(tag.getInt(NBT_KEY));
+        }
+        return null;
     }
 
     /**

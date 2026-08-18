@@ -19,6 +19,11 @@ userID乗っけてくれると嬉しいよ、程度です
 </a>
 
 https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons
+
+## Wiki
+
+- [レアリティシステム・ツールチップ枠・giveコマンド](WIKI_RARITY.md)
+
 ***
 ## other
 [![Customized Card](https://github-readme-stats.vercel.app/api/pin?username=drowse-lab\&repo=The-four-primitives-and-Weapons\&title_color=fff\&icon_color=f9f9f9\&text_color=9f9f9f\&bg_color=151515)](https://github.com/Drowse-Lab/The-four-primitives-and-Weapons)  

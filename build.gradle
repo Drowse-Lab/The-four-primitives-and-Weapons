@@ -13,6 +13,41 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'eclipse'
 
+// ペイント編集用の32x32（各角16x16）ツールチップPNGを生成する。
+tasks.register('generateTooltipCornerPngs') {
+    doLast {
+        def outputDir = file('run/config/the_four_primitives_and_weapons/tooltip_corners')
+        outputDir.mkdirs()
+        def patterns = [
+                common:    ['010111', '000100', '001100', '001000', '001000', '010000'],
+                uncommon:  ['1111111', '1000000', '1111011', '1101100', '1110000', '1101000', '1100000'],
+                rare:      ['111111', '100100', '111100', '110000', '110000', '100000'],
+                epic:      ['111111', '101000', '111110', '110100', '111000', '110000'],
+                legendary: ['11111111', '10000000', '11101101', '11011100', '11000000', '11010000', '10000000', '10000000'],
+                forbidden: ['11111111', '11010100', '10111010', '11101000', '11010000', '10100000', '11000000', '10000000']
+        ]
+        def colors = [
+                common: 0xFFCBE8F7, uncommon: 0xFF35FF50, rare: 0xFF419BFF,
+                epic: 0xFFC02FFF, legendary: 0xFFFFB000, forbidden: 0xFFFF3B3B
+        ]
+        patterns.each { name, rows ->
+            def image = new java.awt.image.BufferedImage(32, 32, java.awt.image.BufferedImage.TYPE_INT_ARGB)
+            rows.eachWithIndex { row, y ->
+                row.eachWithIndex { value, x ->
+                    if (value == '1') {
+                        int color = colors[name] as int
+                        image.setRGB(x, y, color)
+                        image.setRGB(31 - x, y, color)
+                        image.setRGB(x, 31 - y, color)
+                        image.setRGB(31 - x, 31 - y, color)
+                    }
+                }
+            }
+            javax.imageio.ImageIO.write(image, 'png', new File(outputDir, "${name}.png"))
+        }
+    }
+}
+
 // 外部 mod ( libs/local/ 配下の .jar 全部 ) を runClient/runServer に同梱するためのトグル。
 //
 // 使い方:
@@ -33,8 +68,8 @@ if (!withExternalMods) withExternalMods = boolProp('withSpellbooks', false)
 // =====================================================================
 // version 解決順:
 //   1. -Pmod_version_override=X.Y.Z (CI / 非対話の上書き)
-//   2. ./gradlew build 実行時の対話プロンプト (base + release_type)
-//   3. gradle.properties の mod_version (空 Enter 時の default)
+//   2. build/libs で最後に生成された同 MOD の JAR のバージョン + 1
+//   3. gradle.properties の mod_version (JAR がまだない場合の初期値)
 //   4. ハードコード fallback '3'
 // =====================================================================
 def baseResolvedVersion = (project.findProperty('mod_version_override')
@@ -48,6 +83,12 @@ def baseResolvedVersion = (project.findProperty('mod_version_override')
 //   release → ""        (suffix 無し)
 //   test   → "-test"   (ローカル動作確認用)
 ext.stripReleaseSuffix = { String v -> v?.replaceFirst(/-(alpha|beta|rc|test)(\.\d+)?$/, '') }
+ext.incrementLastVersionNumber = { String v ->
+    def base = stripReleaseSuffix(v ?: '')
+    def matcher = (base =~ /^(.*?)(\d+)$/)
+    if (!matcher.matches()) return base
+    return matcher.group(1) + (matcher.group(2).toInteger() + 1)
+}
 ext.suffixForReleaseType = { String type ->
     if (!type) return '-beta'
     def t = type.toLowerCase().trim()
@@ -84,24 +125,48 @@ ext.readLineFlexible = { ->
 def overrideReleaseType = project.findProperty('release_type')
 def overrideModVersion  = project.findProperty('mod_version_override')
 def isCi = System.getenv('CI') == 'true' || System.getenv('GITHUB_ACTIONS') == 'true'
+def isJarBuild = gradle.startParameter.taskNames.any {
+    def task = it.tokenize(':').last()
+    task in ['build', 'assemble', 'jar', 'reobfJar']
+}
+
+// 明示指定がない JAR ビルドでは、更新日時が最も新しい成果物を「前回」とする。
+// clean build でも設定フェーズは clean より先なので、削除前の JAR を参照できる。
+def autoIncrementedBase = null
+if (!overrideModVersion && isJarBuild) {
+    def libsDir = file('build/libs')
+    def prefix = 'The four primitives and Weapons-1.20.1-'
+    def previousJars = libsDir.exists()
+            ? libsDir.listFiles().findAll { it.isFile() && it.name.startsWith(prefix) && it.name.endsWith('.jar') }
+            : []
+    def previousJar = previousJars ? previousJars.max { it.lastModified() } : null
+    if (previousJar != null) {
+        def previousVersion = previousJar.name.substring(prefix.length(), previousJar.name.length() - '.jar'.length())
+        autoIncrementedBase = incrementLastVersionNumber(previousVersion)
+        logger.lifecycle("[the_four_primitives_and_weapons] previous JAR: ${previousJar.name} -> next version: ${autoIncrementedBase}")
+    }
+}
+if (autoIncrementedBase != null) {
+    baseResolvedVersion = autoIncrementedBase
+}
 def shouldPrompt = !overrideReleaseType &&
         !overrideModVersion &&
         !isCi &&
         gradle.startParameter.taskNames.any { it == 'build' || it.endsWith(':build') }
 
-// 1) バージョン入力 (空 Enter で gradle.properties の mod_version)
+// バージョン入力。空 Enter の場合だけ直前 JAR + 1 の自動採番を使う。
 def chosenBaseVersion = null
 if (shouldPrompt) {
     def fallbackBase = stripReleaseSuffix(baseResolvedVersion)
-    print "\n[the_four_primitives_and_weapons] Enter mod version (press Enter for ${fallbackBase}):\n  > "
+    print "\n[the_four_primitives_and_weapons] Enter mod version (press Enter for auto ${fallbackBase}):\n  > "
     System.out.flush()
     def input = readLineFlexible()?.trim()
     if (input) {
         chosenBaseVersion = stripReleaseSuffix(input)
-        logger.lifecycle("[the_four_primitives_and_weapons] version override: ${chosenBaseVersion}")
+        logger.lifecycle("[the_four_primitives_and_weapons] version entered: ${chosenBaseVersion}")
     } else {
         chosenBaseVersion = fallbackBase
-        logger.lifecycle("[the_four_primitives_and_weapons] version default: ${chosenBaseVersion}")
+        logger.lifecycle("[the_four_primitives_and_weapons] auto version: ${chosenBaseVersion}")
     }
 }
 
