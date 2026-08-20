@@ -15,7 +15,8 @@
   ],
   "client": [
     "BlessingVisionMixin",
-    "TooltipPaddingMixin"
+    "TooltipPaddingMixin",
+    "TooltipPositionMixin"
   ],
   "server": [],
   "injectors": {

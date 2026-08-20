@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.OptionsScreen;
+import net.minecraft.client.gui.screens.MouseSettingsScreen;
 import net.minecraft.client.gui.screens.controls.ControlsScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
@@ -17,6 +18,7 @@ import the_four_primitives_and_weapons.client.screens.DodgeConfigScreen;
 import the_four_primitives_and_weapons.client.screens.DebugConfigScreen;
 import the_four_primitives_and_weapons.command.CustomDifficultyCommand;
 import the_four_primitives_and_weapons.command.CustomDifficultyCommand.CustomDifficulty;
+import the_four_primitives_and_weapons.config.TooltipConfig;
 import the_four_primitives_and_weapons.network.CustomDifficultyPacket;
 
 import net.minecraft.client.gui.components.LockIconButton;
@@ -34,6 +36,32 @@ public class ClientEventHandler {
 
     @SubscribeEvent
     public static void onScreenInit(ScreenEvent.Init.Post event) {
+        if (event.getScreen() instanceof MouseSettingsScreen mouseSettingsScreen) {
+            AbstractWidget touchscreenWidget = null;
+            for (var listener : event.getListenersList()) {
+                if (listener instanceof AbstractWidget widget) {
+                    String message = widget.getMessage().getString();
+                    if (message.contains("Touchscreen") || message.contains("タッチスクリーン")) {
+                        touchscreenWidget = widget;
+                        break;
+                    }
+                }
+            }
+
+            int x = mouseSettingsScreen.width / 2 + 5;
+            int y = touchscreenWidget != null ? touchscreenWidget.getY() : 132;
+            Button directionButton = Button.builder(
+                    tooltipScrollDirectionMessage(),
+                    button -> {
+                        TooltipConfig.reverseScrollDirection = !TooltipConfig.reverseScrollDirection;
+                        TooltipConfig.save();
+                        button.setMessage(tooltipScrollDirectionMessage());
+                    })
+                    .bounds(x, y, 150, 20)
+                    .build();
+            event.addListener(directionButton);
+        }
+
         if (event.getScreen() instanceof ControlsScreen controlsScreen) {
             // vanilla の Done ボタン (width/2 - 100, width 200) を探す
             AbstractWidget doneButton = null;
@@ -170,5 +198,13 @@ public class ClientEventHandler {
     private static String getDifficultyDisplayName() {
         CustomDifficulty diff = DIFFICULTIES[currentDifficultyIndex];
         return "Difficulty: " + diff.getName();
+    }
+
+    private static Component tooltipScrollDirectionMessage() {
+        return Component.translatable(
+                "options.the_four_primitives_and_weapons.tooltip_scroll_direction",
+                Component.translatable(TooltipConfig.reverseScrollDirection
+                        ? "options.the_four_primitives_and_weapons.direction.reversed"
+                        : "options.the_four_primitives_and_weapons.direction.normal"));
     }
 }

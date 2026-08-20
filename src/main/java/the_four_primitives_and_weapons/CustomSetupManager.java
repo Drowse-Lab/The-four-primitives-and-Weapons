@@ -5,6 +5,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import the_four_primitives_and_weapons.config.DodgeConfig;
 import the_four_primitives_and_weapons.config.DebugConfig;
+import the_four_primitives_and_weapons.config.TooltipConfig;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CustomSetupManager {
@@ -16,6 +17,7 @@ public class CustomSetupManager {
 	public static void init(FMLCommonSetupEvent event) {
 		DodgeConfig.load();
 		DebugConfig.load();
+		TooltipConfig.load();
 		new CustomSetupManager();
 	}
 

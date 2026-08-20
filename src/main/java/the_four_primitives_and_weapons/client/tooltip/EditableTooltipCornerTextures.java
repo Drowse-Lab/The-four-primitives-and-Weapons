@@ -27,6 +27,7 @@ public final class EditableTooltipCornerTextures {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final int ATLAS_SIZE = 32;
     private static final int CORNER_SIZE = 16;
+    private static final int FRAME_LINE = 1;
     private static final Path DIRECTORY = FMLPaths.CONFIGDIR.get()
             .resolve("the_four_primitives_and_weapons").resolve("tooltip_corners");
     private static final Map<WeaponRarity, LoadedTexture> CACHE = new EnumMap<>(WeaponRarity.class);
@@ -37,12 +38,33 @@ public final class EditableTooltipCornerTextures {
         ResourceLocation texture = getTexture(rarity);
         if (texture == null) return;
 
-        graphics.blit(texture, left, top, 0, 0, CORNER_SIZE, CORNER_SIZE, ATLAS_SIZE, ATLAS_SIZE);
-        graphics.blit(texture, right - CORNER_SIZE + 1, top, 16, 0,
+        // Each edge is extended from the matching edge pixel in the same PNG.
+        // Drawing these first lets the four corner tiles cover every join cleanly.
+        int horizontalLength = Math.max(0, right - left - (CORNER_SIZE - 2) * 2);
+        int verticalLength = Math.max(0, bottom - top - (CORNER_SIZE - 2) * 2);
+        if (horizontalLength > 0) {
+            graphics.blit(texture, left + CORNER_SIZE - 2, top,
+                    horizontalLength, FRAME_LINE, 15, 1, 1, 1, ATLAS_SIZE, ATLAS_SIZE);
+            graphics.blit(texture, left + CORNER_SIZE - 2, bottom,
+                    horizontalLength, FRAME_LINE, 15, 30, 1, 1, ATLAS_SIZE, ATLAS_SIZE);
+        }
+        if (verticalLength > 0) {
+            graphics.blit(texture, left, top + CORNER_SIZE - 2,
+                    FRAME_LINE, verticalLength, 1, 15, 1, 1, ATLAS_SIZE, ATLAS_SIZE);
+            graphics.blit(texture, right, top + CORNER_SIZE - 2,
+                    FRAME_LINE, verticalLength, 30, 15, 1, 1, ATLAS_SIZE, ATLAS_SIZE);
+        }
+
+        // The editable atlas keeps one transparent pixel outside the frame line.
+        // Place that padding outside the vanilla border so the line in each tile
+        // lands exactly on left/top/right/bottom and joins the straight edges.
+        graphics.blit(texture, left - 1, top - 1, 0, 0,
                 CORNER_SIZE, CORNER_SIZE, ATLAS_SIZE, ATLAS_SIZE);
-        graphics.blit(texture, left, bottom - CORNER_SIZE + 1, 0, 16,
+        graphics.blit(texture, right - CORNER_SIZE + 2, top - 1, 16, 0,
                 CORNER_SIZE, CORNER_SIZE, ATLAS_SIZE, ATLAS_SIZE);
-        graphics.blit(texture, right - CORNER_SIZE + 1, bottom - CORNER_SIZE + 1, 16, 16,
+        graphics.blit(texture, left - 1, bottom - CORNER_SIZE + 2, 0, 16,
+                CORNER_SIZE, CORNER_SIZE, ATLAS_SIZE, ATLAS_SIZE);
+        graphics.blit(texture, right - CORNER_SIZE + 2, bottom - CORNER_SIZE + 2, 16, 16,
                 CORNER_SIZE, CORNER_SIZE, ATLAS_SIZE, ATLAS_SIZE);
     }
 
@@ -82,6 +104,7 @@ public final class EditableTooltipCornerTextures {
                     "Each PNG is 32x32 pixels. Edit it in Paint without resizing.\n" +
                     "top-left 16x16 = top-left corner, top-right 16x16 = top-right corner\n" +
                     "bottom-left 16x16 = bottom-left corner, bottom-right 16x16 = bottom-right corner\n" +
+                    "The four straight frame edges are extended from pixels (15,1), (15,30), (1,15), and (30,15).\n" +
                     "Transparent pixels are not drawn. Changes reload automatically after saving.\n");
         }
         for (WeaponRarity rarity : WeaponRarity.values()) {

@@ -30,9 +30,10 @@ public final class RarityTooltipFrameHandler {
 
     private static final int BACKGROUND_TOP = 0xF0101A2B;
     private static final int BACKGROUND_BOTTOM = 0xF0060D18;
-    private static final int HORIZONTAL_PADDING = 13;
-    private static final int TOP_PADDING = 15;
-    private static final int BOTTOM_PADDING = 13;
+    private static final int HORIZONTAL_PADDING = 11;
+    private static final int TOP_PADDING = 13;
+    private static final int BOTTOM_PADDING = 11;
+    private static final int BORDER_INSET = 1;
 
     private RarityTooltipFrameHandler() {
     }
@@ -51,9 +52,10 @@ public final class RarityTooltipFrameHandler {
         FrameColors colors = colorsFor(rarity);
         event.setBackgroundStart(BACKGROUND_TOP);
         event.setBackgroundEnd(BACKGROUND_BOTTOM);
-        // Hypixel画像と同じ連続した細枠はForge標準描画に任せる。
-        event.setBorderStart(colors.top());
-        event.setBorderEnd(colors.bottom());
+        // 枠線と角を別々に描くと1pxのずれが出るため、標準枠は透明にする。
+        // 四辺を含む枠全体は tooltip_corners の編集可能PNGから描画する。
+        event.setBorderStart(0x00000000);
+        event.setBorderEnd(0x00000000);
 
         drawCorners(event, rarity, colors.top(), colors.bottom());
     }
@@ -78,10 +80,12 @@ public final class RarityTooltipFrameHandler {
         }
 
         // TooltipRenderUtil#renderTooltipBackground が実際に描く内側枠の座標。
-        int left = event.getX() - 3 - HORIZONTAL_PADDING;
-        int top = event.getY() - 3 - TOP_PADDING;
-        int right = event.getX() + width + 3 + HORIZONTAL_PADDING;
-        int bottom = event.getY() + height + 2 + BOTTOM_PADDING;
+        int left = event.getX() - 3 - HORIZONTAL_PADDING + BORDER_INSET;
+        // 背景の外端から1px内側。上辺の外側に背景色の余白を残す。
+        int top = event.getY() - 3 - TOP_PADDING + BORDER_INSET;
+        // 背景の外端から1px内側。右辺の外側にも背景色の余白を残す。
+        int right = event.getX() + width + 3 + HORIZONTAL_PADDING - BORDER_INSET - 1;
+        int bottom = event.getY() + height + 2 + BOTTOM_PADDING - BORDER_INSET;
         GuiGraphics graphics = event.getGraphics();
 
         graphics.pose().pushPose();
