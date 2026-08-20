@@ -84,6 +84,19 @@ tasks.register('generateTooltipElementPngs') {
     }
 }
 
+// 現在のペイント編集結果を、JARに入る標準リソースへ取り込む。
+tasks.register('importTooltipPngDefaults', Copy) {
+    from('run/config/the_four_primitives_and_weapons/tooltip_corners') {
+        include '*.png'
+        into 'tooltip_corners'
+    }
+    from('run/config/the_four_primitives_and_weapons/tooltip_elements') {
+        include '*.png'
+        into 'tooltip_elements'
+    }
+    into 'src/main/resources/assets/the_four_primitives_and_weapons/textures/gui'
+}
+
 // 外部 mod ( libs/local/ 配下の .jar 全部 ) を runClient/runServer に同梱するためのトグル。
 //
 // 使い方:
