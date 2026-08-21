@@ -34,6 +34,7 @@ public final class RarityTooltipFrameHandler {
     private static final int TOP_PADDING = 13;
     private static final int BOTTOM_PADDING = 11;
     private static final int BORDER_INSET = 1;
+    private static final ThreadLocal<PendingFrame> PENDING_FRAME = new ThreadLocal<>();
 
     private RarityTooltipFrameHandler() {
     }
@@ -57,7 +58,9 @@ public final class RarityTooltipFrameHandler {
         event.setBorderStart(0x00000000);
         event.setBorderEnd(0x00000000);
 
-        drawCorners(event, rarity, colors.top(), colors.bottom());
+        // Color eventは背景より先に呼ばれる。ここで描くと四辺が背景に
+        // 上書きされるため、TooltipRenderUtil の TAIL Mixin まで情報を保持する。
+        PENDING_FRAME.set(new PendingFrame(stack.copy(), rarity));
     }
 
     /** 独自レアリティがないアイテムを、バニラ本来のレアリティから変換する。 */
@@ -70,28 +73,22 @@ public final class RarityTooltipFrameHandler {
         };
     }
 
-    private static void drawCorners(RenderTooltipEvent.Color event, WeaponRarity rarity,
-                                    int color, int shadowColor) {
-        int width = 0;
-        int height = event.getComponents().size() == 1 ? -2 : 0;
-        for (ClientTooltipComponent component : event.getComponents()) {
-            width = Math.max(width, component.getWidth(event.getFont()));
-            height += component.getHeight();
-        }
+    /** TooltipRenderUtilが背景を描き終えた直後にMixinから呼ぶ。 */
+    public static void renderPendingFrame(GuiGraphics graphics, int x, int y, int width, int height) {
+        PendingFrame pending = PENDING_FRAME.get();
+        PENDING_FRAME.remove();
+        if (pending == null) return;
 
-        // TooltipRenderUtil#renderTooltipBackground が実際に描く内側枠の座標。
-        int left = event.getX() - 3 - HORIZONTAL_PADDING + BORDER_INSET;
-        // 背景の外端から1px内側。上辺の外側に背景色の余白を残す。
-        int top = event.getY() - 3 - TOP_PADDING + BORDER_INSET;
-        // 背景の外端から1px内側。右辺の外側にも背景色の余白を残す。
-        int right = event.getX() + width + 3 + HORIZONTAL_PADDING - BORDER_INSET - 1;
-        int bottom = event.getY() + height + 2 + BOTTOM_PADDING - BORDER_INSET;
-        GuiGraphics graphics = event.getGraphics();
+        // x/y/width/heightはTooltipPaddingMixin適用後。TooltipRenderUtilの実際の内側枠と同じ座標。
+        int left = x - 3;
+        int top = y - 3;
+        int right = x + width + 2;
+        int bottom = y + height + 2;
 
         graphics.pose().pushPose();
         graphics.pose().translate(0, 0, 401);
-        EditableTooltipCornerTextures.draw(graphics, rarity, left, top, right, bottom);
-        drawElementOrnaments(graphics, event.getItemStack(), left, top, right, bottom);
+        EditableTooltipCornerTextures.draw(graphics, pending.rarity(), left, top, right, bottom);
+        drawElementOrnaments(graphics, pending.stack(), left, top, right, bottom);
         graphics.pose().popPose();
     }
 
@@ -472,5 +469,8 @@ public final class RarityTooltipFrameHandler {
     }
 
     private record FrameColors(int top, int bottom) {
+    }
+
+    private record PendingFrame(ItemStack stack, WeaponRarity rarity) {
     }
 }
