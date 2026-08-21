@@ -113,6 +113,7 @@ def boolProp = { String name, boolean defaultValue ->
 def withExternalMods = boolProp('withExternalMods', false)
 // 後方互換: withSpellbooks=true でも有効化できる ( 既存スクリプト用 )
 if (!withExternalMods) withExternalMods = boolProp('withSpellbooks', false)
+def externalModsGroup = (project.findProperty('externalModsGroup') ?: 'local').toString()
 
 // =====================================================================
 // version 解決順:
@@ -356,7 +357,7 @@ dependencies {
     //     ( libs/local/foo/1.2.3/foo-1.2.3.jar ) に自動配置 → fg.deobf("local:foo:1.2.3")
     //   - これで ForgeGradle が SRG → official deobf を掛けるので dev でも動作する。
     if (withExternalMods) {
-        def localDir = file('libs/local')
+        def localDir = file("libs/${externalModsGroup}")
         if (!localDir.exists()) {
             println "[Build] [external] libs/local/ が無いので作成してください ( jar を入れると自動ロード )"
         } else {
@@ -371,6 +372,7 @@ dependencies {
                 ]
             }
             int count = 0
+            def loadedCoordinates = new HashSet<String>()
             // フラット配置の jar を Maven 階層に転送
             localDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.jar') }?.each { f ->
                 def base = f.name.replaceFirst(/\.jar$/, '')
@@ -386,7 +388,8 @@ dependencies {
                     java.nio.file.Files.copy(f.toPath(), mvnJar.toPath())
                 }
                 println "[Build] [external] local:${info.artifact}:${info.version} を fg.deobf で取り込み"
-                runtimeOnly fg.deobf("local:${info.artifact}:${info.version}")
+                runtimeOnly fg.deobf("${externalModsGroup}:${info.artifact}:${info.version}")
+                loadedCoordinates.add("${info.artifact}:${info.version}")
                 count++
             }
             // 既に Maven 階層に置かれてる jar も拾う
@@ -394,11 +397,11 @@ dependencies {
                 artifactDir.listFiles()?.findAll { it.isDirectory() }?.each { verDir ->
                     def expected = new File(verDir, "${artifactDir.name}-${verDir.name}.jar")
                     if (expected.exists()) {
-                        // 上のループで既に処理済みかも — 重複追加しない
-                        def alreadyHave = (count > 0)  // 簡易判定 ( フラット派生は count > 0 になっている )
-                        if (!alreadyHave) {
+                        def coordinate = "${artifactDir.name}:${verDir.name}"
+                        if (!loadedCoordinates.contains(coordinate)) {
                             println "[Build] [external] local:${artifactDir.name}:${verDir.name} を fg.deobf で取り込み"
-                            runtimeOnly fg.deobf("local:${artifactDir.name}:${verDir.name}")
+                            runtimeOnly fg.deobf("${externalModsGroup}:${artifactDir.name}:${verDir.name}")
+                            loadedCoordinates.add(coordinate)
                             count++
                         }
                     }

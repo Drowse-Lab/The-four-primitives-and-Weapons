@@ -105,8 +105,6 @@ public class CreativeTabPopulator {
 			event.accept(CustomEntityInit.GUIDE_BOOK);
 			event.accept(CustomEntityInit.MANA_POTION);
 			event.accept(CustomEntityInit.UNDEAD_ARMY_BANISH);
-			event.accept(CustomEntityInit.RECROSS_HOOKSHOT_LONG);
-			event.accept(CustomEntityInit.RECROSS_HOOKSHOT_SHORT);
 		}
 
 		// === TAB_MAGIC_BOOKS ===
@@ -216,12 +214,6 @@ public class CreativeTabPopulator {
 		// === TAB_NIGU ===
 		if (event.getTab() == TheFourPrimitivesAndWeaponsModTabs.TAB_NIGU.get()) {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.KATANA_NIGU_HUMERUS);
-		}
-
-		// === TAB_CHUZUME_TAB ===
-		if (event.getTab() == TheFourPrimitivesAndWeaponsModTabs.TAB_CHUZUME_TAB.get()) {
-			event.accept(TheFourPrimitivesAndWeaponsModItems.SWORD_OF_NIGHT);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.REPLICA_SWORD_OF_LIGHT);
 		}
 
 		// === Vanilla tabs ===

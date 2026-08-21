@@ -2,8 +2,9 @@
 # Minecraftクライアントを起動するスクリプト（mac / WSL / Windows Git Bash 対応）
 #
 # 使い方:
-#   bash run_client_mac.sh                通常 ( オンライン、 TLS workaround は回線を実測して自動判定 )
-#   bash run_client_mac.sh offline        オフライン ( キャッシュ済み依存のみ )
+#   bash run_client_mac.sh                オフライン ( 学校Wi-Fi向けのデフォルト )
+#   bash run_client_mac.sh online         オンライン ( TLS workaround は回線を実測して自動判定 )
+#   bash run_client_mac.sh offline        明示的なオフライン (従来互換)
 #   bash run_client_mac.sh notls          テザリング等 ( workaround off を強制 — 素の TLS )
 #   bash run_client_mac.sh tls            Cisco Umbrella 検査回線 ( workaround on を強制 )
 #   bash run_client_mac.sh offline notls  併用も可
@@ -14,14 +15,21 @@
 
 cd "$(dirname "$0")"
 
-GRADLE_ARGS="runClient"
+GRADLE_ARGS="runClient --offline -x downloadAssets"
 USE_TLS_WORKAROUND="auto"   # auto = 回線を実測して自動判定 ( notls / tls で明示上書き可 )
 KILL_DAEMON="yes"   # JAVA_TOOL_OPTIONS / gradle.properties 変更が daemon に反映されない問題対策
+OFFLINE_MODE="yes"
 for arg in "$@"; do
     case "$arg" in
         offline)
-            GRADLE_ARGS="$GRADLE_ARGS --offline -x downloadAssets"
+            OFFLINE_MODE="yes"
+            GRADLE_ARGS="runClient --offline -x downloadAssets"
             echo "=== Offline mode (using cached dependencies, skipping downloadAssets) ==="
+            ;;
+        online)
+            OFFLINE_MODE="no"
+            GRADLE_ARGS="runClient"
+            echo "=== Online mode ==="
             ;;
         notls|no-tls)
             USE_TLS_WORKAROUND="no"
@@ -43,7 +51,10 @@ done
 #   到達できる ( テザリング等 直接回線 )        → workaround OFF
 #   到達できない ( Cisco Umbrella 検査回線など ) → workaround ON
 # これで `bash run_client_mac.sh` を引数なしで両方の回線に対応させる。
-if [ "$USE_TLS_WORKAROUND" = "auto" ]; then
+if [ "$OFFLINE_MODE" = "yes" ] && [ "$USE_TLS_WORKAROUND" = "auto" ]; then
+    USE_TLS_WORKAROUND="no"
+    echo "=== Offline mode: TLS 回線判定をスキップ ==="
+elif [ "$USE_TLS_WORKAROUND" = "auto" ]; then
     echo "=== TLS 回線を自動判定中 (piston-meta.mojang.com へ素の TLS で接続テスト) ==="
     if curl -s -o /dev/null --max-time 8 https://piston-meta.mojang.com/mc/game/version_manifest_v2.json 2>/dev/null; then
         USE_TLS_WORKAROUND="no"
@@ -79,7 +90,12 @@ fi
 # `bash run_client_mac.sh notls` で一時的に workaround を無効化できる
 # ( テザリング等 で 直接 maven.minecraftforge.net に到達できる時に使用 )。
 TLS_WORKAROUND_FILE="$(pwd)/tls_workaround.properties"
-if [ "$USE_TLS_WORKAROUND" = "yes" ] && [ -f "$TLS_WORKAROUND_FILE" ]; then
+if [ "$OFFLINE_MODE" = "yes" ]; then
+    # Gradle/Minecraftが認証・スキン・アセット取得を試みても、学校Wi-Fiへ出さず
+    # localhost の閉じたポートで即時遮断する。Gradleは --offline なのでローカル依存のみ使う。
+    export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:-} -Djava.net.useSystemProxies=false -Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=9 -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=9 -Dhttp.nonProxyHosts=localhost\|127.*\|[::1]"
+    echo "=== Offline network block ON (HTTP/HTTPS を localhost で遮断) ==="
+elif [ "$USE_TLS_WORKAROUND" = "yes" ] && [ -f "$TLS_WORKAROUND_FILE" ]; then
     export JAVA_TOOL_OPTIONS="-Djava.security.properties=${TLS_WORKAROUND_FILE} -Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djdk.tls.client.cipherSuites=TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256"
 fi
 
@@ -103,19 +119,47 @@ else
 fi
 
 if [ "$USE_EXTERNAL_MODS" = "yes" ]; then
-    GRADLE_ARGS="$GRADLE_ARGS -PwithExternalMods=true"
-    echo "=== 外部 mod ON ( libs/local/ 配下の .jar を自動ロード ) ==="
-    if [ -d libs/local ]; then
+    SYNC_ARGS=""
+    case " $GRADLE_ARGS " in
+        *" --offline "*) SYNC_ARGS="--offline" ;;
+    esac
+    # 大型依存 (TACZ 50MB、Mekanism一式) は必要な時だけ読み込めるようにする。
+    # LIGHT_EXTERNAL_MODS=0 なら確認せず全部入り、=1 なら確認せず軽量版。
+    if [ "${LIGHT_EXTERNAL_MODS:-}" = "0" ]; then
+        USE_LIGHT_EXTERNAL_MODS="no"
+    elif [ "${LIGHT_EXTERNAL_MODS:-}" = "1" ]; then
+        USE_LIGHT_EXTERNAL_MODS="yes"
+    elif [ -t 0 ]; then
+        printf "ラグを減らす軽量モードにしますか? (TACZ/Mekanism系を除外) [Y/n]: "
+        read LIGHT_ANSWER
+        case "$LIGHT_ANSWER" in
+            n|N|no|NO|No) USE_LIGHT_EXTERNAL_MODS="no" ;;
+            *)             USE_LIGHT_EXTERNAL_MODS="yes" ;;
+        esac
+    else
+        USE_LIGHT_EXTERNAL_MODS="yes"
+    fi
+    if [ "$USE_LIGHT_EXTERNAL_MODS" = "yes" ]; then
+        SYNC_ARGS="$SYNC_ARGS --light"
+    fi
+    bash scripts/sync-selected-external-mods.sh $SYNC_ARGS
+    GRADLE_ARGS="$GRADLE_ARGS -PwithExternalMods=true -PexternalModsGroup=runtime_selected"
+    if [ "$USE_LIGHT_EXTERNAL_MODS" = "yes" ]; then
+        echo "=== 外部 mod ON / 軽量モード ==="
+    else
+        echo "=== 外部 mod ON / 全部入り ==="
+    fi
+    if [ -d libs/runtime_selected ]; then
         found=0
         while IFS= read -r jar; do
             echo "  → $jar"
             found=$((found + 1))
-        done < <(find libs/local -type f -name "*.jar" 2>/dev/null | sort)
+        done < <(find libs/runtime_selected -type f -name "*.jar" 2>/dev/null | sort)
         if [ "$found" = "0" ]; then
-            echo "  ! libs/local/ に .jar がありません ( ここに置けば自動取り込み )"
+            echo "  ! 外部 mod jar がありません"
         fi
     else
-        echo "  ! libs/local/ ディレクトリが存在しません — 作成して .jar を置いてください"
+        echo "  ! libs/runtime_selected/ の生成に失敗しました"
     fi
 else
     echo "=== 外部 mod OFF ==="

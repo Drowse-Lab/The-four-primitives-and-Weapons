@@ -37,8 +37,7 @@ public class RecrossHookRenderer extends EntityRenderer<RecrossHookEntity> {
     @Override
     public void render(RecrossHookEntity entity, float entityYaw, float partialTicks,
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        // チェーン item の描画は撤去 (ユーザー要望)。エンティティは透明で機能する。
-        super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
+        // 完全に透明な機能用エンティティ。superも呼ばず描画処理を発生させない。
     }
 
     @Override

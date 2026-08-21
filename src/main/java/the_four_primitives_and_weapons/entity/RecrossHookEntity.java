@@ -140,8 +140,8 @@ public class RecrossHookEntity extends Mob {
         }
 
         if (state == State.FLYING) {
-            // flight 粒子は 4 tick に 1 回 (帯域節約)
-            if ((totalTicks & 3) == 0) spawnFlightParticles();
+            // FPS優先: 飛翔粒子は 8 tick に 1 回。軌道・当たり判定には影響しない。
+            if ((totalTicks & 7) == 0) spawnFlightParticles();
             tickFlying(owner);
         } else { // ANCHORED
             if (heavyAnchor != null) {
@@ -153,8 +153,8 @@ public class RecrossHookEntity extends Mob {
                 tickPullEntity(owner);
                 if (this.isRemoved()) return;
             }
-            // 鎖の dust は 4 tick に 1 回 (帯域節約 — 2tick だと連発時にラグの原因)
-            if ((totalTicks & 3) == 0) spawnChainParticles(owner);
+            // FPS優先: 長い鎖の粒子更新は 8 tick に 1 回へ間引く。
+            if ((totalTicks & 7) == 0) spawnChainParticles(owner);
         }
     }
 
@@ -263,20 +263,18 @@ public class RecrossHookEntity extends Mob {
     private void spawnFlightParticles() {
         if (!(level() instanceof ServerLevel server)) return;
         DustParticleOptions dust = new DustParticleOptions(new org.joml.Vector3f(1, 1, 1), 0.75f);
-        server.sendParticles(ParticleTypes.CRIT, getX(), getY(), getZ(), 1, 0, 0, 0, 0);
         server.sendParticles(dust, getX(), getY(), getZ(), 1, 0, 0, 0, 0);
     }
 
-    /** ロープ表現 — hook → owner を直線で結び、最大 16 セグメントに制限 (帯域節約).
-     *  距離に応じてセグメント数を 2 ブロック / 1 粒子で間引く (見た目はほぼ変わらず通信量半減). */
+    /** ロープ表現 — FPS優先で最大8粒に制限する。 */
     private void spawnChainParticles(Player owner) {
         if (!(level() instanceof ServerLevel server)) return;
         Vec3 from = position();
         Vec3 diff = owner.getEyePosition().subtract(from);
         double dist = diff.length();
         if (dist < 0.5) return;
-        // 2 ブロックに 1 粒子、最大 16 個まで
-        int steps = Math.min(16, Math.max(1, (int) Math.ceil(dist / 2.0)));
+        // 4 ブロックに1粒、最大8個。旧設定に対して最大粒子描画数を半減。
+        int steps = Math.min(8, Math.max(1, (int) Math.ceil(dist / 4.0)));
         Vec3 step = diff.scale(1.0 / Math.max(1, steps));
         DustParticleOptions dust = new DustParticleOptions(new org.joml.Vector3f(1, 1, 1), 0.5f);
         for (int i = 1; i < steps; i++) {
