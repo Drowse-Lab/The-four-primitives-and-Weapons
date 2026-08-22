@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [" E ", "ISI", " A "],
+  "key": {
+    "E": { "item": "minecraft:ender_pearl" },
+    "I": { "item": "minecraft:iron_ingot" },
+    "S": { "item": "minecraft:iron_sword" },
+    "A": { "item": "minecraft:amethyst_shard" }
+  },
+  "result": { "item": "the_four_primitives_and_weapons:boundary_blade" }
+}

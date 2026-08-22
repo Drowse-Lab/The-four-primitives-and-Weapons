@@ -90,6 +90,7 @@
       "display_name": "剣",
       "items": [
 
+        "the_four_primitives_and_weapons:boundary_blade",
         "the_four_primitives_and_weapons:sword_of_night",
         "the_four_primitives_and_weapons:gate",
         "minecraft:wooden_sword",

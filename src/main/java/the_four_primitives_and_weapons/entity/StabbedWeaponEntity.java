@@ -27,6 +27,8 @@ import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModCustom
  * 武器アイテムを持って地面の上面をスニーク右クリックで設置、 右クリック / 攻撃で回収できる。
  */
 public class StabbedWeaponEntity extends Entity {
+	/** 0より大きい間は回収不能な次元移動演出。サーバー側だけで寿命を数える。 */
+	private int ritualLifetime;
 
 	private static final EntityDataAccessor<ItemStack> DATA_ITEM =
 			SynchedEntityData.defineId(StabbedWeaponEntity.class, EntityDataSerializers.ITEM_STACK);
@@ -115,6 +117,10 @@ public class StabbedWeaponEntity extends Entity {
 		return this.entityData.get(DATA_ROLL);
 	}
 
+	public void setRitualLifetime(int ticks) {
+		this.ritualLifetime = Math.max(0, ticks);
+	}
+
 	@Override
 	public boolean isPickable() {
 		return !this.isRemoved(); // 右クリック / 攻撃でターゲット可能
@@ -163,11 +169,13 @@ public class StabbedWeaponEntity extends Entity {
 		super.tick();
 		this.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); // 動かない
 		this.setBoundingBox(makeBoundingBox()); // 半径変更 ( 同期 ) を当たり判定に反映
+		if (!this.level().isClientSide && ritualLifetime > 0 && --ritualLifetime == 0) this.discard();
 	}
 
 	/** 右クリックで回収 ( 視線が実際に武器 ( 棒 ) に当たっている時だけ )。 */
 	@Override
 	public InteractionResult interact(Player player, InteractionHand hand) {
+		if (ritualLifetime > 0) return InteractionResult.PASS;
 		if (!lookHitsWeapon(player, 6.0)) return InteractionResult.PASS; // 武器に当たっていない
 		if (!this.level().isClientSide) {
 			retrieveTo(player);
@@ -178,6 +186,7 @@ public class StabbedWeaponEntity extends Entity {
 	/** 攻撃でも回収 ( 視線が実際に武器に当たっている時だけ )。 */
 	@Override
 	public boolean hurt(DamageSource source, float amount) {
+		if (ritualLifetime > 0) return false;
 		if (this.level().isClientSide || this.isRemoved()) return false;
 		if (source.getEntity() instanceof Player player) {
 			if (!lookHitsWeapon(player, 7.0)) return false; // 武器に当たっていない → 無視

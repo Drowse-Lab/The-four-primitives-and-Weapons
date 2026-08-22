@@ -79,6 +79,7 @@
     "the_four_primitives_and_weapons:netherite_katana": { "durability": 2031, "enchantability": 15, "damage_bonus": 3 },
 
     "_comment_special": "===== 特殊武器 (耐久無限, 固有エンチャ適性) =====",
+    "the_four_primitives_and_weapons:boundary_blade":    { "durability": 250, "enchantability": 14, "attack_damage": 7.0, "attack_speed": -2.4, "attack_range": 0.5 },
     "the_four_primitives_and_weapons:sword_of_night":     { "durability": 0, "enchantability": 14, "damage_bonus": 3 },
     "the_four_primitives_and_weapons:rivers_of_blood":    { "durability": 0, "enchantability": 4,  "damage_bonus": 3 },
     "the_four_primitives_and_weapons:old_katana":         { "durability": 0, "enchantability": 2,  "damage_bonus": 3 },

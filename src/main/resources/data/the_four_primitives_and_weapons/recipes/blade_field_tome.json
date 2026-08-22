@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [" A ", "EBE", " I "],
+  "key": {
+    "A": { "item": "minecraft:amethyst_shard" },
+    "E": { "item": "minecraft:ender_pearl" },
+    "B": { "item": "minecraft:book" },
+    "I": { "item": "minecraft:iron_ingot" }
+  },
+  "result": { "item": "the_four_primitives_and_weapons:blade_field_tome" }
+}

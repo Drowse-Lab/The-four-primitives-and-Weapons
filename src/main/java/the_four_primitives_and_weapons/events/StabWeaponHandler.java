@@ -30,6 +30,8 @@ import net.minecraftforge.fml.common.Mod;
 public class StabWeaponHandler {
 
 	private static final String TAG_PRESET = "StakePreset";
+	/** 剣の原で自然生成され、引き抜いた後は再設置できない武器。 */
+	public static final String TAG_NATURAL_BLADE_FIELD_WEAPON = "BladeFieldNaturalWeapon";
 
 	/** プリセット: { 名前, 傾き(度), 高さオフセット(ブロック) }。 向きはプレイヤーの向きを使う。 */
 	private static final String[] PRESET_NAME = {"直立", "やや傾け", "深く刺す", "高く掲げる", "横倒し"};
@@ -76,6 +78,13 @@ public class StabWeaponHandler {
 
 		ItemStack weapon = event.getItemStack();            // メインハンド = 刺す武器
 		if (!DodgeAndBattouHandler.isWeapon(weapon)) return; // 武器 ( 刀/剣等 ) のみ
+		if (weapon.hasTag() && weapon.getTag().getBoolean(TAG_NATURAL_BLADE_FIELD_WEAPON)) {
+			if (!player.level().isClientSide)
+				player.displayClientMessage(Component.literal("§7剣の原から抜かれた武器は、再び地面へ刺せない"), true);
+			event.setCanceled(true);
+			event.setCancellationResult(InteractionResult.FAIL);
+			return;
+		}
 
 		Level level = event.getLevel();
 		if (!level.isClientSide) {

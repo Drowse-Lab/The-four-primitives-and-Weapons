@@ -875,5 +875,7 @@
   "jei.the_four_primitives_and_weapons.info.saya": "§6Saya (Sheath)\nCraft with planks to get that wood's grain finish.\nBase: planks->wood / leather->cloth / flint->carved / rayskin->rayskin\nLacquer: black->roiro(+glowstone=mirror) / red->vermilion / raw->tame(+gravel=stone-grain)\nsaya + honeycomb -> back to plain lacquer\nBase color: saya + dye (table) or dip in a colored cauldron",
   "block.the_four_primitives_and_weapons.koshirae_bench": "Koshirae Bench",
   "container.the_four_primitives_and_weapons.koshirae": "Koshirae Bench",
-  "saya.style.gunto": "Gunto Saya"
+  "saya.style.gunto": "Gunto Saya",
+  "item.the_four_primitives_and_weapons.boundary_blade": "Boundary Blade",
+  "item.the_four_primitives_and_weapons.blade_field_tome": "Tome of the Blade Field"
 }
