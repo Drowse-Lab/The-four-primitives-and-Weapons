@@ -48,38 +48,95 @@ tasks.register('generateTooltipCornerPngs') {
     }
 }
 
-// ペイント編集用の属性紋様16x16 PNGを生成する。
+// ペイント編集用の属性紋様32x32・静止PNGを生成する。
 tasks.register('generateTooltipElementPngs') {
     doLast {
-        def outputDir = file('run/config/the_four_primitives_and_weapons/tooltip_elements')
+        def outputDir = file('src/main/resources/assets/the_four_primitives_and_weapons/textures/gui/tooltip_elements')
         outputDir.mkdirs()
         def colors = [
-                ice: 0xFF9DEBFF, electric: 0xFF5FFFF2, corrosion: 0xFF86B82B,
-                holy: 0xFFFFF2A8, dark: 0xFF7652B8, fire: 0xFFFF5A24,
-                wind: 0xFFB8F2D0, thunder: 0xFFFFE135, water: 0xFF3D9BFF,
+                ice: 0xFF9DEBFF, electric: 0xFFFFF266, corrosion: 0xFFBF1A8C,
+                holy: 0xFFFFF2A8, dark: 0xFF7652B8, fire: 0xFFFF641C,
+                wind: 0xFFB8F2D0, thunder: 0xFFCCE6FF, water: 0xFF3D9BFF,
                 miasma: 0xFF9A50A8, blood: 0xFFD41432, erasure: 0xFFB8A6D9,
                 soul: 0xFF63D7FF, soul_fire: 0xFF28AFFF
         ]
-        def pixels = [
-                ice: [[7,3],[7,4],[4,5],[5,5],[6,5],[7,5],[8,5],[9,5],[10,5],[7,6],[7,7],[5,3],[9,3],[5,7],[9,7]],
-                electric: [[5,3],[6,4],[7,5],[6,6],[9,3],[8,5],[9,6],[10,7]],
-                corrosion: [[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[9,4],[10,4],[11,4],[5,5],[5,6],[8,5],[8,6],[8,7],[10,5]],
-                holy: [[4,5],[5,4],[6,4],[7,4],[8,4],[9,4],[10,5],[5,6],[6,6],[7,6],[8,6],[9,6],[7,3],[7,7]],
-                dark: [[6,3],[7,3],[8,3],[5,4],[5,5],[6,6],[7,7],[8,7],[9,6]],
-                fire: [[5,7],[5,6],[6,5],[6,3],[7,4],[8,2],[8,5],[9,4],[10,6],[9,7],[8,8],[7,8],[6,8]],
-                wind: [[3,4],[4,4],[5,4],[6,4],[7,4],[8,4],[9,4],[5,6],[6,6],[7,6],[8,6],[9,6],[10,6],[11,6],[9,8],[10,8],[11,8]],
-                thunder: [[8,2],[6,6],[8,6],[6,10],[11,5],[9,5],[10,2]],
-                water: [[3,6],[4,5],[5,5],[6,6],[7,6],[8,5],[9,5],[10,6],[11,6],[4,8],[5,7],[6,7],[7,8],[8,8],[9,7],[10,7],[11,8]],
-                miasma: [[4,4],[7,3],[10,5],[5,7],[8,8],[11,7],[3,9],[6,10],[9,10]],
-                blood: [[7,2],[6,3],[8,3],[5,5],[7,5],[9,5],[4,7],[5,8],[7,7],[7,8],[9,7],[10,8]],
-                erasure: [[3,5],[4,5],[5,5],[7,7],[9,4],[10,4],[11,4]],
-                soul: [[7,2],[6,3],[8,3],[5,5],[6,6],[7,7],[8,6],[9,5],[7,9]],
-                soul_fire: [[5,3],[6,5],[6,7],[8,2],[8,4],[9,6],[10,3],[10,7]]
-        ]
         colors.each { name, colorValue ->
-            def image = new java.awt.image.BufferedImage(16, 16, java.awt.image.BufferedImage.TYPE_INT_ARGB)
-            pixels[name].each { point -> image.setRGB(point[0] as int, point[1] as int, colorValue as int) }
+            def image = new java.awt.image.BufferedImage(32, 32, java.awt.image.BufferedImage.TYPE_INT_ARGB)
+            int color = colorValue as int
+            int dim = (0xA0000000 | (color & 0xFFFFFF)) as int
+            def pixel = { int x, int y, int c -> if (x >= 0 && x < 32 && y >= 0 && y < 32) image.setRGB(x, y, c) }
+            // すべての模様は下辺を根元として上（ツールチップ中央方向）へ伸びる。
+            (0..<32).each { x -> pixel(x, 30, dim); pixel(x, 31, color) }
+            switch (name) {
+                case 'fire': case 'soul_fire':
+                    (2..<32).step(6).eachWithIndex { x, i ->
+                        int h = 11 + (i % 3) * 4
+                        (0..<h).each { n ->
+                            int half = Math.max(0, (h - n).intdiv(4))
+                            int sway = n > h.intdiv(2) ? n % 2 : 0
+                            ((x-half+sway)..(x+half+sway)).each { px -> pixel(px, 30-n, n > 3 ? color : dim) }
+                        }
+                    }; break
+                case 'ice':
+                    (3..<32).step(7).eachWithIndex { x, i ->
+                        int h = 8 + (i % 3) * 4
+                        (0..<h).each { n -> pixel(x, 30-n, color); if (n < 4) pixel(x+1, 30-n, dim) }
+                        int branchY = 25 - (h.intdiv(2))
+                        pixel(x-2, branchY, dim); pixel(x+2, branchY, dim)
+                    }; break
+                case 'blood':
+                    (4..<32).step(8).eachWithIndex { x, i ->
+                        int h = 6 + (i % 4) * 4
+                        (0..<h).each { n -> pixel(x, 30-n, color); pixel(x+1, 30-n, dim) }
+                        pixel(x-1, 30-h, color); pixel(x+2, 30-h, color)
+                    }; break
+                case 'electric': case 'thunder':
+                    (4..<32).step(name == 'thunder' ? 12 : 8).each { x ->
+                        int px=x; (0..<18).each { n -> pixel(px, 30-n, color); if (n%4==3) px += (n%8==3 ? 2 : -2) }
+                    }; break
+                case 'corrosion':
+                    (3..<32).step(9).each { x -> (0..<15).each { n -> pixel(x+n.intdiv(5),30-n,color); if(n%4==0){pixel(x-2,30-n,dim);pixel(x+3,30-n,dim)} } }; break
+                case 'water': case 'wind':
+                    (0..<32).each { x -> pixel(x, 26 - (x.intdiv(4)%2)*2, color); if(name=='water') pixel(x,22-(x.intdiv(5)%2),dim) }; break
+                case 'holy':
+                    (3..<32).step(7).each { x -> (0..<12).each { n -> pixel(x,30-n,color) }; pixel(x-3,24,color);pixel(x+3,24,color) }; break
+                case 'dark': case 'erasure':
+                    (2..<32).step(10).each { x -> (0..<12).each { n -> if(n%3!=1) pixel(x+n.intdiv(3),30-n,color) } }; break
+                case 'miasma':
+                    (2..<32).step(9).each { x -> (0..<9).each { n -> (-2..2).each { dx -> if((dx*dx+n)%3!=0) pixel(x+dx,27-n,dim) } } }; break
+                case 'soul':
+                    (4..<32).step(9).each { x -> (0..<14).each { n -> pixel(x+(n%4==0?1:0),30-n,n>7?dim:color) } }; break
+            }
             javax.imageio.ImageIO.write(image, 'png', new File(outputDir, "${name}.png"))
+        }
+    }
+}
+
+// 4x4属性アトラスを各32x32静止PNGへ切り出す。-PelementAtlas=/path/to/atlas.png
+tasks.register('importGeneratedElementAtlas') {
+    doLast {
+        def atlasPath = project.findProperty('elementAtlas')
+        if (!atlasPath) throw new GradleException('-PelementAtlas=/path/to/atlas.png を指定してください')
+        def atlas = javax.imageio.ImageIO.read(file(atlasPath))
+        if (atlas == null) throw new GradleException("画像を読み込めません: ${atlasPath}")
+        def names = ['fire','soul_fire','ice','blood','electric','thunder','corrosion','water',
+                     'wind','holy','dark','erasure','miasma','soul']
+        def outputDir = file('src/main/resources/assets/the_four_primitives_and_weapons/textures/gui/tooltip_elements')
+        outputDir.mkdirs()
+        names.eachWithIndex { name, index ->
+            int col = index % 4
+            int row = index.intdiv(4)
+            int x0 = (col * atlas.width).intdiv(4)
+            int y0 = (row * atlas.height).intdiv(4)
+            int x1 = ((col + 1) * atlas.width).intdiv(4)
+            int y1 = ((row + 1) * atlas.height).intdiv(4)
+            def out = new java.awt.image.BufferedImage(32, 32, java.awt.image.BufferedImage.TYPE_INT_ARGB)
+            def g = out.createGraphics()
+            g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+                    java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR)
+            g.drawImage(atlas, 0, 0, 32, 32, x0, y0, x1, y1, null)
+            g.dispose()
+            javax.imageio.ImageIO.write(out, 'png', new File(outputDir, "${name}.png"))
         }
     }
 }

@@ -28,8 +28,8 @@ import the_four_primitives_and_weapons.item.rarity.WeaponRarity;
 )
 public final class RarityTooltipFrameHandler {
 
-    private static final int BACKGROUND_TOP = 0xF0101A2B;
-    private static final int BACKGROUND_BOTTOM = 0xF0060D18;
+    private static final int BACKGROUND_TOP = 0xFF101A2B;
+    private static final int BACKGROUND_BOTTOM = 0xFF060D18;
     private static final int HORIZONTAL_PADDING = 11;
     private static final int TOP_PADDING = 13;
     private static final int BOTTOM_PADDING = 11;
@@ -87,12 +87,17 @@ public final class RarityTooltipFrameHandler {
 
         graphics.pose().pushPose();
         graphics.pose().translate(0, 0, 401);
-        EditableTooltipCornerTextures.draw(graphics, pending.rarity(), left, top, right, bottom);
+        // 属性模様は文字と同じ面より手前に出さない。後から描かれる文字が模様を上書きする。
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, -1);
         drawElementOrnaments(graphics, pending.stack(), left, top, right, bottom);
+        graphics.pose().popPose();
+        // レアリティー枠だけは文字と重ならない外周上で最前面に描く。
+        EditableTooltipCornerTextures.draw(graphics, pending.rarity(), left, top, right, bottom);
         graphics.pose().popPose();
     }
 
-    /** 属性紋様を上辺中央へ重ねる。複合属性は左右に並べる。 */
+    /** 属性紋様を枠全体から中央方向へ薄く伸ばす。複合属性は濃淡を変えて重ねる。 */
     private static void drawElementOrnaments(GuiGraphics g, ItemStack stack, int l, int t, int r, int b) {
         ElementType primary = ElementalDamageUtils.getEffectiveElementType(stack);
         if (primary == ElementType.NONE) return;
@@ -102,14 +107,19 @@ public final class RarityTooltipFrameHandler {
                 : ElementalDamageUtils.getSecondaryElementType(stack);
         if (secondary == primary) secondary = ElementType.NONE;
 
-        int centerX = l + (r - l) / 2;
-        // 上枠へ重ねず、ツールチップ内側に1px空けて16x16 PNGを描く。
+        // 模様は枠の内側だけに描画する。文字はこの後に描かれるため可読性も維持される。
+        int insideLeft = l + 1;
         int insideTop = t + 1;
+        int insideRight = r;
+        int insideBottom = b;
         if (secondary == ElementType.NONE) {
-            EditableTooltipElementTextures.draw(g, primary, centerX, insideTop);
+            EditableTooltipElementTextures.drawBorderPattern(
+                    g, primary, insideLeft, insideTop, insideRight, insideBottom, 0.17F);
         } else {
-            EditableTooltipElementTextures.draw(g, primary, centerX - 9, insideTop);
-            EditableTooltipElementTextures.draw(g, secondary, centerX + 9, insideTop);
+            EditableTooltipElementTextures.drawBorderPattern(
+                    g, primary, insideLeft, insideTop, insideRight, insideBottom, 0.13F);
+            EditableTooltipElementTextures.drawBorderPattern(
+                    g, secondary, insideLeft, insideTop, insideRight, insideBottom, 0.08F);
         }
     }
 
@@ -333,13 +343,13 @@ public final class RarityTooltipFrameHandler {
     private static int elementColor(ElementType type) {
         return switch (type) {
             case ICE -> 0xFF9DEBFF;
-            case ELECTRIC -> 0xFF5FFFF2;
-            case CORROSION -> 0xFF86B82B;
+            case ELECTRIC -> 0xFFFFF266;
+            case CORROSION -> 0xFFBF1A8C;
             case HOLY -> 0xFFFFF2A8;
             case DARK -> 0xFF7652B8;
             case FIRE -> 0xFFFF5A24;
             case WIND -> 0xFFB8F2D0;
-            case THUNDER -> 0xFFFFE135;
+            case THUNDER -> 0xFFCCE6FF;
             case WATER -> 0xFF3D9BFF;
             case MIASMA -> 0xFF9A50A8;
             case BLOOD -> 0xFFD41432;
