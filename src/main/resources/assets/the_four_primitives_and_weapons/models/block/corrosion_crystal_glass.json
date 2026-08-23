@@ -1,7 +1,7 @@
 {
   "parent":"minecraft:block/block",
   "render_type":"translucent",
-  "textures":{"particle":"minecraft:block/glass","glass":"minecraft:block/glass"},
+  "textures":{"particle":"minecraft:block/white_stained_glass","glass":"minecraft:block/white_stained_glass"},
   "elements":[{"from":[0,0,0],"to":[16,16,16],"faces":{
     "down":{"texture":"#glass","cullface":"down","tintindex":0},
     "up":{"texture":"#glass","cullface":"up","tintindex":0},

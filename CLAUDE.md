@@ -164,3 +164,78 @@ src/main/resources/
 2. ドラゴン武器のステータス・素材（dragonbone/dragonsteel/ice/fire/lightning系のどれを使うか）。
 3. 属性ごとの「D武器」はクラフト可能にするか、クリエイティブ配布のみか。
 4. Mekanism発電は「新ブロック」か「既存の攻撃/効果から発電」か。
+
+---
+
+## 9. 剣界バイオーム用テクスチャ刷新（Claude向け追加依頼）
+
+### 目的
+
+剣界ディメンションの侵食・血バイオーム用テクスチャを、AI画像らしい高密度な絵ではなく、Minecraft 1.20.1のバニラに自然に混ざる16×16ピクセルアートへ作り直す。
+
+### 最重要ルール
+
+- 解像度は必ず **16×16 PNG**。
+- 補間、ぼかし、アンチエイリアス、写真素材、高解像度画像の縮小は禁止。
+- 1ピクセル単位で描き、バニラの土・泥・ガラス・アメジストと同程度の情報量にする。
+- 色数は少なくする。目安は1テクスチャにつき8～16色程度。
+- 強い輪郭線、細かすぎるノイズ、発光しすぎるハイライトを避ける。
+- タイル表示した際に継ぎ目が目立たないよう上下左右をつなげる。
+- Java、ワールド生成、登録名、モデル構造は変更しない。対象PNGだけを差し替える。
+- 既存ファイルを差し替える前に内容と参照先を確認する。
+
+### 作り直すファイル
+
+1. `src/main/resources/assets/the_four_primitives_and_weapons/textures/block/frosted_corrosion_crystal.png`
+   - バニラの色付きガラスを基準にする。
+   - 完全透明ではなく、薄い白濁と2～4本程度の大きな内部亀裂を入れる。
+   - JavaのBlockColorで16進色を重ねるため、基本色は白～明るい灰色にする。
+   - RGBA形式。透明部分を残し、不透明度はおおむね55～80%。
+   - 模様を細かくしすぎず、遠目にも曇った結晶だと分かるようにする。
+
+2. `src/main/resources/assets/the_four_primitives_and_weapons/textures/block/crystal_corroded_earth.png`
+   - バニラの粗い土を土台にする。
+   - 土の約20～30%だけが紫・青緑の結晶脈へ置換された見た目。
+   - 結晶は1～2ピクセル幅の大きな枝状模様にする。
+   - 土が残っていることを明確にし、全面を宝石模様にしない。
+
+3. `src/main/resources/assets/the_four_primitives_and_weapons/textures/block/blood_soaked_earth.png`
+   - バニラの泥・粗い土を基準にする。
+   - 暗い赤茶の土へ、少量の濡れた深紅色を染み込ませる。
+   - 写実的な肉・臓器・血しぶきは禁止。Minecraftらしい抽象表現にする。
+   - 明るい真紅は2～4ピクセル程度の小さな濡れ表現だけに使う。
+
+4. `src/main/resources/assets/the_four_primitives_and_weapons/textures/block/coagulated_blood.png`
+   - 血染めの土より暗く、固まった血の塊に見せる。
+   - ネザーウォートブロックと泥の中間程度の粗さ。
+   - 黒赤・暗いえんじを主体にし、光沢は少量だけにする。
+
+### 参照すべきバニラテクスチャ
+
+- `minecraft:block/glass`
+- `minecraft:block/white_stained_glass`
+- `minecraft:block/amethyst_block`
+- `minecraft:block/coarse_dirt`
+- `minecraft:block/mud`
+- `minecraft:block/netherrack`
+- `minecraft:block/nether_wart_block`
+
+参照は色数、ピクセルの塊の大きさ、陰影量を合わせる目的で使う。単純コピーにはしない。
+
+### 既存実装との関係
+
+- 結晶色は `BladeCrystalInit.java` の `0xRRGGBB` 値で着色される。色別PNGは作らない。
+- 結晶モデルは `models/block/corrosion_crystal_glass.json` から白濁テクスチャを参照する。
+- 地表ブロックの登録IDは次のまま維持する。
+  - `crystal_corroded_earth`
+  - `blood_soaked_earth`
+  - `coagulated_blood`
+- 画像以外の変更が必要に見えても、先にユーザーへ確認する。
+
+### 完成確認
+
+- `file <png>`で全ファイルが16×16 PNGになっていること。
+- 結晶だけRGBAで透明度を持つこと。
+- 8×8程度に並べたプレビューで継ぎ目が目立たないこと。
+- ゲーム内で結晶の4色すべてが濁りを保ち、黒く潰れないこと。
+- テクスチャ差し替え後にJSONやJavaを無関係に整形しないこと。

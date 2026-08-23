@@ -51,7 +51,7 @@ public class BladeFieldFeature extends Feature<NoneFeatureConfiguration> {
 
     /** 地形整形後の確定した地表座標へ武器を置く。 */
     public static boolean placeWeapon(WorldGenLevel level, RandomSource random, BlockPos pos) {
-        if (!level.getBlockState(pos).canBeReplaced() ||
+        if (!level.getFluidState(pos).isEmpty() || !level.getBlockState(pos).canBeReplaced() ||
                 !level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP)) return false;
         // 耐久なし武器は高い丘の頂上、かつ1/64成功時だけ。通常・希少抽選から完全分離する。
         boolean timelessCondition = pos.getY() - 1 >= 75 && random.nextInt(64) == 0;

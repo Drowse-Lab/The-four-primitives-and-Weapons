@@ -24,7 +24,12 @@ public class BladeFieldTerrainFeature extends Feature<NoneFeatureConfiguration> 
 
         for (int dx = 0; dx < 16; dx++) for (int dz = 0; dz < 16; dz++) {
             int x = baseX + dx, z = baseZ + dz;
-            int surfaceY = surfaceHeight(x, z);
+            int normalSurfaceY = surfaceHeight(x, z);
+            boolean waterBiome = isBiome(context.level(), x, normalSurfaceY, z, "blade_field_water");
+            double marsh = waterBiome ? valueNoise(x, z, 13, 0x0A2E5E11L) : -1.0D;
+            boolean pool = waterBiome && marsh > -0.18D;
+            // 湿原の水底は67～68、水のない畦は69。水面を常にY=69へそろえて滝状の流出を防ぐ。
+            int surfaceY = waterBiome ? (pool ? 67 + (marsh > 0.48D ? 1 : 0) : 69) : normalSurfaceY;
             int oldTop = context.level().getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z);
             boolean corrosion = isCorrosion(context.level(), x, surfaceY, z);
 
@@ -39,37 +44,60 @@ public class BladeFieldTerrainFeature extends Feature<NoneFeatureConfiguration> 
             // 元のオーバーワールド地形が丘より高い場合は削って空にする。
             for (int y = surfaceY + 1; y <= oldTop + 1; y++)
                 context.level().setBlock(cursor.set(x, y, z), Blocks.AIR.defaultBlockState(), 2);
+
+            // 水地帯は尾瀬のような浅い湿原。泥の窪地へ一段だけ水を張り、所々に水草を置く。
+            if (waterBiome) {
+                if (pool) {
+                    context.level().setBlock(cursor.set(x, surfaceY, z), Blocks.MUD.defaultBlockState(), 2);
+                    for (int wy = surfaceY + 1; wy <= 69; wy++)
+                        context.level().setBlock(cursor.set(x, wy, z), Blocks.WATER.defaultBlockState(), 2);
+                    // 約3%だけ。連続したスイレンの絨毯にしない。
+                    if (hash(x, z, 0x51A7E11DL) > 0.94D)
+                        context.level().setBlock(cursor.set(x, 70, z), Blocks.LILY_PAD.defaultBlockState(), 2);
+                } else if (marsh < -0.63D) {
+                    context.level().setBlock(cursor.set(x, surfaceY, z), Blocks.MOSS_BLOCK.defaultBlockState(), 2);
+                    context.level().setBlock(cursor.set(x, surfaceY + 1, z), Blocks.FERN.defaultBlockState(), 2);
+                } else if (marsh < -0.42D) {
+                    context.level().setBlock(cursor.set(x, surfaceY, z), Blocks.GRASS_BLOCK.defaultBlockState(), 2);
+                    context.level().setBlock(cursor.set(x, surfaceY + 1, z), Blocks.GRASS.defaultBlockState(), 2);
+                }
+            }
         }
         // 高さマップの更新順に依存させず、整形済みの座標へ密集気味に16～27本生成する。
         RandomSource random = context.random();
         // 侵食地帯では複数色の巨大結晶が地中から突き出す。地表を結晶ブロックで敷き詰めない。
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             int x = baseX + random.nextInt(16), z = baseZ + random.nextInt(16);
-            int y = surfaceHeight(x, z);
+            int y = terrainHeight(context.level(), x, z);
             if (!isCorrosion(context.level(), x, y, z)) continue;
-            Block crystal = switch (random.nextInt(4)) {
-                case 0 -> BladeCrystalInit.VIOLET.get(); case 1 -> BladeCrystalInit.CYAN.get();
-                case 2 -> BladeCrystalInit.AMBER.get(); default -> BladeCrystalInit.CRIMSON.get();
-            };
-            int height = 5 + random.nextInt(6);
+            Block[] colors = {BladeCrystalInit.VIOLET.get(), BladeCrystalInit.CYAN.get(),
+                    BladeCrystalInit.AMBER.get(), BladeCrystalInit.CRIMSON.get()};
+            Block crystal = colors[random.nextInt(colors.length)];
+            int height = 14 + random.nextInt(13);
             for (int h = 0; h < height; h++) {
-                int radius = h < 2 ? 2 : h < height - 2 ? 1 : 0;
+                double taper = 1.0D - h / (double)height;
+                int radius = taper > 0.72D ? 3 : taper > 0.38D ? 2 : taper > 0.12D ? 1 : 0;
                 for (int ox = -radius; ox <= radius; ox++) for (int oz = -radius; oz <= radius; oz++)
-                    if (ox * ox + oz * oz <= radius * radius + random.nextInt(2))
+                    if (ox * ox + oz * oz <= radius * radius)
                         context.level().setBlock(cursor.set(x + ox, y + h, z + oz), crystal.defaultBlockState(), 2);
             }
-            // 根元から斜めに伸びる副結晶。
-            for (int branch = 0; branch < 2 + random.nextInt(3); branch++) {
+            // 根元から鋭角に伸びる、色違いの副結晶。先端ほど細くして棘状にする。
+            for (int branch = 0; branch < 4 + random.nextInt(4); branch++) {
                 int sx = random.nextBoolean() ? 1 : -1, sz = random.nextBoolean() ? 1 : -1;
-                int length = 2 + random.nextInt(4);
-                for (int n = 1; n <= length; n++)
-                    context.level().setBlock(cursor.set(x + sx * n, y + n / 2, z + sz * n), crystal.defaultBlockState(), 2);
+                int length = 6 + random.nextInt(8);
+                Block branchCrystal = colors[random.nextInt(colors.length)];
+                for (int n = 1; n <= length; n++) {
+                    int bx = x + sx * n / 2, bz = z + sz * n / 2, by = y + n;
+                    context.level().setBlock(cursor.set(bx, by, bz), branchCrystal.defaultBlockState(), 2);
+                    if (n < length / 2)
+                        context.level().setBlock(cursor.set(bx + sx, by, bz), branchCrystal.defaultBlockState(), 2);
+                }
             }
         }
         int count = 16 + random.nextInt(12);
         for (int i = 0; i < count; i++) {
             int x = baseX + random.nextInt(16), z = baseZ + random.nextInt(16);
-            BladeFieldFeature.placeWeapon(context.level(), random, new BlockPos(x, surfaceHeight(x, z) + 1, z));
+            BladeFieldFeature.placeWeapon(context.level(), random, new BlockPos(x, terrainHeight(context.level(), x, z) + 1, z));
         }
         return true;
     }
@@ -83,6 +111,13 @@ public class BladeFieldTerrainFeature extends Feature<NoneFeatureConfiguration> 
         return 68 + (int)Math.round(broad * 7.0D + local * 3.5D + detail * 1.2D);
     }
 
+    private static int terrainHeight(net.minecraft.world.level.WorldGenLevel level, int x, int z) {
+        int normal = surfaceHeight(x, z);
+        if (!isBiome(level, x, normal, z, "blade_field_water")) return normal;
+        double marsh = valueNoise(x, z, 13, 0x0A2E5E11L);
+        return marsh > -0.18D ? 67 + (marsh > 0.48D ? 1 : 0) : 69;
+    }
+
     /** 荒れた土主体。低頻度の砂利・根付いた土・ポドゾルで地表の単調さを崩す。 */
     private static Block surfaceBlock(net.minecraft.world.level.WorldGenLevel level, int x, int y, int z) {
         double patch = valueNoise(x, z, 18, 0x63D2A4F1L);
@@ -93,10 +128,11 @@ public class BladeFieldTerrainFeature extends Feature<NoneFeatureConfiguration> 
             case "blade_field_ice": return patch > 0.25D ? Blocks.SNOW_BLOCK : Blocks.PACKED_ICE;
             case "blade_field_thunder": return patch > 0.15D ? Blocks.GRAVEL : Blocks.STONE;
             case "blade_field_water": return patch > 0.20D ? Blocks.CLAY : Blocks.MUD;
-            case "blade_field_blood": return patch > 0.10D ? Blocks.RED_SAND : Blocks.COARSE_DIRT;
+            case "blade_field_blood": return patch > 0.42D ? BladeCrystalInit.COAGULATED_BLOOD.get()
+                    : patch > -0.72D ? BladeCrystalInit.BLOOD_SOAKED_EARTH.get() : Blocks.SOUL_SOIL;
             case "blade_field_wind": return patch > 0.10D ? Blocks.SAND : Blocks.GRAVEL;
-            case "blade_field_corrosion": return patch > 0.45D ? Blocks.CALCITE
-                    : patch < -0.50D ? Blocks.TUFF : Blocks.COARSE_DIRT;
+            case "blade_field_corrosion": return patch > -0.68D ? BladeCrystalInit.CORRODED_EARTH.get()
+                    : Blocks.CALCITE;
         }
         if (patch > 0.62D) return Blocks.GRAVEL;
         if (patch < -0.70D) return Blocks.PODZOL;
@@ -105,8 +141,12 @@ public class BladeFieldTerrainFeature extends Feature<NoneFeatureConfiguration> 
     }
 
     private static boolean isCorrosion(net.minecraft.world.level.WorldGenLevel level, int x, int y, int z) {
+        return isBiome(level, x, y, z, "blade_field_corrosion");
+    }
+
+    private static boolean isBiome(net.minecraft.world.level.WorldGenLevel level, int x, int y, int z, String path) {
         return level.getBiome(new BlockPos(x, y, z)).unwrapKey()
-                .map(key -> key.location().getPath().equals("blade_field_corrosion")).orElse(false);
+                .map(key -> key.location().getPath().equals(path)).orElse(false);
     }
 
     private static double valueNoise(int x, int z, int scale, long salt) {
