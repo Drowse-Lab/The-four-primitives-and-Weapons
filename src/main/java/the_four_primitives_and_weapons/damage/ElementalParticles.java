@@ -3,7 +3,9 @@ package the_four_primitives_and_weapons.damage;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 
 import org.joml.Vector3f;
@@ -94,39 +96,56 @@ public final class ElementalParticles {
 
         // 全属性で「属性色の dust」が土台 ( = 灰色 dust の置き換え )。
         // 斬撃の粉としての見た目はこれが担うので、どの属性でも必ず出す。
-        sl.sendParticles(dustOf(type), x, y, z, main, dxz, dy, dxz, 0.01);
+        sendForced(sl, dustOf(type), x, y, z, main, dxz, dy, dxz, 0.01);
 
         // その上に、属性の質感を出す専用パーティクルをアクセントとして重ねる。
         switch (type) {
             case ICE:
-                sl.sendParticles(ParticleTypes.SNOWFLAKE, x, y, z, sub, dxz, dy, dxz, 0.02);
+                sendForced(sl, ParticleTypes.SNOWFLAKE, x, y, z, sub, dxz, dy, dxz, 0.02);
                 break;
             case ELECTRIC:
             case THUNDER:
-                sl.sendParticles(ParticleTypes.ELECTRIC_SPARK, x, y, z, sub, dxz, dy, dxz, 0.06);
+                sendForced(sl, ParticleTypes.ELECTRIC_SPARK, x, y, z, sub, dxz, dy, dxz, 0.06);
                 break;
             case WATER:
-                sl.sendParticles(ParticleTypes.SPLASH, x, y, z, sub, dxz, dy, dxz, 0.05);
+                sendForced(sl, ParticleTypes.SPLASH, x, y, z, sub, dxz, dy, dxz, 0.05);
                 break;
             case BLOOD:
-                sl.sendParticles(BLOOD_CHUNK, x, y, z, sub, dxz, dy, dxz, 0.05);
+                sendForced(sl, BLOOD_CHUNK, x, y, z, sub, dxz, dy, dxz, 0.05);
                 break;
             case FIRE:
-                sl.sendParticles(ParticleTypes.FLAME, x, y, z, sub, dxz, dy, dxz, 0.02);
+                sendForced(sl, ParticleTypes.FLAME, x, y, z, sub, dxz, dy, dxz, 0.02);
                 break;
             case SOUL:
                 // 魂: 青白い魂の霊気 (SOUL) + 青みの強い SCULK_SOUL。
-                sl.sendParticles(ParticleTypes.SOUL, x, y, z, sub, dxz, dy, dxz, 0.02);
-                sl.sendParticles(ParticleTypes.SCULK_SOUL, x, y, z, Math.max(1, sub / 2), dxz, dy, dxz, 0.015);
+                sendForced(sl, ParticleTypes.SOUL, x, y, z, sub, dxz, dy, dxz, 0.02);
+                sendForced(sl, ParticleTypes.SCULK_SOUL, x, y, z, Math.max(1, sub / 2), dxz, dy, dxz, 0.015);
                 break;
             case SOUL_FIRE:
                 // 燐火: 青い魂炎 (SOUL_FIRE_FLAME) + 魂の霊気 (SOUL)。
-                sl.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, x, y, z, sub, dxz, dy, dxz, 0.02);
-                sl.sendParticles(ParticleTypes.SOUL, x, y, z, Math.max(1, sub / 2), dxz, dy, dxz, 0.02);
+                sendForced(sl, ParticleTypes.SOUL_FIRE_FLAME, x, y, z, sub, dxz, dy, dxz, 0.02);
+                sendForced(sl, ParticleTypes.SOUL, x, y, z, Math.max(1, sub / 2), dxz, dy, dxz, 0.02);
                 break;
             default:
                 // 風 / 聖 / 闇 / 消滅 / 侵食 / 瘴気 は dust のみ。
                 break;
+        }
+    }
+
+    /**
+     * 技の視認性に必要な粒子は、クライアントの「パーティクル:最小」や
+     * 通常の距離間引きで消えない force=true で配信する。無関係な遠方への
+     * パケット送信を避けるため、64ブロック以内のプレイヤーに限定する。
+     */
+    public static void sendForced(ServerLevel level, ParticleOptions particle,
+                                  double x, double y, double z, int count,
+                                  double dx, double dy, double dz, double speed) {
+        if (particle == null) return;
+        for (ServerPlayer viewer : level.players()) {
+            if (viewer.distanceToSqr(x, y, z) <= 64.0 * 64.0) {
+                level.sendParticles(viewer, particle, true, x, y, z,
+                        count, dx, dy, dz, speed);
+            }
         }
     }
 }

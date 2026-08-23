@@ -27,10 +27,7 @@ public final class EditableTooltipElementTextures {
         drawStaticElementOverlay(graphics, type, left, top, right, bottom);
     }
 
-    /**
-     * MOD専用の静止PNGを、縁の一部から少しだけ内側へ出る装飾として描画する。
-     * 属性画像自体を見せるのではなく、文字領域を侵食しない縁飾りに限定する。
-     */
+    /** MOD専用の静止PNGを、四辺全体から少しだけ内側へ出る縁飾りとして描画する。 */
     private static void drawStaticElementOverlay(GuiGraphics graphics, ElementType type,
                                                  int left, int top, int right, int bottom) {
         ResourceLocation texture = getTexture(type);
@@ -41,47 +38,30 @@ public final class EditableTooltipElementTextures {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
+        // 上辺はY反転して描画するため、頂点の巻き順が逆になる。
+        // Cullが有効だと上辺だけ消えるので、属性装飾の間だけ無効化する。
+        RenderSystem.disableCull();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.88F);
         graphics.enableScissor(left, top, right, bottom);
 
-        // ハイピクセル風の「縁から少し出る」量。ツールチップの大きさに関係なく大柄にしない。
-        int horizontalSpan = Math.min(width - 4, Math.max(24, Math.min(48, width / 4)));
-        int verticalSpan = Math.min(height - 4, Math.max(20, Math.min(40, height / 4)));
+        // PNGを引き伸ばさず32pxごとに並べ、バニラ風のドット比率を保つ。
         int verticalDepth = Math.min(height, 12);
         int horizontalDepth = Math.min(width, 12);
 
-        switch (type) {
-            case FIRE -> drawFromBottom(graphics, texture,
-                    left + (width - horizontalSpan) / 2, bottom, horizontalSpan, verticalDepth, source);
-            case SOUL_FIRE -> drawFromBottom(graphics, texture,
-                    left + width / 6, bottom, horizontalSpan, verticalDepth, source);
-            case ICE -> drawFromTop(graphics, texture,
-                    right - horizontalSpan - 8, top, horizontalSpan, verticalDepth, source);
-            case BLOOD -> drawFromTop(graphics, texture,
-                    left + 8, top, horizontalSpan, verticalDepth, source);
-            case ELECTRIC -> drawFromLeft(graphics, texture,
-                    left, top + 12, verticalSpan, horizontalDepth, source);
-            case THUNDER -> drawFromTop(graphics, texture,
-                    left + (width - horizontalSpan) / 2, top, horizontalSpan, verticalDepth, source);
-            case CORROSION -> drawFromRight(graphics, texture,
-                    right, top + Math.max(8, (height - verticalSpan) / 2), verticalSpan, horizontalDepth, source);
-            case WATER -> drawFromRight(graphics, texture,
-                    right, top + 10, verticalSpan, horizontalDepth, source);
-            case WIND -> drawFromLeft(graphics, texture,
-                    left, bottom - verticalSpan - 10, verticalSpan, horizontalDepth, source);
-            case HOLY -> drawFromTop(graphics, texture,
-                    left + (width - horizontalSpan) / 2, top, horizontalSpan, verticalDepth, source);
-            case DARK, ERASURE -> drawFromRight(graphics, texture,
-                    right, top + (height - verticalSpan) / 2, verticalSpan, horizontalDepth, source);
-            case MIASMA -> drawFromBottom(graphics, texture,
-                    right - horizontalSpan - 10, bottom, horizontalSpan, verticalDepth, source);
-            case SOUL -> drawFromLeft(graphics, texture,
-                    left, top + (height - verticalSpan) / 2, verticalSpan, horizontalDepth, source);
-            case NONE -> { }
+        for (int x = left; x < right; x += source) {
+            int span = Math.min(source, right - x);
+            drawFromTop(graphics, texture, x, top, span, verticalDepth, source);
+            drawFromBottom(graphics, texture, x, bottom, span, verticalDepth, source);
+        }
+        for (int y = top; y < bottom; y += source) {
+            int span = Math.min(source, bottom - y);
+            drawFromLeft(graphics, texture, left, y, span, horizontalDepth, source);
+            drawFromRight(graphics, texture, right, y, span, horizontalDepth, source);
         }
 
         graphics.disableScissor();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.enableCull();
     }
 
     private static void drawFromBottom(GuiGraphics g, ResourceLocation texture,
@@ -92,10 +72,11 @@ public final class EditableTooltipElementTextures {
 
     private static void drawFromTop(GuiGraphics g, ResourceLocation texture,
                                     int x, int top, int span, int depth, int source) {
+        // 原始PNGは下辺向けのまま保ち、描画時だけ上辺の内側へ反転する。
         g.pose().pushPose();
-        g.pose().translate(0.0F, top * 2.0F + depth, 0.0F);
+        g.pose().translate(x, top + depth, 0.0F);
         g.pose().scale(1.0F, -1.0F, 1.0F);
-        g.blit(texture, x, top, span, depth,
+        g.blit(texture, 0, 0, span, depth,
                 0, 0, source, source, source, source);
         g.pose().popPose();
     }

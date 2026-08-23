@@ -69,12 +69,16 @@ tasks.register('generateTooltipElementPngs') {
             (0..<32).each { x -> pixel(x, 30, dim); pixel(x, 31, color) }
             switch (name) {
                 case 'fire': case 'soul_fire':
+                    int flameHot = (name == 'fire' ? 0xFFFFE45C : 0xFFB8FFFF) as int
+                    int flameMid = (name == 'fire' ? 0xFFFF8A18 : 0xFF22DDEB) as int
+                    int flameDark = (name == 'fire' ? 0xFFD93600 : 0xFF087CCF) as int
                     (2..<32).step(6).eachWithIndex { x, i ->
                         int h = 11 + (i % 3) * 4
                         (0..<h).each { n ->
                             int half = Math.max(0, (h - n).intdiv(4))
                             int sway = n > h.intdiv(2) ? n % 2 : 0
-                            ((x-half+sway)..(x+half+sway)).each { px -> pixel(px, 30-n, n > 3 ? color : dim) }
+                            int flameColor = n < 4 ? flameHot : (n < h.intdiv(2) ? flameMid : flameDark)
+                            ((x-half+sway)..(x+half+sway)).each { px -> pixel(px, 30-n, flameColor) }
                         }
                     }; break
                 case 'ice':

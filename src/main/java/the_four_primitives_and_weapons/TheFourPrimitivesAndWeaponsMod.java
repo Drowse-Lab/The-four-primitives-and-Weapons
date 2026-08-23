@@ -75,6 +75,7 @@ public class TheFourPrimitivesAndWeaponsMod {
 		TheFourPrimitivesAndWeaponsModBlocks.REGISTRY.register(bus);
 		TheFourPrimitivesAndWeaponsModItems.REGISTRY.register(bus);
 		the_four_primitives_and_weapons.init.BladeDimensionItems.register(bus);
+		the_four_primitives_and_weapons.init.BladeCrystalInit.register(bus);
 		TheFourPrimitivesAndWeaponsModEntities.REGISTRY.register(bus);
 		TheFourPrimitivesAndWeaponsModCustomEntities.REGISTRY.register(bus);
 		CustomEntityInit.CUSTOM_ENTITIES.register(bus);

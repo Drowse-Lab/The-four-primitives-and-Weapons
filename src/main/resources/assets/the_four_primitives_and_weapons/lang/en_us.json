@@ -877,5 +877,14 @@
   "container.the_four_primitives_and_weapons.koshirae": "Koshirae Bench",
   "saya.style.gunto": "Gunto Saya",
   "item.the_four_primitives_and_weapons.boundary_blade": "Boundary Blade",
-  "item.the_four_primitives_and_weapons.blade_field_tome": "Tome of the Blade Field"
+  "item.the_four_primitives_and_weapons.blade_field_tome": "Tome of the Blade Field",
+  "item.the_four_primitives_and_weapons.corrosion_crystal": "Corrosion Crystal",
+  "block.the_four_primitives_and_weapons.violet_corrosion_crystal": "Violet Corrosion Crystal",
+  "block.the_four_primitives_and_weapons.cyan_corrosion_crystal": "Cyan Corrosion Crystal",
+  "block.the_four_primitives_and_weapons.amber_corrosion_crystal": "Amber Corrosion Crystal",
+  "block.the_four_primitives_and_weapons.crimson_corrosion_crystal": "Crimson Corrosion Crystal",
+  "tooltip.the_four_primitives_and_weapons.corrosion_crystal": "Use from the main hand to imbue or strengthen Corrosion on an offhand weapon",
+  "message.the_four_primitives_and_weapons.corrosion_crystal.weapon_required": "A weapon is required in your offhand",
+  "message.the_four_primitives_and_weapons.corrosion_crystal.maximum": "This weapon already has maximum Corrosion",
+  "message.the_four_primitives_and_weapons.corrosion_crystal.applied": "Applied Corrosion Lv.%s"
 }

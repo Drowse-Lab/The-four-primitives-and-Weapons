@@ -14,6 +14,8 @@ import net.minecraft.world.level.WorldGenLevel;
 import the_four_primitives_and_weapons.entity.StabbedWeaponEntity;
 import the_four_primitives_and_weapons.util.KatanaFittings;
 import the_four_primitives_and_weapons.events.StabWeaponHandler;
+import the_four_primitives_and_weapons.damage.ElementType;
+import the_four_primitives_and_weapons.damage.ElementalDamageUtils;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /** 既存の「戦地設営の杭」と同じ刺さった武器エンティティを剣の原へ生成する。 */
@@ -24,7 +26,7 @@ public class BladeFieldFeature extends Feature<NoneFeatureConfiguration> {
             MOD + "stone_katana", MOD + "iron_katana", MOD + "gold_katana",
             MOD + "iron_tyokuto", MOD + "gold_tyokuto",
             MOD + "stone_rapier", MOD + "iron_rapier", MOD + "gold_rapier",
-            MOD + "warabitetou", MOD + "ninjatou", MOD + "scythe"
+            MOD + "warabitetou", MOD + "ninjatou"
     };
     private static final String[] RARE_WEAPONS = {
             "minecraft:diamond_sword", "minecraft:netherite_sword",
@@ -59,9 +61,14 @@ public class BladeFieldFeature extends Feature<NoneFeatureConfiguration> {
         if (selected == null) return false;
         ItemStack weapon = new ItemStack(selected);
         randomizeFittings(weapon, random);
-        // 長く戦場に晒された武器として、残り耐久を1～8にする。
+        String biome = level.getBiome(pos).unwrapKey().map(k -> k.location().getPath()).orElse("blade_field");
+        ElementType element = elementForBiome(biome);
+        if (element != null) ElementalDamageUtils.setElement(weapon, element, 1 + random.nextInt(3));
+        // 通常荒地は比較的状態が良い。属性地帯は長く晒された残り耐久1～8。
         if (weapon.isDamageableItem()) {
-            int remaining = 1 + random.nextInt(Math.min(8, weapon.getMaxDamage()));
+            int remaining = element == null
+                    ? Math.max(1, (int)(weapon.getMaxDamage() * (0.25D + random.nextDouble() * 0.35D)))
+                    : 1 + random.nextInt(Math.min(8, weapon.getMaxDamage()));
             weapon.setDamageValue(weapon.getMaxDamage() - remaining);
         }
         weapon.getOrCreateTag().putBoolean(StabWeaponHandler.TAG_NATURAL_BLADE_FIELD_WEAPON, true);
@@ -71,11 +78,27 @@ public class BladeFieldFeature extends Feature<NoneFeatureConfiguration> {
         entity.setRoll(-18.0F + random.nextFloat() * 36.0F);
 
         // 自然生成分はすべて地面へ刺す。空中の剣は次元移動の儀式専用。
-        entity.setTilt(6.0F + random.nextFloat() * 36.0F);
+        // 傾きは4～30度。寝かせすぎて鍔まで埋まる姿勢は作らない。
+        entity.setTilt(4.0F + random.nextFloat() * 26.0F);
         entity.setScale(0.85F + random.nextFloat() * 0.3F);
         entity.setRadius(1.0F);
-        entity.moveTo(pos.getX() + 0.5D, pos.getY() + 0.15D, pos.getZ() + 0.5D, 0.0F, 0.0F);
+        // 刺さる深さをランダム化。0.03～0.20なら切先は浮かず、鍔は地表より上に残る。
+        double embedHeight = 0.03D + random.nextDouble() * 0.17D;
+        entity.moveTo(pos.getX() + 0.5D, pos.getY() + embedHeight, pos.getZ() + 0.5D, 0.0F, 0.0F);
         return level.addFreshEntity(entity);
+    }
+
+    private static ElementType elementForBiome(String biome) {
+        return switch (biome) {
+            case "blade_field_fire" -> ElementType.FIRE;
+            case "blade_field_ice" -> ElementType.ICE;
+            case "blade_field_thunder" -> ElementType.THUNDER;
+            case "blade_field_water" -> ElementType.WATER;
+            case "blade_field_blood" -> ElementType.BLOOD;
+            case "blade_field_wind" -> ElementType.WIND;
+            case "blade_field_corrosion" -> ElementType.CORROSION;
+            default -> null;
+        };
     }
 
     /** 拵え対応武器だけ、プレイヤーが拵え台で行えるのと同じ着色・意匠変更を適用する。 */
@@ -86,13 +109,23 @@ public class BladeFieldFeature extends Feature<NoneFeatureConfiguration> {
         KatanaFittings.setTsuba(weapon, KatanaFittings.dyeRgb(dyes[random.nextInt(dyes.length)]));
         KatanaFittings.setKashira(weapon, KatanaFittings.dyeRgb(dyes[random.nextInt(dyes.length)]));
         KatanaFittings.setFuchi(weapon, KatanaFittings.dyeRgb(dyes[random.nextInt(dyes.length)]));
-        if (random.nextBoolean())
-            KatanaFittings.setTsukaWrap(weapon, KatanaFittings.WRAPS[random.nextInt(KatanaFittings.WRAPS.length)]);
-        if (random.nextBoolean())
-            KatanaFittings.setTsubaStyle(weapon, KatanaFittings.TSUBAS[random.nextInt(KatanaFittings.TSUBAS.length)]);
-        if (random.nextBoolean())
-            KatanaFittings.setKashiraStyle(weapon, KatanaFittings.KASHIRAS[random.nextInt(KatanaFittings.KASHIRAS.length)]);
-        if (random.nextBoolean())
-            KatanaFittings.setFuchiStyle(weapon, KatanaFittings.FUCHIS[random.nextInt(KatanaFittings.FUCHIS.length)]);
+        ResourceLocation id = ForgeRegistries.ITEMS.getKey(weapon.getItem());
+        String path = id == null ? "" : id.getPath();
+        if (path.contains("rapier")) {
+            // レイピアは刀用 tuka/tuba ではなく専用テクスチャ名を使う。
+            if (random.nextBoolean()) KatanaFittings.setTsukaWrap(weapon, "grip_b");
+            if (random.nextBoolean()) KatanaFittings.setTsubaStyle(weapon, "guard_b");
+            if (random.nextBoolean()) KatanaFittings.setKashiraStyle(weapon, "pommel_b");
+        } else if (!path.contains("tyokuto")) {
+            // 直刀は現状、柄・鍔・頭の色だけを変える。刀用UVの柄巻きは混ぜない。
+            if (random.nextBoolean())
+                KatanaFittings.setTsukaWrap(weapon, KatanaFittings.WRAPS[random.nextInt(KatanaFittings.WRAPS.length)]);
+            if (random.nextBoolean())
+                KatanaFittings.setTsubaStyle(weapon, KatanaFittings.TSUBAS[random.nextInt(KatanaFittings.TSUBAS.length)]);
+            if (random.nextBoolean())
+                KatanaFittings.setKashiraStyle(weapon, KatanaFittings.KASHIRAS[random.nextInt(KatanaFittings.KASHIRAS.length)]);
+            if (random.nextBoolean())
+                KatanaFittings.setFuchiStyle(weapon, KatanaFittings.FUCHIS[random.nextInt(KatanaFittings.FUCHIS.length)]);
+        }
     }
 }

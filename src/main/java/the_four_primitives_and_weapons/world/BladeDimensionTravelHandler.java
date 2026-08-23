@@ -22,6 +22,7 @@ import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 import the_four_primitives_and_weapons.init.BladeDimensionItems;
 import the_four_primitives_and_weapons.entity.StabbedWeaponEntity;
 import net.minecraft.world.phys.Vec3;
+import the_four_primitives_and_weapons.world.features.BladeFieldTerrainFeature;
 
 /** 専用の境界剣を剣界の書で導く、剣の原への往還儀式。 */
 @Mod.EventBusSubscriber(modid = TheFourPrimitivesAndWeaponsMod.MODID)
@@ -71,9 +72,14 @@ public final class BladeDimensionTravelHandler {
             return;
         }
         BlockPos destination = returning ? target.getSharedSpawnPos() : new BlockPos(0, 80, 0);
-        BlockPos top = target.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, destination);
+        // FULLチャンクまで生成し、地形整形Featureの完了前に高さを読む競合を防ぐ。
+        target.getChunk(destination.getX() >> 4, destination.getZ() >> 4);
+        int safeY = returning
+                ? target.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, destination.getX(), destination.getZ())
+                : BladeFieldTerrainFeature.surfaceHeight(destination.getX(), destination.getZ()) + 1;
+        BlockPos top = new BlockPos(destination.getX(), safeY, destination.getZ());
         target.playSound(null, top, SoundEvents.PORTAL_TRAVEL, SoundSource.PLAYERS, 0.7F, 1.2F);
-        player.teleportTo(target, top.getX() + 0.5D, top.getY() + 1D, top.getZ() + 0.5D,
+        player.teleportTo(target, top.getX() + 0.5D, top.getY() + 0.05D, top.getZ() + 0.5D,
                 player.getYRot(), player.getXRot());
     }
 

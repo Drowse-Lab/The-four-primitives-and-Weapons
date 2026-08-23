@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "the_four_primitives_and_weapons:blade_field_fire",
+    "the_four_primitives_and_weapons:blade_field_ice",
+    "the_four_primitives_and_weapons:blade_field_thunder",
+    "the_four_primitives_and_weapons:blade_field_water",
+    "the_four_primitives_and_weapons:blade_field_blood",
+    "the_four_primitives_and_weapons:blade_field_wind",
+    "the_four_primitives_and_weapons:blade_field_corrosion"
+  ]
+}

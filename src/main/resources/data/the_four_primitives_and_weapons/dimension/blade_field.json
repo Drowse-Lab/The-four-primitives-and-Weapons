@@ -4,8 +4,33 @@
     "type": "minecraft:noise",
     "settings": "minecraft:overworld",
     "biome_source": {
-      "type": "minecraft:fixed",
-      "biome": "the_four_primitives_and_weapons:blade_field"
+      "type": "minecraft:multi_noise",
+      "biomes": [
+        {"biome":"the_four_primitives_and_weapons:blade_field","parameters":{"temperature":-0.70,"humidity":-0.70,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field","parameters":{"temperature":0.10,"humidity":0.10,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field","parameters":{"temperature":0.80,"humidity":0.80,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_fire","parameters":{"temperature":-0.70,"humidity":-0.20,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_fire","parameters":{"temperature":0.10,"humidity":0.60,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_fire","parameters":{"temperature":0.80,"humidity":-0.70,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_ice","parameters":{"temperature":-0.70,"humidity":0.40,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_ice","parameters":{"temperature":0.10,"humidity":-0.80,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_ice","parameters":{"temperature":0.80,"humidity":0.10,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_thunder","parameters":{"temperature":-0.70,"humidity":0.90,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_thunder","parameters":{"temperature":0.10,"humidity":-0.30,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_thunder","parameters":{"temperature":0.80,"humidity":0.60,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_water","parameters":{"temperature":-0.35,"humidity":-0.70,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_water","parameters":{"temperature":0.45,"humidity":0.10,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_water","parameters":{"temperature":-0.95,"humidity":0.80,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_blood","parameters":{"temperature":-0.35,"humidity":-0.20,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_blood","parameters":{"temperature":0.45,"humidity":0.60,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_blood","parameters":{"temperature":-0.95,"humidity":-0.70,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_wind","parameters":{"temperature":-0.35,"humidity":0.40,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_wind","parameters":{"temperature":0.45,"humidity":-0.80,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_wind","parameters":{"temperature":-0.95,"humidity":0.10,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_corrosion","parameters":{"temperature":-0.35,"humidity":0.90,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_corrosion","parameters":{"temperature":0.45,"humidity":-0.30,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}},
+        {"biome":"the_four_primitives_and_weapons:blade_field_corrosion","parameters":{"temperature":-0.95,"humidity":0.60,"continentalness":0,"erosion":0,"weirdness":0,"depth":0,"offset":0}}
+      ]
     }
   }
 }

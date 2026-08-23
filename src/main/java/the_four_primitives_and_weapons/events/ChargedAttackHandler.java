@@ -7,6 +7,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
@@ -36,8 +38,10 @@ import net.minecraft.world.entity.MobType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.HitResult;
 
 import the_four_primitives_and_weapons.damage.SpecialDebuffHandler;
 import the_four_primitives_and_weapons.skill.PlayerSkillData;
@@ -113,6 +117,26 @@ public class ChargedAttackHandler {
         void resetCombo() {
             comboCounter = 0;
         }
+    }
+
+    /**
+     * 通常技の入力はtick上の isDown の立ち上がり推測ではなく、
+     * Forgeが通知する実際の攻撃クリックから送信する。他MODが入力を処理した後でも
+     * 本MODの技パケットが消えないよう receiveCanceled も受け取る。
+     */
+    @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
+    public static void onAttackKey(InputEvent.InteractionKeyMappingTriggered event) {
+        if (!event.isAttack() || !event.shouldSwingHand()) return;
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
+        if (player == null || mc.screen != null) return;
+        if (!isWeapon(player.getMainHandItem())) return;
+
+        // InteractionKeyMappingTriggered はブロックを採掘中にも繰り返し発火する。
+        // ここで技パケットを送ると、目の前のブロックへ長押ししただけで技が連射される。
+        if (mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK) return;
+
+        TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new AttackPacket(0, 0));
     }
     
     @SubscribeEvent
@@ -237,14 +261,6 @@ public class ChargedAttackHandler {
         if (isWeapon(mainHand)) {
             boolean isLeftClickHeld = mc.options.keyAttack.isDown();
             
-            // 左クリックが押された瞬間を検出（通常攻撃）— チャージ中は送らない
-            if (isLeftClickHeld && !data.wasLeftClickPressed && !data.isCharging) {
-                data.clickReleaseTimer = 0;
-                // ゲージが溜まっていなくても発動させる ( 弱いだけ )。 威力の判定はサーバー側の
-                // ChargedAttackHandler#attackChargeScale が行う。
-                TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new AttackPacket(0, 0));
-            }
-
             // チャージ開始（左クリック長押し）- クールダウン中は開始しない。
             // 閾値を上げて「コンボの押しっぱなし」で誤ってチャージ攻撃(slam_down等)が
             // 出るのを防ぐ ( 5→10 tick = 0.5秒明確に押し続けた時だけチャージ開始 )。
@@ -707,6 +723,18 @@ public class ChargedAttackHandler {
         
         // チャージ中はブロック破壊をキャンセル
         if (data != null && data.isCharging) {
+            event.setCanceled(true);
+            return;
+        }
+
+        ItemStack held = player.getMainHandItem();
+        if (!isWeapon(held)) return;
+
+        BlockState state = player.level().getBlockState(event.getPos());
+        // 剣が本来破壊に適しているブロックは、通常どおり壊せる。
+        // それ以外のブロック操作は武器使用中だけ無効化する。
+        boolean swordEffective = held.getItem() instanceof SwordItem && state.is(BlockTags.SWORD_EFFICIENT);
+        if (!swordEffective) {
             event.setCanceled(true);
         }
     }

@@ -380,7 +380,7 @@ public class MotionExecutor {
             net.minecraft.core.particles.ParticleOptions ringDust = slashDust(player);
             for (int i = 0; i < 360; i += 30) {
                 double rad = Math.toRadians(i);
-                serverWorld.sendParticles(ringDust,
+                the_four_primitives_and_weapons.damage.ElementalParticles.sendForced(serverWorld, ringDust,
                     playerPos.x + Math.cos(rad) * range * 0.7,
                     playerPos.y + 1.0,
                     playerPos.z + Math.sin(rad) * range * 0.7,
@@ -565,7 +565,7 @@ public class MotionExecutor {
         int steps = (int) Math.round((end - start) / 0.25);
         for (int i = 0; i <= steps; i++) {
             double d = start + (end - start) * i / steps;
-            sw.sendParticles(dust,
+            the_four_primitives_and_weapons.damage.ElementalParticles.sendForced(sw, dust,
                     playerPos.x + look.x * d, y, playerPos.z + look.z * d,
                     3, 0.05, 0.05, 0.05, 0.0);
         }
@@ -578,7 +578,7 @@ public class MotionExecutor {
         net.minecraft.core.particles.ParticleOptions dust = slashDust(player);
         for (int k = 0; k < 3; k++) {
             double d = 1.5 + k * (far - 1.5) / 2.0;
-            sw.sendParticles(dust,
+            the_four_primitives_and_weapons.damage.ElementalParticles.sendForced(sw, dust,
                 playerPos.x + look.x * d, y, playerPos.z + look.z * d,
                 40, 0.5, 0.3, 0.5, 0.002);
         }
@@ -605,7 +605,8 @@ public class MotionExecutor {
                         sw, elem, p.x, p.y, p.z, 32, delta, 0.0);
             } else {
                 // 本家: delta 1 0 1 ( 横に広く・上下は広げない ), speed 0.001, count 50
-                sw.sendParticles(DUST_KATANA, p.x, p.y, p.z, 50, delta, 0.0, delta, 0.001);
+                the_four_primitives_and_weapons.damage.ElementalParticles.sendForced(
+                        sw, DUST_KATANA, p.x, p.y, p.z, 50, delta, 0.0, delta, 0.001);
             }
         }
     }
