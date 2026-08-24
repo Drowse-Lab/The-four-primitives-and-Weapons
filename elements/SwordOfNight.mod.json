@@ -26,9 +26,6 @@
     "immuneToFire": false,
     "stayInGridWhenCrafting": false,
     "damageOnCrafting": false,
-    "onRightClickedInAir": {
-      "name": "SwordOfNightYoukuritukusitatoki"
-    },
     "onItemInUseTick": {
       "name": "IronKatanaturuwoShoudeChituteiruJiannoteituku"
     }

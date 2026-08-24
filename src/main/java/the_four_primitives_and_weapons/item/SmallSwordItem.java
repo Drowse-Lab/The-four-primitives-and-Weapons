@@ -7,12 +7,8 @@ import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.InteractionHand;
 
-import the_four_primitives_and_weapons.procedures.SmallSwordYoukuritukusitatokiProcedure;
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModTabs;
@@ -46,13 +42,6 @@ public class SmallSwordItem extends SwordItem {
 		// damage 3 → 1 (攻撃力↓, total = tier bonus 5 + 1 = 6)
 		// attackSpeed -2.4f → -1.6f (短剣相当の連撃速度 ~2.4 atk/sec)
 		}, 1, -1.6f, new Item.Properties());
-	}
-
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		SmallSwordYoukuritukusitatokiProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
-		return ar;
 	}
 
 	@Override

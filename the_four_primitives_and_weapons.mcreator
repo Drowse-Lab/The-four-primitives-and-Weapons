@@ -4906,39 +4906,6 @@
       }
     },
     {
-      "name": "NaihazunoRingWhileBaubleIsEquippedTick",
-      "type": "procedure",
-      "sortid": 349,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "naihazuno_ring_while_bauble_is_equipped_tick",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/NaihazunoRingWhileBaubleIsEquippedTickProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ]
-      }
-    },
-    {
-      "name": "NaihazunoRing",
-      "type": "curiosbauble",
-      "sortid": 350,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "naihazuno_ring",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/item/NaihazunoRingItem.java",
-          "src/main/resources/assets/the_four_primitives_and_weapons/models/item/naihazuno_ring.json"
-        ]
-      }
-    },
-    {
       "name": "GuardposiyonnoXiaoGuogaKaiShiShiYongsaretatoki",
       "type": "procedure",
       "sortid": 355,
@@ -9930,7 +9897,6 @@
       "item.the_four_primitives_and_weapons.wither_katana": "§8Wither Katana",
       "effect.the_four_primitives_and_weapons.devour_blood": "devour blood",
       "effect.the_four_primitives_and_weapons.arrow_1": "arrowkill",
-      "item.the_four_primitives_and_weapons.naihazuno_ring": "Ring",
       "gui.the_four_primitives_and_weapons.rpg_book_gui.button_nigu": "nigu",
       "item.the_four_primitives_and_weapons.dragon_blue_armor_leggings": "§1Dragon blue leggings",
       "block.the_four_primitives_and_weapons.custom_crafter_crafting": "Custom Crafter Crafting",
@@ -10213,7 +10179,6 @@
       "item.the_four_primitives_and_weapons.wither_katana": "§8Wither Katana",
       "effect.the_four_primitives_and_weapons.devour_blood": "devour blood",
       "effect.the_four_primitives_and_weapons.arrow_1": "arrowkill",
-      "item.the_four_primitives_and_weapons.naihazuno_ring": "Ring",
       "gui.the_four_primitives_and_weapons.rpg_book_gui.button_nigu": "二グ",
       "item.the_four_primitives_and_weapons.dragon_blue_armor_leggings": "§1Dragon blue leggings",
       "block.the_four_primitives_and_weapons.custom_crafter_crafting": "Custom Crafter Crafting",

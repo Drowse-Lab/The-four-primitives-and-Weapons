@@ -23,9 +23,6 @@
     "immuneToFire": false,
     "stayInGridWhenCrafting": false,
     "damageOnCrafting": false,
-    "onRightClickedInAir": {
-      "name": "NinjatouYoukuritukusitatoki"
-    },
     "onItemInUseTick": {
       "name": "IronKatanaturuwoShoudeChituteiruJiannoteituku"
     }

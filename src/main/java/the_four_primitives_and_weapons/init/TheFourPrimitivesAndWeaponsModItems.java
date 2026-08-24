@@ -60,7 +60,6 @@ import the_four_primitives_and_weapons.item.OldKatanaItem;
 import the_four_primitives_and_weapons.item.NinjatouItem;
 import the_four_primitives_and_weapons.item.NiguShieldItem;
 import the_four_primitives_and_weapons.item.NetheriteKatanaItem;
-import the_four_primitives_and_weapons.item.NaihazunoRingItem;
 import the_four_primitives_and_weapons.item.MyTestIronKatanaItem;
 
 import the_four_primitives_and_weapons.item.MotaseruItem;
@@ -231,7 +230,6 @@ public class TheFourPrimitivesAndWeaponsModItems {
 	public static final RegistryObject<Item> KURIKARAKENSWORD = REGISTRY.register("kurikarakensword", () -> new KurikarakenswordItem());
 	public static final RegistryObject<Item> KURIKARAKENUTIGATANA = REGISTRY.register("kurikarakenutigatana", () -> new KurikarakenutigatanaItem());
 	public static final RegistryObject<Item> NINJATOU = REGISTRY.register("ninjatou", () -> new NinjatouItem());
-	public static final RegistryObject<Item> NAIHAZUNO_RING = REGISTRY.register("naihazuno_ring", () -> new NaihazunoRingItem());
 	public static final RegistryObject<Item> REPLICA_SWORD_OF_LIGHT = REGISTRY.register("replica_sword_of_light", () -> new ReplicaSwordOfLightItem());
 	public static final RegistryObject<Item> GOLD_KATANA = REGISTRY.register("gold_katana", () -> new GoldKatanaItem());
 	public static final RegistryObject<Item> KENTI = REGISTRY.register("kenti", () -> new KentiItem());

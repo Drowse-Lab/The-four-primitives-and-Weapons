@@ -39,8 +39,6 @@ import the_four_primitives_and_weapons.potion.OtiruyooMobEffect;
 import the_four_primitives_and_weapons.potion.OtiroMobEffect;
 import the_four_primitives_and_weapons.potion.OnazitakasaArrowMobEffect;
 import the_four_primitives_and_weapons.potion.NgsMobEffect;
-import the_four_primitives_and_weapons.potion.NagiharaiMobEffect;
-import the_four_primitives_and_weapons.potion.Nagiharai2MobEffect;
 import the_four_primitives_and_weapons.potion.LongRangeWeaponCutMobEffect;
 import the_four_primitives_and_weapons.potion.KurutimenasiMobEffect;
 import the_four_primitives_and_weapons.potion.KougekiMobEffect;
@@ -94,7 +92,6 @@ public class TheFourPrimitivesAndWeaponsModMobEffects {
 	public static final RegistryObject<MobEffect> TISSOKU = REGISTRY.register("tissoku", () -> new TissokuMobEffect());
 	public static final RegistryObject<MobEffect> BUBBLESHOT_EFFECT = REGISTRY.register("bubbleshot_effect", () -> new BubbleshotEffectMobEffect());
 	public static final RegistryObject<MobEffect> THUNDER_HIT = REGISTRY.register("thunder_hit", () -> new ThunderHitMobEffect());
-	public static final RegistryObject<MobEffect> NAGIHARAI = REGISTRY.register("nagiharai", () -> new NagiharaiMobEffect());
 	public static final RegistryObject<MobEffect> KURUTIMENASI = REGISTRY.register("kurutimenasi", () -> new KurutimenasiMobEffect());
 	public static final RegistryObject<MobEffect> WAZA = REGISTRY.register("waza", () -> new WazaMobEffect());
 	public static final RegistryObject<MobEffect> EFFECT_MAGIC = REGISTRY.register("effect_magic", () -> new EffectMagicMobEffect());
@@ -111,7 +108,6 @@ public class TheFourPrimitivesAndWeaponsModMobEffects {
 	public static final RegistryObject<MobEffect> KOUGEKI = REGISTRY.register("kougeki", () -> new KougekiMobEffect());
 	public static final RegistryObject<MobEffect> ZANNGEKIKAI = REGISTRY.register("zanngekikai", () -> new ZanngekikaiMobEffect());
 	public static final RegistryObject<MobEffect> SYUGEKINANOZEE = REGISTRY.register("syugekinanozee", () -> new SyugekinanozeeMobEffect());
-	public static final RegistryObject<MobEffect> NAGIHARAI_2 = REGISTRY.register("nagiharai_2", () -> new Nagiharai2MobEffect());
 	public static final RegistryObject<MobEffect> KAMINARIYADE = REGISTRY.register("kaminariyade", () -> new KaminariyadeMobEffect());
 	public static final RegistryObject<MobEffect> TOKUBETUSOUNAZANGEKI = REGISTRY.register("tokubetusounazangeki", () -> new TokubetusounazangekiMobEffect());
 	public static final RegistryObject<MobEffect> KARIKARISITERUNEMAIDOMAIDO = REGISTRY.register("karikarisiterunemaidomaido", () -> new KarikarisiterunemaidomaidoMobEffect());

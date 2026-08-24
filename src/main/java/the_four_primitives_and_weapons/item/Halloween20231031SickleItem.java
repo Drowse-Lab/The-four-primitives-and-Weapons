@@ -8,13 +8,9 @@ import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.network.chat.Component;
 
-import the_four_primitives_and_weapons.procedures.WarabitetouYoukuritukusitatokiProcedure;
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModTabs;
@@ -48,13 +44,6 @@ public class Halloween20231031SickleItem extends SwordItem {
 				return Ingredient.of();
 			}
 		}, 3, 2f, new Item.Properties());
-	}
-
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		WarabitetouYoukuritukusitatokiProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
-		return ar;
 	}
 
 	@Override
