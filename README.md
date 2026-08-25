@@ -39,13 +39,6 @@ doragon Armorのtextureはここからダウンロードしました
   <img src="https://github.com/janosh/awesome-normalizing-flows/actions/workflows/link-check.yml/badge.svg" alt="Link Check status badge" style="width:150px; height:auto;">
 </a>
 
-***
-## [chuzume](https://github.com/Chuzume)さんのを参考にしたり
-### replica sword of light
-https://youtu.be/nA6a7O3jBJo?si=NzeW23jMIkDXOmv3  
-### sword of night
-https://youtu.be/i-ItAsrIK7U?si=f5FXomJLYBK7GmQ9  
-***
 
 dagger鞘をslot backとbeltに入れても3Dmodelが出ない
 簡単にできるようにして自動で外部addonでも適応できるように
