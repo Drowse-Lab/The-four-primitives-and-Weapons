@@ -115,8 +115,6 @@ public class SkillRegistry {
                 MotionCategory.UNIVERSAL, rightClickOnly, null);
         register("bow_wind", "風纏い", "矢が無重力 + 速度 ×1.5 + ノックバック強化",
                 MotionCategory.UNIVERSAL, rightClickOnly, null);
-        register("sword_of_night_special", "夜の剣・特殊技", "右クリック:レーザー / 長押し:テレポート",
-                MotionCategory.SPECIAL, rightClickOnly, "SwordOfNightItem");
         register("gate_special", "Gate・投刃", "右クリック:放射状に直刀を投げる",
                 MotionCategory.SPECIAL, rightClickOnly, "GateItem");
         register("rivers_of_blood_special", "Hemorrhagic Eclipse", "右クリック連打:前方扇形に血斬撃 (連撃) / bleed + 命中ごとに +1.5HP 吸収",
@@ -139,7 +137,6 @@ public class SkillRegistry {
                 MotionCategory.SPECIAL, allSlots, "KurikarakenutigatanaItem");
         register("electric_discharge", "放電バースト", "周囲に電撃を放出",
                 MotionCategory.SPECIAL, allSlots, "KurikarakenswordItem");
-        // sword_of_night_tpは右クリック専用（sword_of_night_specialに統合済み）
         // 「magic_katana_special」 は MagicalKatanaItem ( 侵食ベース ) と
         // MagischesFeenKatanaItem ( 妖精ベース ) の両方で使えるデフォルト技
         register("magic_katana_special", "魔法刀・特殊攻撃", "魔法を纏った特殊攻撃",

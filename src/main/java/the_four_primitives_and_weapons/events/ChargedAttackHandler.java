@@ -48,9 +48,6 @@ import the_four_primitives_and_weapons.skill.PlayerSkillData;
 import the_four_primitives_and_weapons.skill.PlayerSkillData.AttackSlot;
 import the_four_primitives_and_weapons.skill.MotionExecutor;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModMobEffects;
-import the_four_primitives_and_weapons.procedures.SwordOfNightTpProcedure;
-import the_four_primitives_and_weapons.procedures.SwordOfNightShotProcedure;
-import the_four_primitives_and_weapons.procedures.SwordOfNightChargingGlowProcedure;
 import the_four_primitives_and_weapons.procedures.MagicKatanaSpecialChargeProcedure;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModEnchantments;
@@ -143,8 +140,6 @@ public class ChargedAttackHandler {
     public static void onLivingTick(LivingEvent.LivingTickEvent event) {
         LivingEntity entity = event.getEntity();
         
-        // Sword of Nightの発光効果を管理
-        SwordOfNightChargingGlowProcedure.managGlowTicks(entity);
     }
     
     @SubscribeEvent
@@ -174,18 +169,6 @@ public class ChargedAttackHandler {
                 displayChargeEffect(player, data.chargeTime);
             }
             
-            // Sword of Nightの場合、ターゲットを発光させる
-            String itemName = data.chargingItem.getItem().getClass().getSimpleName();
-            if (itemName.equals("SwordOfNightItem") && !player.level().isClientSide) {
-                SwordOfNightChargingGlowProcedure.execute(
-                    player.level(), 
-                    player.getX(), 
-                    player.getY(), 
-                    player.getZ(), 
-                    player, 
-                    true // チャージ中
-                );
-            }
             
             // 最大チャージ到達
             if (data.chargeTime >= MAX_CHARGE_TIME) {
@@ -298,19 +281,6 @@ public class ChargedAttackHandler {
     }
     
     private static void releaseChargedAttack(Player player, ChargeData data) {
-        // Sword of Nightの場合、発光を解除
-        String itemName = data.chargingItem.getItem().getClass().getSimpleName();
-        if (itemName.equals("SwordOfNightItem") && !player.level().isClientSide) {
-            SwordOfNightChargingGlowProcedure.execute(
-                player.level(),
-                player.getX(),
-                player.getY(), 
-                player.getZ(),
-                player,
-                false // チャージ解除
-            );
-        }
-        
         if (data.chargeTime >= MIN_CHARGE_TIME) {
             float chargePercent = Math.min((float) data.chargeTime / MAX_CHARGE_TIME, 1.0f);
             // サーバーに攻撃パケットを送信
@@ -396,17 +366,6 @@ public class ChargedAttackHandler {
         // コメントアウトされていた (= Luna チャージ技が出なくなっていた) のを修正。
         if (itemName.equals("LunaItem")) {
             performChargedThrust(player, world, lookVec, playerPos, chargePercent, isCooldown);
-            return;
-        }
-
-        // ReplicaSwordOfLightの固有スキル（ガード）
-        if (itemName.equals("ReplicaSwordOfLightItem") && skillData.isUniqueSkillEnabled("ReplicaSwordOfLight")) {
-            player.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.GUARD.get(), 100, 0));
-        }
-
-        // SwordOfNightの固有スキル（テレポート攻撃）
-        if (itemName.equals("SwordOfNightItem") && skillData.isUniqueSkillEnabled("SwordOfNight")) {
-            SwordOfNightTpProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
             return;
         }
 
@@ -521,15 +480,6 @@ public class ChargedAttackHandler {
                 the_four_primitives_and_weapons.item.rarity.WeaponRarity.getFromStack(mainHand);
         if (normalRarity == the_four_primitives_and_weapons.item.rarity.WeaponRarity.FORBIDDEN) {
             ForbiddenRarityHandler.reflectNearbyProjectiles(player);
-        }
-
-        if (itemName.equals("SwordOfNightItem") && skillData.isUniqueSkillEnabled("SwordOfNight")) {
-            // Sword of Night Effectがアクティブな間はショットを撃たない
-            if (!player.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.SWORD_OF_NIGHT_EFFECT.get())) {
-                // SwordOfNightの通常攻撃（ショット）
-                SwordOfNightShotProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
-            }
-            return;
         }
 
         // Lunaの固有スキル

@@ -24,9 +24,7 @@ import java.util.List;
 import java.util.Comparator;
 
 public class IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure {
-	// 軽量化版 (旧: 毎 tick で getMainHandItem を 20+ 回呼び出し + SWORD_OF_NIGHT で 50 ブロック AABB scan を 2 回).
 	//   - mainHand を 1 回だけ取得して使い回し
-	//   - SWORD_OF_NIGHT の AABB scan は 1 回に統合し、 半径 50 → 16、 predicate で gyamigyapitonndeyaru==1 のみ抽出
 	//   - 粒子コマンド (MAGISCHES_FEEN_KATANA / MAGICAL_KATANA) を 4 tick に 1 回に間引き
 	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
 		if (entity == null) return;
@@ -49,14 +47,12 @@ public class IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure {
 			if (serverSide)
 				living.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.LONG_RANGE_WEAPON_CUT.get(), 2, 1, true, false));
 		}
-		// REPLICA_SWORD_OF_LIGHT は ambient=false / showIcon=true 版で別途
-		if (heldItem == TheFourPrimitivesAndWeaponsModItems.REPLICA_SWORD_OF_LIGHT.get()) {
+		if (false) {
 			if (serverSide)
 				living.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.LONG_RANGE_WEAPON_CUT.get(), 2, 1, false, true));
 		}
 
-		// SWORD_OF_NIGHT — 旧: 毎tick 2 重 50 ブロック scan。 新: 1 回・16 ブロック・filter 同時。
-		if (heldItem == TheFourPrimitivesAndWeaponsModItems.SWORD_OF_NIGHT.get()) {
+		if (false) {
 			final Vec3 _center = new Vec3(x, y, z);
 			List<Entity> _entfound = world.getEntitiesOfClass(Entity.class,
 					new AABB(_center, _center).inflate(16 / 2d),
@@ -76,10 +72,8 @@ public class IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure {
 				}
 				if (!living.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.KURUTIMENASI.get())) {
 					if (entity instanceof Player _player)
-						_player.getCooldowns().addCooldown(TheFourPrimitivesAndWeaponsModItems.SWORD_OF_NIGHT.get(), 40);
+						_player.getCooldowns().addCooldown(net.minecraft.world.item.Items.AIR, 40);
 				}
-				if (serverSide)
-					living.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.SWORD_OF_NIGHT_EFFECT.get(), 20, 1, true, false));
 				entityiterator.getPersistentData().putDouble("gyamigyapitonndeyaru", 0);
 				entity.teleportTo(entityiterator.getX(), entityiterator.getY(), entityiterator.getZ());
 				if (entity instanceof ServerPlayer _serverPlayer)

@@ -22,7 +22,7 @@ public class NgsposiyonXiaoGuogaQieretaShiProcedure {
 		if (entity == null)
 			return;
 		double r = 0;
-		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.SWORD_OF_NIGHT.get()) {
+		if (false) {
 			{
 				final Vec3 _center = new Vec3(x, y, z);
 				// 軽量化: 50 → 16 ブロック半径に縮小し、 ストリームソート前に predicate で
@@ -45,8 +45,6 @@ public class NgsposiyonXiaoGuogaQieretaShiProcedure {
 						}
 						if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
 							_entity.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 60, 4, true, false));
-						if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
-							_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.SWORD_OF_NIGHT_EFFECT.get(), 60, 1, true, false));
 					}
 				}
 			}

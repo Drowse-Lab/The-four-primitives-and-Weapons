@@ -66,7 +66,7 @@ public class TheFourPrimitivesAndWeaponsModCustomEntities {
     public static final RegistryObject<EntityType<StabbedWeaponEntity>> STABBED_WEAPON = REGISTRY.register("stabbed_weapon",
             () -> EntityType.Builder.<StabbedWeaponEntity>of(StabbedWeaponEntity::new, MobCategory.MISC)
                     .setShouldReceiveVelocityUpdates(false)
-                    .setTrackingRange(128)
+                    .setTrackingRange(64)
                     .setUpdateInterval(20)
                     .fireImmune()
                     .setCustomClientFactory((spawnEntity, level) -> new StabbedWeaponEntity(spawnEntity, level))

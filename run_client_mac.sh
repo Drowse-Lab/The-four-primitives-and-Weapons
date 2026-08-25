@@ -9,11 +9,46 @@
 #   bash run_client_mac.sh tls            Cisco Umbrella 検査回線 ( workaround on を強制 )
 #   bash run_client_mac.sh offline notls  併用も可
 #   bash run_client_mac.sh keepdaemon     gradle daemon を kill しない ( デフォルトは kill )
+#   bash run_client_mac.sh help           この説明を表示して終了
 #
-# 起動前に外部 mod ( libs/local/ 配下 ) を含めるか対話で尋ねる ( y/N )。
-# y を選ぶと -PwithExternalMods=true を gradle に渡し、 libs/local/*.jar が自動取り込み。
+# 起動時の質問:
+#   1. 外部 mod をオンにしますか?
+#      y = 下記の外部MODを同期して起動 / Enter または n = 本体MODだけで起動
+#   2. ラグを減らす軽量モードにしますか?
+#      Enter または y = 軽い3個だけ / n = 全部入り9個
+#
+# 軽量モードで入るMOD:
+#   - chuzume-addon
+#   - extra_video_settings
+#   - RPGish-HPDisplay (mh_rpgish)
+#
+# 全部入りで追加されるMOD:
+#   - gun_and_weapon + TACZ
+#   - Backpack Arsenal
+#   - Mekanism
+#   - Sophisticated Core + Sophisticated Backpacks
+#
+# 質問を省略する例:
+#   WITH_EXTERNAL_MODS=1 LIGHT_EXTERNAL_MODS=1 bash run_client_mac.sh offline  # 軽量
+#   WITH_EXTERNAL_MODS=1 LIGHT_EXTERNAL_MODS=0 bash run_client_mac.sh offline  # 全部入り
+#
+# 起動前に外部MODを含めるか対話で尋ねる。選択したJARは
+# libs/runtime_selected/ へ同期し、-PwithExternalMods=true で読み込む。
 
 cd "$(dirname "$0")"
+
+show_help() {
+    sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+for arg in "$@"; do
+    case "$arg" in
+        help|--help|-h)
+            show_help
+            exit 0
+            ;;
+    esac
+done
 
 GRADLE_ARGS="runClient --offline -x downloadAssets"
 USE_TLS_WORKAROUND="auto"   # auto = 回線を実測して自動判定 ( notls / tls で明示上書き可 )

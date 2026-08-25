@@ -69,7 +69,7 @@ public class CustomCrafterCraftingburotukugaYoukuritukusaretatokiProcedure {
 					_player.containerMenu.broadcastChanges();
 				}
 				if (entity instanceof Player _player) {
-					ItemStack _setstack = new ItemStack(TheFourPrimitivesAndWeaponsModItems.SWORD_OF_NIGHT.get());
+					ItemStack _setstack = ItemStack.EMPTY;
 					_setstack.setCount(1);
 					ItemHandlerHelper.giveItemToPlayer(_player, _setstack);
 				}
@@ -122,7 +122,7 @@ public class CustomCrafterCraftingburotukugaYoukuritukusaretatokiProcedure {
 					_player.containerMenu.broadcastChanges();
 				}
 				if (entity instanceof Player _player) {
-					ItemStack _setstack = new ItemStack(TheFourPrimitivesAndWeaponsModItems.REPLICA_SWORD_OF_LIGHT.get());
+					ItemStack _setstack = ItemStack.EMPTY;
 					_setstack.setCount(1);
 					ItemHandlerHelper.giveItemToPlayer(_player, _setstack);
 				}

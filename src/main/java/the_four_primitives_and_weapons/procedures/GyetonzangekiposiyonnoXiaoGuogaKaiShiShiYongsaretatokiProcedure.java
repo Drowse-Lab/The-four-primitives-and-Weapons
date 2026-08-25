@@ -32,7 +32,6 @@ public class GyetonzangekiposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 				|| TheFourPrimitivesAndWeaponsModItems.LUNA.get() == (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem()
 				|| TheFourPrimitivesAndWeaponsModItems.MY_TEST_IRON_KATANA.get() == (entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem()
 				|| TheFourPrimitivesAndWeaponsModItems.PROTOTYPE_KATANA.get() == (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem()
-				|| TheFourPrimitivesAndWeaponsModItems.REPLICA_SWORD_OF_LIGHT.get() == (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem()
 				|| TheFourPrimitivesAndWeaponsModItems.SMALL_SWORD.get() == (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem()
 				|| TheFourPrimitivesAndWeaponsModItems.KATANA_NIGU_HUMERUS.get() == (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem()
 				|| TheFourPrimitivesAndWeaponsModItems.MAGISCHES_FEEN_KATANA.get() == (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem()) {

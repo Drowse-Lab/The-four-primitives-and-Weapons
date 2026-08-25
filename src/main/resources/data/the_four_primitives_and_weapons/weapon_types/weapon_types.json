@@ -19,14 +19,30 @@
         "the_four_primitives_and_weapons:my_test_iron_katana",
         "the_four_primitives_and_weapons:rivers_of_blood",
         "the_four_primitives_and_weapons:katana_nigu_humerus",
-        "the_four_primitives_and_weapons:old_katana",
-        "the_four_primitives_and_weapons:replica_sword_of_light"
+        "the_four_primitives_and_weapons:old_katana"
       ],
       "motions": {
-        "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
-        "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right", "spell"],
-        "shift_right_click": ["guard", "none_shift"]
+        "combat": [
+          "thrust",
+          "upper_left_slash",
+          "upper_right_slash",
+          "horizontal_slash",
+          "spin_slash"
+        ],
+        "dash": [
+          "dash_rush",
+          "leap_slash",
+          "shadow_step"
+        ],
+        "right_click": [
+          "dodge",
+          "none_right",
+          "spell"
+        ],
+        "shift_right_click": [
+          "guard",
+          "none_shift"
+        ]
       },
       "default_motions": {
         "right_click": "dodge",
@@ -44,10 +60,25 @@
         "the_four_primitives_and_weapons:netherite_rapier"
       ],
       "motions": {
-        "combat": ["thrust", "upper_left_slash", "upper_right_slash"],
-        "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right", "spell"],
-        "shift_right_click": ["guard", "none_shift"]
+        "combat": [
+          "thrust",
+          "upper_left_slash",
+          "upper_right_slash"
+        ],
+        "dash": [
+          "dash_rush",
+          "leap_slash",
+          "shadow_step"
+        ],
+        "right_click": [
+          "dodge",
+          "none_right",
+          "spell"
+        ],
+        "shift_right_click": [
+          "guard",
+          "none_shift"
+        ]
       },
       "default_motions": {
         "first_hit": "thrust",
@@ -71,10 +102,27 @@
         "the_four_primitives_and_weapons:netherite_tyokuto"
       ],
       "motions": {
-        "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
-        "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right", "spell"],
-        "shift_right_click": ["guard", "none_shift"]
+        "combat": [
+          "thrust",
+          "upper_left_slash",
+          "upper_right_slash",
+          "horizontal_slash",
+          "spin_slash"
+        ],
+        "dash": [
+          "dash_rush",
+          "leap_slash",
+          "shadow_step"
+        ],
+        "right_click": [
+          "dodge",
+          "none_right",
+          "spell"
+        ],
+        "shift_right_click": [
+          "guard",
+          "none_shift"
+        ]
       },
       "default_motions": {
         "first_hit": "thrust",
@@ -89,9 +137,7 @@
     "sword": {
       "display_name": "剣",
       "items": [
-
         "the_four_primitives_and_weapons:boundary_blade",
-        "the_four_primitives_and_weapons:sword_of_night",
         "the_four_primitives_and_weapons:gate",
         "minecraft:wooden_sword",
         "minecraft:stone_sword",
@@ -101,10 +147,28 @@
         "minecraft:netherite_sword"
       ],
       "motions": {
-        "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash", "slam_down"],
-        "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right", "spell"],
-        "shift_right_click": ["guard", "none_shift"]
+        "combat": [
+          "thrust",
+          "upper_left_slash",
+          "upper_right_slash",
+          "horizontal_slash",
+          "spin_slash",
+          "slam_down"
+        ],
+        "dash": [
+          "dash_rush",
+          "leap_slash",
+          "shadow_step"
+        ],
+        "right_click": [
+          "dodge",
+          "none_right",
+          "spell"
+        ],
+        "shift_right_click": [
+          "guard",
+          "none_shift"
+        ]
       },
       "default_motions": {
         "first_hit": "upper_left_slash",
@@ -119,20 +183,51 @@
         "the_four_primitives_and_weapons:machete"
       ],
       "motions": {
-        "combat": ["upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash", "slam_down"],
-        "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right", "spell"],
-        "shift_right_click": ["guard", "none_shift"]
+        "combat": [
+          "upper_left_slash",
+          "upper_right_slash",
+          "horizontal_slash",
+          "spin_slash",
+          "slam_down"
+        ],
+        "dash": [
+          "dash_rush",
+          "leap_slash",
+          "shadow_step"
+        ],
+        "right_click": [
+          "dodge",
+          "none_right",
+          "spell"
+        ],
+        "shift_right_click": [
+          "guard",
+          "none_shift"
+        ]
       }
     },
     "greatsword": {
       "display_name": "大剣",
       "items": [],
       "motions": {
-        "combat": ["thrust", "horizontal_slash", "spin_slash", "slam_down"],
-        "dash": ["dash_rush"],
-        "right_click": ["dodge", "none_right", "spell"],
-        "shift_right_click": ["guard", "none_shift"]
+        "combat": [
+          "thrust",
+          "horizontal_slash",
+          "spin_slash",
+          "slam_down"
+        ],
+        "dash": [
+          "dash_rush"
+        ],
+        "right_click": [
+          "dodge",
+          "none_right",
+          "spell"
+        ],
+        "shift_right_click": [
+          "guard",
+          "none_shift"
+        ]
       },
       "default_motions": {
         "first_hit": "horizontal_slash",
@@ -152,10 +247,26 @@
         "the_four_primitives_and_weapons:netherite_dagger"
       ],
       "motions": {
-        "combat": ["thrust", "thrust_combo", "upper_left_slash", "upper_right_slash"],
-        "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right", "spell"],
-        "shift_right_click": ["guard", "none_shift"]
+        "combat": [
+          "thrust",
+          "thrust_combo",
+          "upper_left_slash",
+          "upper_right_slash"
+        ],
+        "dash": [
+          "dash_rush",
+          "leap_slash",
+          "shadow_step"
+        ],
+        "right_click": [
+          "dodge",
+          "none_right",
+          "spell"
+        ],
+        "shift_right_click": [
+          "guard",
+          "none_shift"
+        ]
       },
       "default_motions": {
         "first_hit": "thrust",
@@ -171,10 +282,26 @@
         "the_four_primitives_and_weapons:warabitetou"
       ],
       "motions": {
-        "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash"],
-        "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["dodge", "none_right", "spell"],
-        "shift_right_click": ["guard", "none_shift"]
+        "combat": [
+          "thrust",
+          "upper_left_slash",
+          "upper_right_slash",
+          "horizontal_slash"
+        ],
+        "dash": [
+          "dash_rush",
+          "leap_slash",
+          "shadow_step"
+        ],
+        "right_click": [
+          "dodge",
+          "none_right",
+          "spell"
+        ],
+        "shift_right_click": [
+          "guard",
+          "none_shift"
+        ]
       },
       "default_motions": {
         "first_hit": "upper_left_slash",
@@ -192,10 +319,19 @@
         "minecraft:shield"
       ],
       "motions": {
-        "combat": ["shield_bash"],
-        "dash": ["dash_rush"],
-        "right_click": ["guard"],
-        "shift_right_click": ["parry", "guard"]
+        "combat": [
+          "shield_bash"
+        ],
+        "dash": [
+          "dash_rush"
+        ],
+        "right_click": [
+          "guard"
+        ],
+        "shift_right_click": [
+          "parry",
+          "guard"
+        ]
       }
     },
     "bow": {
@@ -205,9 +341,22 @@
       ],
       "motions": {
         "combat": [],
-        "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["none_right", "bow_pierce", "bow_homing", "bow_arrow_rain", "bow_quick_draw", "dodge"],
-        "shift_right_click": ["none_shift"]
+        "dash": [
+          "dash_rush",
+          "leap_slash",
+          "shadow_step"
+        ],
+        "right_click": [
+          "none_right",
+          "bow_pierce",
+          "bow_homing",
+          "bow_arrow_rain",
+          "bow_quick_draw",
+          "dodge"
+        ],
+        "shift_right_click": [
+          "none_shift"
+        ]
       },
       "default_motions": {
         "right_click": "none_right",
@@ -221,9 +370,22 @@
       ],
       "motions": {
         "combat": [],
-        "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["none_right", "bow_pierce", "bow_homing", "bow_arrow_rain", "bow_quick_draw", "dodge"],
-        "shift_right_click": ["none_shift"]
+        "dash": [
+          "dash_rush",
+          "leap_slash",
+          "shadow_step"
+        ],
+        "right_click": [
+          "none_right",
+          "bow_pierce",
+          "bow_homing",
+          "bow_arrow_rain",
+          "bow_quick_draw",
+          "dodge"
+        ],
+        "shift_right_click": [
+          "none_shift"
+        ]
       },
       "default_motions": {
         "right_click": "none_right",
@@ -241,10 +403,24 @@
         "the_four_primitives_and_weapons:explosive_throwing_knife"
       ],
       "motions": {
-        "combat": ["thrust", "thrust_combo", "upper_left_slash", "upper_right_slash"],
-        "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["none_right", "dodge"],
-        "shift_right_click": ["none_shift"]
+        "combat": [
+          "thrust",
+          "thrust_combo",
+          "upper_left_slash",
+          "upper_right_slash"
+        ],
+        "dash": [
+          "dash_rush",
+          "leap_slash",
+          "shadow_step"
+        ],
+        "right_click": [
+          "none_right",
+          "dodge"
+        ],
+        "shift_right_click": [
+          "none_shift"
+        ]
       },
       "default_motions": {
         "first_hit": "thrust",
@@ -262,10 +438,27 @@
         "minecraft:trident"
       ],
       "motions": {
-        "combat": ["thrust", "upper_left_slash", "upper_right_slash", "horizontal_slash", "spin_slash"],
-        "dash": ["dash_rush", "leap_slash", "shadow_step"],
-        "right_click": ["trident_throw", "dodge", "none_right"],
-        "shift_right_click": ["guard", "none_shift"]
+        "combat": [
+          "thrust",
+          "upper_left_slash",
+          "upper_right_slash",
+          "horizontal_slash",
+          "spin_slash"
+        ],
+        "dash": [
+          "dash_rush",
+          "leap_slash",
+          "shadow_step"
+        ],
+        "right_click": [
+          "trident_throw",
+          "dodge",
+          "none_right"
+        ],
+        "shift_right_click": [
+          "guard",
+          "none_shift"
+        ]
       },
       "default_motions": {
         "first_hit": "thrust",
@@ -279,70 +472,94 @@
     }
   },
   "special_weapons": {
-    "the_four_primitives_and_weapons:sword_of_night": {
-      "enabled": true,
-      "special_motions": {
-        "right_click": ["sword_of_night_special"]
-      }
-    },
     "the_four_primitives_and_weapons:rivers_of_blood": {
       "enabled": true,
       "special_motions": {
-        "right_click": ["rivers_of_blood_special"]
+        "right_click": [
+          "rivers_of_blood_special"
+        ]
       }
     },
     "the_four_primitives_and_weapons:katana_nigu_humerus": {
       "enabled": true,
       "special_motions": {
-        "right_click": ["giant_bone_arm_special"]
+        "right_click": [
+          "giant_bone_arm_special"
+        ]
       }
     },
     "the_four_primitives_and_weapons:gate": {
       "enabled": true,
       "special_motions": {
-        "right_click": ["gate_special"]
+        "right_click": [
+          "gate_special"
+        ]
       }
     },
     "the_four_primitives_and_weapons:kurikaraken": {
       "enabled": true,
       "special_motions": {
-        "combat": ["electric_beam"],
-        "dash": ["electric_beam"]
+        "combat": [
+          "electric_beam"
+        ],
+        "dash": [
+          "electric_beam"
+        ]
       }
     },
     "the_four_primitives_and_weapons:kurikarakenutigatana": {
       "enabled": true,
       "special_motions": {
-        "combat": ["electric_slash"],
-        "dash": ["electric_slash"]
+        "combat": [
+          "electric_slash"
+        ],
+        "dash": [
+          "electric_slash"
+        ]
       }
     },
     "the_four_primitives_and_weapons:kurikarakensword": {
       "enabled": true,
       "special_motions": {
-        "combat": ["electric_discharge"],
-        "dash": ["electric_discharge"]
+        "combat": [
+          "electric_discharge"
+        ],
+        "dash": [
+          "electric_discharge"
+        ]
       }
     },
     "the_four_primitives_and_weapons:magical_katana": {
       "enabled": true,
       "special_motions": {
-        "combat": ["magic_katana_special"],
-        "dash": ["magic_katana_special"]
+        "combat": [
+          "magic_katana_special"
+        ],
+        "dash": [
+          "magic_katana_special"
+        ]
       }
     },
     "the_four_primitives_and_weapons:magischesfeen_katana": {
       "enabled": true,
       "special_motions": {
-        "combat": ["magic_katana_special"],
-        "dash": ["magic_katana_special"]
+        "combat": [
+          "magic_katana_special"
+        ],
+        "dash": [
+          "magic_katana_special"
+        ]
       }
     },
     "the_four_primitives_and_weapons:parry_shield": {
       "enabled": true,
       "special_motions": {
-        "combat": ["shield_bash"],
-        "shift_right_click": ["parry"]
+        "combat": [
+          "shield_bash"
+        ],
+        "shift_right_click": [
+          "parry"
+        ]
       }
     }
   }

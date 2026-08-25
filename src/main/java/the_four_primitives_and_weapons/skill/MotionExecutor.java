@@ -19,7 +19,6 @@ import net.minecraft.core.BlockPos;
 import the_four_primitives_and_weapons.api.ISkillAction;
 import the_four_primitives_and_weapons.util.DamageCalculator;
 import the_four_primitives_and_weapons.events.DashSkillHandler;
-import the_four_primitives_and_weapons.procedures.SwordOfNightTpProcedure;
 import the_four_primitives_and_weapons.procedures.MagicKatanaSpecialChargeProcedure;
 
 import java.util.List;
@@ -135,7 +134,6 @@ public class MotionExecutor {
                 case "electric_beam" -> ElectricBeamSkill.fire(player);
                 case "electric_slash" -> ElectricSlashSkill.fire(player);
                 case "electric_discharge" -> ElectricDischargeBurstSkill.fire(player);
-                case "sword_of_night_tp" -> SwordOfNightTpProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
                 case "magic_katana_special" -> MagicKatanaSpecialChargeProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player, chargePercent);
                 // スキル画面で設定した一撃目/二撃目/三撃目を高速で連続発動する。
                 case "thrust_combo" -> the_four_primitives_and_weapons.procedures.SkillComboProcedure.execute(player, chargePercent);

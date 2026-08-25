@@ -1,7 +1,5 @@
 package the_four_primitives_and_weapons.enchantment;
 
-import the_four_primitives_and_weapons.item.RecrossHookshotItem;
-
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
@@ -13,7 +11,6 @@ import net.minecraft.world.item.enchantment.EnchantmentCategory;
  *
  * 装備対象 (どちらかにあれば動作):
  *   - Leggings (LEGS) — 基本付与先 (空中ジャンプ追加回数 = レベル)
- *   - {@link RecrossHookshotItem} — フックショット用 (空中ジャンプ追加回数 + 浮遊燃料の時間経過回復ペースが上昇)
  *
  * 効果:
  *   - 空中で keyJump 新規押下 → 残追加ジャンプを 1 消費して上昇 (vanilla jump と同じ初速)
@@ -37,12 +34,12 @@ public class MultiJumpEnchantment extends Enchantment {
 
     @Override
     public boolean canEnchant(ItemStack stack) {
-        return isLeggings(stack) || stack.getItem() instanceof RecrossHookshotItem;
+        return isLeggings(stack);
     }
 
     @Override
     public boolean canApplyAtEnchantingTable(ItemStack stack) {
-        return isLeggings(stack) || stack.getItem() instanceof RecrossHookshotItem;
+        return isLeggings(stack);
     }
 
     @Override

@@ -1,4 +1,18 @@
 #!/bin/bash
+# 指定した外部MODの最新JARを libs/runtime_selected へ集めるスクリプト。
+#
+# 使い方:
+#   bash scripts/sync-selected-external-mods.sh                 全部入り
+#   bash scripts/sync-selected-external-mods.sh --offline       全部入り・オフライン
+#   bash scripts/sync-selected-external-mods.sh --light         軽量3MOD
+#   bash scripts/sync-selected-external-mods.sh --offline --light
+#
+# --light で残すもの:
+#   chuzume-addon / extra_video_settings / RPGish-HPDisplay
+#
+# --light で除外する重いもの:
+#   gun_and_weapon / TACZ / Backpack Arsenal / Mekanism /
+#   Sophisticated Core / Sophisticated Backpacks
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

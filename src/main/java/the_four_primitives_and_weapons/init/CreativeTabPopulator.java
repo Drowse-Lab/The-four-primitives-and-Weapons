@@ -127,7 +127,6 @@ public class CreativeTabPopulator {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.IMITATION);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.TUKAENA);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.QUESTBOOK);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.RPG_BOOK);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.DECORATION_POT_WITH_ARROWS);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.ROSE_FLOWER_POT);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.ITEM_STAN);
@@ -222,10 +221,6 @@ public class CreativeTabPopulator {
 		}
 
 		if (event.getTabKey() == CreativeModeTabs.COMBAT) {
-			event.accept(TheFourPrimitivesAndWeaponsModItems.CHUZUME_HUSK_ARMOR_HELMET);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.CHUZUME_HUSK_ARMOR_CHESTPLATE);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.CHUZUME_HUSK_ARMOR_LEGGINGS);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.CHUZUME_HUSK_ARMOR_BOOTS);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.WARDEN_ARMOR_HELMET);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.WARDEN_ARMOR_CHESTPLATE);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.WARDEN_ARMOR_LEGGINGS);

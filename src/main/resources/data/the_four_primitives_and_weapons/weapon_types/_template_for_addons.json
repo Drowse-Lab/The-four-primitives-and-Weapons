@@ -14,7 +14,7 @@
     "combat用: thrust, thrust_combo, upper_left_slash, upper_right_slash, horizontal_slash, spin_slash, slam_down",
     "thrust_combo: スキル画面で設定した first_hit / second_hit / third_hit を高速で連続発動する技",
     "dash用: dash_rush, leap_slash, shadow_step",
-    "right_click用: dodge, none_right, guard, sword_of_night_special",
+    "right_click用: dodge, none_right, guard",
     "shift_right_click用: guard, none_shift",
     "special: electric_beam, electric_slash, electric_discharge, magic_katana_special",
     "",

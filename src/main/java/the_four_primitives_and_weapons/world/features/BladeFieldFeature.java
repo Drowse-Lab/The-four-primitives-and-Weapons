@@ -39,7 +39,7 @@ public class BladeFieldFeature extends Feature<NoneFeatureConfiguration> {
     /** weapon_stats.json で durability:0 の武器。通常抽選には絶対に混ぜない。 */
     private static final String[] TIMELESS_WEAPONS = {
             MOD + "wither_katana", MOD + "darkness_katana", MOD + "rivers_of_blood",
-            MOD + "replica_sword_of_light", MOD + "sword_of_night", MOD + "luna"
+            MOD + "luna"
     };
 
     public BladeFieldFeature(Codec<NoneFeatureConfiguration> codec) { super(codec); }

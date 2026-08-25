@@ -30,7 +30,7 @@ public class GuardposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 			return;
 		if (world instanceof ServerLevel _level) {
 			Item mainHandItem = (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem();
-			if (mainHandItem == TheFourPrimitivesAndWeaponsModItems.REPLICA_SWORD_OF_LIGHT.get()) {
+			if (false) {
 				spawnGuardArmorStand(_level, x, y, z, Items.YELLOW_STAINED_GLASS_PANE, 1f, 1f, 0.5f);
 			} else {
 				// Replica以外: アーマースタンドはスポーンせず、パーティクル/サウンドのみ（武器はBLOCKポーズで構える）

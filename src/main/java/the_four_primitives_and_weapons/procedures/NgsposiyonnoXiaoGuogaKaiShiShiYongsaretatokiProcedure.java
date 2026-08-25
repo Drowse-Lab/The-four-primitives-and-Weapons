@@ -20,7 +20,7 @@ public class NgsposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure {
 		if (entity == null)
 			return;
 		double r = 0;
-		if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.SWORD_OF_NIGHT.get()) {
+		if (false) {
 			if (!(entity == ((Entity) world.getEntitiesOfClass(LivingEntity.class,
 					AABB.ofSize(new Vec3((entity.getX() + r * entity.getLookAngle().x), (entity.getY() + 1.5 + r * entity.getLookAngle().y), (entity.getZ() + r * entity.getLookAngle().z)), 0.5, 0.5, 0.5), e -> true).stream().sorted(new Object() {
 						Comparator<Entity> compareDistOf(double _x, double _y, double _z) {

@@ -583,10 +583,6 @@ public class DodgeAndBattouHandler {
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
         // フックショットは右クリックで自身の発射動作を行うので、回避と競合させない
-        if (mainHand.getItem() instanceof the_four_primitives_and_weapons.item.RecrossHookshotItem
-                || offHand.getItem() instanceof the_four_primitives_and_weapons.item.RecrossHookshotItem) {
-            return false;
-        }
         if (isWeapon(mainHand)) return true;
         if (isRangedWeapon(mainHand)) return true;
         if (isWeapon(offHand) && mainHand.isEmpty()) return true;
@@ -895,7 +891,6 @@ public class DodgeAndBattouHandler {
         if (itemName.equals("RiversOfBloodItem")) return 13;
         if (itemName.equals("KatanaNiguHumerusItem")) return 14;
         if (itemName.equals("LokiTheTricksterItem")) return 15;
-        if (itemName.equals("ReplicaSwordOfLightItem")) return 19;
 
         // リストにない武器でもSwordItemなら鉄刀の鞘モデルをフォールバック
         if (weapon.getItem() instanceof SwordItem) return 1;

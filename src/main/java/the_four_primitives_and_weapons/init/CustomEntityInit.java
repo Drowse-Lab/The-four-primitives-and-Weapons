@@ -246,30 +246,6 @@ public class CustomEntityInit {
         CUSTOM_ITEMS.register("weapon_rack_warped",
             () -> new the_four_primitives_and_weapons.item.WeaponRackItem(new Item.Properties(), 10));
 
-    // Re:Cross Hookshot (Java port of Chuzume's data pack — short range, sneak-float)
-    public static final RegistryObject<EntityType<the_four_primitives_and_weapons.entity.RecrossHookEntity>> RECROSS_HOOK_ENTITY =
-        CUSTOM_ENTITIES.register("recross_hook",
-            () -> EntityType.Builder.<the_four_primitives_and_weapons.entity.RecrossHookEntity>of(
-                    the_four_primitives_and_weapons.entity.RecrossHookEntity::new, MobCategory.MISC)
-                .setShouldReceiveVelocityUpdates(true)
-                .setTrackingRange(96)
-                .setUpdateInterval(1)
-                .sized(0.4f, 0.4f)
-                .build("recross_hook"));
-
-    /**
-     * Long range = 80 block (flyStep 4 × maxFlyTicks 20 → 1 sec flight).
-     * Short range = 60 block (flyStep 3 × maxFlyTicks 20 → 1 sec flight).
-     * 高速で飛びつつ vanilla の client interpolation で滑らかに見せる.
-     */
-    public static final RegistryObject<Item> RECROSS_HOOKSHOT_LONG =
-        CUSTOM_ITEMS.register("recross_hookshot_long",
-            () -> new the_four_primitives_and_weapons.item.RecrossHookshotItem(4.0, 20));
-
-    public static final RegistryObject<Item> RECROSS_HOOKSHOT_SHORT =
-        CUSTOM_ITEMS.register("recross_hookshot_short",
-            () -> new the_four_primitives_and_weapons.item.RecrossHookshotItem(3.0, 20));
-
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(COMMON_SOLDIER.get(), CommonSoldierEntity.createAttributes().build());
@@ -280,8 +256,6 @@ public class CustomEntityInit {
         event.put(ANGEL_SERIOUS.get(), AngelTrioEntity.createAttributes().build());
         event.put(ANGEL_MOCKER1.get(), AngelTrioEntity.createAttributes().build());
         event.put(ANGEL_MOCKER2.get(), AngelTrioEntity.createAttributes().build());
-        event.put(RECROSS_HOOK_ENTITY.get(),
-            the_four_primitives_and_weapons.entity.RecrossHookEntity.createAttributes().build());
     }
 
     // Modのコンストラクタやメインクラスで呼び出す必要があります

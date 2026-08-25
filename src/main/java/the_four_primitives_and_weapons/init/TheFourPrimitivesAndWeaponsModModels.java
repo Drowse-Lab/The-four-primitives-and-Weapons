@@ -31,7 +31,6 @@ import the_four_primitives_and_weapons.client.model.Modelhusk_Converted;
 import the_four_primitives_and_weapons.client.model.Modelhead_player_converted;
 import the_four_primitives_and_weapons.client.model.Modelelytra_Converted;
 import the_four_primitives_and_weapons.client.model.Modeldoragon_leprica_armor_layer_3;
-import the_four_primitives_and_weapons.client.model.Modelchuzume_head_Converted;
 import the_four_primitives_and_weapons.client.model.Modelblack_spectral_arrow_Converted;
 import the_four_primitives_and_weapons.client.model.Modelbanner_Converted;
 
@@ -41,7 +40,6 @@ public class TheFourPrimitivesAndWeaponsModModels {
 	public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
 		event.registerLayerDefinition(Modelkagamiyotei.LAYER_LOCATION, Modelkagamiyotei::createBodyLayer);
 		event.registerLayerDefinition(Modelwitchmagichat.LAYER_LOCATION, Modelwitchmagichat::createBodyLayer);
-		event.registerLayerDefinition(Modelchuzume_head_Converted.LAYER_LOCATION, Modelchuzume_head_Converted::createBodyLayer);
 		event.registerLayerDefinition(Modelnetherite_arrow_armor_layer_1_Converted.LAYER_LOCATION, Modelnetherite_arrow_armor_layer_1_Converted::createBodyLayer);
 		event.registerLayerDefinition(Modelplayer_slim__Converted.LAYER_LOCATION, Modelplayer_slim__Converted::createBodyLayer);
 		event.registerLayerDefinition(Modelluna_Converted2.LAYER_LOCATION, Modelluna_Converted2::createBodyLayer);

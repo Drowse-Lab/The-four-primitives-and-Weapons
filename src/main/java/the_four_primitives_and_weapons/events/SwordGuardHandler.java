@@ -78,7 +78,7 @@ public class SwordGuardHandler {
         // クールダウン中なら無視
         if (player.getCooldowns().isOnCooldown(mainHand.getItem())) return;
 
-        boolean isReplica = mainHand.getItem() == TheFourPrimitivesAndWeaponsModItems.REPLICA_SWORD_OF_LIGHT.get();
+        boolean isReplica = false;
         int duration = isReplica ? REPLICA_GUARD_DURATION : NORMAL_GUARD_DURATION;
 
         // NBTタグでガード状態を設定

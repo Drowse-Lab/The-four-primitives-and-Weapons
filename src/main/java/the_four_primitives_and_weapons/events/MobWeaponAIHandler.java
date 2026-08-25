@@ -96,8 +96,7 @@ public class MobWeaponAIHandler {
                itemName.equals("RiversOfBloodItem") ||
                itemName.equals("KatanaNiguHumerusItem") ||
                itemName.equals("LunaItem") ||
-               itemName.equals("ReplicaSwordOfLightItem") ||
-               itemName.equals("SwordOfNightItem");
+               false;
     }
 
     /**
@@ -121,8 +120,7 @@ public class MobWeaponAIHandler {
         String itemName = weapon.getItem().getClass().getSimpleName();
 
         // ティア7: 神聖級（最強）
-        if (weapon.getItem() == TheFourPrimitivesAndWeaponsModItems.SWORD_OF_NIGHT.get() ||
-            weapon.getItem() == TheFourPrimitivesAndWeaponsModItems.LUNA.get()) {
+        if (weapon.getItem() == TheFourPrimitivesAndWeaponsModItems.LUNA.get()) {
             return 7;
         }
 
@@ -141,7 +139,6 @@ public class MobWeaponAIHandler {
 
         // ティア4: 英雄級
         if (weapon.getItem() == TheFourPrimitivesAndWeaponsModItems.RIVERS_OF_BLOOD.get() ||
-            weapon.getItem() == TheFourPrimitivesAndWeaponsModItems.REPLICA_SWORD_OF_LIGHT.get() ||
             weapon.getItem() == TheFourPrimitivesAndWeaponsModItems.KURIKARAKEN.get() ||
             itemName.contains("Kurikara")) {
             return 4;

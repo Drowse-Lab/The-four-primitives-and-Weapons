@@ -54,8 +54,6 @@ public class CustomEntityRenderers {
                 the_four_primitives_and_weapons.client.renderer.WeaponRackRenderer::new);
 
         // Re:Cross Hookshot
-        event.registerEntityRenderer(CustomEntityInit.RECROSS_HOOK_ENTITY.get(),
-                the_four_primitives_and_weapons.client.renderer.RecrossHookRenderer::new);
 
         // 上腕骨刀 特殊技「巨骨の腕」
         event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModCustomEntities.GIANT_BONE_ARM.get(),

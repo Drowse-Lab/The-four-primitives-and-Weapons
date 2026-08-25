@@ -2,7 +2,6 @@ package the_four_primitives_and_weapons.event;
 
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 import the_four_primitives_and_weapons.init.CustomEnchantmentInit;
-import the_four_primitives_and_weapons.item.RecrossHookshotItem;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -28,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *    残ジャンプがあれば player に上昇速度を与えてカウンタを 1 進める。
  *  - {@code onPlayerTick} : 着地時にカウンタリセット。
  *
- *  - {@link #getLevel(Player)} : Leggings と Hookshot (両手) を見て multi_jump レベルの最大値を返す。
+ *  - {@link #getLevel(Player)} : Leggings の multi_jump レベルを返す。
  *    呼出側 (フックショットの浮遊燃料回復ロジック等) からも参照される。
  */
 @Mod.EventBusSubscriber(modid = TheFourPrimitivesAndWeaponsMod.MODID)
@@ -39,25 +38,16 @@ public class MultiJumpHandler {
 
     private static final Map<UUID, Integer> usedJumps = new ConcurrentHashMap<>();
 
-    /** Leggings / 両手フックショットのうち最も高い multi_jump レベルを取得. */
+    /** Leggings の multi_jump レベルを取得. */
     public static int getLevel(Player player) {
         var ench = CustomEnchantmentInit.MULTI_JUMP.get();
         int leg = EnchantmentHelper.getItemEnchantmentLevel(ench, player.getItemBySlot(EquipmentSlot.LEGS));
-        int main = isHookshot(player.getMainHandItem())
-            ? EnchantmentHelper.getItemEnchantmentLevel(ench, player.getMainHandItem()) : 0;
-        int off = isHookshot(player.getOffhandItem())
-            ? EnchantmentHelper.getItemEnchantmentLevel(ench, player.getOffhandItem()) : 0;
-        return Math.max(leg, Math.max(main, off));
+        return leg;
     }
 
     /** クライアント側でフックショットを所持し、その multi_jump レベルだけを返す. (浮遊燃料回復用) */
     public static int getHookshotLevel(Player player) {
-        var ench = CustomEnchantmentInit.MULTI_JUMP.get();
-        int main = isHookshot(player.getMainHandItem())
-            ? EnchantmentHelper.getItemEnchantmentLevel(ench, player.getMainHandItem()) : 0;
-        int off = isHookshot(player.getOffhandItem())
-            ? EnchantmentHelper.getItemEnchantmentLevel(ench, player.getOffhandItem()) : 0;
-        return Math.max(main, off);
+        return 0;
     }
 
     /** クライアントから来たジャンプ要求を処理。残ジャンプ無しなら no-op。 */
@@ -88,7 +78,4 @@ public class MultiJumpHandler {
         }
     }
 
-    private static boolean isHookshot(ItemStack stack) {
-        return stack.getItem() instanceof RecrossHookshotItem;
-    }
 }

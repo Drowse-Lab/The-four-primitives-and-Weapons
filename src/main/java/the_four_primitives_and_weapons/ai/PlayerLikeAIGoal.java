@@ -498,7 +498,7 @@ public class PlayerLikeAIGoal extends Goal {
 
         // スキルタイプに応じた処理
         if ("guard".equals(action.skillType)) {
-            // ガードスキル（ReplicaSwordOfLight相当）
+            // ガードスキル
             int duration = (int)(action.duration * 20); // 秒をティックに変換
 
             // GUARDエフェクトを付与
@@ -510,7 +510,7 @@ public class PlayerLikeAIGoal extends Goal {
                 ));
             }
 
-            // LONG_RANGE_WEAPON_CUTエフェクトを付与（ReplicaSwordOfLightの効果）
+            // LONG_RANGE_WEAPON_CUTエフェクトを付与
             if (TheFourPrimitivesAndWeaponsModMobEffects.LONG_RANGE_WEAPON_CUT.get() != null) {
                 entity.addEffect(new MobEffectInstance(
                     TheFourPrimitivesAndWeaponsModMobEffects.LONG_RANGE_WEAPON_CUT.get(),

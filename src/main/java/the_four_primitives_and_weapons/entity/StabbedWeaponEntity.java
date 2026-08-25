@@ -77,6 +77,7 @@ public class StabbedWeaponEntity extends Entity {
 
 	public void setStabYaw(float yaw) {
 		this.entityData.set(DATA_YAW, yaw);
+		this.setBoundingBox(makeBoundingBox());
 	}
 
 	public float getStabYaw() {
@@ -85,6 +86,7 @@ public class StabbedWeaponEntity extends Entity {
 
 	public void setTilt(float tilt) {
 		this.entityData.set(DATA_TILT, tilt);
+		this.setBoundingBox(makeBoundingBox());
 	}
 
 	public float getTilt() {
@@ -167,8 +169,7 @@ public class StabbedWeaponEntity extends Entity {
 	@Override
 	public void tick() {
 		super.tick();
-		this.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); // 動かない
-		this.setBoundingBox(makeBoundingBox()); // 半径変更 ( 同期 ) を当たり判定に反映
+		// 静止エンティティなので毎tickの速度・AABB再計算は不要。向き/半径変更時にだけ更新する。
 		if (!this.level().isClientSide && ritualLifetime > 0 && --ritualLifetime == 0) this.discard();
 	}
 

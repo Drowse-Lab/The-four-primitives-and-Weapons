@@ -1,1 +1,25 @@
-{"replace":false,"values":["the_four_primitives_and_weapons:hammer","the_four_primitives_and_weapons:scythe","the_four_primitives_and_weapons:machete","the_four_primitives_and_weapons:iron_katana","the_four_primitives_and_weapons:gold_katana","the_four_primitives_and_weapons:stone_katana","the_four_primitives_and_weapons:netherite_katana","the_four_primitives_and_weapons:wither_katana","the_four_primitives_and_weapons:darkness_katana","the_four_primitives_and_weapons:magical_katana","the_four_primitives_and_weapons:magisches_feen_katana","the_four_primitives_and_weapons:my_test_iron_katana","the_four_primitives_and_weapons:old_katana","the_four_primitives_and_weapons:prototype_katana","the_four_primitives_and_weapons:rivers_of_blood","the_four_primitives_and_weapons:luna","the_four_primitives_and_weapons:warabitetou","the_four_primitives_and_weapons:iron_tyokuto","the_four_primitives_and_weapons:gold_tyokuto","the_four_primitives_and_weapons:replica_sword_of_light","#the_four_primitives_and_weapons:tridents"]}
+{
+  "replace": false,
+  "values": [
+    "the_four_primitives_and_weapons:hammer",
+    "the_four_primitives_and_weapons:scythe",
+    "the_four_primitives_and_weapons:machete",
+    "the_four_primitives_and_weapons:iron_katana",
+    "the_four_primitives_and_weapons:gold_katana",
+    "the_four_primitives_and_weapons:stone_katana",
+    "the_four_primitives_and_weapons:netherite_katana",
+    "the_four_primitives_and_weapons:wither_katana",
+    "the_four_primitives_and_weapons:darkness_katana",
+    "the_four_primitives_and_weapons:magical_katana",
+    "the_four_primitives_and_weapons:magisches_feen_katana",
+    "the_four_primitives_and_weapons:my_test_iron_katana",
+    "the_four_primitives_and_weapons:old_katana",
+    "the_four_primitives_and_weapons:prototype_katana",
+    "the_four_primitives_and_weapons:rivers_of_blood",
+    "the_four_primitives_and_weapons:luna",
+    "the_four_primitives_and_weapons:warabitetou",
+    "the_four_primitives_and_weapons:iron_tyokuto",
+    "the_four_primitives_and_weapons:gold_tyokuto",
+    "#the_four_primitives_and_weapons:tridents"
+  ]
+}

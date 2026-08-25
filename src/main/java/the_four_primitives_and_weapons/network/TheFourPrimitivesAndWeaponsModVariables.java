@@ -79,7 +79,6 @@ public class TheFourPrimitivesAndWeaponsModVariables {
 			clone.aaa = original.aaa;
 			clone.tab = original.tab;
 			clone.yaw = original.yaw;
-			clone.rpgbookgive = original.rpgbookgive;
 			clone.playerHasCompletedQuestTaskOne = original.playerHasCompletedQuestTaskOne;
 			clone.playerHasCompletedQuestTaskTwo = original.playerHasCompletedQuestTaskTwo;
 			clone.playerHasCompletedQuestTaskThree = original.playerHasCompletedQuestTaskThree;
@@ -302,7 +301,6 @@ public class TheFourPrimitivesAndWeaponsModVariables {
 		public double noa = 0;
 		public boolean SpeedStaff = false;
 		public double yaw = 0;
-		public boolean rpgbookgive = true;
 		public boolean playerHasCompletedQuestTaskOne = false;
 		public boolean playerHasCompletedQuestTaskTwo = false;
 		public boolean playerHasCompletedQuestTaskThree = false;
@@ -333,7 +331,6 @@ public class TheFourPrimitivesAndWeaponsModVariables {
 			nbt.putDouble("noa", noa);
 			nbt.putBoolean("SpeedStaff", SpeedStaff);
 			nbt.putDouble("yaw", yaw);
-			nbt.putBoolean("rpgbookgive", rpgbookgive);
 			nbt.putBoolean("playerHasCompletedQuestTaskOne", playerHasCompletedQuestTaskOne);
 			nbt.putBoolean("playerHasCompletedQuestTaskTwo", playerHasCompletedQuestTaskTwo);
 			nbt.putBoolean("playerHasCompletedQuestTaskThree", playerHasCompletedQuestTaskThree);
@@ -361,7 +358,6 @@ public class TheFourPrimitivesAndWeaponsModVariables {
 			noa = nbt.getDouble("noa");
 			SpeedStaff = nbt.getBoolean("SpeedStaff");
 			yaw = nbt.getDouble("yaw");
-			rpgbookgive = nbt.getBoolean("rpgbookgive");
 			playerHasCompletedQuestTaskOne = nbt.getBoolean("playerHasCompletedQuestTaskOne");
 			playerHasCompletedQuestTaskTwo = nbt.getBoolean("playerHasCompletedQuestTaskTwo");
 			playerHasCompletedQuestTaskThree = nbt.getBoolean("playerHasCompletedQuestTaskThree");
@@ -408,7 +404,6 @@ public class TheFourPrimitivesAndWeaponsModVariables {
 					variables.noa = message.data.noa;
 					variables.SpeedStaff = message.data.SpeedStaff;
 					variables.yaw = message.data.yaw;
-					variables.rpgbookgive = message.data.rpgbookgive;
 					variables.playerHasCompletedQuestTaskOne = message.data.playerHasCompletedQuestTaskOne;
 					variables.playerHasCompletedQuestTaskTwo = message.data.playerHasCompletedQuestTaskTwo;
 					variables.playerHasCompletedQuestTaskThree = message.data.playerHasCompletedQuestTaskThree;
