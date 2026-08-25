@@ -446,6 +446,15 @@ public class WeaponTypeRegistry extends SimplePreparableReloadListener<Map<Strin
      */
     public static WeaponTypeData getTypeForItem(ItemStack stack) {
         if (stack.isEmpty()) return null;
+
+        // NBT で武器タイプを上書きできる。倶利伽羅剣の形態切替など、同じ登録
+        // アイテムに複数のモーション体系を持たせる場合に使用する。
+        if (stack.hasTag() && stack.getTag().contains("WeaponType", net.minecraft.nbt.Tag.TAG_STRING)) {
+            String nbtType = stack.getTag().getString("WeaponType");
+            WeaponTypeData overridden = TYPES.get(nbtType);
+            if (overridden != null) return overridden;
+        }
+
         ResourceLocation regName = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (regName != null) {
             WeaponTypeData registered = ITEM_TO_TYPE.get(regName.toString());
@@ -487,6 +496,17 @@ public class WeaponTypeRegistry extends SimplePreparableReloadListener<Map<Strin
         if (stack.isEmpty()) return null;
         ResourceLocation regName = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (regName == null) return null;
+        if ("the_four_primitives_and_weapons:kurikaraken".equals(regName.toString())) {
+            WeaponTypeData type = getTypeForItem(stack);
+            if (type != null) {
+                if ("katana".equals(type.getId())) {
+                    return SPECIAL_WEAPONS.get("the_four_primitives_and_weapons:kurikaraken_katana_form");
+                }
+                if ("sword".equals(type.getId())) {
+                    return SPECIAL_WEAPONS.get("the_four_primitives_and_weapons:kurikaraken_sword_form");
+                }
+            }
+        }
         return SPECIAL_WEAPONS.get(regName.toString());
     }
 

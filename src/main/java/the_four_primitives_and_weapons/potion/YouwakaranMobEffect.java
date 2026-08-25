@@ -12,7 +12,6 @@ import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 
-import the_four_primitives_and_weapons.procedures.ZanngekitokubetuposiyonXiaoGuogaQieretaShiProcedure;
 import the_four_primitives_and_weapons.procedures.YouwakaranposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure;
 import the_four_primitives_and_weapons.procedures.YouwakaranehuekutogaYouXiaoShinoteitukuProcedure;
 
@@ -41,9 +40,6 @@ public class YouwakaranMobEffect extends MobEffect {
 	@Override
 	public void removeAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
 		super.removeAttributeModifiers(entity, attributeMap, amplifier);
-		ZanngekitokubetuposiyonXiaoGuogaQieretaShiProcedure.execute(
-
-		);
 	}
 
 	@Override

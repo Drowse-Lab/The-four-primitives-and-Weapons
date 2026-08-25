@@ -1090,20 +1090,6 @@
       }
     },
     {
-      "name": "KaitennposiyonnoXiaoGuogaKaiShiShiYongsaretatoki",
-      "type": "procedure",
-      "sortid": 87,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "kaitennposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/KaitennposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.java"
-        ],
-        "dependencies": []
-      }
-    },
-    {
       "name": "LunaenteiteigaaitemuwoZhentutaShi",
       "type": "procedure",
       "sortid": 88,
@@ -1837,54 +1823,6 @@
       }
     },
     {
-      "name": "Kaiten",
-      "type": "potioneffect",
-      "sortid": 156,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "kaiten",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/potion/KaitenMobEffect.java"
-        ]
-      }
-    },
-    {
-      "name": "KaitenehuekutogaYouXiaoShinoteituku",
-      "type": "procedure",
-      "sortid": 157,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "kaitenehuekutoga_you_xiao_shinoteituku",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/KaitenehuekutogaYouXiaoShinoteitukuProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "x",
-            "type": "number"
-          },
-          {
-            "name": "y",
-            "type": "number"
-          },
-          {
-            "name": "z",
-            "type": "number"
-          },
-          {
-            "name": "world",
-            "type": "world"
-          }
-        ]
-      }
-    },
-    {
       "name": "StrayOuterArmor",
       "type": "armor",
       "sortid": 159,
@@ -2123,19 +2061,6 @@
       }
     },
     {
-      "name": "Zanngekitokubetu",
-      "type": "potioneffect",
-      "sortid": 181,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "zanngekitokubetu",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/potion/ZanngekitokubetuMobEffect.java"
-        ]
-      }
-    },
-    {
       "name": "ZanngekitokubetuposiyonnoXiaoGuogaKaiShiShiYongsaretatoki",
       "type": "procedure",
       "sortid": 182,
@@ -2150,29 +2075,6 @@
           {
             "name": "entity",
             "type": "entity"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ZanngekitokubetuehuekutogaYouXiaoShinoteituku",
-      "type": "procedure",
-      "sortid": 183,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "zanngekitokubetuehuekutoga_you_xiao_shinoteituku",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/ZanngekitokubetuehuekutogaYouXiaoShinoteitukuProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "world",
-            "type": "world"
           }
         ]
       }
@@ -2233,167 +2135,6 @@
       }
     },
     {
-      "name": "GyetonzangekiposiyonnoXiaoGuogaKaiShiShiYongsaretatoki",
-      "type": "procedure",
-      "sortid": 187,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "gyetonzangekiposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/GyetonzangekiposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "x",
-            "type": "number"
-          },
-          {
-            "name": "y",
-            "type": "number"
-          },
-          {
-            "name": "z",
-            "type": "number"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Gyetonzangeki",
-      "type": "potioneffect",
-      "sortid": 188,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "gyetonzangeki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/potion/GyetonzangekiMobEffect.java"
-        ]
-      }
-    },
-    {
-      "name": "GyetonzangekiehuekutogaYouXiaoShinoteituku",
-      "type": "procedure",
-      "sortid": 189,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "gyetonzangekiehuekutoga_you_xiao_shinoteituku",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/GyetonzangekiehuekutogaYouXiaoShinoteitukuProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "world",
-            "type": "world"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ZanngekitokubetuposiyonXiaoGuogaQieretaShi",
-      "type": "procedure",
-      "sortid": 190,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "zanngekitokubetuposiyon_xiao_guoga_qiereta_shi",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/ZanngekitokubetuposiyonXiaoGuogaQieretaShiProcedure.java"
-        ],
-        "dependencies": []
-      }
-    },
-    {
-      "name": "Tobe",
-      "type": "potioneffect",
-      "sortid": 191,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "tobe",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/potion/TobeMobEffect.java"
-        ]
-      }
-    },
-    {
-      "name": "TobeposiyonnoXiaoGuogaKaiShiShiYongsaretatoki",
-      "type": "procedure",
-      "sortid": 192,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "tobeposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/TobeposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "world",
-            "type": "world"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Kougeki",
-      "type": "potioneffect",
-      "sortid": 194,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "kougeki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/potion/KougekiMobEffect.java"
-        ]
-      }
-    },
-    {
-      "name": "KougekiposiyonnoXiaoGuogaKaiShiShiYongsaretatoki",
-      "type": "procedure",
-      "sortid": 195,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "kougekiposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/KougekiposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "x",
-            "type": "number"
-          },
-          {
-            "name": "y",
-            "type": "number"
-          },
-          {
-            "name": "z",
-            "type": "number"
-          }
-        ]
-      }
-    },
-    {
       "name": "Killotiru",
       "type": "livingentity",
       "sortid": 196,
@@ -2405,42 +2146,6 @@
           "src/main/java/the_four_primitives_and_weapons/entity/KillotiruEntity.java",
           "src/main/java/the_four_primitives_and_weapons/client/renderer/KillotiruRenderer.java",
           "src/main/resources/assets/the_four_primitives_and_weapons/models/item/killotiru_spawn_egg.json"
-        ]
-      }
-    },
-    {
-      "name": "Zanngekikai",
-      "type": "potioneffect",
-      "sortid": 197,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "zanngekikai",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/potion/ZanngekikaiMobEffect.java"
-        ]
-      }
-    },
-    {
-      "name": "ZanngekikaiehuekutogaYouXiaoShinoteituku",
-      "type": "procedure",
-      "sortid": 198,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "zanngekikaiehuekutoga_you_xiao_shinoteituku",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/ZanngekikaiehuekutogaYouXiaoShinoteitukuProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "world",
-            "type": "world"
-          }
         ]
       }
     },
@@ -2943,42 +2648,6 @@
           {
             "name": "sourceentity",
             "type": "entity"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Tokubetusounazangeki",
-      "type": "potioneffect",
-      "sortid": 231,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "tokubetusounazangeki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/potion/TokubetusounazangekiMobEffect.java"
-        ]
-      }
-    },
-    {
-      "name": "TokubetusounazangekiehuekutogaYouXiaoShinoteituku",
-      "type": "procedure",
-      "sortid": 232,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "tokubetusounazangekiehuekutoga_you_xiao_shinoteituku",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/TokubetusounazangekiehuekutogaYouXiaoShinoteitukuProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "world",
-            "type": "world"
           }
         ]
       }
@@ -4339,42 +4008,6 @@
       }
     },
     {
-      "name": "Zokuseizanngeki",
-      "type": "potioneffect",
-      "sortid": 310,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "zokuseizanngeki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/potion/ZokuseizanngekiMobEffect.java"
-        ]
-      }
-    },
-    {
-      "name": "ZokuseizanngekiehuekutogaYouXiaoShinoteituku",
-      "type": "procedure",
-      "sortid": 311,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "zokuseizanngekiehuekutoga_you_xiao_shinoteituku",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/ZokuseizanngekiehuekutogaYouXiaoShinoteitukuProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "world",
-            "type": "world"
-          }
-        ]
-      }
-    },
-    {
       "name": "BowMultishot",
       "type": "procedure",
       "sortid": 312,
@@ -4745,19 +4378,6 @@
       }
     },
     {
-      "name": "Test",
-      "type": "potioneffect",
-      "sortid": 340,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "test",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/potion/TestMobEffect.java"
-        ]
-      }
-    },
-    {
       "name": "Ninjatou",
       "type": "tool",
       "sortid": 341,
@@ -4802,44 +4422,6 @@
           {
             "name": "world",
             "type": "world"
-          }
-        ]
-      }
-    },
-    {
-      "name": "TestposiyonnoXiaoGuogaKaiShiShiYongsaretatoki",
-      "type": "procedure",
-      "sortid": 343,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "testposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/TestposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ]
-      }
-    },
-    {
-      "name": "TestposiyonXiaoGuogaQieretaShi",
-      "type": "procedure",
-      "sortid": 344,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "testposiyon_xiao_guoga_qiereta_shi",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/TestposiyonXiaoGuogaQieretaShiProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
           }
         ]
       }
@@ -8941,54 +8523,6 @@
       }
     },
     {
-      "name": "GuwaazangekiEffectStartedapplied",
-      "type": "procedure",
-      "sortid": 607,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "guwaazangeki_effect_startedapplied",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/GuwaazangekiEffectStartedappliedProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "x",
-            "type": "number"
-          },
-          {
-            "name": "y",
-            "type": "number"
-          },
-          {
-            "name": "z",
-            "type": "number"
-          },
-          {
-            "name": "world",
-            "type": "world"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Guwaazangeki",
-      "type": "potioneffect",
-      "sortid": 608,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "guwaazangeki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/potion/GuwaazangekiMobEffect.java"
-        ]
-      }
-    },
-    {
       "name": "ArmorStandTobasuEnmaTickKill",
       "type": "function",
       "sortid": 612,
@@ -9136,56 +8670,6 @@
           "src/main/java/the_four_primitives_and_weapons/potion/KilloffMobEffect.java"
         ]
       }
-    },
-    {
-      "name": "Enmazangeki",
-      "type": "potioneffect",
-      "sortid": 620,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "enmazangeki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/potion/EnmazangekiMobEffect.java"
-        ]
-      },
-      "path": "~/enmazangeki"
-    },
-    {
-      "name": "EnmazangekiOnEffectActiveTick",
-      "type": "procedure",
-      "sortid": 621,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "enmazangeki_on_effect_active_tick",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/EnmazangekiOnEffectActiveTickProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "x",
-            "type": "number"
-          },
-          {
-            "name": "y",
-            "type": "number"
-          },
-          {
-            "name": "z",
-            "type": "number"
-          },
-          {
-            "name": "world",
-            "type": "world"
-          }
-        ]
-      },
-      "path": "~/enmazangeki"
     },
     {
       "name": "ArmorStandTobasuyoEnmaTickKill",
@@ -9662,7 +9146,6 @@
       "entity.the_four_primitives_and_weapons.blackhole": "Blackhole",
       "advancements.magical_swordsman_achievements.descr": "§eGet Magisches feen katana",
       "effect.the_four_primitives_and_weapons.suityuu": "suityuu",
-      "effect.the_four_primitives_and_weapons.enmazangeki": "ebnazabngeki",
       "advancements.you_have_become_a_vampire.descr": "You have become a vampire.",
       "effect.the_four_primitives_and_weapons.bakuhatu": "explosion",
       "effect.the_four_primitives_and_weapons.aaaa": "bunnsinn",
@@ -9714,18 +9197,15 @@
       "item.the_four_primitives_and_weapons.singularity_spawn_egg": "Singularity Spawn Egg",
       "item.the_four_primitives_and_weapons.hammer": "Hammer",
       "item.the_four_primitives_and_weapons.kamianari_kurikara": "Kamianari Kurikara",
-      "effect.the_four_primitives_and_weapons.tokubetusounazangeki": "aa",
       "item.the_four_primitives_and_weapons.my_test_iron_katana": "§8Zero Iron Katana",
       "item.the_four_primitives_and_weapons.stone_slab": "Stone Slab",
-      "effect.the_four_primitives_and_weapons.tobe": "tobe",
       "item.the_four_primitives_and_weapons.dragon_black_armor_chestplate": "§8Dragon black chestplate",
       "itemGroup.tabdragon_armor_tab": "§5Dragon Armor Tab",
-      "effect.the_four_primitives_and_weapons.kougeki": "a",
       "item.the_four_primitives_and_weapons.test_bow": "Test Bow",
       "item.the_four_primitives_and_weapons.pillager_armor_boots": "Pillager Armor Boots",
       "item.the_four_primitives_and_weapons.achromatic_shield": "Achromatic Shield",
       "item.the_four_primitives_and_weapons.replica_sword_of_light": "§6Replica Sword Of Light",
-      "advancements.dark_magic_swordsman_achievements.title": "§5You\u0027ve become a dark magic swordsman.",
+      "advancements.dark_magic_swordsman_achievements.title": "§5You've become a dark magic swordsman.",
       "item.the_four_primitives_and_weapons.chuzume_husk_armor_leggings": "§gchuzume husk leggings",
       "tooltip.the_four_primitives_and_weapons.feyn.sancted": "sancted",
       "entity.the_four_primitives_and_weapons.heroic_tier": "Heroic Tier",
@@ -9751,7 +9231,6 @@
       "advancements.magical_katana_progress.title": "A lot of magic crystals!",
       "item.the_four_primitives_and_weapons.kurikarakenutigatana": "§5倶利伽羅剣",
       "item.the_four_primitives_and_weapons.moto_wither_katana": "§7Stone Katana",
-      "effect.the_four_primitives_and_weapons.zanngekikai": "aa",
       "item.the_four_primitives_and_weapons.kenti": "Kenti",
       "block.the_four_primitives_and_weapons.custom_smithing_table": "Custom Smithing Table",
       "effect.the_four_primitives_and_weapons.karikarisiterunemaidomaido": "doka-nn",
@@ -9783,7 +9262,6 @@
       "advancements.rivers_of_blood_achievements.descr": "§4Get Rivers of Blood",
       "effect.the_four_primitives_and_weapons.sword_of_night_reload": "sword of night shot reload",
       "effect.the_four_primitives_and_weapons.tissoku": "tissoku",
-      "effect.the_four_primitives_and_weapons.guwaazangeki": "zangeki",
       "item.the_four_primitives_and_weapons.dragon_red_armor_helmet": "§4Dragon red helmet",
       "itemGroup.tabarmor": "Armor",
       "gui.the_four_primitives_and_weapons.rpg_book_gui.button_vampire": "vampire",
@@ -9800,7 +9278,7 @@
       "effect.the_four_primitives_and_weapons.armorstandtobasuenmaeffectkill": "Armorstandtobasuenmaeffectkill",
       "item.the_four_primitives_and_weapons.prototype_katana": "§8§l§oPrototype Katana",
       "item.the_four_primitives_and_weapons.thunderbolt": "§eThunderbolt",
-      "advancements.kurikaraken_progress.title": "This\u0027s not a sword, this\u0027s a katana!",
+      "advancements.kurikaraken_progress.title": "This's not a sword, this's a katana!",
       "item.the_four_primitives_and_weapons.pillager_armor_helmet": "Pillager Armor Helmet",
       "item.the_four_primitives_and_weapons.dragon_green_armor_helmet": "§2Dragon green helmet",
       "block.the_four_primitives_and_weapons.makiwaridai": "Makiwaridai",
@@ -9837,7 +9315,7 @@
       "itemGroup.tabevent": "Event",
       "item.the_four_primitives_and_weapons.reset_1": "Reset Damege",
       "entity.the_four_primitives_and_weapons.meteor_arrow": "Meteor Arrow",
-      "item.the_four_primitives_and_weapons.oninomen_helmet": "oni\u0027s mask",
+      "item.the_four_primitives_and_weapons.oninomen_helmet": "oni's mask",
       "item.the_four_primitives_and_weapons.elite_soldier_spawn_egg": "Elite Soldier Spawn Egg",
       "item.the_four_primitives_and_weapons.halloween_2023_10_31_sickle": "§6Sickle",
       "item.the_four_primitives_and_weapons.ninjatou": "ninjato",
@@ -9854,7 +9332,6 @@
       "gui.the_four_primitives_and_weapons.rpg_book_gui.button_bogged_outer": "Bogged Outer",
       "effect.the_four_primitives_and_weapons.black_hole_effect": "blackhole",
       "gui.the_four_primitives_and_weapons.rpg_book_gui_2.button_magic_swordsman": "magic swordsman",
-      "effect.the_four_primitives_and_weapons.kaiten": "kaitenn",
       "effect.the_four_primitives_and_weapons.slice_guard": "Slice Guard",
       "item.the_four_primitives_and_weapons.arrow_head": "Arrow Head",
       "item.the_four_primitives_and_weapons.illusioner_armor_chestplate": "Illusioner Armor Chestplate",
@@ -9862,7 +9339,7 @@
       "item.the_four_primitives_and_weapons.common_soldier_spawn_egg": "Common Soldier Spawn Egg",
       "item.the_four_primitives_and_weapons.dragon_blue_armor_helmet": "§1Dragon blue helmet",
       "item.the_four_primitives_and_weapons.chuzume_husk_armor_helmet": "§gchuzume husk helmet",
-      "advancements.magical_swordsman_achievements.title": "§eYou\u0027ve become a Magical Swordsman!",
+      "advancements.magical_swordsman_achievements.title": "§eYou've become a Magical Swordsman!",
       "item.the_four_primitives_and_weapons.reset_max": "Reset Max",
       "effect.the_four_primitives_and_weapons.armor_stand_tobasu_effect": "armor stand effect",
       "gamerule.rpgBookGive.description": "Give RPG Book when respawning or at initial spawn or",
@@ -9879,7 +9356,6 @@
       "item.the_four_primitives_and_weapons.kurikaraken": "§5倶利伽羅剣",
       "gui.the_four_primitives_and_weapons.custom_crafter_craftinggui.label_custom_crafter": "custom crafter",
       "entity.the_four_primitives_and_weapons.skelton_mob": "Skelton Mob",
-      "effect.the_four_primitives_and_weapons.zokuseizanngeki": "zannfgeki",
       "entity.the_four_primitives_and_weapons.common_soldier": "Common Soldier",
       "item.the_four_primitives_and_weapons.rpg_book": "RPG Book",
       "effect.the_four_primitives_and_weapons.tameteru": "the_four_primitives_and_weapons:test_bow_tameteru",
@@ -9905,18 +9381,15 @@
       "advancements.magical_katana_progress.descr": "Get a katana of magical power",
       "effect.the_four_primitives_and_weapons.customsmithingtablecrafting": "the_four_primitives_and_weapons:custom_smithing_table_crafting",
       "item.the_four_primitives_and_weapons.bogged_outer_helmet": "Bogged Outer Helmet",
-      "effect.the_four_primitives_and_weapons.zanngekitokubetu": "aa",
       "effect.the_four_primitives_and_weapons.thunder_hit": "a",
       "item.the_four_primitives_and_weapons.fireworks_black": "Fireworks Black",
       "item.the_four_primitives_and_weapons.wither_bone": "Wither Bone",
       "block.the_four_primitives_and_weapons.rose_flower_pot": "Rose Flower Pot",
-      "effect.the_four_primitives_and_weapons.gyetonzangeki": "gyaton",
       "item.the_four_primitives_and_weapons.dragon_red_armor_leggings": "§4Dragon red leggings",
       "item.the_four_primitives_and_weapons.heroic_tier_spawn_egg": "Heroic Tier Spawn Egg",
       "itemGroup.tabweapon": "Weapon",
       "item.the_four_primitives_and_weapons.skelton_mob_spawn_egg": "Skelton Mob Spawn Egg",
       "gui.the_four_primitives_and_weapons.rpg_book_gui.button_magic_swordsman": "magic swordsman",
-      "effect.the_four_primitives_and_weapons.test": "test",
       "item.the_four_primitives_and_weapons.dragon_armor_helmet": "§5Dragon helmet",
       "item.the_four_primitives_and_weapons.blood_bottle": "Blood Bottle",
       "item.the_four_primitives_and_weapons.warden_armor_chestplate": "§3warden chestplate",
@@ -9944,7 +9417,6 @@
       "entity.the_four_primitives_and_weapons.blackhole": "Blackhole",
       "advancements.magical_swordsman_achievements.descr": "Magisches feen katanaを得る",
       "effect.the_four_primitives_and_weapons.suityuu": "suityuu",
-      "effect.the_four_primitives_and_weapons.enmazangeki": "ebnazabngeki",
       "advancements.you_have_become_a_vampire.descr": "吸血鬼になったよ",
       "effect.the_four_primitives_and_weapons.bakuhatu": "explosion",
       "effect.the_four_primitives_and_weapons.aaaa": "bunnsinn",
@@ -9996,13 +9468,10 @@
       "item.the_four_primitives_and_weapons.singularity_spawn_egg": "特異点のスポーンエッグ",
       "item.the_four_primitives_and_weapons.hammer": "Hammer",
       "item.the_four_primitives_and_weapons.kamianari_kurikara": "Kamianari Kurikara",
-      "effect.the_four_primitives_and_weapons.tokubetusounazangeki": "aa",
       "item.the_four_primitives_and_weapons.my_test_iron_katana": "§8Zero Iron Katana",
       "item.the_four_primitives_and_weapons.stone_slab": "Stone Slab",
-      "effect.the_four_primitives_and_weapons.tobe": "tobe",
       "item.the_four_primitives_and_weapons.dragon_black_armor_chestplate": "§8Dragon black chestplate",
       "itemGroup.tabdragon_armor_tab": "§5Dragon Armor Tab",
-      "effect.the_four_primitives_and_weapons.kougeki": "a",
       "item.the_four_primitives_and_weapons.test_bow": "Test Bow",
       "item.the_four_primitives_and_weapons.pillager_armor_boots": "Pillager Armor Boots",
       "item.the_four_primitives_and_weapons.achromatic_shield": "Achromatic Shield",
@@ -10033,7 +9502,6 @@
       "advancements.magical_katana_progress.title": "魔力の結晶大量じゃ～！",
       "item.the_four_primitives_and_weapons.kurikarakenutigatana": "§5倶利伽羅剣",
       "item.the_four_primitives_and_weapons.moto_wither_katana": "§7Stone Katana",
-      "effect.the_four_primitives_and_weapons.zanngekikai": "aa",
       "item.the_four_primitives_and_weapons.kenti": "Kenti",
       "block.the_four_primitives_and_weapons.custom_smithing_table": "Custom Smithing Table",
       "effect.the_four_primitives_and_weapons.karikarisiterunemaidomaido": "doka-nn",
@@ -10065,7 +9533,6 @@
       "advancements.rivers_of_blood_achievements.descr": "§4 Rivers of Bloodを得る",
       "effect.the_four_primitives_and_weapons.sword_of_night_reload": "sword of night",
       "effect.the_four_primitives_and_weapons.tissoku": "tissoku",
-      "effect.the_four_primitives_and_weapons.guwaazangeki": "zangeki",
       "item.the_four_primitives_and_weapons.dragon_red_armor_helmet": "§4Dragon red helmet",
       "itemGroup.tabarmor": "Armor",
       "gui.the_four_primitives_and_weapons.rpg_book_gui.button_vampire": "吸血鬼",
@@ -10136,7 +9603,6 @@
       "gui.the_four_primitives_and_weapons.rpg_book_gui.button_bogged_outer": "Bogged Outer",
       "effect.the_four_primitives_and_weapons.black_hole_effect": "blackhole",
       "gui.the_four_primitives_and_weapons.rpg_book_gui_2.button_magic_swordsman": "magic swordsman",
-      "effect.the_four_primitives_and_weapons.kaiten": "kaitenn",
       "effect.the_four_primitives_and_weapons.slice_guard": "Slice Guard",
       "item.the_four_primitives_and_weapons.arrow_head": "Arrow Head",
       "item.the_four_primitives_and_weapons.illusioner_armor_chestplate": "Illusioner Armor Chestplate",
@@ -10161,7 +9627,6 @@
       "item.the_four_primitives_and_weapons.kurikaraken": "§5倶利伽羅剣",
       "gui.the_four_primitives_and_weapons.custom_crafter_craftinggui.label_custom_crafter": "custom crafter",
       "entity.the_four_primitives_and_weapons.skelton_mob": "Skelton Mob",
-      "effect.the_four_primitives_and_weapons.zokuseizanngeki": "zannfgeki",
       "entity.the_four_primitives_and_weapons.common_soldier": "一般兵",
       "item.the_four_primitives_and_weapons.rpg_book": "RPG Book",
       "effect.the_four_primitives_and_weapons.tameteru": "the_four_primitives_and_weapons:test_bow_tameteru",
@@ -10187,18 +9652,15 @@
       "advancements.magical_katana_progress.descr": "魔力の刀を得る",
       "effect.the_four_primitives_and_weapons.customsmithingtablecrafting": "the_four_primitives_and_weapons:custom_smithing_table_crafting",
       "item.the_four_primitives_and_weapons.bogged_outer_helmet": "Bogged Outer Helmet",
-      "effect.the_four_primitives_and_weapons.zanngekitokubetu": "aa",
       "effect.the_four_primitives_and_weapons.thunder_hit": "a",
       "item.the_four_primitives_and_weapons.fireworks_black": "Fireworks Black",
       "item.the_four_primitives_and_weapons.wither_bone": "ウィザーの骨",
       "block.the_four_primitives_and_weapons.rose_flower_pot": "Rose Flower Pot",
-      "effect.the_four_primitives_and_weapons.gyetonzangeki": "gyaton",
       "item.the_four_primitives_and_weapons.dragon_red_armor_leggings": "§4Dragon red leggings",
       "item.the_four_primitives_and_weapons.heroic_tier_spawn_egg": "英雄級のスポーンエッグ",
       "itemGroup.tabweapon": "Weapon",
       "item.the_four_primitives_and_weapons.skelton_mob_spawn_egg": "Skelton Mob Spawn Egg",
       "gui.the_four_primitives_and_weapons.rpg_book_gui.button_magic_swordsman": "魔法剣士",
-      "effect.the_four_primitives_and_weapons.test": "test",
       "item.the_four_primitives_and_weapons.dragon_armor_helmet": "§5Dragon helmet",
       "item.the_four_primitives_and_weapons.blood_bottle": "Blood Bottle",
       "item.the_four_primitives_and_weapons.warden_armor_chestplate": "warden chestplate",
@@ -10318,7 +9780,7 @@
     "license": "Academic Free License v3.0",
     "disableForgeVersionCheck": true,
     "serverSideOnly": false,
-    "updateURL": "https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons/files/all?page\u003d1\u0026pageSize\u003d20",
+    "updateURL": "https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons/files/all?page=1&pageSize=20",
     "modPicture": "katanairon3d2024-1.3",
     "requiredMods": [],
     "dependencies": [],

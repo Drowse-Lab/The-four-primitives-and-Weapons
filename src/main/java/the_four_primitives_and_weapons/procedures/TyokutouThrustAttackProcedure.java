@@ -31,9 +31,6 @@ public class TyokutouThrustAttackProcedure {
     private static final List<String> STRAIGHT_SWORD_ITEMS = Arrays.asList(
         "LunaItem",           // 曲線ビーム使用可能
         "BluepurgeTyokutouItem",
-        "KaminariKurikarakenTyokutouItem",
-        "KurikarakenutigatanaItem",
-        "KurikarakenswordItem",
         "KurikarakenItem",
         "IronTyokutoItem",
         "GoldTyokutoItem",
@@ -72,7 +69,7 @@ public class TyokutouThrustAttackProcedure {
         // weapon_types.json の "straight_sword" type に登録されていれば true
         the_four_primitives_and_weapons.skill.WeaponTypeRegistry.WeaponTypeData wt =
                 the_four_primitives_and_weapons.skill.WeaponTypeRegistry.getTypeForItem(stack);
-        if (wt != null && "straight_sword".equals(wt.getId())) return true;
+        if (wt != null) return "straight_sword".equals(wt.getId());
 
         return STRAIGHT_SWORD_ITEMS.contains(itemName);
     }

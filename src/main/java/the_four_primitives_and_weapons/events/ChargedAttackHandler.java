@@ -311,6 +311,9 @@ public class ChargedAttackHandler {
         // 固有スキルのチェック
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         String itemName = mainHand.getItem().getClass().getSimpleName();
+        String kurikarakenType = itemName.equals("KurikarakenItem")
+                ? the_four_primitives_and_weapons.item.KurikarakenItem.getWeaponType(mainHand)
+                : "";
 
         // 禁忌レアリティ: ため攻撃時に飛び道具反射
         the_four_primitives_and_weapons.item.rarity.WeaponRarity rarity =
@@ -321,15 +324,15 @@ public class ChargedAttackHandler {
 
         // 倶利伽羅 + 雷属性の固有スキル
         if (chargePercent >= 0.5f && ElementalDamageUtils.getElementType(mainHand) == ElementType.ELECTRIC) {
-            if (itemName.equals("KurikarakenswordItem") || itemName.equals("KaminariKurikarakenSwordItem")) {
+            if (itemName.equals("KurikarakenItem") && "sword".equals(kurikarakenType)) {
                 ElectricDischargeBurstSkill.fire(player);
                 return;
             }
-            if (itemName.equals("KurikarakenItem") || itemName.equals("KaminariKurikarakenTyokutouItem")) {
+            if (itemName.equals("KurikarakenItem") && "straight_sword".equals(kurikarakenType)) {
                 ElectricBeamSkill.fire(player);
                 return;
             }
-            if (itemName.equals("KurikarakenutigatanaItem") || itemName.equals("KaminariKurikarakenUtigatanaItem")) {
+            if (itemName.equals("KurikarakenItem") && "katana".equals(kurikarakenType)) {
                 ElectricSlashSkill.fire(player);
                 return;
             }
@@ -337,15 +340,15 @@ public class ChargedAttackHandler {
 
         // 倶利伽羅の固有スキル（雷属性が付いていない場合でも発動）
         if (chargePercent >= 0.5f) {
-            if (itemName.equals("KaminariKurikarakenSwordItem") || itemName.equals("KurikarakenswordItem")) {
+            if (itemName.equals("KurikarakenItem") && "sword".equals(kurikarakenType)) {
                 ElectricDischargeBurstSkill.fire(player);
                 return;
             }
-            if (itemName.equals("KaminariKurikarakenTyokutouItem") || itemName.equals("KurikarakenItem")) {
+            if (itemName.equals("KurikarakenItem") && "straight_sword".equals(kurikarakenType)) {
                 ElectricBeamSkill.fire(player);
                 return;
             }
-            if (itemName.equals("KaminariKurikarakenUtigatanaItem") || itemName.equals("KurikarakenutigatanaItem")) {
+            if (itemName.equals("KurikarakenItem") && "katana".equals(kurikarakenType)) {
                 ElectricSlashSkill.fire(player);
                 return;
             }

@@ -319,16 +319,6 @@
       "durability": 0,
       "enchantability": 9,
       "damage_bonus": 3
-    },
-    "the_four_primitives_and_weapons:kurikarakensword": {
-      "durability": 0,
-      "enchantability": 9,
-      "damage_bonus": 3
-    },
-    "the_four_primitives_and_weapons:kurikarakenutigatana": {
-      "durability": 0,
-      "enchantability": 9,
-      "damage_bonus": 3
     }
   }
 }

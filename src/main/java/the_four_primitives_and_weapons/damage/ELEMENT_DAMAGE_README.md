@@ -255,5 +255,5 @@ Example:
 When the Rarity Forge sees `FIRE` + `SOUL` between the medium item and a catalyst slot, the output becomes `SOUL_FIRE`.
 
 ## Test command
-/give @s the_four_primitives_and_weapons:kurikarakenutigatana{ElementType:"ELECTRIC",ElementLevel:1}
+/give @s the_four_primitives_and_weapons:kurikaraken{KurikarakenModel:"katana",WeaponType:"katana",ElementType:"ELECTRIC",ElementLevel:1}
 ---

@@ -25,6 +25,9 @@ import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModTabs;
 import java.util.List;
 
 public class KurikarakenItem extends SwordItem {
+	public static final String WEAPON_TYPE_TAG = "WeaponType";
+	public static final String MODEL_TAG = "KurikarakenModel";
+
 	public KurikarakenItem() {
 		super(new Tier() {
 			public int getUses() {
@@ -64,6 +67,28 @@ public class KurikarakenItem extends SwordItem {
 	public void appendHoverText(ItemStack itemstack, Level world, List<Component> list, TooltipFlag flag) {
 		super.appendHoverText(itemstack, world, list, flag);
 		list.add(Component.literal("\u00A78Sharp sword to cut off demons"));
+		list.add(Component.literal("\u00A77Model: " + getModel(itemstack)
+				+ " / Type: " + getWeaponType(itemstack)));
+	}
+
+	public static String getWeaponType(ItemStack stack) {
+		if (stack.hasTag() && stack.getTag().contains(WEAPON_TYPE_TAG)) {
+			String type = stack.getTag().getString(WEAPON_TYPE_TAG);
+			if ("katana".equals(type) || "sword".equals(type) || "straight_sword".equals(type)) {
+				return type;
+			}
+		}
+		return "straight_sword";
+	}
+
+	public static String getModel(ItemStack stack) {
+		if (stack.hasTag() && stack.getTag().contains(MODEL_TAG)) {
+			String model = stack.getTag().getString(MODEL_TAG);
+			if ("katana".equals(model) || "sword".equals(model) || "tyokuto".equals(model)) {
+				return model;
+			}
+		}
+		return "tyokuto";
 	}
 
 	@Override

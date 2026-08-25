@@ -1,1 +1,17 @@
-{"parent":"the_four_primitives_and_weapons:custom/swordb","textures":{"0":"the_four_primitives_and_weapons:blade/katana/katanab","particle":"the_four_primitives_and_weapons:item/aaaaa"}}
+{
+  "parent": "the_four_primitives_and_weapons:custom/swordb",
+  "textures": {
+    "0": "the_four_primitives_and_weapons:blade/katana/katanab",
+    "particle": "the_four_primitives_and_weapons:item/aaaaa"
+  },
+  "overrides": [
+    {
+      "predicate": { "the_four_primitives_and_weapons:kurikaraken_model": 1 },
+      "model": "the_four_primitives_and_weapons:item/kurikarakenutigatana"
+    },
+    {
+      "predicate": { "the_four_primitives_and_weapons:kurikaraken_model": 2 },
+      "model": "the_four_primitives_and_weapons:item/kurikarakensword"
+    }
+  ]
+}

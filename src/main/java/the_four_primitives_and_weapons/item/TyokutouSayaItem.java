@@ -106,7 +106,6 @@ public class TyokutouSayaItem extends Item {
         // 直刀ごとに異なるCustomModelDataを返す
         if (itemName.equals("LunaItem")) return 1;
         if (itemName.equals("BluepurgeTyokutouItem")) return 2;
-        if (itemName.equals("KaminariKurikarakenTyokutouItem")) return 3;
 
         // BluepurgeItemの場合、custom_model_dataをチェック
         if (itemName.equals("BluepurgeItem")) {

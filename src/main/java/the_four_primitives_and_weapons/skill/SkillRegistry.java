@@ -134,9 +134,9 @@ public class SkillRegistry {
         register("electric_beam", "電撃ビーム", "前方に電撃のビームを放つ",
                 MotionCategory.SPECIAL, allSlots, "KurikarakenItem");
         register("electric_slash", "電撃斬り", "電気を纏った斬撃波",
-                MotionCategory.SPECIAL, allSlots, "KurikarakenutigatanaItem");
+                MotionCategory.SPECIAL, allSlots, "KurikarakenItem");
         register("electric_discharge", "放電バースト", "周囲に電撃を放出",
-                MotionCategory.SPECIAL, allSlots, "KurikarakenswordItem");
+                MotionCategory.SPECIAL, allSlots, "KurikarakenItem");
         // 「magic_katana_special」 は MagicalKatanaItem ( 侵食ベース ) と
         // MagischesFeenKatanaItem ( 妖精ベース ) の両方で使えるデフォルト技
         register("magic_katana_special", "魔法刀・特殊攻撃", "魔法を纏った特殊攻撃",

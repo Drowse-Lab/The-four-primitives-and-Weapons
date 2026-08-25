@@ -10,6 +10,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import the_four_primitives_and_weapons.item.base.Base3DModelItem;
 import the_four_primitives_and_weapons.item.base.Base3DModelSwordItem;
 import the_four_primitives_and_weapons.item.SayaItem;
+import the_four_primitives_and_weapons.item.KurikarakenItem;
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
 
 @OnlyIn(Dist.CLIENT)
@@ -24,6 +25,17 @@ public class ItemPropertyInit {
     }
 
     public static void registerItemProperties(Item item) {
+        if (item instanceof KurikarakenItem) {
+            ItemProperties.register(item,
+                new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "kurikaraken_model"),
+                (stack, world, entity, seed) -> {
+                    String model = KurikarakenItem.getModel(stack);
+                    if ("katana".equals(model)) return 1.0f;
+                    if ("sword".equals(model)) return 2.0f;
+                    return 0.0f;
+                });
+        }
+
         if (item instanceof Base3DModelItem || item instanceof Base3DModelSwordItem) {
             ItemProperties.register(item, new ResourceLocation(TheFourPrimitivesAndWeaponsMod.MODID, "texture_variant"),
                 (stack, world, entity, seed) -> {

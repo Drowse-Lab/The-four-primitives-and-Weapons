@@ -91,9 +91,6 @@
       "display_name": "直刀",
       "items": [
         "the_four_primitives_and_weapons:luna",
-        "the_four_primitives_and_weapons:kaminari_kurikaraken_tyokutou",
-        "the_four_primitives_and_weapons:kurikarakenutigatana",
-        "the_four_primitives_and_weapons:kurikarakensword",
         "the_four_primitives_and_weapons:kurikaraken",
         "the_four_primitives_and_weapons:iron_tyokuto",
         "the_four_primitives_and_weapons:gold_tyokuto",
@@ -507,7 +504,7 @@
         ]
       }
     },
-    "the_four_primitives_and_weapons:kurikarakenutigatana": {
+    "the_four_primitives_and_weapons:kurikaraken_katana_form": {
       "enabled": true,
       "special_motions": {
         "combat": [
@@ -518,7 +515,7 @@
         ]
       }
     },
-    "the_four_primitives_and_weapons:kurikarakensword": {
+    "the_four_primitives_and_weapons:kurikaraken_sword_form": {
       "enabled": true,
       "special_motions": {
         "combat": [
