@@ -557,11 +557,15 @@ public class SkillSelectionScreen extends AbstractContainerScreen<SkillSelection
         } else if (selectedLoadoutIndex == -1) {
             return menu.getDefaultMotion(slot);
         } else {
-            // 武器スロットモード: 武器NBTを最優先で参照
+            // 武器スロットモード: 実際の発動処理と同じ優先順位で解決する。
+            // 以前は未設定ロードアウトをグローバル既定(Dodge/Guard)として表示していた一方、
+            // サーバーは武器タイプJSON既定(Shot/Teleport)を使っていたため表示と動作が不一致だった。
             ItemStack weapon = menu.getSlot(selectedLoadoutIndex).getItem();
             if (!weapon.isEmpty()) {
-                String nbt = the_four_primitives_and_weapons.skill.WeaponSkillNBT.getMotion(weapon, slot);
-                if (nbt != null) return nbt;
+                if (minecraft != null && minecraft.player != null) {
+                    PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(minecraft.player);
+                    if (sd != null) return sd.getMotionForWeapon(slot, weapon);
+                }
             }
             return menu.getLoadoutMotion(selectedLoadoutIndex, slot);
         }

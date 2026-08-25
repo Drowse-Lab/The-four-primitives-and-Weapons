@@ -75,7 +75,6 @@ import the_four_primitives_and_weapons.item.KatanaNiguHumerusItem;
 import the_four_primitives_and_weapons.item.KaminariKurikarakenUtigatanaItem;
 import the_four_primitives_and_weapons.item.KaminariKurikarakenTyokutouItem;
 import the_four_primitives_and_weapons.item.KaminariKurikarakenSwordItem;
-import the_four_primitives_and_weapons.item.KamianariKurikaraItem;
 import the_four_primitives_and_weapons.item.KabuseruItem;
 import the_four_primitives_and_weapons.item.ItemWeaponswordItem;
 import the_four_primitives_and_weapons.item.IronKatanaItem;
@@ -246,7 +245,6 @@ public class TheFourPrimitivesAndWeaponsModItems {
 	public static final RegistryObject<Item> CUSTOM_CRAFTER_CRAFTING = block(TheFourPrimitivesAndWeaponsModBlocks.CUSTOM_CRAFTER_CRAFTING, null);
 	public static final RegistryObject<Item> QUESTBOOK = REGISTRY.register("questbook", () -> new QuestbookItem());
 	public static final RegistryObject<Item> ARROW_HEAD = REGISTRY.register("arrow_head", () -> new ArrowHeadItem());
-	public static final RegistryObject<Item> KAMIANARI_KURIKARA = REGISTRY.register("kamianari_kurikara", () -> new KamianariKurikaraItem());
 	public static final RegistryObject<Item> IMITATION = REGISTRY.register("imitation", () -> new ImitationItem());
 	public static final RegistryObject<Item> KAMINARI_KURIKARAKEN_UTIGATANA = REGISTRY.register("kaminari_kurikaraken_utigatana", () -> new KaminariKurikarakenUtigatanaItem());
 	public static final RegistryObject<Item> KAMINARI_KURIKARAKEN_SWORD = REGISTRY.register("kaminari_kurikaraken_sword", () -> new KaminariKurikarakenSwordItem());

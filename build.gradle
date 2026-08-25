@@ -235,6 +235,8 @@ ext.readLineFlexible = { ->
 
 def overrideReleaseType = project.findProperty('release_type')
 def overrideModVersion  = project.findProperty('mod_version_override')
+// バージョン自動採番は明示指定時だけ許可する。通常のbuildでは絶対に番号を変えない。
+def autoVersionEnabled = boolProp('autoVersion', false)
 def isCi = System.getenv('CI') == 'true' || System.getenv('GITHUB_ACTIONS') == 'true'
 def isJarBuild = gradle.startParameter.taskNames.any {
     def task = it.tokenize(':').last()
@@ -244,7 +246,7 @@ def isJarBuild = gradle.startParameter.taskNames.any {
 // 明示指定がない JAR ビルドでは、更新日時が最も新しい成果物を「前回」とする。
 // clean build でも設定フェーズは clean より先なので、削除前の JAR を参照できる。
 def autoIncrementedBase = null
-if (!overrideModVersion && isJarBuild) {
+if (autoVersionEnabled && !overrideModVersion && isJarBuild) {
     def libsDir = file('build/libs')
     def prefix = 'The four primitives and Weapons-1.20.1-'
     def previousJars = libsDir.exists()
@@ -262,6 +264,7 @@ if (autoIncrementedBase != null) {
 }
 def shouldPrompt = !overrideReleaseType &&
         !overrideModVersion &&
+        autoVersionEnabled &&
         !isCi &&
         gradle.startParameter.taskNames.any { it == 'build' || it.endsWith(':build') }
 
