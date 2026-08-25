@@ -26,7 +26,6 @@ https://curseforge.com/minecraft/mc-mods/the-four-primitives-and-weapons
 
 ***
 ## other
-[![Customized Card](https://github-readme-stats.vercel.app/api/pin?username=drowse-lab\&repo=The-four-primitives-and-Weapons\&title_color=fff\&icon_color=f9f9f9\&text_color=9f9f9f\&bg_color=151515)](https://github.com/Drowse-Lab/The-four-primitives-and-Weapons)  
 <img src="https://github-readme-stats-git-master-airopis-projects.vercel.app/api?username=hrmcngs&count_private=true&show_icons=true&locale=en&theme=dark&count_private=true&role=OWNER,ORGANIZATION_MEMBER,COLLABORATOR" />  
 <img src="https://github-readme-stats-git-master-airopis-projects.vercel.app/api?username=aya526dev&count_private=true&show_icons=true&locale=en&theme=dark&count_private=true&role=OWNER,ORGANIZATION_MEMBER,COLLABORATOR" />  
 <img src="https://github-readme-stats-git-master-airopis-projects.vercel.app/api?username=Renkon65&count_private=true&show_icons=true&locale=en&theme=dark&count_private=true&role=OWNER,ORGANIZATION_MEMBER,COLLABORATOR" />  
