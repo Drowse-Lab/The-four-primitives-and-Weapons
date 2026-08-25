@@ -10,7 +10,6 @@ import net.minecraftforge.registries.DeferredRegister;
 
 import net.minecraft.world.effect.MobEffect;
 
-import the_four_primitives_and_weapons.potion.YouwakaranMobEffect;
 import the_four_primitives_and_weapons.potion.WindStepEffectMobEffect;
 import the_four_primitives_and_weapons.potion.WazaMobEffect;
 import the_four_primitives_and_weapons.potion.TunderbolteffrctMobEffect;
@@ -85,7 +84,6 @@ public class TheFourPrimitivesAndWeaponsModMobEffects {
 	public static final RegistryObject<MobEffect> OTIRO = REGISTRY.register("otiro", () -> new OtiroMobEffect());
 	public static final RegistryObject<MobEffect> WIND_STEP_EFFECT = REGISTRY.register("wind_step_effect", () -> new WindStepEffectMobEffect());
 	public static final RegistryObject<MobEffect> OTITA = REGISTRY.register("otita", () -> new OtitaMobEffect());
-	public static final RegistryObject<MobEffect> YOUWAKARAN = REGISTRY.register("youwakaran", () -> new YouwakaranMobEffect());
 	public static final RegistryObject<MobEffect> SYUGEKINANOZEE = REGISTRY.register("syugekinanozee", () -> new SyugekinanozeeMobEffect());
 	public static final RegistryObject<MobEffect> KAMINARIYADE = REGISTRY.register("kaminariyade", () -> new KaminariyadeMobEffect());
 	public static final RegistryObject<MobEffect> KARIKARISITERUNEMAIDOMAIDO = REGISTRY.register("karikarisiterunemaidomaido", () -> new KarikarisiterunemaidomaidoMobEffect());

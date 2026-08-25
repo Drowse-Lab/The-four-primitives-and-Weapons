@@ -3,15 +3,10 @@ package the_four_primitives_and_weapons.potion;
 
 import net.minecraftforge.client.extensions.common.IClientMobEffectExtensions;
 
-import net.minecraft.world.entity.ai.attributes.AttributeMap;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
-
-import the_four_primitives_and_weapons.procedures.EffectBloodTpEffectStartedappliedProcedure;
-import the_four_primitives_and_weapons.procedures.EffectBloodTpEffectExpiresProcedure;
 
 import net.minecraft.client.gui.GuiGraphics;
 
@@ -23,17 +18,6 @@ public class EffectBloodTpMobEffect extends MobEffect {
 	@Override
 	public String getDescriptionId() {
 		return "effect.the_four_primitives_and_weapons.effect_blood_tp";
-	}
-
-	@Override
-	public void addAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
-		EffectBloodTpEffectStartedappliedProcedure.execute(entity);
-	}
-
-	@Override
-	public void removeAttributeModifiers(LivingEntity entity, AttributeMap attributeMap, int amplifier) {
-		super.removeAttributeModifiers(entity, attributeMap, amplifier);
-		EffectBloodTpEffectExpiresProcedure.execute(entity);
 	}
 
 	@Override

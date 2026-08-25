@@ -21,7 +21,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.nbt.CompoundTag;
-import the_four_primitives_and_weapons.procedures.ZokuseiritokutyuwazaProcedure;
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModMobEffects;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
@@ -69,7 +68,6 @@ public class OldKatanaItem extends SwordItem {
 //	@Override
 //	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
 //		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-//		ZokuseiritokutyuwazaProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
 //		return ar;
 //	}
 

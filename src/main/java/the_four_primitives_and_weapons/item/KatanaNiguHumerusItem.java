@@ -17,7 +17,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.network.chat.Component;
 import org.joml.Vector3f;
 
-import the_four_primitives_and_weapons.procedures.PrototypeKatanaYoukuritukusitatokiProcedure;
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 import the_four_primitives_and_weapons.skill.GiantBoneArmSkill;
 import the_four_primitives_and_weapons.skill.PlayerSkillData;
@@ -59,7 +58,6 @@ public class KatanaNiguHumerusItem extends SwordItem {
 
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		PrototypeKatanaYoukuritukusitatokiProcedure.execute();
 		ItemStack stack = entity.getItemInHand(hand);
 		// River of Blood 方式: 右クリックに特殊技「巨骨の腕」が割り当てられている時だけ溜め開始。
 		PlayerSkillData.SkillStorage sd = PlayerSkillData.getSkillData(entity);

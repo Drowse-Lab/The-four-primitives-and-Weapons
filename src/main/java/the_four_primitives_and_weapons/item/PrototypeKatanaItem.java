@@ -13,7 +13,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
 
-import the_four_primitives_and_weapons.procedures.ZokuseiritokutyuwazaProcedure;
 import the_four_primitives_and_weapons.procedures.PrototypeKatanamobugaturudeGongJisaretatokiProcedure;
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 
@@ -51,13 +50,6 @@ public class PrototypeKatanaItem extends SwordItem {
 		boolean retval = super.hurtEnemy(itemstack, entity, sourceentity);
 		PrototypeKatanamobugaturudeGongJisaretatokiProcedure.execute(entity, sourceentity);
 		return retval;
-	}
-
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		ZokuseiritokutyuwazaProcedure.execute();
-		return ar;
 	}
 
 	@Override

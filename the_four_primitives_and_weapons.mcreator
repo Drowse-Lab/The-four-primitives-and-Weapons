@@ -2080,61 +2080,6 @@
       }
     },
     {
-      "name": "YouwakaranposiyonnoXiaoGuogaKaiShiShiYongsaretatoki",
-      "type": "procedure",
-      "sortid": 184,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "youwakaranposiyonno_xiao_guoga_kai_shi_shi_yongsaretatoki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/YouwakaranposiyonnoXiaoGuogaKaiShiShiYongsaretatokiProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ]
-      }
-    },
-    {
-      "name": "YouwakaranehuekutogaYouXiaoShinoteituku",
-      "type": "procedure",
-      "sortid": 185,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "youwakaranehuekutoga_you_xiao_shinoteituku",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/YouwakaranehuekutogaYouXiaoShinoteitukuProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "world",
-            "type": "world"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Youwakaran",
-      "type": "potioneffect",
-      "sortid": 186,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "youwakaran",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/potion/YouwakaranMobEffect.java"
-        ]
-      }
-    },
-    {
       "name": "Killotiru",
       "type": "livingentity",
       "sortid": 196,
@@ -3287,20 +3232,6 @@
           "src/main/resources/assets/the_four_primitives_and_weapons/models/item/prototype_katana.json",
           "src/main/java/the_four_primitives_and_weapons/item/PrototypeKatanaItem.java"
         ]
-      }
-    },
-    {
-      "name": "PrototypeKatanaYoukuritukusitatoki",
-      "type": "procedure",
-      "sortid": 266,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "prototype_katana_youkuritukusitatoki",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/PrototypeKatanaYoukuritukusitatokiProcedure.java"
-        ],
-        "dependencies": []
       }
     },
     {
@@ -4702,20 +4633,6 @@
             "type": "entity"
           }
         ]
-      }
-    },
-    {
-      "name": "Zokuseiritokutyuwaza",
-      "type": "procedure",
-      "sortid": 369,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "zokuseiritokutyuwaza",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/ZokuseiritokutyuwazaProcedure.java"
-        ],
-        "dependencies": []
       }
     },
     {
@@ -8449,44 +8366,6 @@
       }
     },
     {
-      "name": "EffectBloodTpEffectStartedapplied",
-      "type": "procedure",
-      "sortid": 602,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "effect_blood_tp_effect_startedapplied",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/EffectBloodTpEffectStartedappliedProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ]
-      }
-    },
-    {
-      "name": "EffectBloodTpEffectExpires",
-      "type": "procedure",
-      "sortid": 603,
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "effect_blood_tp_effect_expires",
-      "metadata": {
-        "files": [
-          "src/main/java/the_four_primitives_and_weapons/procedures/EffectBloodTpEffectExpiresProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ]
-      }
-    },
-    {
       "name": "TooltipEventHandler",
       "type": "code",
       "sortid": 605,
@@ -9326,7 +9205,6 @@
       "gamerule.questTimeDuration": "Quest Time Duration",
       "advancements.you_have_become_a_vampire.title": "You have become a vampire.",
       "item.the_four_primitives_and_weapons.nigu_shield": "Nigu Shield",
-      "effect.the_four_primitives_and_weapons.youwakaran": "youwakaran",
       "effect.the_four_primitives_and_weapons.attack_bow": "bow attack",
       "block.the_four_primitives_and_weapons.wither_skeleton_spawner": "Wither Skeleton Spawner",
       "gui.the_four_primitives_and_weapons.rpg_book_gui.button_bogged_outer": "Bogged Outer",
@@ -9597,7 +9475,6 @@
       "gamerule.questTimeDuration": "Quest Time Duration",
       "advancements.you_have_become_a_vampire.title": "You have become a vampire.",
       "item.the_four_primitives_and_weapons.nigu_shield": "二グ盾",
-      "effect.the_four_primitives_and_weapons.youwakaran": "youwakaran",
       "effect.the_four_primitives_and_weapons.attack_bow": "bow attack",
       "block.the_four_primitives_and_weapons.wither_skeleton_spawner": "Wither Skeleton Spawner",
       "gui.the_four_primitives_and_weapons.rpg_book_gui.button_bogged_outer": "Bogged Outer",
