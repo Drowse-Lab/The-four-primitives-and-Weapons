@@ -4,7 +4,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.effect.MobEffectInstance;
 
 import the_four_primitives_and_weapons.network.TheFourPrimitivesAndWeaponsModVariables;
 
@@ -18,8 +17,6 @@ public class PrototypeKatanamobugaturudeGongJisaretatokiProcedure {
 		if ((sourceentity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.PROTOTYPE_KATANA.get()) {
 			if ((sourceentity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.THUNDERBOLT.get()) {
 				if ((sourceentity.getCapability(TheFourPrimitivesAndWeaponsModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new TheFourPrimitivesAndWeaponsModVariables.PlayerVariables())).aaa == 6) {
-					if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
-						_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.KAMINARIYADE.get(), 60, 1, true, false));
 					if (!(sourceentity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.KURUTIMENASI.get()) : false)) {
 						if (sourceentity instanceof Player _player)
 							_player.getCooldowns().addCooldown(TheFourPrimitivesAndWeaponsModItems.PROTOTYPE_KATANA.get(), 50);

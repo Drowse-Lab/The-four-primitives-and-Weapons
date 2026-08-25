@@ -45,7 +45,7 @@ public class BloodTpehuekutogaYouXiaoShinoteitukuProcedure {
 							if (!(entityiterator instanceof OtiruyoEntity)) {
 								if (entityiterator instanceof LivingEntity) {
 									if (entityiterator instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MobEffects.GLOWING) : false) {
-										if (entityiterator instanceof LivingEntity _livEnt ? _livEnt.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.EFFECT_BLOOD_TP.get()) : false) {
+										if (false) {
 											{
 												Entity _ent = entity;
 												_ent.teleportTo((entityiterator.getX()), (entityiterator.getY()), (entityiterator.getZ()));
@@ -80,8 +80,6 @@ public class BloodTpehuekutogaYouXiaoShinoteitukuProcedure {
 						if (!(entityiterator instanceof SkeltonMobEntity)) {
 							if (!(entityiterator instanceof OtiruyoEntity)) {
 								if (entityiterator instanceof LivingEntity) {
-									if (entityiterator instanceof LivingEntity _entity)
-										_entity.removeEffect(TheFourPrimitivesAndWeaponsModMobEffects.EFFECT_BLOOD_TP.get());
 									if (entityiterator instanceof LivingEntity _entity)
 										_entity.removeEffect(MobEffects.GLOWING);
 								}

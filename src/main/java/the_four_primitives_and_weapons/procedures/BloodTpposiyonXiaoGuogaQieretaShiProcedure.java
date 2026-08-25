@@ -49,7 +49,7 @@ public class BloodTpposiyonXiaoGuogaQieretaShiProcedure {
 				if (!(entityiterator == entity)) {
 					if (!(entityiterator instanceof SkeltonMobEntity)) {
 						if (!(entityiterator instanceof OtiruyoEntity)) {
-							if (!(entityiterator instanceof LivingEntity _livEnt ? _livEnt.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.EFFECT_BLOOD_TP.get()) : false)) {
+							{
 								if (!(entityiterator instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MobEffects.GLOWING) : false)) {
 									if (entityiterator instanceof LivingEntity) {
 										if (world instanceof ServerLevel _level)
