@@ -45,6 +45,8 @@ public class AttackChargeParticleHandler {
         if (event.side.isClient()) return; // server で 1 回だけ発火 → ChargeParticleEmitter が両側に配信
         Player player = event.player;
         if (player.isSpectator()) return;
+		// チャージ演出のサーバー送信を隔tickに抑える。
+		if ((player.tickCount & 1) != 0) return;
 
         ItemStack main = player.getMainHandItem();
         if (!isMeleeWeapon(main)) {

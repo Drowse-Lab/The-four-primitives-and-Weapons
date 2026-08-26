@@ -17,9 +17,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Entity;
 
 import the_four_primitives_and_weapons.entity.SkeltonMobEntity;
-import the_four_primitives_and_weapons.entity.OtiruyoEntity;
 import the_four_primitives_and_weapons.entity.MeteorArrowEntity;
-import the_four_primitives_and_weapons.entity.KillotiruEntity;
 import the_four_primitives_and_weapons.entity.KatanaTobuEntity;
 import the_four_primitives_and_weapons.entity.FlyingAttackerEntity;
 import the_four_primitives_and_weapons.entity.CometKillEntity;
@@ -36,10 +34,6 @@ public class TheFourPrimitivesAndWeaponsModEntities {
 			EntityType.Builder.<SkeltonMobEntity>of(SkeltonMobEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(SkeltonMobEntity::new)
 
 					.sized(0.6f, 1.5f));
-	public static final RegistryObject<EntityType<OtiruyoEntity>> OTIRUYO = register("otiruyo",
-			EntityType.Builder.<OtiruyoEntity>of(OtiruyoEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(OtiruyoEntity::new).fireImmune().sized(1.2f, 3.6f));
-	public static final RegistryObject<EntityType<KillotiruEntity>> KILLOTIRU = register("killotiru", EntityType.Builder.<KillotiruEntity>of(KillotiruEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64)
-			.setUpdateInterval(3).setCustomClientFactory(KillotiruEntity::new).fireImmune().sized(1.2f, 3.6f));
 	public static final RegistryObject<EntityType<KatanaTobuEntity>> KATANA_TOBU = register("projectile_katana_tobu",
 			EntityType.Builder.<KatanaTobuEntity>of(KatanaTobuEntity::new, MobCategory.MISC).setCustomClientFactory(KatanaTobuEntity::new).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(1).sized(0.5f, 0.5f));
 	public static final RegistryObject<EntityType<BlackholeEntity>> BLACKHOLE = register("blackhole",
@@ -73,8 +67,6 @@ public class TheFourPrimitivesAndWeaponsModEntities {
 	public static void init(FMLCommonSetupEvent event) {
 		event.enqueueWork(() -> {
 			SkeltonMobEntity.init();
-			OtiruyoEntity.init();
-			KillotiruEntity.init();
 			BlackholeEntity.init();
 			CometEntity.init();
 			CometKillEntity.init();
@@ -87,8 +79,6 @@ public class TheFourPrimitivesAndWeaponsModEntities {
 	@SubscribeEvent
 	public static void registerAttributes(EntityAttributeCreationEvent event) {
 		event.put(SKELTON_MOB.get(), SkeltonMobEntity.createAttributes().build());
-		event.put(OTIRUYO.get(), OtiruyoEntity.createAttributes().build());
-		event.put(KILLOTIRU.get(), KillotiruEntity.createAttributes().build());
 		event.put(BLACKHOLE.get(), BlackholeEntity.createAttributes().build());
 		event.put(COMET.get(), CometEntity.createAttributes().build());
 		event.put(COMET_KILL.get(), CometKillEntity.createAttributes().build());

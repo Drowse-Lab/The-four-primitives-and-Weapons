@@ -7,8 +7,6 @@ import net.minecraftforge.event.entity.living.LivingAttackEvent;
 
 import net.minecraft.world.entity.Entity;
 
-import the_four_primitives_and_weapons.entity.OtiruyoEntity;
-import the_four_primitives_and_weapons.entity.KillotiruEntity;
 import the_four_primitives_and_weapons.entity.BlackholeEntity;
 
 import javax.annotation.Nullable;
@@ -34,12 +32,7 @@ public class MukoukaGuardProcedure {
 				event.setCanceled(true);
 			}
 		}
-		if (entity instanceof KillotiruEntity) {
-			if (event != null && event.isCancelable()) {
-				event.setCanceled(true);
-			}
-		}
-		if (entity instanceof OtiruyoEntity) {
+		if (false) {
 			if (event != null && event.isCancelable()) {
 				event.setCanceled(true);
 			}

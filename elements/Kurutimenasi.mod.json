@@ -3,7 +3,7 @@
   "_type": "potioneffect",
   "definition": {
     "effectName": "Coold time invalid",
-    "icon": "otiruyoo.png",
+    "icon": "barrier_effect.png",
     "color": {
       "value": -1,
       "falpha": 0.0

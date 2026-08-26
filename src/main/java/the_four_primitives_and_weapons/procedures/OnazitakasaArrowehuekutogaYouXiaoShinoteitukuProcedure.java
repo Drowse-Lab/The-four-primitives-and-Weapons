@@ -29,7 +29,6 @@ import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModMobEff
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModEnchantments;
 
 import the_four_primitives_and_weapons.entity.SkeltonMobEntity;
-import the_four_primitives_and_weapons.entity.OtiruyoEntity;
 
 import java.util.stream.Collectors;
 import java.util.List;
@@ -82,7 +81,7 @@ public class OnazitakasaArrowehuekutogaYouXiaoShinoteitukuProcedure {
 			List<Entity> _entfound = world.getEntitiesOfClass(Entity.class, new AABB(_center, _center).inflate(1 / 2d), e -> true).stream().sorted(Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_center))).collect(Collectors.toList());
 			for (Entity entityiterator : _entfound) {
 				if (!(entityiterator == entity)) {
-					if (!(entityiterator instanceof OtiruyoEntity)) {
+					if (true) {
 						if (!(entityiterator instanceof SkeltonMobEntity)) {
 							if (entityiterator instanceof LivingEntity) {
 								if (EnchantmentHelper.getItemEnchantmentLevel(TheFourPrimitivesAndWeaponsModEnchantments.KILL.get(), (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY)) != 0) {

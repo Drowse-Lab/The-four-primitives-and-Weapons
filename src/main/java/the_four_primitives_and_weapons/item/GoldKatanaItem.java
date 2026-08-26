@@ -13,7 +13,6 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.InteractionHand;
 
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
-import the_four_primitives_and_weapons.procedures.IronKatanaYoukuritukusitatokiProcedure;
 
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModTabs;
 
@@ -44,13 +43,6 @@ public class GoldKatanaItem extends SwordItem {
 				return Ingredient.of();
 			}
 		}, 3, -2.4f, new Item.Properties());
-	}
-
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		IronKatanaYoukuritukusitatokiProcedure.execute();
-		return ar;
 	}
 
 	@Override

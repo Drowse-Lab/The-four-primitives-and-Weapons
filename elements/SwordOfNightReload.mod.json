@@ -3,7 +3,7 @@
   "_type": "potioneffect",
   "definition": {
     "effectName": "sword of night shot reload",
-    "icon": "otita.png",
+    "icon": "barrier_effect.png",
     "color": {
       "value": -1,
       "falpha": 0.0

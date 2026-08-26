@@ -12,7 +12,6 @@ import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModMobEff
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
 
 import the_four_primitives_and_weapons.entity.SkeltonMobEntity;
-import the_four_primitives_and_weapons.entity.OtiruyoEntity;
 import the_four_primitives_and_weapons.entity.BlackholeEntity;
 
 import the_four_primitives_and_weapons.TheFourPrimitivesAndWeaponsMod;
@@ -34,7 +33,7 @@ public class BlackholeenteiteinotitukuGengXinShiProcedure {
 			List<Entity> _entfound = world.getEntitiesOfClass(Entity.class, new AABB(_center, _center).inflate(10 / 2d), e -> true).stream().sorted(Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_center))).collect(Collectors.toList());
 			for (Entity entityiterator : _entfound) {
 				if (!(entityiterator == entity)) {
-					if (!(entityiterator instanceof OtiruyoEntity)) {
+					if (true) {
 						if (!(entityiterator instanceof SkeltonMobEntity)) {
 							if (!(entityiterator instanceof BlackholeEntity)) {
 								if (!(entityiterator instanceof LivingEntity _livEnt ? _livEnt.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.BLACK_HOLE_EFFECT.get()) : false)) {
@@ -60,7 +59,7 @@ public class BlackholeenteiteinotitukuGengXinShiProcedure {
 			List<Entity> _entfound = world.getEntitiesOfClass(Entity.class, new AABB(_center, _center).inflate(3 / 2d), e -> true).stream().sorted(Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_center))).collect(Collectors.toList());
 			for (Entity entityiterator : _entfound) {
 				if (!(entityiterator == entity)) {
-					if (!(entityiterator instanceof OtiruyoEntity)) {
+					if (true) {
 						if (!(entityiterator instanceof SkeltonMobEntity)) {
 							if (!(entityiterator instanceof BlackholeEntity)) {
 								if (!(entityiterator instanceof LivingEntity _livEnt ? _livEnt.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.BLACK_HOLE_EFFECT.get()) : false)) {

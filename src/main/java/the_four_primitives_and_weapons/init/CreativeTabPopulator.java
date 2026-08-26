@@ -243,8 +243,6 @@ public class CreativeTabPopulator {
 
 		if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
 			event.accept(TheFourPrimitivesAndWeaponsModItems.SKELTON_MOB_SPAWN_EGG);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.OTIRUYO_SPAWN_EGG);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.KILLOTIRU_SPAWN_EGG);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.BLACKHOLE_SPAWN_EGG);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.METEOR_ARROW_SPAWN_EGG);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.FLYING_ATTACKER_SPAWN_EGG);

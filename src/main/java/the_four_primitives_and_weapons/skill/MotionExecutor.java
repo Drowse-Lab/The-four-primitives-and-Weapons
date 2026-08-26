@@ -177,6 +177,9 @@ public class MotionExecutor {
      */
     private static void spawnMotionElementParticle(Player player, String motionId) {
         if (!(player.level() instanceof ServerLevel sl)) return;
+		// 斬撃3種は slashCloudFan が同じ属性弧を描くため、ここからの二重送信をしない。
+		if ("upper_left_slash".equals(motionId) || "upper_right_slash".equals(motionId)
+				|| "horizontal_slash".equals(motionId)) return;
         the_four_primitives_and_weapons.damage.ElementType elem =
                 the_four_primitives_and_weapons.damage.ElementalDamageUtils.getAttackElementType(player);
         if (elem == the_four_primitives_and_weapons.damage.ElementType.NONE) return;
@@ -257,13 +260,11 @@ public class MotionExecutor {
             }
         } else {
             // 通常版: 横広範囲
-            Vec3 minPoint = playerPos.add(lookVec.scale(0.5))
-                .add(rightVec.scale(-horizontalWidth)).add(0, -0.5, 0);
-            Vec3 maxPoint = playerPos.add(lookVec.scale(range))
-                .add(rightVec.scale(horizontalWidth)).add(0, 1.5, 0);
-            AABB attackBox = new AABB(minPoint, maxPoint);
+			Vec3 endPos = playerPos.add(lookVec.scale(range));
+			AABB attackBox = new AABB(playerPos, endPos).inflate(horizontalWidth, 1.5, horizontalWidth);
             List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, attackBox,
-                entity -> entity != player);
+				entity -> entity != player && isInsideAttackLane(entity, playerPos, lookVec, rightVec,
+						-0.5, range, horizontalWidth, 2.5));
             for (LivingEntity target : targets) {
                 ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
                 DamageCalculator.dealDamage(player, target, baseDamage, weapon);
@@ -456,19 +457,12 @@ public class MotionExecutor {
 
         // 前方の敵にダメージ（上下広めのAABB）
         Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
-        Vec3 minPoint = playerPos.add(lookVec.scale(-0.3))
-            .add(rightVec.scale(-width)).add(0, -1.0, 0);
-        Vec3 maxPoint = playerPos.add(lookVec.scale(forwardRange))
-            .add(rightVec.scale(width)).add(0, 2.5, 0);
-        AABB searchArea = new AABB(minPoint, maxPoint);
+		Vec3 endPoint = playerPos.add(lookVec.scale(forwardRange));
+		AABB searchArea = new AABB(playerPos, endPoint).inflate(width, 2.5, width);
 
         List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> {
-                if (entity == player) return false;
-                Vec3 toEntity = entity.position().subtract(playerPos).normalize();
-                double dot = lookVec.dot(toEntity);
-                return dot > 0.0 && entity.distanceTo(player) <= forwardRange + width;
-            });
+			entity -> entity != player && isInsideAttackLane(entity, playerPos, lookVec, rightVec,
+					-0.3, forwardRange, width, 3.0));
 
         for (LivingEntity target : targets) {
             ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
@@ -501,20 +495,12 @@ public class MotionExecutor {
                 ? Math.max(0.75, horizontalRange + st.attackRange * 0.5) : horizontalRange;
         Vec3 rightVec = new Vec3(-lookVec.z, 0, lookVec.x).normalize();
 
-        Vec3 minPoint = playerPos.add(lookVec.scale(-0.5))
-            .add(rightVec.scale(-hRange)).add(0, -0.5, 0);
-        Vec3 maxPoint = playerPos.add(lookVec.scale(fRange))
-            .add(rightVec.scale(hRange)).add(0, 2.5, 0);
-
-        AABB searchArea = new AABB(minPoint, maxPoint);
+		Vec3 endPoint = playerPos.add(lookVec.scale(fRange));
+		AABB searchArea = new AABB(playerPos, endPoint).inflate(hRange, 2.5, hRange);
 
         List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
-            entity -> {
-                if (entity == player) return false;
-                Vec3 toEntity = entity.position().subtract(playerPos).normalize();
-                double dot = lookVec.dot(toEntity);
-                return dot > -0.3 && entity.distanceTo(player) <= fRange + hRange;
-            });
+			entity -> entity != player && isInsideAttackLane(entity, playerPos, lookVec, rightVec,
+					-0.5, fRange, hRange, 3.0));
 
         for (LivingEntity target : targets) {
             ItemStack weapon = player.getItemInHand(InteractionHand.MAIN_HAND);
@@ -522,6 +508,17 @@ public class MotionExecutor {
             DamageCalculator.applyNormalKnockback(player, target, weapon);
         }
     }
+
+	/** 方角に左右されない、前後・左右・上下の各軸による攻撃範囲判定。 */
+	private static boolean isInsideAttackLane(LivingEntity target, Vec3 origin, Vec3 forward, Vec3 right,
+			double minForward, double maxForward, double halfWidth, double height) {
+		Vec3 offset = target.getBoundingBox().getCenter().subtract(origin);
+		double forwardDistance = offset.dot(forward);
+		double sideDistance = Math.abs(offset.dot(right));
+		return forwardDistance >= minForward && forwardDistance <= maxForward
+				&& sideDistance <= halfWidth + target.getBbWidth() * 0.5
+				&& offset.y >= -0.75 && offset.y <= height;
+	}
 
     // === 竹破壊ユーティリティ ===
     /** ピッチを無視した水平前方ベクトル ( 上下を向いていても yaw 正面に技を出すための向き )。 */
@@ -598,13 +595,13 @@ public class MotionExecutor {
         for (Vec3 p : fanPoints(player, look, playerPos, tilt)) {
             if (elemental) {
                 // 灰色 dust と全く同じ範囲に撒く ( delta 1 0 1 = 横に広く・上下は広げない )。
-                // 個数も emit の 1.5 倍補正込みで灰色 dust の 50 個相当になるよう 32 を渡す。
+				// 通常攻撃ごとの通信量を抑えつつ、弧が判別できる密度にする。
                 the_four_primitives_and_weapons.damage.ElementalParticles.spawnWide(
-                        sw, elem, p.x, p.y, p.z, 32, delta, 0.0);
+						sw, elem, p.x, p.y, p.z, 12, delta, 0.0);
             } else {
                 // 本家: delta 1 0 1 ( 横に広く・上下は広げない ), speed 0.001, count 50
                 the_four_primitives_and_weapons.damage.ElementalParticles.sendForced(
-                        sw, DUST_KATANA, p.x, p.y, p.z, 50, delta, 0.0, delta, 0.001);
+						sw, DUST_KATANA, p.x, p.y, p.z, 18, delta, 0.0, delta, 0.001);
             }
         }
     }

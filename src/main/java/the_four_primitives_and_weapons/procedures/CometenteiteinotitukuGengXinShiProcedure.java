@@ -16,7 +16,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.CommandSource;
 
 import the_four_primitives_and_weapons.entity.SkeltonMobEntity;
-import the_four_primitives_and_weapons.entity.OtiruyoEntity;
 import the_four_primitives_and_weapons.entity.CometKillEntity;
 import the_four_primitives_and_weapons.entity.CometEntity;
 
@@ -44,7 +43,7 @@ public class CometenteiteinotitukuGengXinShiProcedure {
 						.collect(Collectors.toList());
 				for (Entity entityiterator : _entfound) {
 					if (!(entityiterator == entity)) {
-						if (!(entityiterator instanceof OtiruyoEntity)) {
+						if (true) {
 							if (!(entityiterator instanceof SkeltonMobEntity)) {
 								if (entityiterator instanceof Mob) {
 									if (!(entity.getPersistentData().getBoolean("the_four_primitives_and_weapons:armor_stand_tobasu_kill_off") == true)) {
@@ -100,7 +99,7 @@ public class CometenteiteinotitukuGengXinShiProcedure {
 						.collect(Collectors.toList());
 				for (Entity entityiterator : _entfound) {
 					if (!(entityiterator == entity)) {
-						if (!(entityiterator instanceof OtiruyoEntity)) {
+						if (true) {
 							if (!(entityiterator instanceof SkeltonMobEntity)) {
 								if (entityiterator instanceof Mob) {
 									if (!(entityiterator.getPersistentData().getBoolean("the_four_primitives_and_weapons:armor_stand_tobasu_kill_off") == true)) {

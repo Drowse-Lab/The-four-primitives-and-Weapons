@@ -32,7 +32,7 @@ public class HardentityMobEffect extends MobEffect {
 
 	@Override
 	public boolean isDurationEffectTick(int duration, int amplifier) {
-		return true;
+		return duration % 10 == 0;
 	}
 
 	@Override

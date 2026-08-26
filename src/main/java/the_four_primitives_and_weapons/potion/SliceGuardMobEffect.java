@@ -39,7 +39,8 @@ public class SliceGuardMobEffect extends MobEffect {
 
 	@Override
 	public boolean isDurationEffectTick(int duration, int amplifier) {
-		return true;
+		// 大規模な範囲走査を含むため隔tickで処理する。
+		return (duration & 1) == 0;
 	}
 
 	@Override

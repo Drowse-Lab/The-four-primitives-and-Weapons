@@ -83,6 +83,8 @@ public class ElementalCarryDebuffHandler {
         if (event.phase != TickEvent.Phase.END) return;
         Player player = event.player;
         if (player == null || player.level().isClientSide) return;
+		// Curios・装備・属性の全走査は毎tick不要。4回/秒に集約する。
+		if (player.tickCount % 5 != 0) return;
 
         CarryState state = collectState(player);
 

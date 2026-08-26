@@ -22,7 +22,7 @@ public class WazaMobEffect extends MobEffect {
 
 	@Override
 	public boolean isDurationEffectTick(int duration, int amplifier) {
-		return true;
+		return false;
 	}
 
 	@Override

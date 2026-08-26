@@ -30,7 +30,6 @@ import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModEnchantments;
 
 import the_four_primitives_and_weapons.entity.SkeltonMobEntity;
-import the_four_primitives_and_weapons.entity.OtiruyoEntity;
 
 import java.util.stream.Collectors;
 import java.util.List;
@@ -75,7 +74,7 @@ public class TpAttackposiyonXiaoGuogaQieretaShiProcedure {
 						.collect(Collectors.toList());
 				for (Entity entityiterator : _entfound) {
 					if (!(entityiterator == entity)) {
-						if (!(entityiterator instanceof OtiruyoEntity)) {
+						if (true) {
 							if (!(entityiterator instanceof SkeltonMobEntity)) {
 								if (entityiterator instanceof LivingEntity) {
 									if (!(world.getDifficulty() == Difficulty.PEACEFUL) && !(new Object() {
@@ -146,8 +145,6 @@ public class TpAttackposiyonXiaoGuogaQieretaShiProcedure {
 												}
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.BUBBLESHOT.get()) {
 													entityiterator.hurt(entityiterator.damageSources().generic(), 20);
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
-														_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.TISSOKU.get(), 120, 6, true, false));
 												}
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.THUNDERBOLT.get()) {
 													entityiterator.hurt(entityiterator.damageSources().generic(), 20);
@@ -159,8 +156,6 @@ public class TpAttackposiyonXiaoGuogaQieretaShiProcedure {
 														entityiterator.hurt(entityiterator.damageSources().generic(), 20);
 														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 															_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
-														if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
-															_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.TISSOKU.get(), 120, 6, true, false));
 													}
 												}
 											}

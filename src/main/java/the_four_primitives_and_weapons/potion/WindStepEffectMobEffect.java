@@ -44,7 +44,7 @@ public class WindStepEffectMobEffect extends MobEffect {
 
 	@Override
 	public boolean isDurationEffectTick(int duration, int amplifier) {
-		return true;
+		return (duration & 1) == 0;
 	}
 
 	@Override

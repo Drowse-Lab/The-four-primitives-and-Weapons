@@ -1,7 +1,0 @@
-{
-  "_fv": 43,
-  "_type": "procedure",
-  "definition": {
-    "procedurexml": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><variables><variable type=\"Number\" id=\"r\">r</variable><variable type=\"Number\" id=\"alpha\">alpha</variable><variable type=\"Number\" id=\"beta\">beta</variable><variable type=\"Number\" id=\"dis1\">dis1</variable><variable type=\"Number\" id=\"delay\">delay</variable><variable type=\"Number\" id=\"cooldown\">cooldown</variable><variable type=\"Number\" id=\"speed\">speed</variable><variable type=\"Number\" id=\"precision\">precision</variable><variable type=\"Number\" id=\"width\">width</variable><variable type=\"Number\" id=\"size\">size</variable><variable type=\"Number\" id=\"range\">range</variable><variable type=\"Number\" id=\"zknockback\">zknockback</variable><variable type=\"Number\" id=\"yknockback\">yknockback</variable><variable type=\"Number\" id=\"xknockback\">xknockback</variable><variable type=\"Number\" id=\"dis\">dis</variable></variables><block type=\"event_trigger\" deletable=\"false\" x=\"724\" y=\"887\"><field name=\"trigger\">no_ext_trigger</field><next><block type=\"call_procedure\"><field name=\"procedure\">Nomalwaza</field></block></next></block><block type=\"math_number\" x=\"2117\" y=\"1779\"><field name=\"NUM\">0</field></block><block type=\"math_number\" x=\"2085\" y=\"1808\"><field name=\"NUM\">0</field></block></xml>"
-  }
-}

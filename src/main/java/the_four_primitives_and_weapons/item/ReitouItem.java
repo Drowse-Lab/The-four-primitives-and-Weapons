@@ -11,7 +11,6 @@ import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 
-import the_four_primitives_and_weapons.procedures.IronKatanaYoukuritukusitatokiProcedure;
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 
 public class ReitouItem extends SwordItem {
@@ -41,13 +40,6 @@ public class ReitouItem extends SwordItem {
 				return Ingredient.of();
 			}
 		}, 3, -2.4f, new Item.Properties());
-	}
-
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		IronKatanaYoukuritukusitatokiProcedure.execute();
-		return ar;
 	}
 
 	@Override

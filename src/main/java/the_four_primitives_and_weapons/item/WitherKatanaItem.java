@@ -22,7 +22,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
-import the_four_primitives_and_weapons.procedures.WitherKatanaYoukuritukusitatokiProcedure;
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
 
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModTabs;
@@ -55,13 +54,6 @@ public class WitherKatanaItem extends SwordItem {
 				return Ingredient.of();
 			}
 		}, 3, -2.4f, new Item.Properties());
-	}
-
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		WitherKatanaYoukuritukusitatokiProcedure.execute();
-		return ar;
 	}
 
 	@Override

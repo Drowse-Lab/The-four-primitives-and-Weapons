@@ -23,24 +23,15 @@ public class EffectMagicehuekutogaYouXiaoShinoteitukuProcedure {
 	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
 		if (entity == null)
 			return;
-		double a = 0;
-		double r = 0;
-		double b = 0;
-		double dis = 0;
-		double dis4 = 0;
-		double dis3 = 0;
-		double dis2 = 0;
-		double dis1 = 0;
 		{
 			final Vec3 _center = new Vec3(x, y, z);
-			List<Entity> _entfound = world.getEntitiesOfClass(Entity.class, new AABB(_center, _center).inflate(5 / 2d), e -> true).stream().sorted(Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_center))).collect(Collectors.toList());
+			List<Entity> _entfound = world.getEntitiesOfClass(Entity.class, new AABB(_center, _center).inflate(5 / 2d), entityiterator -> entityiterator instanceof Mob || entityiterator instanceof ItemEntity
+					|| entityiterator instanceof Arrow || entityiterator instanceof SpectralArrow || entityiterator instanceof ThrownTrident || entityiterator instanceof LargeFireball
+					|| entityiterator instanceof DragonFireball || entityiterator instanceof Snowball || entityiterator instanceof ThrownEgg || entityiterator instanceof SmallFireball);
 			for (Entity entityiterator : _entfound) {
-				if (entityiterator instanceof Mob || entityiterator instanceof ItemEntity || entityiterator instanceof Arrow || entityiterator instanceof SpectralArrow || entityiterator instanceof ThrownTrident
-						|| entityiterator instanceof LargeFireball || entityiterator instanceof DragonFireball || entityiterator instanceof Snowball || entityiterator instanceof ThrownEgg || entityiterator instanceof SmallFireball) {
 					if (entityiterator.getPersistentData().getBoolean("Check") == false) {
 						entityiterator.getPersistentData().putBoolean("Check", true);
-						dis = Math.sqrt(Math.pow(entityiterator.getX() - entity.getX(), 2) + Math.pow(entityiterator.getY() - entity.getY(), 2) + Math.pow(entityiterator.getZ() - entity.getZ(), 2));
-						if (dis <= 2) {
+						if (entityiterator.distanceToSqr(entity) <= 4) {
 							entityiterator.getPersistentData().putBoolean("My arrow?", true);
 						} else {
 							entityiterator.getPersistentData().putBoolean("My arrow?", false);
@@ -49,7 +40,6 @@ public class EffectMagicehuekutogaYouXiaoShinoteitukuProcedure {
 					if (entityiterator.getPersistentData().getBoolean("My arrow?") == false) {
 						entityiterator.setDeltaMovement(new Vec3(0, 0, 0));
 					}
-				}
 			}
 		}
 	}

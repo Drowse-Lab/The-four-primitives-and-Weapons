@@ -128,6 +128,8 @@ public class PlayerPatternTracker {
     @SubscribeEvent
     public static void onTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+		// 入力傾向の観測は隔tickで十分。全プレイヤー走査を半減する。
+		if ((event.getServer().getTickCount() & 1) != 0) return;
         for (ServerLevel level : event.getServer().getAllLevels()) {
             for (ServerPlayer p : level.players()) {
                 observePlayer(p);

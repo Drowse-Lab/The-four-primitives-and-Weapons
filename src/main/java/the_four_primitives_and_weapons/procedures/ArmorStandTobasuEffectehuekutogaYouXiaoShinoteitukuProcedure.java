@@ -19,7 +19,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.CommandSource;
 
 import the_four_primitives_and_weapons.entity.SkeltonMobEntity;
-import the_four_primitives_and_weapons.entity.OtiruyoEntity;
 
 import java.util.stream.Collectors;
 import java.util.List;
@@ -87,7 +86,7 @@ public class ArmorStandTobasuEffectehuekutogaYouXiaoShinoteitukuProcedure {
 			List<Entity> _entfound = world.getEntitiesOfClass(Entity.class, new AABB(_center, _center).inflate(3 / 2d), e -> true).stream().sorted(Comparator.comparingDouble(_entcnd -> _entcnd.distanceToSqr(_center))).collect(Collectors.toList());
 			for (Entity entityiterator : _entfound) {
 				if (!(entityiterator == entity)) {
-					if (!(entityiterator instanceof OtiruyoEntity)) {
+					if (true) {
 						if (!(entityiterator instanceof SkeltonMobEntity)) {
 							if (!(entityiterator.getPersistentData().getBoolean("the_four_primitives_and_weapons:armor_stand_tobasu_kill_off") == true)) {
 								if (entityiterator instanceof LivingEntity) {

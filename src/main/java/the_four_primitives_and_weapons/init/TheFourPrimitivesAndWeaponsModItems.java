@@ -151,7 +151,6 @@ public class TheFourPrimitivesAndWeaponsModItems {
 	public static final RegistryObject<Item> HARVEST_MOON_2023929 = REGISTRY.register("harvest_moon_2023929", () -> new HarvestMoon2023929Item());
 	public static final RegistryObject<Item> WARABITETOU = REGISTRY.register("warabitetou", () -> new WarabitetouItem());
 	public static final RegistryObject<Item> A_2 = REGISTRY.register("a_2", () -> new A2Item());
-	public static final RegistryObject<Item> OTIRUYO_SPAWN_EGG = REGISTRY.register("otiruyo_spawn_egg", () -> new ForgeSpawnEggItem(TheFourPrimitivesAndWeaponsModEntities.OTIRUYO, -1, -1, new Item.Properties()));
 	public static final RegistryObject<Item> WIND_STEP = REGISTRY.register("wind_book", () -> new WindStepItem());
 	public static final RegistryObject<Item> STRAY_OUTER_ARMOR_HELMET = REGISTRY.register("stray_outer_armor_helmet", () -> new StrayOuterArmorItem.Helmet());
 	public static final RegistryObject<Item> STRAY_OUTER_ARMOR_CHESTPLATE = REGISTRY.register("stray_outer_armor_chestplate", () -> new StrayOuterArmorItem.Chestplate());
@@ -162,7 +161,6 @@ public class TheFourPrimitivesAndWeaponsModItems {
 	public static final RegistryObject<Item> STONE_BRICKS_TRAP_DOOR = block(TheFourPrimitivesAndWeaponsModBlocks.STONE_BRICKS_TRAP_DOOR, TheFourPrimitivesAndWeaponsModTabs.TAB_YOPKEINAMONO);
 	public static final RegistryObject<Item> ROSE_FLOWER_POT = block(TheFourPrimitivesAndWeaponsModBlocks.ROSE_FLOWER_POT, TheFourPrimitivesAndWeaponsModTabs.TAB_MAGIC_BOOKS);
 	public static final RegistryObject<Item> HALLOWEEN_2023_10_31_SICKLE = REGISTRY.register("halloween_2023_10_31_sickle", () -> new Halloween20231031SickleItem());
-	public static final RegistryObject<Item> KILLOTIRU_SPAWN_EGG = REGISTRY.register("killotiru_spawn_egg", () -> new ForgeSpawnEggItem(TheFourPrimitivesAndWeaponsModEntities.KILLOTIRU, -1, -1, new Item.Properties()));
 	public static final RegistryObject<Item> KATANA_TOBU = REGISTRY.register("katana_tobu", () -> new KatanaTobuItem());
 	public static final RegistryObject<Item> DRAGON_ARMOR_HELMET = REGISTRY.register("dragon_armor_helmet", () -> new DragonArmorItem.Helmet());
 	public static final RegistryObject<Item> DRAGON_ARMOR_CHESTPLATE = REGISTRY.register("dragon_armor_chestplate", () -> new DragonArmorItem.Chestplate());

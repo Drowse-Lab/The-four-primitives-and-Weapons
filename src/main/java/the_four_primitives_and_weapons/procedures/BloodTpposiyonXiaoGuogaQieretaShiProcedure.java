@@ -26,7 +26,6 @@ import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModMobEff
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModEnchantments;
 
 import the_four_primitives_and_weapons.entity.SkeltonMobEntity;
-import the_four_primitives_and_weapons.entity.OtiruyoEntity;
 
 import java.util.stream.Collectors;
 import java.util.List;
@@ -48,7 +47,7 @@ public class BloodTpposiyonXiaoGuogaQieretaShiProcedure {
 			for (Entity entityiterator : _entfound) {
 				if (!(entityiterator == entity)) {
 					if (!(entityiterator instanceof SkeltonMobEntity)) {
-						if (!(entityiterator instanceof OtiruyoEntity)) {
+						if (true) {
 							{
 								if (!(entityiterator instanceof LivingEntity _livEnt ? _livEnt.hasEffect(MobEffects.GLOWING) : false)) {
 									if (entityiterator instanceof LivingEntity) {

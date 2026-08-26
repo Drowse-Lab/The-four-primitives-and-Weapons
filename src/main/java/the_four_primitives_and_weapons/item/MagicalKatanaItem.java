@@ -20,7 +20,6 @@ import net.minecraft.world.InteractionHand;
 
 import the_four_primitives_and_weapons.procedures.MagicalKatanamobugaturudeGongJisaretatokiProcedure;
 import the_four_primitives_and_weapons.procedures.IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure;
-import the_four_primitives_and_weapons.procedures.IronKatanaYoukuritukusitatokiProcedure;
 
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModTabs;
 
@@ -58,13 +57,6 @@ public class MagicalKatanaItem extends SwordItem {
 		boolean retval = super.hurtEnemy(itemstack, entity, sourceentity);
 		MagicalKatanamobugaturudeGongJisaretatokiProcedure.execute(VersionHelper.getLevel(entity), entity, sourceentity);
 		return retval;
-	}
-
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player entity, InteractionHand hand) {
-		InteractionResultHolder<ItemStack> ar = super.use(world, entity, hand);
-		IronKatanaYoukuritukusitatokiProcedure.execute();
-		return ar;
 	}
 
 	@Override

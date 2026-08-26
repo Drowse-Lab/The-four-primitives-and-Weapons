@@ -29,7 +29,6 @@ import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModEnchantments;
 
 import the_four_primitives_and_weapons.entity.SkeltonMobEntity;
-import the_four_primitives_and_weapons.entity.OtiruyoEntity;
 
 import java.util.stream.Collectors;
 import java.util.List;
@@ -72,7 +71,7 @@ public class SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure {
 					for (Entity entityiterator : _entfound) {
 						if (!(entityiterator == entity)) {
 							if (!(entityiterator instanceof SkeltonMobEntity)) {
-								if (!(entityiterator instanceof OtiruyoEntity)) {
+								if (true) {
 									if (entityiterator instanceof LivingEntity) {
 										if (!(world.getDifficulty() == Difficulty.PEACEFUL) && !(new Object() {
 											public boolean checkGamemode(Entity _ent) {
@@ -146,7 +145,7 @@ public class SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure {
 					for (Entity entityiterator : _entfound) {
 						if (!(entityiterator == entity)) {
 							if (!(entityiterator instanceof SkeltonMobEntity)) {
-								if (!(entityiterator instanceof OtiruyoEntity)) {
+								if (true) {
 									if (entityiterator instanceof LivingEntity) {
 										if (!(world.getDifficulty() == Difficulty.PEACEFUL) && !(new Object() {
 											public boolean checkGamemode(Entity _ent) {
@@ -204,8 +203,6 @@ public class SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure {
 												}
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.BUBBLESHOT.get()) {
 													entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
-														_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.TISSOKU.get(), 120, 6, true, false));
 												}
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.THUNDERBOLT.get()) {
 													entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 2));
@@ -214,8 +211,6 @@ public class SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure {
 												}
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.STORM.get()) {
 													entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
-														_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.TISSOKU.get(), 120, 6, true, false));
 													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
 												}
@@ -318,7 +313,7 @@ public class SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure {
 					for (Entity entityiterator : _entfound) {
 						if (!(entityiterator == entity)) {
 							if (!(entityiterator instanceof SkeltonMobEntity)) {
-								if (!(entityiterator instanceof OtiruyoEntity)) {
+								if (true) {
 									if (entityiterator instanceof LivingEntity) {
 										if (!(world.getDifficulty() == Difficulty.PEACEFUL) && !(new Object() {
 											public boolean checkGamemode(Entity _ent) {
@@ -376,8 +371,6 @@ public class SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure {
 												}
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.BUBBLESHOT.get()) {
 													entityiterator.hurt(entityiterator.damageSources().generic(), (float) ((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue());
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
-														_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.TISSOKU.get(), 120, 6, true, false));
 												}
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.THUNDERBOLT.get()) {
 													entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 2));
@@ -386,8 +379,6 @@ public class SyugekinanozeeehuekutogaYouXiaoShinoteitukuProcedure {
 												}
 												if ((entity instanceof LivingEntity _livEnt ? _livEnt.getOffhandItem() : ItemStack.EMPTY).getItem() == TheFourPrimitivesAndWeaponsModItems.STORM.get()) {
 													entityiterator.hurt(entityiterator.damageSources().generic(), (float) (((LivingEntity) entity).getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).getValue() + 5));
-													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
-														_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.TISSOKU.get(), 120, 6, true, false));
 													if (entityiterator instanceof LivingEntity _entity && !_entity.level().isClientSide())
 														_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.THUNDER_HIT.get(), 120, 6, true, false));
 												}

@@ -90,6 +90,8 @@ public class SoulFireHandler {
 		if (!burning && !LAST_SYNCED.containsKey(id)) {
 			return;
 		}
+		// ブロック接触判定と同期判定は隔tickで行い、全LivingEntityの常時負荷を半減する。
+		if ((entity.tickCount & 1) != 0) return;
 
 		CompoundTag data = entity.getPersistentData();
 
