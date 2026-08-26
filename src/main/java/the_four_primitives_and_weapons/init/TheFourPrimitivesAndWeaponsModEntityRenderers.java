@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 
 import the_four_primitives_and_weapons.client.renderer.SkeltonMobRenderer;
 import the_four_primitives_and_weapons.client.renderer.MeteorArrowRenderer;
+import the_four_primitives_and_weapons.client.renderer.LunaCompanionRenderer;
 import the_four_primitives_and_weapons.client.renderer.KatanaTobuRenderer;
 import the_four_primitives_and_weapons.client.renderer.FlyingAttackerRenderer;
 import the_four_primitives_and_weapons.client.renderer.CometRenderer;
@@ -35,6 +36,7 @@ public class TheFourPrimitivesAndWeaponsModEntityRenderers {
 	@SubscribeEvent
 	public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
 		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.SKELTON_MOB.get(), SkeltonMobRenderer::new);
+		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.LUNA_COMPANION.get(), LunaCompanionRenderer::new);
 		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.KATANA_TOBU.get(), KatanaTobuRenderer::new);
 		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.BLACKHOLE.get(), BlackholeRenderer::new);
 		event.registerEntityRenderer(TheFourPrimitivesAndWeaponsModEntities.COMET.get(), CometRenderer::new);

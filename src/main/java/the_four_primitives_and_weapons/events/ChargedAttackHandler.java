@@ -243,11 +243,15 @@ public class ChargedAttackHandler {
         // 通常の武器を持っている場合
         if (isWeapon(mainHand)) {
             boolean isLeftClickHeld = mc.options.keyAttack.isDown();
+            boolean isLuna = mainHand.getItem() == TheFourPrimitivesAndWeaponsModItems.LUNA.get();
             
             // チャージ開始（左クリック長押し）- クールダウン中は開始しない。
             // 閾値を上げて「コンボの押しっぱなし」で誤ってチャージ攻撃(slam_down等)が
             // 出るのを防ぐ ( 5→10 tick = 0.5秒明確に押し続けた時だけチャージ開始 )。
-            if (isLeftClickHeld && !data.isCharging && data.clickReleaseTimer > 10) {
+            // Lunaは従来どおり押し始めからチャージする。他武器だけ誤発動防止の
+            // 10tick猶予を使う。以前はLunaにも猶予が掛かり、1秒溜めても
+            // MIN_CHARGE_TIMEへ届かず解放パケット自体が送られていなかった。
+            if (isLeftClickHeld && !data.isCharging && (isLuna || data.clickReleaseTimer > 10)) {
                 if (data.chargeCooldown <= 0) {
                     data.isCharging = true;
                     data.chargeTime = 0;
@@ -367,7 +371,7 @@ public class ChargedAttackHandler {
         // isLunaItem(heldItem) 分岐に実装されているので、performChargedThrust 経由で呼ぶ。
         // 旧コードは存在しない performLunaChargedAttack を参照していたため
         // コメントアウトされていた (= Luna チャージ技が出なくなっていた) のを修正。
-        if (itemName.equals("LunaItem")) {
+        if (mainHand.getItem() == TheFourPrimitivesAndWeaponsModItems.LUNA.get()) {
             performChargedThrust(player, world, lookVec, playerPos, chargePercent, isCooldown);
             return;
         }
@@ -385,6 +389,14 @@ public class ChargedAttackHandler {
         // Luna専用の強化突き攻撃処理
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         String itemName = mainHand.getItem().getClass().getSimpleName();
+
+        // Lunaはweapon_statsの共通thrustより先に専用処理へ送る。
+        // これが後ろにあるとJsonThrustに吸われ、曲線ビームが出なくなる。
+        if (mainHand.getItem() == TheFourPrimitivesAndWeaponsModItems.LUNA.get()) {
+            the_four_primitives_and_weapons.procedures.TyokutouThrustAttackProcedure.executeChargedThrust(
+                    world, player.getX(), player.getY(), player.getZ(), player, chargePercent, isCooldown);
+            return;
+        }
 
         // weapon_stats.json に "thrust" を持つ武器は JSON駆動の突き連撃 ( ダガー等・短reach )。
         the_four_primitives_and_weapons.skill.WeaponStatsRegistry.WeaponStats stats =
@@ -486,7 +498,8 @@ public class ChargedAttackHandler {
         }
 
         // Lunaの固有スキル
-        if (itemName.equals("LunaItem") && skillData.isUniqueSkillEnabled("Luna")) {
+        // Lunaの通常技はスキル解放状態に依存させず、常に固有の直線攻撃を使う。
+        if (mainHand.getItem() == TheFourPrimitivesAndWeaponsModItems.LUNA.get()) {
             the_four_primitives_and_weapons.procedures.LunaenteiteigaaitemuwoZhentutaShiProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
             return;
         }

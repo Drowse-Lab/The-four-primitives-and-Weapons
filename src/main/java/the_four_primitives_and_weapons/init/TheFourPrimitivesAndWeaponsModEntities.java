@@ -18,6 +18,7 @@ import net.minecraft.world.entity.Entity;
 
 import the_four_primitives_and_weapons.entity.SkeltonMobEntity;
 import the_four_primitives_and_weapons.entity.MeteorArrowEntity;
+import the_four_primitives_and_weapons.entity.LunaCompanionEntity;
 import the_four_primitives_and_weapons.entity.KatanaTobuEntity;
 import the_four_primitives_and_weapons.entity.FlyingAttackerEntity;
 import the_four_primitives_and_weapons.entity.CometKillEntity;
@@ -36,6 +37,10 @@ public class TheFourPrimitivesAndWeaponsModEntities {
 					.sized(0.6f, 1.5f));
 	public static final RegistryObject<EntityType<KatanaTobuEntity>> KATANA_TOBU = register("projectile_katana_tobu",
 			EntityType.Builder.<KatanaTobuEntity>of(KatanaTobuEntity::new, MobCategory.MISC).setCustomClientFactory(KatanaTobuEntity::new).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(1).sized(0.5f, 0.5f));
+	public static final RegistryObject<EntityType<LunaCompanionEntity>> LUNA_COMPANION = register("luna_companion",
+			EntityType.Builder.<LunaCompanionEntity>of(LunaCompanionEntity::new, MobCategory.CREATURE)
+					.setShouldReceiveVelocityUpdates(true).setTrackingRange(48).setUpdateInterval(2)
+					.setCustomClientFactory(LunaCompanionEntity::new).fireImmune().sized(0.6f, 1.2f));
 	public static final RegistryObject<EntityType<BlackholeEntity>> BLACKHOLE = register("blackhole",
 			EntityType.Builder.<BlackholeEntity>of(BlackholeEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(1).setUpdateInterval(3).setCustomClientFactory(BlackholeEntity::new).fireImmune().sized(0.8f, 0.8f));
 	public static final RegistryObject<EntityType<CometEntity>> COMET = register("comet",
@@ -79,6 +84,7 @@ public class TheFourPrimitivesAndWeaponsModEntities {
 	@SubscribeEvent
 	public static void registerAttributes(EntityAttributeCreationEvent event) {
 		event.put(SKELTON_MOB.get(), SkeltonMobEntity.createAttributes().build());
+		event.put(LUNA_COMPANION.get(), LunaCompanionEntity.createAttributes().build());
 		event.put(BLACKHOLE.get(), BlackholeEntity.createAttributes().build());
 		event.put(COMET.get(), CometEntity.createAttributes().build());
 		event.put(COMET_KILL.get(), CometKillEntity.createAttributes().build());

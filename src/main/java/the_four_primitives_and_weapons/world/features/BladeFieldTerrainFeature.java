@@ -19,22 +19,22 @@ public class BladeFieldTerrainFeature extends Feature<NoneFeatureConfiguration> 
     public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
         int baseX = context.origin().getX() & ~15;
         int baseZ = context.origin().getZ() & ~15;
-        int minY = context.level().getMinBuildHeight();
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
 
         for (int dx = 0; dx < 16; dx++) for (int dz = 0; dz < 16; dz++) {
             int x = baseX + dx, z = baseZ + dz;
             int normalSurfaceY = surfaceHeight(x, z);
-            boolean waterBiome = isBiome(context.level(), x, normalSurfaceY, z, "blade_field_water");
+            String biome = biomePath(context.level(), x, normalSurfaceY, z);
+            boolean waterBiome = biome.equals("blade_field_water");
             double marsh = waterBiome ? valueNoise(x, z, 13, 0x0A2E5E11L) : -1.0D;
             boolean pool = isWaterPool(context.level(), x, z, marsh);
             // 湿原の水底は67～68、水のない畦は69。水面を常にY=69へそろえて滝状の流出を防ぐ。
             int surfaceY = waterBiome ? (pool ? 67 + (marsh > 0.48D ? 1 : 0) : 69) : normalSurfaceY;
             int oldTop = context.level().getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z);
-            boolean corrosion = isCorrosion(context.level(), x, surfaceY, z);
+            boolean corrosion = biome.equals("blade_field_corrosion");
 
-            // 地下を完全に詰めるため、ノイズ洞窟も峡谷も残らない。
-            for (int y = minY + 1; y <= surfaceY - 4; y++) {
+            // 地表を支える範囲だけを埋める。全高度の走査はチャンク生成負荷が非常に大きい。
+            for (int y = surfaceY - 16; y <= surfaceY - 4; y++) {
                 cursor.set(x, y, z);
                 if (!context.level().getBlockState(cursor).is(Blocks.STONE))
                     context.level().setBlock(cursor, Blocks.STONE.defaultBlockState(), 2);
@@ -45,7 +45,7 @@ public class BladeFieldTerrainFeature extends Feature<NoneFeatureConfiguration> 
                 if (!context.level().getBlockState(cursor).is(fill))
                     context.level().setBlock(cursor, fill.defaultBlockState(), 2);
             }
-            Block surface = surfaceBlock(context.level(), x, surfaceY, z);
+            Block surface = surfaceBlock(biome, x, z);
             cursor.set(x, surfaceY, z);
             if (!context.level().getBlockState(cursor).is(surface))
                 context.level().setBlock(cursor, surface.defaultBlockState(), 2);
@@ -75,10 +75,10 @@ public class BladeFieldTerrainFeature extends Feature<NoneFeatureConfiguration> 
                 }
             }
         }
-        // 高さマップの更新順に依存させず、整形済みの座標へ密集気味に16～27本生成する。
+        // 高さマップの更新順に依存させず、整形済みの座標へ生成する。
         RandomSource random = context.random();
-        // 大型結晶群は約3チャンクに1群だけにして、常時描画されるブロック数を抑える。
-        if (random.nextInt(3) == 0) {
+        // 大型結晶群は低頻度にし、生成時の大量ブロック更新を抑える。
+        if (random.nextInt(8) == 0) {
             int x = baseX + 4 + random.nextInt(8), z = baseZ + 4 + random.nextInt(8);
             int y = terrainHeight(context.level(), x, z);
             if (isCorrosion(context.level(), x, y, z)) {
@@ -92,7 +92,7 @@ public class BladeFieldTerrainFeature extends Feature<NoneFeatureConfiguration> 
                     26 + random.nextInt(15), 3, colors[mainColor], glass[mainColor]);
 
             // 周囲へ大小の晶柱を束状に生やし、アメジストクラスター風の輪郭を作る。
-            int satellites = 8 + random.nextInt(6);
+            int satellites = 4 + random.nextInt(4);
             for (int spike = 0; spike < satellites; spike++) {
                 double angle = Math.PI * 2.0D * spike / satellites + random.nextDouble() * 0.45D;
                 int distance = 2 + random.nextInt(6);
@@ -105,7 +105,8 @@ public class BladeFieldTerrainFeature extends Feature<NoneFeatureConfiguration> 
             }
             }
         }
-        int count = 16 + random.nextInt(12);
+        // 武器は永続エンティティなので、チャンクごとの数を抑えて生成後の負荷も軽減する。
+        int count = 4 + random.nextInt(4);
         for (int i = 0; i < count; i++) {
             int x = baseX + random.nextInt(16), z = baseZ + random.nextInt(16);
             BladeFieldFeature.placeWeapon(context.level(), random, new BlockPos(x, terrainHeight(context.level(), x, z) + 1, z));
@@ -167,10 +168,8 @@ public class BladeFieldTerrainFeature extends Feature<NoneFeatureConfiguration> 
     }
 
     /** 荒れた土主体。低頻度の砂利・根付いた土・ポドゾルで地表の単調さを崩す。 */
-    private static Block surfaceBlock(net.minecraft.world.level.WorldGenLevel level, int x, int y, int z) {
+    private static Block surfaceBlock(String biome, int x, int z) {
         double patch = valueNoise(x, z, 18, 0x63D2A4F1L);
-        String biome = level.getBiome(new BlockPos(x, y, z)).unwrapKey()
-                .map(k -> k.location().getPath()).orElse("blade_field");
         switch (biome) {
             case "blade_field_fire": return patch > 0.45D ? Blocks.MAGMA_BLOCK : Blocks.NETHERRACK;
             case "blade_field_ice": return patch > 0.25D ? Blocks.SNOW_BLOCK : Blocks.PACKED_ICE;
@@ -193,8 +192,12 @@ public class BladeFieldTerrainFeature extends Feature<NoneFeatureConfiguration> 
     }
 
     private static boolean isBiome(net.minecraft.world.level.WorldGenLevel level, int x, int y, int z, String path) {
+        return biomePath(level, x, y, z).equals(path);
+    }
+
+    private static String biomePath(net.minecraft.world.level.WorldGenLevel level, int x, int y, int z) {
         return level.getBiome(new BlockPos(x, y, z)).unwrapKey()
-                .map(key -> key.location().getPath().equals(path)).orElse(false);
+                .map(key -> key.location().getPath()).orElse("blade_field");
     }
 
     private static double valueNoise(int x, int z, int scale, long salt) {

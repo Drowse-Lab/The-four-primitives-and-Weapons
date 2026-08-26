@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
@@ -199,6 +200,12 @@ public class TyokutouThrustAttackProcedure {
         Vec3 lookVec = the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
         Vec3 startPos = player.position().add(0, player.getEyeHeight(), 0);
 
+        // Lunaのレーザーは実行直後に必ず送信する。force=true により
+        // パーティクル設定が「最小」でも召喚者本人には表示される。
+        if (world instanceof ServerLevel serverLevel && isLunaItem(player.getMainHandItem())) {
+            sendGuaranteedLunaLasers(serverLevel, player, startPos, lookVec, range, chargePercent);
+        }
+
         // 超強力な突進エフェクト
         if (world instanceof ServerLevel serverLevel) {
             // メインのエフェクトライン
@@ -346,6 +353,38 @@ public class TyokutouThrustAttackProcedure {
             if (chargePercent >= 1.0f) {
                 level.playSound(null, player.getX(), player.getY(), player.getZ(),
                     SoundEvents.TRIDENT_THUNDER, SoundSource.PLAYERS, 2.0f, 0.5f);
+            }
+        }
+    }
+
+    private static void sendGuaranteedLunaLasers(ServerLevel level, Player player, Vec3 start,
+                                                   Vec3 look, double range, float charge) {
+        Vec3 right = new Vec3(-look.z, 0, look.x).normalize();
+        if (right.lengthSqr() < 0.001) right = new Vec3(1, 0, 0);
+        ServerPlayer viewer = player instanceof ServerPlayer serverPlayer ? serverPlayer : null;
+        int points = 48 + (int)(charge * 24);
+        int beamCount = 3 + Math.round(charge * 9.0F); // 最低3本、最大12本
+        for (int beam = 0; beam < beamCount; beam++) {
+            double centered = beam - (beamCount - 1) * 0.5;
+            double spread = centered * (3.0 / Math.max(1.0, beamCount - 1));
+            // 背中側から出現し、左右へ膨らんで前方へ回り込む。
+            Vec3 beamStart = start.subtract(look.scale(2.5 + Math.abs(spread) * 0.35))
+                    .add(right.scale(spread)).add(0, 0.4 + Math.abs(spread) * 0.25, 0);
+            Vec3 end = start.add(look.scale(range)).add(right.scale(spread * 0.8));
+            Vec3 control = start.add(look.scale(range * 0.30))
+                    .add(right.scale(spread * 3.0)).add(0, 2.0 + Math.abs(spread), 0);
+            for (int i = 0; i <= points; i++) {
+                double t = i / (double) points;
+                double u = 1.0 - t;
+                Vec3 pos = beamStart.scale(u * u).add(control.scale(2.0 * u * t)).add(end.scale(t * t));
+                if (viewer != null) {
+                    level.sendParticles(viewer, ParticleTypes.END_ROD, true,
+                            pos.x, pos.y, pos.z, 1, 0, 0, 0, 0);
+                    if (i % 4 == 0) level.sendParticles(viewer, ParticleTypes.ELECTRIC_SPARK, true,
+                            pos.x, pos.y, pos.z, 1, 0.02, 0.02, 0.02, 0);
+                } else {
+                    level.sendParticles(ParticleTypes.END_ROD, pos.x, pos.y, pos.z, 1, 0, 0, 0, 0);
+                }
             }
         }
     }
@@ -545,7 +584,7 @@ public class TyokutouThrustAttackProcedure {
         for (int i = 0; i < beamCount; i++) {
             // ビームの開始位置（プレイヤーの左右から発生）
             double sideOffset = (Math.random() - 0.5) * 2.0; // -1.0 ~ 1.0 で左右に配置
-            double forwardOffset = Math.random() * -0.5; // 少し後ろから
+            double forwardOffset = -(2.0 + Math.random() * 2.0); // 背中から2～4ブロック後方
             double heightOffset = Math.random() * 3.0 + 0.5; // 上方向のみに広がる（0.5～3.5）
 
             // 左右交互に、さらにランダムに広がる
@@ -557,7 +596,7 @@ public class TyokutouThrustAttackProcedure {
                 // 垂直視線の場合、円形に広がる
                 double angle = Math.PI * 2 * i / beamCount;
                 double radius = 2.5 + Math.random() * 2.5;
-                beamStart = playerPos.add(
+                beamStart = playerPos.subtract(lookVec.scale(2.5)).add(
                     Math.cos(angle) * radius,
                     lookVec.y > 0 ? -1 : 1,  // 上向きなら下から、下向きなら上から
                     Math.sin(angle) * radius
@@ -721,7 +760,7 @@ public class TyokutouThrustAttackProcedure {
                 // 垂直視線の場合、円形に広がる
                 double angle = Math.PI * 2 * i / beamCount;
                 double radius = 2.0 + Math.random() * 2.5;
-                beamStart = playerPos.add(
+                beamStart = playerPos.subtract(lookVec.scale(2.5)).add(
                     Math.cos(angle) * radius,
                     lookVec.y > 0 ? -0.5 : 0.5,  // 上向きなら少し下から、下向きなら少し上から
                     Math.sin(angle) * radius
@@ -729,7 +768,7 @@ public class TyokutouThrustAttackProcedure {
             } else {
                 beamStart = playerPos
                     .add(rightVec.scale(horizontalSpread))
-                    .add(lookVec.scale(Math.random() * -0.5))
+                    .add(lookVec.scale(-(2.0 + Math.random() * 2.0)))
                     .add(0, heightOffset, 0);
             }
 

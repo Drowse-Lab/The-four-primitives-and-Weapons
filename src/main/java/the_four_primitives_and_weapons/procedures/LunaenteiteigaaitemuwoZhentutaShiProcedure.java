@@ -17,6 +17,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.BlockPos;
@@ -120,9 +121,15 @@ public class LunaenteiteigaaitemuwoZhentutaShiProcedure {
 							}
 						}
 					}
-					if (world instanceof ServerLevel _level)
-						_level.sendParticles(ParticleTypes.END_ROD, (x - r * Math.cos(Math.toRadians(beta)) * Math.sin(Math.toRadians(alpha))), ((y + 1) - r * Math.sin(Math.toRadians(beta))),
-								(z + r * Math.cos(Math.toRadians(beta)) * Math.cos(Math.toRadians(alpha))), 1, 0.1, 0.1, 0.1, 0);
+					if (world instanceof ServerLevel _level) {
+						double px = x - r * Math.cos(Math.toRadians(beta)) * Math.sin(Math.toRadians(alpha));
+						double py = (y + 1) - r * Math.sin(Math.toRadians(beta));
+						double pz = z + r * Math.cos(Math.toRadians(beta)) * Math.cos(Math.toRadians(alpha));
+						if (entity instanceof ServerPlayer serverPlayer)
+							_level.sendParticles(serverPlayer, ParticleTypes.END_ROD, true, px, py, pz, 1, 0.03, 0.03, 0.03, 0);
+						else
+							_level.sendParticles(ParticleTypes.END_ROD, px, py, pz, 1, 0.03, 0.03, 0.03, 0);
+					}
 					if (world
 							.getBlockState(new BlockPos((int) (x - r * Math.cos(Math.toRadians(beta)) * Math.sin(Math.toRadians(alpha))), (int) ((y + 2) - r * Math.sin(Math.toRadians(beta))), (int) (z + r * Math.cos(Math.toRadians(beta)) * Math.cos(Math.toRadians(alpha)))))
 							.canOcclude()) {
