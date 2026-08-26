@@ -74,6 +74,7 @@ public class ChargedAttackHandler {
     private static final Map<UUID, ChargeData> playerChargeData = new HashMap<>();
     private static final int MAX_CHARGE_TIME = 60; // 3秒 (20 ticks/秒 × 3)
     private static final int MIN_CHARGE_TIME = 20; // 最小チャージ時間 1秒
+    private static final int LUNA_CURVE_CHARGE_TIME = 20; // Luna曲線ビームも1秒以上
     /**
      * 攻撃ゲージが満タンになるまでの長さにかける倍率。 1.0 = バニラの攻撃クールダウンと同じ。
      *
@@ -285,8 +286,11 @@ public class ChargedAttackHandler {
     }
     
     private static void releaseChargedAttack(Player player, ChargeData data) {
-        // Lunaも1秒しっかり溜めてから専用ベジェ曲線を発射する。
-        int requiredChargeTime = MIN_CHARGE_TIME;
+        // Lunaは押した瞬間からチャージを開始するため、短い溜めでも専用ベジェ曲線を出す。
+        // Lunaのベジェ曲線ビームも1秒以上溜めた時だけ発射する。
+        boolean chargedLuna = !data.chargingItem.isEmpty()
+                && data.chargingItem.getItem() == TheFourPrimitivesAndWeaponsModItems.LUNA.get();
+        int requiredChargeTime = chargedLuna ? LUNA_CURVE_CHARGE_TIME : MIN_CHARGE_TIME;
         if (data.chargeTime >= requiredChargeTime) {
             float chargePercent = Math.min((float) data.chargeTime / MAX_CHARGE_TIME, 1.0f);
             // サーバーに攻撃パケットを送信

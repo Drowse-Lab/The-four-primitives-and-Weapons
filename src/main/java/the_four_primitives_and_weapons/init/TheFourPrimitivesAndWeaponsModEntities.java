@@ -38,7 +38,7 @@ public class TheFourPrimitivesAndWeaponsModEntities {
 	public static final RegistryObject<EntityType<KatanaTobuEntity>> KATANA_TOBU = register("projectile_katana_tobu",
 			EntityType.Builder.<KatanaTobuEntity>of(KatanaTobuEntity::new, MobCategory.MISC).setCustomClientFactory(KatanaTobuEntity::new).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(1).sized(0.5f, 0.5f));
 	public static final RegistryObject<EntityType<LunaCompanionEntity>> LUNA_COMPANION = register("luna_companion",
-			EntityType.Builder.<LunaCompanionEntity>of(LunaCompanionEntity::new, MobCategory.CREATURE)
+			EntityType.Builder.<LunaCompanionEntity>of(LunaCompanionEntity::new, MobCategory.MISC)
 					.setShouldReceiveVelocityUpdates(true).setTrackingRange(48).setUpdateInterval(2)
 					.setCustomClientFactory(LunaCompanionEntity::new).fireImmune().sized(0.6f, 1.2f));
 	public static final RegistryObject<EntityType<BlackholeEntity>> BLACKHOLE = register("blackhole",

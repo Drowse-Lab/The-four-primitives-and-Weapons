@@ -25,6 +25,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.Mth;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.PlayMessages;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModEntities;
@@ -51,6 +52,8 @@ public class LunaCompanionEntity extends PathfinderMob {
     private double lastOwnerX;
     private double lastOwnerY;
     private double lastOwnerZ;
+    private float previousEngageProgress;
+    private float engageProgress;
 
     public LunaCompanionEntity(PlayMessages.SpawnEntity packet, Level level) {
         this(TheFourPrimitivesAndWeaponsModEntities.LUNA_COMPANION.get(), level);
@@ -79,6 +82,14 @@ public class LunaCompanionEntity extends PathfinderMob {
 
     public boolean isEngagingTarget() {
         return entityData.get(ENGAGING);
+    }
+
+    public float getEngageProgress(float partialTick) {
+        return Mth.lerp(partialTick, previousEngageProgress, engageProgress);
+    }
+
+    public float getVisualPitch(float partialTick) {
+        return Mth.lerp(partialTick, xRotO, getXRot());
     }
 
     public boolean isOwnedBy(UUID playerId) {
@@ -117,7 +128,13 @@ public class LunaCompanionEntity extends PathfinderMob {
     public void aiStep() {
         super.aiStep();
         setNoGravity(true);
-        if (level().isClientSide) return;
+        if (level().isClientSide) {
+            previousEngageProgress = engageProgress;
+            float destination = isEngagingTarget() ? 1.0F : 0.0F;
+            engageProgress = Mth.lerp(0.18F, engageProgress, destination);
+            if (Math.abs(engageProgress - destination) < 0.01F) engageProgress = destination;
+            return;
+        }
         ServerPlayer owner = owner();
         if (owner == null) return;
         if (!standbyAnchorInitialized) initializeStandbyAnchor(owner);
@@ -198,10 +215,11 @@ public class LunaCompanionEntity extends PathfinderMob {
         double dz = target.getZ() - getZ();
         // 待機モデルをZ軸で90度倒すと切先はローカル+Xを向くため、
         // その+Xを敵への水平ベクトルへ合わせる。
-        setYRot((float)Math.toDegrees(Math.atan2(dz, dx)));
-        setXRot((float)Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz))));
-        yRotO = getYRot();
-        xRotO = getXRot();
+        float wantedYaw = (float)Math.toDegrees(Math.atan2(dz, dx));
+        float wantedPitch = (float)Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
+        // 敵方向へ瞬間的に切り替えず、毎tick滑らかに追従する。
+        setYRot(Mth.rotLerp(0.22F, getYRot(), wantedYaw));
+        setXRot(Mth.lerp(0.22F, getXRot(), wantedPitch));
     }
 
     private void fireLaser(LivingEntity target) {
@@ -242,6 +260,18 @@ public class LunaCompanionEntity extends PathfinderMob {
     @Override
     public boolean isAttackable() {
         return false;
+    }
+
+    /** 敵AIの索敵条件から除外する。 */
+    @Override
+    public boolean canBeSeenAsEnemy() {
+        return false;
+    }
+
+    /** 敵対Mob側が同盟判定を見るタイプでも標的にならないようにする。 */
+    @Override
+    public boolean isAlliedTo(net.minecraft.world.entity.Entity other) {
+        return other instanceof LivingEntity || super.isAlliedTo(other);
     }
 
     @Override
