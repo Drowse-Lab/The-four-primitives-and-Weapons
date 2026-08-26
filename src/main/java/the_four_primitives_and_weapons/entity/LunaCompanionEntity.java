@@ -21,8 +21,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -176,7 +174,9 @@ public class LunaCompanionEntity extends PathfinderMob {
             }
             if (targetDistance <= 144.0 && attackCooldown == 0) {
                 fireLaser(guardTarget);
-                attackCooldown = 20;
+                // プレイヤーの攻撃速度ゲージ回復時間より5tickだけ長くする。
+                attackCooldown = Math.max(10,
+                        (int)Math.ceil(owner.getCurrentItemAttackStrengthDelay()) + 5);
             }
         } else {
             guardTarget = null;
@@ -209,10 +209,8 @@ public class LunaCompanionEntity extends PathfinderMob {
         entityData.set(FIRING, true);
         firingTicks = 7;
         faceBladeToward(target);
-        the_four_primitives_and_weapons.procedures.TyokutouThrustAttackProcedure
-                .sendSummonedLunaLaser(serverLevel, this, target);
-        serverLevel.playSound(null, getX(), getY(), getZ(), SoundEvents.BEACON_DEACTIVATE,
-                SoundSource.PLAYERS, 1.2F, 1.15F);
+        the_four_primitives_and_weapons.procedures.LunaenteiteigaaitemuwoZhentutaShiProcedure
+                .fireSummonedStraightLaser(serverLevel, this, target, owner());
         target.hurt(damageSources().mobAttack(this), 8.0F);
     }
 

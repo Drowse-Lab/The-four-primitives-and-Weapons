@@ -285,7 +285,9 @@ public class ChargedAttackHandler {
     }
     
     private static void releaseChargedAttack(Player player, ChargeData data) {
-        if (data.chargeTime >= MIN_CHARGE_TIME) {
+        // Lunaも1秒しっかり溜めてから専用ベジェ曲線を発射する。
+        int requiredChargeTime = MIN_CHARGE_TIME;
+        if (data.chargeTime >= requiredChargeTime) {
             float chargePercent = Math.min((float) data.chargeTime / MAX_CHARGE_TIME, 1.0f);
             // サーバーに攻撃パケットを送信
             TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new AttackPacket(1, chargePercent));
@@ -500,6 +502,8 @@ public class ChargedAttackHandler {
         // Lunaの固有スキル
         // Lunaの通常技はスキル解放状態に依存させず、常に固有の直線攻撃を使う。
         if (mainHand.getItem() == TheFourPrimitivesAndWeaponsModItems.LUNA.get()) {
+            // バニラの攻撃速度ゲージ（ホットバー下の剣ゲージ）が満タンの時だけ発射。
+            if (player.getAttackStrengthScale(0.5F) < 0.99F) return;
             the_four_primitives_and_weapons.procedures.LunaenteiteigaaitemuwoZhentutaShiProcedure.execute(world, player.getX(), player.getY(), player.getZ(), player);
             return;
         }

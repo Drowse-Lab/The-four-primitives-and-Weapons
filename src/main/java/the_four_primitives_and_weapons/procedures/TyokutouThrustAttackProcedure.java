@@ -11,10 +11,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.particles.DustParticleOptions;
 import org.joml.Vector3f;
 import net.minecraft.world.effect.MobEffects;
@@ -128,7 +129,7 @@ public class TyokutouThrustAttackProcedure {
 
         List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
             target -> {
-                if (target == player) return false;
+                if (target == player || !target.isAttackable()) return false;
                 // 前方180度の広い範囲で判定（他の刀と同じ）
                 Vec3 toEntity = target.position().subtract(playerPos).normalize();
                 double dot = lookVec.dot(toEntity);
@@ -200,10 +201,8 @@ public class TyokutouThrustAttackProcedure {
         Vec3 lookVec = the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
         Vec3 startPos = player.position().add(0, player.getEyeHeight(), 0);
 
-        // Lunaのレーザーは実行直後に必ず送信する。force=true により
-        // パーティクル設定が「最小」でも召喚者本人には表示される。
+        // Lunaのビーム発射音。曲線自体は下の元実装 createCurvingBeams* だけで生成する。
         if (world instanceof ServerLevel serverLevel && isLunaItem(player.getMainHandItem())) {
-            sendGuaranteedLunaLasers(serverLevel, player, startPos, lookVec, range, chargePercent);
             serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
                     SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 1.2F, 1.15F);
         }
@@ -272,7 +271,7 @@ public class TyokutouThrustAttackProcedure {
 
         List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, searchArea,
             target -> {
-                if (target == player) return false;
+                if (target == player || !target.isAttackable()) return false;
 
                 Vec3 toTarget = target.position().add(0, target.getBbHeight() / 2, 0)
                     .subtract(startPos).normalize();
@@ -359,46 +358,18 @@ public class TyokutouThrustAttackProcedure {
         }
     }
 
-    private static void sendGuaranteedLunaLasers(ServerLevel level, Entity source, Vec3 start,
-                                                   Vec3 look, double range, float charge) {
-        Vec3 right = new Vec3(-look.z, 0, look.x).normalize();
-        if (right.lengthSqr() < 0.001) right = new Vec3(1, 0, 0);
-        ServerPlayer viewer = source instanceof ServerPlayer serverPlayer ? serverPlayer : null;
-        int points = 48 + (int)(charge * 24);
-        int beamCount = 3 + Math.round(charge * 9.0F); // 最低3本、最大12本
-        for (int beam = 0; beam < beamCount; beam++) {
-            double centered = beam - (beamCount - 1) * 0.5;
-            double spread = centered * (3.0 / Math.max(1.0, beamCount - 1));
-            // 背中側から出現し、左右へ膨らんで前方へ回り込む。
-            Vec3 beamStart = start.subtract(look.scale(2.5 + Math.abs(spread) * 0.35))
-                    .add(right.scale(spread)).add(0, 0.4 + Math.abs(spread) * 0.25, 0);
-            Vec3 end = start.add(look.scale(range)).add(right.scale(spread * 0.8));
-            Vec3 control = start.add(look.scale(range * 0.30))
-                    .add(right.scale(spread * 3.0)).add(0, 2.0 + Math.abs(spread), 0);
-            for (int i = 0; i <= points; i++) {
-                double t = i / (double) points;
-                double u = 1.0 - t;
-                Vec3 pos = beamStart.scale(u * u).add(control.scale(2.0 * u * t)).add(end.scale(t * t));
-                if (viewer != null) {
-                    level.sendParticles(viewer, ParticleTypes.END_ROD, true,
-                            pos.x, pos.y, pos.z, 1, 0, 0, 0, 0);
-                    if (i % 4 == 0) level.sendParticles(viewer, ParticleTypes.ELECTRIC_SPARK, true,
-                            pos.x, pos.y, pos.z, 1, 0.02, 0.02, 0.02, 0);
-                } else {
-                    level.sendParticles(ParticleTypes.END_ROD, pos.x, pos.y, pos.z, 1, 0, 0, 0, 0);
-                }
-            }
-        }
-    }
-
-    /** 召喚Luna用。プレイヤーのチャージ技と同じEND_ROD/ELECTRIC_SPARK曲線レーザー。 */
+    /** 召喚Luna用。指定コミットの元ベジェ曲線生成処理をそのまま共用する。 */
     public static void sendSummonedLunaLaser(ServerLevel level, Entity source, LivingEntity target) {
         Vec3 start = source.position().add(0, source.getBbHeight() * 0.55, 0);
         Vec3 end = target.position().add(0, target.getBbHeight() * 0.5, 0);
-        Vec3 direction = end.subtract(start).normalize();
-        // プレイヤー版はこの保証レイヤーと旧曲線レイヤーを重ねているため、
-        // 召喚Lunaでも同じ2つを同じ順番で生成する。
-        sendGuaranteedLunaLasers(level, source, start, direction, start.distanceTo(end), 1.0F);
+        // プレイヤー版のhorizontalLookと同じく、曲線計算へ渡す向きは水平成分のみ。
+        // 高低差は終点targetPos側で曲線へ反映される。
+        Vec3 toTarget = end.subtract(start);
+        Vec3 direction = new Vec3(toTarget.x, 0, toTarget.z).normalize();
+        if (direction.lengthSqr() < 0.001) {
+            double yaw = Math.toRadians(source.getYRot());
+            direction = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
+        }
         createCurvingBeamsToTarget(level, end, direction, source, 1.0F);
     }
 
@@ -568,7 +539,8 @@ public class TyokutouThrustAttackProcedure {
         // 最小3本、最大15本
         int beamCount = Math.max(3, (int)(3 + chargePercent * 12));
 
-        Vec3 playerPos = source.position().add(0, source.getBbHeight() * 0.8, 0);
+        Vec3 playerPos = source.position().add(0,
+                source instanceof Player player ? player.getEyeHeight() * 0.8 : source.getBbHeight() * 0.8, 0);
 
         // プレイヤーの右ベクトルと上ベクトルを計算（垂直視線対策）
         Vec3 rightVec;
@@ -597,7 +569,7 @@ public class TyokutouThrustAttackProcedure {
         for (int i = 0; i < beamCount; i++) {
             // ビームの開始位置（プレイヤーの左右から発生）
             double sideOffset = (Math.random() - 0.5) * 2.0; // -1.0 ~ 1.0 で左右に配置
-            double forwardOffset = -(2.0 + Math.random() * 2.0); // 背中から2～4ブロック後方
+            double forwardOffset = Math.random() * -0.5; // 元実装: 少し後ろから
             double heightOffset = Math.random() * 3.0 + 0.5; // 上方向のみに広がる（0.5～3.5）
 
             // 左右交互に、さらにランダムに広がる
@@ -609,7 +581,7 @@ public class TyokutouThrustAttackProcedure {
                 // 垂直視線の場合、円形に広がる
                 double angle = Math.PI * 2 * i / beamCount;
                 double radius = 2.5 + Math.random() * 2.5;
-                beamStart = playerPos.subtract(lookVec.scale(2.5)).add(
+                beamStart = playerPos.add(
                     Math.cos(angle) * radius,
                     lookVec.y > 0 ? -1 : 1,  // 上向きなら下から、下向きなら上から
                     Math.sin(angle) * radius
@@ -774,7 +746,7 @@ public class TyokutouThrustAttackProcedure {
                 // 垂直視線の場合、円形に広がる
                 double angle = Math.PI * 2 * i / beamCount;
                 double radius = 2.0 + Math.random() * 2.5;
-                beamStart = playerPos.subtract(lookVec.scale(2.5)).add(
+                beamStart = playerPos.add(
                     Math.cos(angle) * radius,
                     lookVec.y > 0 ? -0.5 : 0.5,  // 上向きなら少し下から、下向きなら少し上から
                     Math.sin(angle) * radius
@@ -782,7 +754,7 @@ public class TyokutouThrustAttackProcedure {
             } else {
                 beamStart = playerPos
                     .add(rightVec.scale(horizontalSpread))
-                    .add(lookVec.scale(-(2.0 + Math.random() * 2.0)))
+                    .add(lookVec.scale(Math.random() * -0.5))
                     .add(0, heightOffset, 0);
             }
 
@@ -861,22 +833,19 @@ public class TyokutouThrustAttackProcedure {
                 // パーティクルの種類（進行に応じて変化）
                 if (t < 0.3) {
                     // 開始部分
-                    serverLevel.sendParticles(
-                        ParticleTypes.SOUL_FIRE_FLAME,
+                    sendForcedParticle(serverLevel, player, ParticleTypes.SOUL_FIRE_FLAME,
                         particlePos.x, particlePos.y, particlePos.z,
                         1, 0, 0, 0, 0
                     );
                 } else if (t < 0.7) {
                     // 中間部分（ENCHANTED_HITで統一）
-                    serverLevel.sendParticles(
-                        ParticleTypes.ENCHANTED_HIT,
+                    sendForcedParticle(serverLevel, player, ParticleTypes.ENCHANTED_HIT,
                         particlePos.x, particlePos.y, particlePos.z,
                         1, 0.02, 0.02, 0.02, 0
                     );
                 } else {
                     // 終端部分（散らばる）
-                    serverLevel.sendParticles(
-                        ParticleTypes.ELECTRIC_SPARK,
+                    sendForcedParticle(serverLevel, player, ParticleTypes.ELECTRIC_SPARK,
                         particlePos.x, particlePos.y, particlePos.z,
                         (int)(2 * chargePercent), 0.2, 0.2, 0.2, 0.02
                     );
@@ -884,8 +853,7 @@ public class TyokutouThrustAttackProcedure {
 
                 // 最大チャージ時はEND_RODを追加
                 if (chargePercent >= 1.0f && j % 6 == 0) {
-                    serverLevel.sendParticles(
-                        ParticleTypes.END_ROD,
+                    sendForcedParticle(serverLevel, player, ParticleTypes.END_ROD,
                         particlePos.x, particlePos.y, particlePos.z,
                         1, 0.05, 0.05, 0.05, 0.01
                     );
@@ -893,8 +861,7 @@ public class TyokutouThrustAttackProcedure {
 
                 // 屈折ポイントで追加エフェクト
                 if (Math.abs(t - 0.33) < 0.02 || Math.abs(t - 0.66) < 0.02) {
-                    serverLevel.sendParticles(
-                        ParticleTypes.FLASH,
+                    sendForcedParticle(serverLevel, player, ParticleTypes.FLASH,
                         particlePos.x, particlePos.y, particlePos.z,
                         1, 0, 0, 0, 0
                     );
@@ -908,13 +875,22 @@ public class TyokutouThrustAttackProcedure {
         // プレイヤーの周りから発生する円形エフェクト
         for (int i = 0; i < 360; i += 20) {
             double rad = Math.toRadians(i);
-            serverLevel.sendParticles(
-                ParticleTypes.ELECTRIC_SPARK,
+            sendForcedParticle(serverLevel, player, ParticleTypes.ELECTRIC_SPARK,
                 playerPos.x + Math.cos(rad) * 2.5,
                 playerPos.y,
                 playerPos.z + Math.sin(rad) * 2.5,
                 2, 0, 0.1, 0, 0.05
             );
+        }
+    }
+
+    private static void sendForcedParticle(ServerLevel level, Player player, ParticleOptions particle,
+                                           double x, double y, double z, int count,
+                                           double dx, double dy, double dz, double speed) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            level.sendParticles(serverPlayer, particle, true, x, y, z, count, dx, dy, dz, speed);
+        } else {
+            level.sendParticles(particle, x, y, z, count, dx, dy, dz, speed);
         }
     }
 

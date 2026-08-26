@@ -10,7 +10,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -35,6 +34,31 @@ import java.util.List;
 import java.util.Comparator;
 
 public class LunaenteiteigaaitemuwoZhentutaShiProcedure {
+	/** 召喚Luna用。プレイヤー通常技と同じ直線END_RODレーザーを発射する。 */
+	public static void fireSummonedStraightLaser(ServerLevel level, Entity source, LivingEntity target,
+			@javax.annotation.Nullable ServerPlayer viewer) {
+		Vec3 start = source.position().add(0, source.getBbHeight() * 0.55, 0);
+		Vec3 end = target.position().add(0, target.getBbHeight() * 0.5, 0);
+		Vec3 line = end.subtract(start);
+		double length = line.length();
+		if (length < 0.001) return;
+		Vec3 direction = line.scale(1.0 / length);
+		int steps = Math.max(1, (int)Math.ceil(length / 0.2));
+		for (int i = 0; i <= steps; i++) {
+			Vec3 pos = start.add(direction.scale(Math.min(length, i * 0.2)));
+			if (viewer != null)
+				level.sendParticles(viewer, ParticleTypes.END_ROD, true, pos.x, pos.y, pos.z,
+						1, 0.03, 0.03, 0.03, 0.0);
+			else
+				level.sendParticles(ParticleTypes.END_ROD, pos.x, pos.y, pos.z,
+						1, 0.03, 0.03, 0.03, 0.0);
+		}
+		level.playSound(null, source.getX(), source.getY(), source.getZ(),
+				net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 2.0F, 2.0F);
+		level.playSound(null, source.getX(), source.getY(), source.getZ(),
+				net.minecraft.sounds.SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 1.2F, 1.15F);
+	}
+
 	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
 		if (entity == null)
 			return;
@@ -57,7 +81,8 @@ public class LunaenteiteigaaitemuwoZhentutaShiProcedure {
 				|| TheFourPrimitivesAndWeaponsModItems.LUNA.get() == (entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem()) {
 			if (!(entity instanceof LivingEntity _livEnt ? _livEnt.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.WAZA.get()) : false)) {
 				if (entity instanceof LivingEntity _entity && !_entity.level().isClientSide())
-					_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.WAZA.get(), 15, 1, true, false));
+					// 再発射間隔は攻撃速度ゲージ側で管理するため、旧15tick固定ロックは廃止。
+					_entity.addEffect(new MobEffectInstance(TheFourPrimitivesAndWeaponsModMobEffects.WAZA.get(), 1, 1, true, false));
 				r = 1;
 				alpha = entity.getYRot();
 				beta = entity.getXRot();
@@ -141,8 +166,6 @@ public class LunaenteiteigaaitemuwoZhentutaShiProcedure {
 						break;
 					}
 					r = r + 0.2;
-					if (entity instanceof Player _player)
-						_player.getCooldowns().addCooldown((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem(), 15);
 				}
 			}
 		}
