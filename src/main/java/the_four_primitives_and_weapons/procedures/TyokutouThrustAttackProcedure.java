@@ -204,6 +204,8 @@ public class TyokutouThrustAttackProcedure {
         // パーティクル設定が「最小」でも召喚者本人には表示される。
         if (world instanceof ServerLevel serverLevel && isLunaItem(player.getMainHandItem())) {
             sendGuaranteedLunaLasers(serverLevel, player, startPos, lookVec, range, chargePercent);
+            serverLevel.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 1.2F, 1.15F);
         }
 
         // 超強力な突進エフェクト
@@ -357,11 +359,11 @@ public class TyokutouThrustAttackProcedure {
         }
     }
 
-    private static void sendGuaranteedLunaLasers(ServerLevel level, Player player, Vec3 start,
+    private static void sendGuaranteedLunaLasers(ServerLevel level, Entity source, Vec3 start,
                                                    Vec3 look, double range, float charge) {
         Vec3 right = new Vec3(-look.z, 0, look.x).normalize();
         if (right.lengthSqr() < 0.001) right = new Vec3(1, 0, 0);
-        ServerPlayer viewer = player instanceof ServerPlayer serverPlayer ? serverPlayer : null;
+        ServerPlayer viewer = source instanceof ServerPlayer serverPlayer ? serverPlayer : null;
         int points = 48 + (int)(charge * 24);
         int beamCount = 3 + Math.round(charge * 9.0F); // 最低3本、最大12本
         for (int beam = 0; beam < beamCount; beam++) {
@@ -387,6 +389,17 @@ public class TyokutouThrustAttackProcedure {
                 }
             }
         }
+    }
+
+    /** 召喚Luna用。プレイヤーのチャージ技と同じEND_ROD/ELECTRIC_SPARK曲線レーザー。 */
+    public static void sendSummonedLunaLaser(ServerLevel level, Entity source, LivingEntity target) {
+        Vec3 start = source.position().add(0, source.getBbHeight() * 0.55, 0);
+        Vec3 end = target.position().add(0, target.getBbHeight() * 0.5, 0);
+        Vec3 direction = end.subtract(start).normalize();
+        // プレイヤー版はこの保証レイヤーと旧曲線レイヤーを重ねているため、
+        // 召喚Lunaでも同じ2つを同じ順番で生成する。
+        sendGuaranteedLunaLasers(level, source, start, direction, start.distanceTo(end), 1.0F);
+        createCurvingBeamsToTarget(level, end, direction, source, 1.0F);
     }
 
     /**
@@ -547,15 +560,15 @@ public class TyokutouThrustAttackProcedure {
      * @param serverLevel サーバーレベル
      * @param targetPos ターゲットの位置
      * @param lookVec プレイヤーの視線方向
-     * @param player プレイヤー
+     * @param source ビームの発射元（プレイヤーまたは召喚Luna）
      * @param chargePercent チャージ率
      */
-    private static void createCurvingBeamsToTarget(ServerLevel serverLevel, Vec3 targetPos, Vec3 lookVec, Player player, float chargePercent) {
+    public static void createCurvingBeamsToTarget(ServerLevel serverLevel, Vec3 targetPos, Vec3 lookVec, Entity source, float chargePercent) {
         // ビームの数（チャージ率に応じて増加）
         // 最小3本、最大15本
         int beamCount = Math.max(3, (int)(3 + chargePercent * 12));
 
-        Vec3 playerPos = player.position().add(0, player.getEyeHeight() * 0.8, 0);
+        Vec3 playerPos = source.position().add(0, source.getBbHeight() * 0.8, 0);
 
         // プレイヤーの右ベクトルと上ベクトルを計算（垂直視線対策）
         Vec3 rightVec;
@@ -565,7 +578,7 @@ public class TyokutouThrustAttackProcedure {
         if (Math.abs(lookVec.y) > 0.99) {
             // ほぼ真上または真下を向いている場合
             // 右ベクトルはプレイヤーの向きに基づいて計算
-            float yaw = player.getYRot() * 0.017453292F;
+            float yaw = source.getYRot() * 0.017453292F;
             rightVec = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw));
 
             if (lookVec.y > 0) {
@@ -682,7 +695,8 @@ public class TyokutouThrustAttackProcedure {
             }
 
             // ビームの軌跡に沿って追加ダメージ判定
-            checkBeamDamage(serverLevel, beamStart, beamEnd, player, chargePercent * 10.0f);
+            if (source instanceof Player player)
+                checkBeamDamage(serverLevel, beamStart, beamEnd, player, chargePercent * 10.0f);
         }
 
         // プレイヤーの周りから発生するエフェクト

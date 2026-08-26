@@ -33,7 +33,7 @@ public class LunaCompanionRenderer extends EntityRenderer<LunaCompanionEntity> {
         // 待機中はその変換を使わず、縦向きのGROUND変換で切先を真下へ向ける。
         // 交戦中は常に水平。GROUND変換で下向きになった切先を+X方向へ倒し、
         // エンティティのyawによって+Xを敵へ合わせる。
-        if (engaging) pose.mulPose(Axis.ZP.rotationDegrees(90.0F));
+        if (engaging) pose.mulPose(Axis.ZP.rotationDegrees(90.0F + entity.getXRot()));
         pose.scale(0.9F, 0.9F, 0.9F);
         itemRenderer.renderStatic(new ItemStack(TheFourPrimitivesAndWeaponsModItems.LUNA.get()),
                 ItemDisplayContext.GROUND,

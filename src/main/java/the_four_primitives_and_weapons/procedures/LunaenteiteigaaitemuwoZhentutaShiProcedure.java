@@ -85,6 +85,11 @@ public class LunaenteiteigaaitemuwoZhentutaShiProcedure {
 								ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("block.beacon.activate")), SoundSource.PLAYERS, 2, 2, false);
 					}
 				}
+				if (world instanceof ServerLevel serverLevel) {
+					serverLevel.playSound(null, x, y, z,
+							net.minecraft.sounds.SoundEvents.BEACON_DEACTIVATE,
+							SoundSource.PLAYERS, 1.2F, 1.15F);
+				}
 				for (int index0 = 0; index0 < 100; index0++) {
 					{
 						final Vec3 _center = new Vec3((x - r * Math.cos(Math.toRadians(beta)) * Math.sin(Math.toRadians(alpha))), ((y + 1) - r * Math.sin(Math.toRadians(beta))),

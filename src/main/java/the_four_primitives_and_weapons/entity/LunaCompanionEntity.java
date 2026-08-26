@@ -6,7 +6,6 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
@@ -20,6 +19,11 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -44,6 +48,11 @@ public class LunaCompanionEntity extends PathfinderMob {
     private int attackCooldown;
     private int firingTicks;
     private boolean itemReturned;
+    private boolean standbyAnchorInitialized;
+    private double standbyYaw;
+    private double lastOwnerX;
+    private double lastOwnerY;
+    private double lastOwnerZ;
 
     public LunaCompanionEntity(PlayMessages.SpawnEntity packet, Level level) {
         this(TheFourPrimitivesAndWeaponsModEntities.LUNA_COMPANION.get(), level);
@@ -74,10 +83,30 @@ public class LunaCompanionEntity extends PathfinderMob {
         return entityData.get(ENGAGING);
     }
 
+    public boolean isOwnedBy(UUID playerId) {
+        return ownerId != null && ownerId.equals(playerId);
+    }
+
+    /** 所有者の死亡直前または右クリック時に、アイテムへ戻して消える。 */
+    public void recallToOwner() {
+        if (level().isClientSide) return;
+        returnItem();
+        discard();
+    }
+
     public void bind(Player owner, ItemStack item) {
         ownerId = owner.getUUID();
         storedItem = item.copy();
         storedItem.setCount(1);
+        initializeStandbyAnchor(owner);
+    }
+
+    private void initializeStandbyAnchor(Player owner) {
+        standbyAnchorInitialized = true;
+        standbyYaw = owner.getYRot();
+        lastOwnerX = owner.getX();
+        lastOwnerY = owner.getY();
+        lastOwnerZ = owner.getZ();
     }
 
     @Nullable
@@ -93,8 +122,36 @@ public class LunaCompanionEntity extends PathfinderMob {
         if (level().isClientSide) return;
         ServerPlayer owner = owner();
         if (owner == null) return;
+        if (!standbyAnchorInitialized) initializeStandbyAnchor(owner);
+
+        double ownerDx = owner.getX() - lastOwnerX;
+        double ownerDy = owner.getY() - lastOwnerY;
+        double ownerDz = owner.getZ() - lastOwnerZ;
+        // 視点だけでは待機方向を更新しない。実際に位置が変化した時だけ更新する。
+        if (ownerDx * ownerDx + ownerDy * ownerDy + ownerDz * ownerDz > 0.0004) {
+            standbyYaw = owner.getYRot();
+        }
+        lastOwnerX = owner.getX();
+        lastOwnerY = owner.getY();
+        lastOwnerZ = owner.getZ();
         if (attackCooldown > 0) attackCooldown--;
         if (firingTicks > 0 && --firingTicks == 0) entityData.set(FIRING, false);
+
+        // 召喚中だけ有効な、粒子・HUDアイコンを表示しない暗視。
+        if (tickCount % 20 == 0) {
+            // 200tick未満だとバニラの暗視が明滅するため、余裕を持って更新する。
+            owner.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 220, 0, true, false, false));
+        }
+        // 常時演出は5tickに1個だけにして負荷を抑える。
+        if (tickCount % 5 == 0 && level() instanceof ServerLevel serverLevel) {
+            double angle = random.nextDouble() * Math.PI * 2.0;
+            double radius = 0.35 + random.nextDouble() * 0.55;
+            serverLevel.sendParticles(ParticleTypes.END_ROD,
+                    getX() + Math.cos(angle) * radius,
+                    getY() + 0.25 + random.nextDouble() * 1.0,
+                    getZ() + Math.sin(angle) * radius,
+                    1, 0.02, 0.02, 0.02, 0.0);
+        }
 
         // 索敵は毎tickではなく0.5秒ごと。
         if (tickCount % 10 == 0) {
@@ -124,43 +181,50 @@ public class LunaCompanionEntity extends PathfinderMob {
         } else {
             guardTarget = null;
             entityData.set(ENGAGING, false);
-            double angle = tickCount * 0.05;
-            moveToward(owner.getX() + Math.cos(angle) * 1.5, owner.getY() + 1.4,
-                    owner.getZ() + Math.sin(angle) * 1.5, 0.22);
+            // 周回させず、プレイヤーの右横に固定する。プレイヤーの移動または
+            // 視点変更で固定位置が変わった時だけ追従し、到着後は完全停止する。
+            double yaw = Math.toRadians(standbyYaw);
+            double standbyX = owner.getX() + Math.cos(yaw) * 1.5;
+            double standbyY = owner.getY() + 1.4;
+            double standbyZ = owner.getZ() + Math.sin(yaw) * 1.5;
+            moveToward(standbyX, standbyY, standbyZ, 0.22);
         }
         if (distanceToSqr(owner) > 1024.0) teleportTo(owner.getX(), owner.getY() + 1.0, owner.getZ());
     }
 
     private void faceBladeToward(LivingEntity target) {
         double dx = target.getX() - getX();
+        double dy = target.getY() + target.getBbHeight() * 0.5 - (getY() + getBbHeight() * 0.55);
         double dz = target.getZ() - getZ();
         // 待機モデルをZ軸で90度倒すと切先はローカル+Xを向くため、
         // その+Xを敵への水平ベクトルへ合わせる。
         setYRot((float)Math.toDegrees(Math.atan2(dz, dx)));
+        setXRot((float)Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz))));
         yRotO = getYRot();
+        xRotO = getXRot();
     }
 
     private void fireLaser(LivingEntity target) {
         if (!(level() instanceof ServerLevel serverLevel)) return;
         entityData.set(FIRING, true);
         firingTicks = 7;
-        Vec3 start = position().add(0, 0.65, 0);
-        Vec3 end = target.position().add(0, target.getBbHeight() * 0.5, 0);
-        Vec3 line = end.subtract(start);
         faceBladeToward(target);
-        int points = Math.max(12, (int)(line.length() * 8.0));
-        for (int i = 0; i <= points; i++) {
-            Vec3 pos = start.add(line.scale(i / (double)points));
-            serverLevel.sendParticles(ParticleTypes.END_ROD, pos.x, pos.y, pos.z, 1, 0, 0, 0, 0);
-            if (i % 4 == 0)
-                serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK, pos.x, pos.y, pos.z, 1, 0.01, 0.01, 0.01, 0);
-        }
+        the_four_primitives_and_weapons.procedures.TyokutouThrustAttackProcedure
+                .sendSummonedLunaLaser(serverLevel, this, target);
+        serverLevel.playSound(null, getX(), getY(), getZ(), SoundEvents.BEACON_DEACTIVATE,
+                SoundSource.PLAYERS, 1.2F, 1.15F);
         target.hurt(damageSources().mobAttack(this), 8.0F);
     }
 
     private void moveToward(double x, double y, double z, double speed) {
         Vec3 delta = new Vec3(x - getX(), y - getY(), z - getZ());
-        setDeltaMovement(delta.lengthSqr() > 0.04 ? delta.normalize().scale(speed) : getDeltaMovement().scale(0.5));
+        double distance = delta.length();
+        if (distance <= 0.08) {
+            setDeltaMovement(Vec3.ZERO);
+            return;
+        }
+        // 目的地直前では減速し、通り過ぎて往復しないようにする。
+        setDeltaMovement(delta.scale(Math.min(speed, distance) / distance));
     }
 
     private boolean validTarget(@Nullable LivingEntity target, Player owner) {
@@ -170,12 +234,28 @@ public class LunaCompanionEntity extends PathfinderMob {
 
     @Override public boolean isPushable() { return false; }
 
+    /** 物理衝突は持たず、プレイヤーや他エンティティが通り抜けられる。 */
+    @Override
+    public boolean canBeCollidedWith() {
+        return false;
+    }
+
+    /** Mobのターゲット選択や通常攻撃の対象にしない。 */
+    @Override
+    public boolean isAttackable() {
+        return false;
+    }
+
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        return false;
+    }
+
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (ownerId == null || !ownerId.equals(player.getUUID())) return InteractionResult.PASS;
         if (!level().isClientSide) {
-            returnItem();
-            discard();
+            recallToOwner();
         }
         return InteractionResult.sidedSuccess(level().isClientSide);
     }
