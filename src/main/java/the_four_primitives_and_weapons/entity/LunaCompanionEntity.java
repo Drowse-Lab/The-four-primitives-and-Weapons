@@ -20,7 +20,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -30,6 +29,11 @@ import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.PlayMessages;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModEntities;
 import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModItems;
+import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModMobEffects;
+import the_four_primitives_and_weapons.damage.ElementType;
+import the_four_primitives_and_weapons.damage.ElementalDamageUtils;
+import the_four_primitives_and_weapons.damage.IElementalDamageSource;
+import the_four_primitives_and_weapons.damage.ModDamageSources;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -47,6 +51,8 @@ public class LunaCompanionEntity extends PathfinderMob {
     private int attackCooldown;
     private int firingTicks;
     private boolean itemReturned;
+    /** 召喚前から専用暗視が付いていた場合、回収時にそれを消さない。 */
+    private boolean ownerHadLunaVisionBeforeBind;
     private boolean standbyAnchorInitialized;
     private double standbyYaw;
     private double lastOwnerX;
@@ -105,6 +111,14 @@ public class LunaCompanionEntity extends PathfinderMob {
 
     public void bind(Player owner, ItemStack item) {
         ownerId = owner.getUUID();
+        boolean anotherCompanionExists = owner.level() instanceof ServerLevel serverLevel
+                && !serverLevel.getEntitiesOfClass(
+                        LunaCompanionEntity.class,
+                        owner.getBoundingBox().inflate(256.0),
+                        luna -> luna.isAlive() && luna.isOwnedBy(owner.getUUID())).isEmpty();
+        ownerHadLunaVisionBeforeBind = owner.hasEffect(
+                TheFourPrimitivesAndWeaponsModMobEffects.LUNA_VISION.get())
+                && !anotherCompanionExists;
         storedItem = item.copy();
         storedItem.setCount(1);
         initializeStandbyAnchor(owner);
@@ -155,7 +169,9 @@ public class LunaCompanionEntity extends PathfinderMob {
         // 召喚中だけ有効な、粒子・HUDアイコンを表示しない暗視。
         if (tickCount % 20 == 0) {
             // 200tick未満だとバニラの暗視が明滅するため、余裕を持って更新する。
-            owner.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 220, 0, true, false, false));
+            owner.addEffect(new MobEffectInstance(
+                    TheFourPrimitivesAndWeaponsModMobEffects.LUNA_VISION.get(),
+                    40, 0, true, false, false));
         }
         // 常時演出は5tickに1個だけにして負荷を抑える。
         if (tickCount % 5 == 0 && level() instanceof ServerLevel serverLevel) {
@@ -183,13 +199,12 @@ public class LunaCompanionEntity extends PathfinderMob {
         if (validTarget(guardTarget, owner)) {
             entityData.set(ENGAGING, true);
             faceBladeToward(guardTarget);
+            // 敵を追い回さず、攻撃中も召喚者のすぐ横を発射位置にする。
+            double anchorDistance = moveToOwnerAnchor(owner, 0.32);
             double targetDistance = distanceToSqr(guardTarget);
-            if (targetDistance > 100.0) {
-                moveToward(guardTarget.getX(), guardTarget.getY() + guardTarget.getBbHeight() * 0.5, guardTarget.getZ(), 0.32);
-            } else {
-                setDeltaMovement(getDeltaMovement().scale(0.65));
-            }
-            if (targetDistance <= 144.0 && attackCooldown == 0) {
+            // 発射位置に着き、切先の回転が敵へ追いついてからレーザーを撃つ。
+            if (anchorDistance <= 4.0 && targetDistance <= 576.0
+                    && isBladeAimedAt(guardTarget) && attackCooldown == 0) {
                 fireLaser(guardTarget);
                 // プレイヤーの攻撃速度ゲージ回復時間より5tickだけ長くする。
                 attackCooldown = Math.max(10,
@@ -200,13 +215,22 @@ public class LunaCompanionEntity extends PathfinderMob {
             entityData.set(ENGAGING, false);
             // 周回させず、プレイヤーの右横に固定する。プレイヤーの移動または
             // 視点変更で固定位置が変わった時だけ追従し、到着後は完全停止する。
-            double yaw = Math.toRadians(standbyYaw);
-            double standbyX = owner.getX() + Math.cos(yaw) * 1.5;
-            double standbyY = owner.getY() + 1.4;
-            double standbyZ = owner.getZ() + Math.sin(yaw) * 1.5;
-            moveToward(standbyX, standbyY, standbyZ, 0.22);
+            moveToOwnerAnchor(owner, 0.22);
         }
         if (distanceToSqr(owner) > 1024.0) teleportTo(owner.getX(), owner.getY() + 1.0, owner.getZ());
+    }
+
+    /** プレイヤーの右横にある共通の待機・発射位置へ移動し、そこまでの距離二乗を返す。 */
+    private double moveToOwnerAnchor(ServerPlayer owner, double speed) {
+        double yaw = Math.toRadians(standbyYaw);
+        double anchorX = owner.getX() + Math.cos(yaw) * 1.5;
+        double anchorY = owner.getY() + 1.4;
+        double anchorZ = owner.getZ() + Math.sin(yaw) * 1.5;
+        double dx = anchorX - getX();
+        double dy = anchorY - getY();
+        double dz = anchorZ - getZ();
+        moveToward(anchorX, anchorY, anchorZ, speed);
+        return dx * dx + dy * dy + dz * dz;
     }
 
     private void faceBladeToward(LivingEntity target) {
@@ -222,6 +246,17 @@ public class LunaCompanionEntity extends PathfinderMob {
         setXRot(Mth.lerp(0.22F, getXRot(), wantedPitch));
     }
 
+    /** 滑らかな回転が敵方向へほぼ到達したかを判定する。 */
+    private boolean isBladeAimedAt(LivingEntity target) {
+        double dx = target.getX() - getX();
+        double dy = target.getY() + target.getBbHeight() * 0.5 - (getY() + getBbHeight() * 0.55);
+        double dz = target.getZ() - getZ();
+        float wantedYaw = (float)Math.toDegrees(Math.atan2(dz, dx));
+        float wantedPitch = (float)Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
+        return Math.abs(Mth.wrapDegrees(wantedYaw - getYRot())) <= 7.0F
+                && Math.abs(Mth.wrapDegrees(wantedPitch - getXRot())) <= 7.0F;
+    }
+
     private void fireLaser(LivingEntity target) {
         if (!(level() instanceof ServerLevel serverLevel)) return;
         entityData.set(FIRING, true);
@@ -229,8 +264,41 @@ public class LunaCompanionEntity extends PathfinderMob {
         faceBladeToward(target);
         the_four_primitives_and_weapons.procedures.LunaenteiteigaaitemuwoZhentutaShiProcedure
                 .fireSummonedStraightLaser(serverLevel, this, target, owner());
-        target.hurt(damageSources().mobAttack(this), 8.0F);
+        ServerPlayer owner = owner();
+        ElementalShot element = resolveShotElement(owner);
+        if (element.type != ElementType.NONE && element.level > 0) {
+            // direct=this / causing=owner にして、属性効果とプレイヤーの討伐判定を両立する。
+            DamageSource source = ModDamageSources.of(serverLevel,
+                    ModDamageSources.keyFor(element.type), this, owner);
+            if (source instanceof IElementalDamageSource elementalSource) {
+                elementalSource.setElementType(element.type);
+                elementalSource.setElementLevel(element.level);
+            }
+            target.hurt(source, 8.0F);
+        } else {
+            target.hurt(owner != null ? damageSources().playerAttack(owner) : damageSources().mobAttack(this), 8.0F);
+        }
     }
+
+    /** Lunaに付いた属性を優先し、無属性なら所有者の手持ち/Curios属性本を使う。 */
+    private ElementalShot resolveShotElement(@Nullable ServerPlayer owner) {
+        ElementType lunaType = ElementalDamageUtils.getEffectiveElementType(storedItem);
+        int lunaLevel = ElementalDamageUtils.getEffectiveElementLevel(storedItem);
+        if (owner == null) return new ElementalShot(lunaType, lunaLevel);
+
+        ElementalDamageUtils.BookSlotInfo book = ElementalDamageUtils.getBookSlotInfo(owner);
+        if (lunaType != ElementType.NONE) {
+            if (book.type == lunaType) {
+                int high = Math.max(lunaLevel, book.level);
+                int low = Math.min(lunaLevel, book.level);
+                return new ElementalShot(lunaType, high + Math.max(low / 2, 1));
+            }
+            return new ElementalShot(lunaType, lunaLevel);
+        }
+        return new ElementalShot(book.type, book.level);
+    }
+
+    private record ElementalShot(ElementType type, int level) {}
 
     private void moveToward(double x, double y, double z, double speed) {
         Vec3 delta = new Vec3(x - getX(), y - getY(), z - getZ());
@@ -300,9 +368,22 @@ public class LunaCompanionEntity extends PathfinderMob {
         ItemStack item = storedItem.isEmpty() ? new ItemStack(TheFourPrimitivesAndWeaponsModItems.LUNA.get()) : storedItem.copy();
         ServerPlayer owner = owner();
         if (owner != null) {
+            removeGrantedVision(owner);
             if (!owner.getInventory().add(item)) owner.drop(item, false);
         } else spawnAtLocation(item);
         storedItem = ItemStack.EMPTY;
+    }
+
+    /** この召喚が付与した暗視だけを即時解除する。元からの効果と別個体分は残す。 */
+    private void removeGrantedVision(ServerPlayer owner) {
+        if (ownerHadLunaVisionBeforeBind || !(level() instanceof ServerLevel serverLevel)) return;
+        boolean anotherCompanionExists = !serverLevel.getEntitiesOfClass(
+                LunaCompanionEntity.class,
+                owner.getBoundingBox().inflate(256.0),
+                luna -> luna != this && luna.isAlive() && luna.isOwnedBy(owner.getUUID())).isEmpty();
+        if (!anotherCompanionExists) {
+            owner.removeEffect(TheFourPrimitivesAndWeaponsModMobEffects.LUNA_VISION.get());
+        }
     }
 
     @Override
@@ -310,6 +391,7 @@ public class LunaCompanionEntity extends PathfinderMob {
         super.addAdditionalSaveData(tag);
         if (ownerId != null) tag.putUUID("Owner", ownerId);
         if (!storedItem.isEmpty()) tag.put("Luna", storedItem.save(new CompoundTag()));
+        tag.putBoolean("OwnerHadLunaVision", ownerHadLunaVisionBeforeBind);
     }
 
     @Override
@@ -317,6 +399,7 @@ public class LunaCompanionEntity extends PathfinderMob {
         super.readAdditionalSaveData(tag);
         ownerId = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         storedItem = tag.contains("Luna") ? ItemStack.of(tag.getCompound("Luna")) : ItemStack.EMPTY;
+        ownerHadLunaVisionBeforeBind = tag.getBoolean("OwnerHadLunaVision");
     }
 
     public static AttributeSupplier.Builder createAttributes() {

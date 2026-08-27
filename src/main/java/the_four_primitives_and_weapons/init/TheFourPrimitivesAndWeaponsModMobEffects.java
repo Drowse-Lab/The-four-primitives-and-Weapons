@@ -25,6 +25,7 @@ import the_four_primitives_and_weapons.potion.PlayerScoreIdMobEffect;
 import the_four_primitives_and_weapons.potion.OnazitakasaArrowMobEffect;
 import the_four_primitives_and_weapons.potion.NgsMobEffect;
 import the_four_primitives_and_weapons.potion.LongRangeWeaponCutMobEffect;
+import the_four_primitives_and_weapons.potion.LunaVisionMobEffect;
 import the_four_primitives_and_weapons.potion.KurutimenasiMobEffect;
 import the_four_primitives_and_weapons.potion.KilloffMobEffect;
 import the_four_primitives_and_weapons.potion.KillEffectTrueOrFalseMobEffect;
@@ -95,4 +96,5 @@ public class TheFourPrimitivesAndWeaponsModMobEffects {
 	public static final RegistryObject<MobEffect> ARMORSTANDTOBASUENMAEFFECTKILL = REGISTRY.register("armorstandtobasuenmaeffectkill", () -> new ArmorstandtobasuenmaeffectkillMobEffect());
 	public static final RegistryObject<MobEffect> KILLOFF = REGISTRY.register("killoff", () -> new KilloffMobEffect());
 	public static final RegistryObject<MobEffect> SUMMON_TRIGGER_EFFECT = REGISTRY.register("summon_trigger_effect", () -> new SummonTriggerEffectMobEffect());
+	public static final RegistryObject<MobEffect> LUNA_VISION = REGISTRY.register("luna_vision", LunaVisionMobEffect::new);
 }

@@ -1,6 +1,7 @@
 package the_four_primitives_and_weapons.mixin;
 
 import the_four_primitives_and_weapons.status.BlessingSystem;
+import the_four_primitives_and_weapons.init.TheFourPrimitivesAndWeaponsModMobEffects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.entity.player.Player;
@@ -40,6 +41,12 @@ public abstract class BlessingVisionMixin {
 
         Player localPlayer = Minecraft.getInstance().player;
         if (localPlayer == null) return;
+
+        // バニラ暗視ではないLuna専用効果を、暗視の描画強度へ接続する。
+        if (entity.hasEffect(TheFourPrimitivesAndWeaponsModMobEffects.LUNA_VISION.get())) {
+            cir.setReturnValue(1.0F);
+            return;
+        }
 
         if (BlessingSystem.hasBlessing(localPlayer)) {
             // 通常の暗視を無効化 → 霊視用の暗闇演出を優先

@@ -102,7 +102,10 @@ public class TyokutouThrustAttackProcedure {
                 .attackRangeBonus(player.getMainHandItem()));
         double damage = 18.0;  // 他の刀と同じダメージ
 
-        Vec3 lookVec = the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
+        // Lunaは空撃ちでも上下を含む視点方向へ飛ばす。他の直刀は従来の水平突き。
+        Vec3 lookVec = isLunaItem(player.getMainHandItem())
+                ? player.getLookAngle().normalize()
+                : the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
 
         // 全ての突き共通の見た目 ( 前方へ伸びる線 )。 斬撃の扇と区別が付くようにする。
         if (world instanceof ServerLevel serverLevel) {
@@ -198,7 +201,10 @@ public class TyokutouThrustAttackProcedure {
         double damage = 35.0 + chargePercent * 20.0;  // 35.0～55.0
         double thrustPower = 0.8 + chargePercent * 0.4;  // 0.8～1.2（他の刀と同程度）
 
-        Vec3 lookVec = the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
+        // Lunaの空撃ち曲線は水平固定にせず、上下を含めてカメラの向きへ飛ばす。
+        Vec3 lookVec = isLunaItem(player.getMainHandItem())
+                ? player.getLookAngle().normalize()
+                : the_four_primitives_and_weapons.skill.MotionExecutor.horizontalLook(player);
         Vec3 startPos = player.position().add(0, player.getEyeHeight(), 0);
 
         // Lunaのビーム発射音。曲線自体は下の元実装 createCurvingBeams* だけで生成する。
