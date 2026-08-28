@@ -509,6 +509,11 @@ public class DodgeAndBattouHandler {
         // 回避無効化設定チェック（グローバル設定）
         if (the_four_primitives_and_weapons.config.DodgeConfig.dodgeDisabled) return false;
 
+        // 水適性を解放した Magical Katana は水中・水面で専用移動を使う。
+        // 通常回避を重ねると速度と無敵時間が二重に乗るため、ここでは発動させない。
+        if (the_four_primitives_and_weapons.events.MagicalKatanaWaterMovementHandler
+                .blocksOrdinaryDodge(player, player.getMainHandItem())) return false;
+
         // 右クリックスロットが「回避」以外 ( なし/スペル等 ) に設定されている場合は回避しない。
         // スペル付与済みで未設定なら resolveRightClickMotion が "spell" を返し、回避しない。
         ItemStack heldItem = player.getMainHandItem();

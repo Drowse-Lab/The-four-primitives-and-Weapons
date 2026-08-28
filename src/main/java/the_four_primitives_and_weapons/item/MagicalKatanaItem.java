@@ -62,8 +62,20 @@ public class MagicalKatanaItem extends SwordItem {
 	@Override
 	public void inventoryTick(ItemStack itemstack, Level world, Entity entity, int slot, boolean selected) {
 		super.inventoryTick(itemstack, world, entity, slot, selected);
-		if (selected)
+		if (selected) {
 			IronKatanaturuwoShoudeChituteiruJiannoteitukuProcedure.execute(world, entity.getX(), entity.getY(), entity.getZ(), entity);
+			if (entity instanceof Player player) {
+				the_four_primitives_and_weapons.events.MagicalKatanaWaterMovementHandler.tickSelected(world, player, itemstack);
+			}
+		}
+	}
+
+	@Override
+	public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
+		ItemStack stack = player.getItemInHand(hand);
+		InteractionResultHolder<ItemStack> waterMove =
+				the_four_primitives_and_weapons.events.MagicalKatanaWaterMovementHandler.use(world, player, hand, stack);
+		return waterMove.getResult().consumesAction() ? waterMove : super.use(world, player, hand);
 	}
 
 	@Override
