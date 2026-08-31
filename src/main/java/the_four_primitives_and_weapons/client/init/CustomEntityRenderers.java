@@ -13,6 +13,7 @@ import the_four_primitives_and_weapons.client.renderer.SingularityRenderer;
 import the_four_primitives_and_weapons.client.renderer.HeroicTierRenderer;
 import the_four_primitives_and_weapons.client.renderer.DebugMobRenderer;
 import the_four_primitives_and_weapons.client.renderer.AngelTrioRenderer;
+import the_four_primitives_and_weapons.client.renderer.MiniMobRenderer;
 import the_four_primitives_and_weapons.client.renderer.DarkProjectileRenderer;
 import the_four_primitives_and_weapons.client.renderer.TornadoRenderer;
 import the_four_primitives_and_weapons.init.CustomEntityInit;
@@ -39,6 +40,7 @@ public class CustomEntityRenderers {
         event.registerEntityRenderer(CustomEntityInit.DEBUG_MOB.get(), DebugMobRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.TARGET_DUMMY.get(),
                 the_four_primitives_and_weapons.client.renderer.TargetDummyRenderer::new);
+        event.registerEntityRenderer(CustomEntityInit.MINI_MOB.get(), MiniMobRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.ANGEL_SERIOUS.get(), AngelTrioRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.ANGEL_MOCKER1.get(), AngelTrioRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.ANGEL_MOCKER2.get(), AngelTrioRenderer::new);

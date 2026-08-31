@@ -107,19 +107,19 @@ public class CreativeTabPopulator {
 
 		// === TAB_MAGIC_BOOKS ===
 		if (event.getTab() == TheFourPrimitivesAndWeaponsModTabs.TAB_MAGIC_BOOKS.get()) {
-			event.accept(TheFourPrimitivesAndWeaponsModItems.FIREBALL);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.THUNDERBOLT);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.BUBBLESHOT);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.STORM);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.WIND_STEP);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.DARKNESS);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.ICE_BOOK);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.ELECTRIC_BOOK);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.CORROSION_BOOK);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.HOLY_BOOK);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.MIASMA_BOOK);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.SOUL_BOOK);
-			event.accept(TheFourPrimitivesAndWeaponsModItems.SOUL_FIRE_BOOK);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.FIREBALL);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.THUNDERBOLT);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.BUBBLESHOT);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.STORM);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.WIND_STEP);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.DARKNESS);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.ICE_BOOK);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.ELECTRIC_BOOK);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.CORROSION_BOOK);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.HOLY_BOOK);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.MIASMA_BOOK);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.SOUL_BOOK);
+			acceptElementBook(event, TheFourPrimitivesAndWeaponsModItems.SOUL_FIRE_BOOK);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.ELEMENT_CLEANSE_POTION);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.MAGICWAND);
 			event.accept(TheFourPrimitivesAndWeaponsModItems.IMITATION);
@@ -252,6 +252,7 @@ public class CreativeTabPopulator {
 			event.accept(CustomEntityInit.SINGULARITY_SPAWN_EGG);
 			event.accept(CustomEntityInit.HEROIC_TIER_SPAWN_EGG);
 			event.accept(CustomEntityInit.DEBUG_MOB_SPAWN_EGG);
+			event.accept(CustomEntityInit.MINI_MOB_SPAWN_EGG);
 			event.accept(CustomEntityInit.ANGEL_SERIOUS_SPAWN_EGG);
 			event.accept(CustomEntityInit.ANGEL_MOCKER1_SPAWN_EGG);
 			event.accept(CustomEntityInit.ANGEL_MOCKER2_SPAWN_EGG);
@@ -322,5 +323,17 @@ public class CreativeTabPopulator {
 		net.minecraft.world.item.ItemStack s = new net.minecraft.world.item.ItemStack(sayaItem.get());
 		the_four_primitives_and_weapons.util.SayaDesign.setStyle(s, style);
 		return s;
+	}
+
+	/** クリエイティブタブの属性本は、種類から属性を判定した Lv12 の完成品として配布する。 */
+	private static void acceptElementBook(BuildCreativeModeTabContentsEvent event,
+			net.minecraftforge.registries.RegistryObject<net.minecraft.world.item.Item> item) {
+		net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item.get());
+		the_four_primitives_and_weapons.damage.ElementType type =
+				the_four_primitives_and_weapons.damage.ElementalDamageUtils.getBookElementFromItemStack(stack);
+		if (type != the_four_primitives_and_weapons.damage.ElementType.NONE) {
+			the_four_primitives_and_weapons.damage.ElementalDamageUtils.setElement(stack, type, 12);
+		}
+		event.accept(stack);
 	}
 }

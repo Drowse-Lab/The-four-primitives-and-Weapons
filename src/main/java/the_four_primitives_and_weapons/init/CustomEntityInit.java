@@ -18,6 +18,7 @@ import the_four_primitives_and_weapons.entity.SingularityEntity;
 import the_four_primitives_and_weapons.entity.HeroicTierEntity;
 import the_four_primitives_and_weapons.entity.DebugMobEntity;
 import the_four_primitives_and_weapons.entity.TargetDummyEntity;
+import the_four_primitives_and_weapons.entity.MiniMobEntity;
 import the_four_primitives_and_weapons.entity.AngelTrioEntity;
 import the_four_primitives_and_weapons.entity.ThrowingKnifeEntity;
 import the_four_primitives_and_weapons.entity.WeaponRackEntity;
@@ -125,6 +126,16 @@ public class CustomEntityInit {
                 .sized(0.6f, 1.8f)
                 .build("target_dummy"));
 
+    // ちび体型のミニmob ( 金のリンゴで手懐く仲間 )
+    public static final RegistryObject<EntityType<MiniMobEntity>> MINI_MOB =
+        CUSTOM_ENTITIES.register("mini_mob",
+            () -> EntityType.Builder.<MiniMobEntity>of(MiniMobEntity::new, MobCategory.CREATURE)
+                .setShouldReceiveVelocityUpdates(true)
+                .setTrackingRange(64)
+                .setUpdateInterval(3)
+                .sized(0.5f, 1.2f)
+                .build("mini_mob"));
+
     // スポーンエッグ
     public static final RegistryObject<Item> COMMON_SOLDIER_SPAWN_EGG =
         CUSTOM_ITEMS.register("common_soldier_spawn_egg",
@@ -154,6 +165,11 @@ public class CustomEntityInit {
     public static final RegistryObject<Item> TARGET_DUMMY_SPAWN_EGG =
         CUSTOM_ITEMS.register("target_dummy_spawn_egg",
             () -> new ForgeSpawnEggItem(TARGET_DUMMY, 0xC8A24A, 0x5A4020,
+                new Item.Properties()));
+
+    public static final RegistryObject<Item> MINI_MOB_SPAWN_EGG =
+        CUSTOM_ITEMS.register("mini_mob_spawn_egg",
+            () -> new ForgeSpawnEggItem(MINI_MOB, 0xE3DEE1, 0x335361,
                 new Item.Properties()));
 
     public static final RegistryObject<Item> ANGEL_SERIOUS_SPAWN_EGG =
@@ -270,6 +286,7 @@ public class CustomEntityInit {
         event.put(HEROIC_TIER.get(), HeroicTierEntity.createAttributes().build());
         event.put(DEBUG_MOB.get(), DebugMobEntity.createAttributes().build());
         event.put(TARGET_DUMMY.get(), TargetDummyEntity.createAttributes().build());
+        event.put(MINI_MOB.get(), MiniMobEntity.createAttributes().build());
         event.put(ANGEL_SERIOUS.get(), AngelTrioEntity.createAttributes().build());
         event.put(ANGEL_MOCKER1.get(), AngelTrioEntity.createAttributes().build());
         event.put(ANGEL_MOCKER2.get(), AngelTrioEntity.createAttributes().build());

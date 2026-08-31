@@ -100,6 +100,11 @@ public final class RarityTooltipFrameHandler {
     /** 属性紋様を枠全体から中央方向へ薄く伸ばす。複合属性は濃淡を変えて重ねる。 */
     private static void drawElementOrnaments(GuiGraphics g, ItemStack stack, int l, int t, int r, int b) {
         ElementType primary = ElementalDamageUtils.getEffectiveElementType(stack);
+        // 旧ワールドやgiveで取得したレベルNBTのない魔導書も、
+        // 本の種類から属性を判定して属性枠を表示する。
+        if (primary == ElementType.NONE) {
+            primary = ElementalDamageUtils.getBookElementFromItemStack(stack);
+        }
         if (primary == ElementType.NONE) return;
 
         ElementType secondary = primary == ElementType.SOUL_FIRE
