@@ -58,6 +58,7 @@ import java.util.stream.Collectors;
  *   /test elementkind <kind>         — 手持ち武器の属性ダメージの与え方だけ変更
  *   /test elementall [level]         — 各属性の剣を全部入手
  *   /test debugmob                   — デバッグMobをスポーン
+ *   /test dummy                      — ターゲットダミー (属性ダメージ計測) をスポーン
  *   /test heal                       — 自分を全回復
  *   /test god                        — 無敵モード切替
  *   /test difficulty <name>          — 難易度を即変更
@@ -153,6 +154,11 @@ public class TestCommand {
             // /test debugmob
             .then(Commands.literal("debugmob")
                 .executes(ctx -> spawnDebugMob(ctx.getSource()))
+            )
+
+            // /test dummy — ターゲットダミー (属性ダメージ計測用)
+            .then(Commands.literal("dummy")
+                .executes(ctx -> spawnTargetDummy(ctx.getSource()))
             )
 
             // /test heal
@@ -460,6 +466,22 @@ public class TestCommand {
         source.sendSuccess(() -> Component.literal(
             "§a全" + total + "属性の §e" + fBase + " §aを付与しました (Lv." + lvl + ")"), false);
         return count;
+    }
+
+    // === /test dummy ===
+    private static int spawnTargetDummy(CommandSourceStack source) {
+        ServerLevel level = source.getLevel();
+        BlockPos pos = BlockPos.containing(source.getPosition());
+        EntityType<?> type = the_four_primitives_and_weapons.init.CustomEntityInit.TARGET_DUMMY.get();
+        Entity spawned = type.spawn(level, (net.minecraft.nbt.CompoundTag) null, null, pos,
+                MobSpawnType.COMMAND, true, false);
+        if (spawned == null) {
+            source.sendFailure(Component.literal("§cターゲットダミーをスポーンできませんでした"));
+            return 0;
+        }
+        source.sendSuccess(() -> Component.literal(
+            "§aターゲットダミーをスポーンしました §7(素手で右クリック=計測表示 / スニーク右クリック=リセット)"), false);
+        return 1;
     }
 
     // === /test debugmob ===

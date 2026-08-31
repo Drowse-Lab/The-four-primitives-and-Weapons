@@ -246,7 +246,7 @@ public class ElementalDamageEvent {
         // デバッグMob表示用: 「属性が実際に足した分」を記録する
         // ( 実ダメージ − 入力 では熟練度ペナルティ等の他補正が混ざってしまうため。
         //   魔法 / 蓄積 は一発から抜いてあるので、 抜く前の elementBonus を記録する )
-        ElementalDebugTrace.record(target, elementType, elementLevel, elementBonus);
+        ElementalDebugTrace.record(target, elementType, elementLevel, elementKind, elementBonus);
     }
 
     /**

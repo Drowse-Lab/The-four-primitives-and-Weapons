@@ -188,6 +188,27 @@ public class ElementalDoTHandler {
         return entry != null && entry.element == element;
     }
 
+    /** 対象にかかっているDoTの属性。 かかっていなければ {@link ElementType#NONE}。 */
+    public static ElementType getActiveElement(LivingEntity target) {
+        if (target == null) return ElementType.NONE;
+        DoTEntry entry = dotMap.get(target.getUUID());
+        return entry != null ? entry.element : ElementType.NONE;
+    }
+
+    /** 対象にかかっているDoTの1tickあたりダメージ。 かかっていなければ 0。 */
+    public static float getDamagePerTick(LivingEntity target) {
+        if (target == null) return 0.0f;
+        DoTEntry entry = dotMap.get(target.getUUID());
+        return entry != null ? entry.dmgPerTick : 0.0f;
+    }
+
+    /** 対象にかかっているDoTの残りtick。 かかっていなければ 0。 */
+    public static int getRemainingTick(LivingEntity target) {
+        if (target == null) return 0;
+        DoTEntry entry = dotMap.get(target.getUUID());
+        return entry != null ? entry.remainingTick : 0;
+    }
+
     // ────────────────────────────────────────────────────────────────
     // TickHandler
     // ────────────────────────────────────────────────────────────────

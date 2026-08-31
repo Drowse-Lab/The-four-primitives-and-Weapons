@@ -23,12 +23,15 @@ public final class ElementalDebugTrace {
     public static final class Entry {
         public final ElementType type;
         public final int level;
+        /** 属性ダメージの与え方 ( 物理 / 魔法 / 蓄積 )。 */
+        public final ElementDamageKind kind;
         public float delta;
         public long gameTime;
 
-        Entry(ElementType type, int level, float delta, long gameTime) {
+        Entry(ElementType type, int level, ElementDamageKind kind, float delta, long gameTime) {
             this.type = type;
             this.level = level;
+            this.kind = kind;
             this.delta = delta;
             this.gameTime = gameTime;
         }
@@ -44,8 +47,16 @@ public final class ElementalDebugTrace {
      * @param delta 属性処理の前後の差 ( 加算なら正 )
      */
     public static void record(LivingEntity target, ElementType type, int level, float delta) {
+        record(target, type, level, ElementDamageKind.PHYSICAL, delta);
+    }
+
+    /**
+     * 属性による増減を、与え方 ( 物理 / 魔法 / 蓄積 ) 付きで記録する。
+     */
+    public static void record(LivingEntity target, ElementType type, int level,
+                              ElementDamageKind kind, float delta) {
         if (target == null || type == null || type == ElementType.NONE) return;
-        if (!(target instanceof the_four_primitives_and_weapons.entity.DebugMobEntity)) return;
+        if (!isProbe(target)) return;
 
         long now = target.level().getGameTime();
         Entry existing = ENTRIES.get(target.getUUID());
@@ -53,7 +64,14 @@ public final class ElementalDebugTrace {
             existing.delta += delta;   // 同じ一撃で mixin と event の両方が動いた場合
             return;
         }
-        ENTRIES.put(target.getUUID(), new Entry(type, level, delta, now));
+        ENTRIES.put(target.getUUID(), new Entry(type, level,
+                kind != null ? kind : ElementDamageKind.PHYSICAL, delta, now));
+    }
+
+    /** 記録対象 ( 計測用のMob ) かどうか。 通常の戦闘では何も溜めない。 */
+    private static boolean isProbe(LivingEntity target) {
+        return target instanceof the_four_primitives_and_weapons.entity.DebugMobEntity
+                || target instanceof the_four_primitives_and_weapons.entity.TargetDummyEntity;
     }
 
     /** この tick に記録された増減を取り出して消す。 無ければ null。 */

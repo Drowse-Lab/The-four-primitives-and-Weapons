@@ -37,6 +37,8 @@ public class CustomEntityRenderers {
         event.registerEntityRenderer(CustomEntityInit.SINGULARITY.get(), SingularityRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.HEROIC_TIER.get(), HeroicTierRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.DEBUG_MOB.get(), DebugMobRenderer::new);
+        event.registerEntityRenderer(CustomEntityInit.TARGET_DUMMY.get(),
+                the_four_primitives_and_weapons.client.renderer.TargetDummyRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.ANGEL_SERIOUS.get(), AngelTrioRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.ANGEL_MOCKER1.get(), AngelTrioRenderer::new);
         event.registerEntityRenderer(CustomEntityInit.ANGEL_MOCKER2.get(), AngelTrioRenderer::new);

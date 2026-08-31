@@ -353,6 +353,8 @@
   "tooltip.the_four_primitives_and_weapons.ofuda": "封印の力を持つ護符",
   "entity.the_four_primitives_and_weapons.debug_mob": "デバッグMob",
   "item.the_four_primitives_and_weapons.debug_mob_spawn_egg": "デバッグMobのスポーンエッグ",
+  "entity.the_four_primitives_and_weapons.target_dummy": "ターゲットダミー",
+  "item.the_four_primitives_and_weapons.target_dummy_spawn_egg": "ターゲットダミーのスポーンエッグ",
   "tooltip.the_four_primitives_and_weapons.element.ice": "氷属性",
   "tooltip.the_four_primitives_and_weapons.element.fire": "火属性",
   "tooltip.the_four_primitives_and_weapons.element.water": "水属性",

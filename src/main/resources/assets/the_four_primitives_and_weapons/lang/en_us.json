@@ -353,6 +353,8 @@
   "tooltip.the_four_primitives_and_weapons.ofuda": "A talisman with the power of sealing",
   "entity.the_four_primitives_and_weapons.debug_mob": "Debug Mob",
   "item.the_four_primitives_and_weapons.debug_mob_spawn_egg": "Debug Mob Spawn Egg",
+  "entity.the_four_primitives_and_weapons.target_dummy": "Target Dummy",
+  "item.the_four_primitives_and_weapons.target_dummy_spawn_egg": "Target Dummy Spawn Egg",
   "tooltip.the_four_primitives_and_weapons.element.ice": "Ice Element",
   "tooltip.the_four_primitives_and_weapons.element.fire": "Fire Element",
   "tooltip.the_four_primitives_and_weapons.element.water": "Water Element",

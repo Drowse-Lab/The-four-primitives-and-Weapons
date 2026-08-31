@@ -91,6 +91,15 @@ public class KillEnchantmentHandler {
             if (resolvedKillLevel > 0) {
                 double killChance = Math.min(resolvedKillLevel * 0.1, 1.0); // Lv1=10%, Lv2=20%, ... Lv10=100%
                 if (Math.random() < killChance) {
+                    // ターゲットダミー: 計測を続けたいので消さない (発動したことだけ知らせる)
+                    if (target instanceof the_four_primitives_and_weapons.entity.TargetDummyEntity) {
+                        if (attacker instanceof net.minecraft.world.entity.player.Player p) {
+                            p.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                                "§7[ダミー] Kill発動 §8(計測用ダミーなので消しません)"), false);
+                        }
+                        return;
+                    }
+
                     // デバッグMob: kill発動を表示し、音なしで消して同じ場所に再スポーン
                     if (target instanceof the_four_primitives_and_weapons.entity.DebugMobEntity debug) {
                         debug.silentSound = true;
