@@ -39,7 +39,27 @@ public final class ElementalDebugTrace {
 
     private static final Map<UUID, Entry> ENTRIES = new ConcurrentHashMap<>();
 
+    /**
+     * アドオンが追加した計測対象の判定。
+     * 他MODのターゲットダミー等を、属性の内訳を記録する対象にできる。
+     */
+    private static final java.util.List<java.util.function.Predicate<LivingEntity>> EXTRA_PROBES =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+
     private ElementalDebugTrace() {}
+
+    /**
+     * 計測対象を追加する ( アドオン向け )。
+     *
+     * <p>デフォルトではデバッグMobとターゲットダミーだけが記録対象だが、
+     * ここに判定を足すと他MODのエンティティでも属性の内訳を取れるようになる。
+     * 通常の戦闘で常時 true を返すような判定を登録しないこと ( 記録が溜まり続ける )。</p>
+     *
+     * <p>登録は {@code FMLCommonSetupEvent} 等の初期化時に 1 回だけ行う。</p>
+     */
+    public static void addProbe(java.util.function.Predicate<LivingEntity> predicate) {
+        if (predicate != null) EXTRA_PROBES.add(predicate);
+    }
 
     /**
      * 属性による増減を記録する ( デバッグMob以外は無視 )。
@@ -70,8 +90,18 @@ public final class ElementalDebugTrace {
 
     /** 記録対象 ( 計測用のMob ) かどうか。 通常の戦闘では何も溜めない。 */
     private static boolean isProbe(LivingEntity target) {
-        return target instanceof the_four_primitives_and_weapons.entity.DebugMobEntity
-                || target instanceof the_four_primitives_and_weapons.entity.TargetDummyEntity;
+        if (target instanceof the_four_primitives_and_weapons.entity.DebugMobEntity
+                || target instanceof the_four_primitives_and_weapons.entity.TargetDummyEntity) {
+            return true;
+        }
+        // アドオンが登録した判定 ( 他MODのダミー等 )。 1 つでも壊れていても本体は止めない。
+        for (java.util.function.Predicate<LivingEntity> probe : EXTRA_PROBES) {
+            try {
+                if (probe.test(target)) return true;
+            } catch (Throwable ignored) {
+            }
+        }
+        return false;
     }
 
     /** この tick に記録された増減を取り出して消す。 無ければ null。 */
