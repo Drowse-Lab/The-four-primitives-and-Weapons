@@ -73,21 +73,26 @@ public class ElementalDamageEvent {
         ElementType elementType = ElementType.NONE;
         int elementLevel = 0;
         boolean fromBook = false;
+        // 属性ダメージの与え方 ( 物理 / 魔法 / 蓄積 )。 採用元 ( 武器 or 魔導書 ) の設定に従う。
+        ElementDamageKind elementKind = ElementDamageKind.PHYSICAL;
 
         // 武器の属性を取得 (NBT 読み取りのみ、軽量)
         ElementType weaponType = ElementalDamageUtils.getEffectiveElementType(weapon);
         int weaponLevel = ElementalDamageUtils.getEffectiveElementLevel(weapon);
+        ElementDamageKind weaponKind = ElementalDamageUtils.getElementKind(weapon);
 
         // 魔導書属性: 武器側で既に属性が確定しており、かつ本スロット不要な場合は
         // Curios 走査を完全スキップ。
         ElementType bookType = ElementType.NONE;
         int bookLevel = 0;
+        ElementDamageKind bookKind = ElementDamageKind.PHYSICAL;
         if (attacker instanceof Player attackerPlayer) {
             // 以前は getBookSlotElement + getBookSlotLevel を別々に呼んで Curios を
             // 2 回走査していた。統合メソッドで 1 回にする。
             ElementalDamageUtils.BookSlotInfo info = ElementalDamageUtils.getBookSlotInfo(attackerPlayer);
             bookType = info.type;
             bookLevel = info.level;
+            bookKind = info.kind;
         }
 
         // 同じ属性ならレベルの高い方+ボーナス、違う属性なら武器優先
@@ -98,12 +103,15 @@ public class ElementalDamageEvent {
             int highLevel = Math.max(weaponLevel, bookLevel);
             int lowLevel = Math.min(weaponLevel, bookLevel);
             elementLevel = highLevel + Math.max(lowLevel / 2, 1);
+            elementKind = weaponKind;   // 同属性なら武器側の与え方を優先
         } else if (weaponType != ElementType.NONE) {
             elementType = weaponType;
             elementLevel = weaponLevel;
+            elementKind = weaponKind;
         } else if (bookType != ElementType.NONE) {
             elementType = bookType;
             elementLevel = bookLevel;
+            elementKind = bookKind;
             fromBook = true;
         } else {
             return;
@@ -215,14 +223,30 @@ public class ElementalDamageEvent {
         // カウンターボーナスを加算
         modifiedDamage += counterBonus;
 
+        // 属性が足した分を、与え方 ( ElementDamageKind ) ごとに違う経路へ回す。
+        //   PHYSICAL … このまま一発に乗せる      → 防具・防具エンチャで軽減される (従来の挙動)
+        //   MAGIC    … 一発から抜いて預ける      → LivingDamageEvent で防具軽減後に足し戻す (貫通)
+        //   BUILDUP  … 一発から抜いて DoT に回す → 衰弱のように時間をかけて削る
+        // 属性がダメージを下げている場合 ( 血属性の対アンデッド等 ) は種類に関わらずそのまま反映する。
+        float elementBonus = modifiedDamage - originalDamage;
+        if (elementBonus > 0.0F && elementKind != ElementDamageKind.PHYSICAL) {
+            if (elementKind == ElementDamageKind.MAGIC) {
+                ElementalMagicPenetration.queue(target, elementBonus);
+            } else {
+                ElementalDoTHandler.applyBuildup(target, elementBonus, elementType, elementLevel);
+            }
+            modifiedDamage = originalDamage;
+        }
+
         // ダメージを変更
         if (modifiedDamage != originalDamage) {
             event.setAmount(modifiedDamage);
         }
 
         // デバッグMob表示用: 「属性が実際に足した分」を記録する
-        // ( 実ダメージ − 入力 では熟練度ペナルティ等の他補正が混ざってしまうため )
-        ElementalDebugTrace.record(target, elementType, elementLevel, modifiedDamage - originalDamage);
+        // ( 実ダメージ − 入力 では熟練度ペナルティ等の他補正が混ざってしまうため。
+        //   魔法 / 蓄積 は一発から抜いてあるので、 抜く前の elementBonus を記録する )
+        ElementalDebugTrace.record(target, elementType, elementLevel, elementBonus);
     }
 
     /**
@@ -234,6 +258,25 @@ public class ElementalDamageEvent {
         int n = Math.min(16, 6 + Math.max(0, level));      // 個数は Lv で緩やかに増加
         ElementalParticles.spawn(sl, type,
                 target.getX(), target.getY() + target.getBbHeight() * 0.6, target.getZ(), n);
+    }
+
+    /**
+     * 魔法属性ダメージ ( {@link ElementDamageKind#MAGIC} ) を、
+     * 防具値・防具エンチャの軽減が済んでから足し戻す。
+     *
+     * <p>LivingHurtEvent 側で一発分から抜いてあるので、ここで足しても被弾は 1 回のまま。
+     * 貫通するのは防具まわりだけで、耐性ポーションは
+     * {@link ElementalMagicPenetration} 側で掛け直している。</p>
+     */
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    public static void onMagicElementPenetration(LivingDamageEvent event) {
+        LivingEntity target = event.getEntity();
+        if (!ElementalMagicPenetration.hasPending(target)) return;
+
+        float result = ElementalMagicPenetration.consume(target, event.getSource(), event.getAmount());
+        if (result != event.getAmount()) {
+            event.setAmount(result);
+        }
     }
 
     /**

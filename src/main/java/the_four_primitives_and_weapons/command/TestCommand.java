@@ -31,6 +31,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import the_four_primitives_and_weapons.client.renderer.GateProjectileRenderer;
+import the_four_primitives_and_weapons.damage.ElementDamageKind;
 import the_four_primitives_and_weapons.damage.ElementType;
 import the_four_primitives_and_weapons.damage.ElementalDamageUtils;
 import the_four_primitives_and_weapons.damage.IElementalDamageSource;
@@ -53,7 +54,8 @@ import java.util.stream.Collectors;
  * サブコマンド:
  *   /test trait <trait>              — 全特性のゾンビをスポーン
  *   /test traitall                   — 全特性のゾンビを一括スポーン
- *   /test element <element> [level]  — 手持ち武器に属性を付与
+ *   /test element <element> [level] [kind] — 手持ち武器に属性を付与 (kind = physical/magic/buildup)
+ *   /test elementkind <kind>         — 手持ち武器の属性ダメージの与え方だけ変更
  *   /test elementall [level]         — 各属性の剣を全部入手
  *   /test debugmob                   — デバッグMobをスポーン
  *   /test heal                       — 自分を全回復
@@ -73,6 +75,10 @@ public class TestCommand {
     private static final List<String> ELEMENT_NAMES = Arrays.stream(ElementType.values())
         .filter(e -> e != ElementType.NONE)
         .map(ElementType::getName).collect(Collectors.toList());
+
+    /** 属性ダメージの与え方 ( 物理 / 魔法 / 蓄積 ) の補完候補。 */
+    private static final List<String> ELEMENT_KIND_NAMES = Arrays.stream(ElementDamageKind.values())
+        .map(ElementDamageKind::getName).collect(Collectors.toList());
 
     private static final List<String> DIFF_NAMES = Arrays.stream(CustomDifficulty.values())
         .map(CustomDifficulty::getName).collect(Collectors.toList());
@@ -108,7 +114,23 @@ public class TestCommand {
                         .executes(ctx -> setWeaponElement(ctx.getSource(),
                             StringArgumentType.getString(ctx, "element"),
                             IntegerArgumentType.getInteger(ctx, "level")))
+                        .then(Commands.argument("kind", StringArgumentType.word())
+                            .suggests((ctx, b) -> SharedSuggestionProvider.suggest(ELEMENT_KIND_NAMES, b))
+                            .executes(ctx -> setWeaponElement(ctx.getSource(),
+                                StringArgumentType.getString(ctx, "element"),
+                                IntegerArgumentType.getInteger(ctx, "level"),
+                                StringArgumentType.getString(ctx, "kind")))
+                        )
                     )
+                )
+            )
+
+            // /test elementkind <kind>  — 属性はそのままで与え方だけ変える
+            .then(Commands.literal("elementkind")
+                .then(Commands.argument("kind", StringArgumentType.word())
+                    .suggests((ctx, b) -> SharedSuggestionProvider.suggest(ELEMENT_KIND_NAMES, b))
+                    .executes(ctx -> setWeaponElementKind(ctx.getSource(),
+                        StringArgumentType.getString(ctx, "kind")))
                 )
             )
 
@@ -328,8 +350,45 @@ public class TestCommand {
         return MobTrait.values().length;
     }
 
-    // === /test element <element> [level] ===
+    /** 文字列から与え方を解決する。 不明な名前は null ( 呼び出し側でエラー表示 )。 */
+    private static ElementDamageKind parseElementKind(String kindName) {
+        if (kindName == null) return null;
+        for (ElementDamageKind kind : ElementDamageKind.values()) {
+            if (kind.getName().equalsIgnoreCase(kindName)) return kind;
+        }
+        return null;
+    }
+
+    // === /test elementkind <kind> ===
+    private static int setWeaponElementKind(CommandSourceStack source, String kindName) {
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.literal("§cプレイヤー専用コマンドです"));
+            return 0;
+        }
+        ElementDamageKind kind = parseElementKind(kindName);
+        if (kind == null) {
+            source.sendFailure(Component.literal("§c不明な与え方: " + kindName
+                + " ( physical / magic / buildup )"));
+            return 0;
+        }
+        ItemStack weapon = player.getMainHandItem();
+        if (weapon.isEmpty()) {
+            source.sendFailure(Component.literal("§c手にアイテムを持ってください"));
+            return 0;
+        }
+        ElementalDamageUtils.setElementKind(weapon, kind);
+        source.sendSuccess(() -> Component.literal(
+            "§a属性ダメージの与え方を §6" + kind.getName().toUpperCase() + " §aにしました"), false);
+        return 1;
+    }
+
+    // === /test element <element> [level] [kind] ===
     private static int setWeaponElement(CommandSourceStack source, String elementName, int lvl) {
+        return setWeaponElement(source, elementName, lvl, null);
+    }
+
+    private static int setWeaponElement(CommandSourceStack source, String elementName, int lvl,
+                                        String kindName) {
         if (!(source.getEntity() instanceof ServerPlayer player)) {
             source.sendFailure(Component.literal("§cプレイヤー専用コマンドです"));
             return 0;
@@ -344,9 +403,26 @@ public class TestCommand {
             source.sendFailure(Component.literal("§c手にアイテムを持ってください"));
             return 0;
         }
+        ElementDamageKind kind;
+        if (kindName != null) {
+            kind = parseElementKind(kindName);
+            if (kind == null) {
+                source.sendFailure(Component.literal("§c不明な与え方: " + kindName
+                    + " ( physical / magic / buildup )"));
+                return 0;
+            }
+        } else {
+            // 与え方の指定が無ければ武器に設定済みのものを維持する
+            kind = ElementalDamageUtils.getElementKind(weapon);
+        }
+
         ElementalDamageUtils.setElement(weapon, element, lvl);
+        ElementalDamageUtils.setElementKind(weapon, kind);
+
+        final ElementDamageKind appliedKind = kind;
         source.sendSuccess(() -> Component.literal(
-            "§a武器に §6" + element.getName().toUpperCase() + " Lv." + lvl + " §aを付与しました"), false);
+            "§a武器に §6" + element.getName().toUpperCase() + " Lv." + lvl
+                + " §7[" + appliedKind.getName() + "] §aを付与しました"), false);
         return 1;
     }
 

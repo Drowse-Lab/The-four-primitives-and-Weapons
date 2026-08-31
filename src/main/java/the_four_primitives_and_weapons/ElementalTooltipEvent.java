@@ -1,5 +1,6 @@
 package the_four_primitives_and_weapons;
 
+import the_four_primitives_and_weapons.damage.ElementDamageKind;
 import the_four_primitives_and_weapons.damage.ElementType;
 import the_four_primitives_and_weapons.damage.ElementalDamageUtils;
 import the_four_primitives_and_weapons.damage.ElementalParticles;
@@ -40,9 +41,28 @@ public class ElementalTooltipEvent {
             Component elementText = Component.translatable(translationKey).append(Component.literal(" " + romanLevel))
                 .setStyle(Style.EMPTY.withColor(TextColor.parseColor(colorHex)).withItalic(false));
 
+            // 属性ダメージの与え方 ( 物理 / 魔法 / 蓄積 ) を同じ行に添える
+            ElementDamageKind kind = ElementalDamageUtils.getElementKind(stack);
+            Component line = Component.empty()
+                .append(elementText)
+                .append(Component.literal(" ").append(Component.translatable(kind.getTranslationKey()))
+                    .setStyle(Style.EMPTY.withColor(getKindColor(kind)).withItalic(false)));
+
             // 挿入位置を決定：エンチャントの後、攻撃力などの属性の前
             int insertIndex = findInsertPosition(event.getToolTip());
-            event.getToolTip().add(insertIndex, elementText);
+            event.getToolTip().add(insertIndex, line);
+        }
+    }
+
+    /**
+     * 属性ダメージの与え方ごとの表示色。
+     * 属性そのものの色と混ざらないよう、彩度を落とした固定色にする。
+     */
+    private static ChatFormatting getKindColor(ElementDamageKind kind) {
+        switch (kind) {
+            case MAGIC:   return ChatFormatting.LIGHT_PURPLE;  // 防具貫通
+            case BUILDUP: return ChatFormatting.DARK_GREEN;    // 持続
+            default:      return ChatFormatting.GRAY;          // 物理 (既定)
         }
     }
 

@@ -40,6 +40,13 @@ public class LivingEntityDamageMixin {
                 ElementType elementType = ElementalDamageUtils.getEffectiveElementType(weapon);
                 int elementLevel = ElementalDamageUtils.getEffectiveElementLevel(weapon);
 
+                // 与え方が物理以外 ( 魔法 = 防具貫通 / 蓄積 = 持続 ) の属性は、
+                // 軽減前のここで一発に乗せてはいけない。
+                // ElementalDamageEvent が防具軽減後の加算 / DoT へ振り分けるので触らない。
+                if (ElementalDamageUtils.getElementKind(weapon) != ElementDamageKind.PHYSICAL) {
+                    return originalDamage;
+                }
+
                 // bookスロットの魔導書でカウンター属性を持っていれば無効化
                 if (ElementalDamageUtils.isElementNullifiedByBook(target, elementType)) {
                     return originalDamage;

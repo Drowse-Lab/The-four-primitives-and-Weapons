@@ -17,6 +17,7 @@ public class ElementalDamageUtils {
     private static final String ELEMENT_LEVEL_KEY = "ElementLevel";
     private static final String ELEMENT_TYPE_2_KEY  = "ElementType2";
     private static final String ELEMENT_LEVEL_2_KEY = "ElementLevel2";
+    private static final String ELEMENT_KIND_KEY    = "ElementDamageKind";
 
     /**
      * アイテムに属性を設定
@@ -60,6 +61,34 @@ public class ElementalDamageUtils {
         CompoundTag tag = stack.getTag();
         if (tag == null || !tag.contains(ELEMENT_LEVEL_KEY)) return 0;
         return tag.getInt(ELEMENT_LEVEL_KEY);
+    }
+
+    /**
+     * アイテムに属性ダメージの種類 ( 物理 / 魔法 / 蓄積 ) を設定する。
+     * 属性そのもの ( {@link ElementType} ) とは独立なので、どの属性にも付けられる。
+     *
+     * @param stack アイテムスタック
+     * @param kind  ダメージ種類。 {@link ElementDamageKind#PHYSICAL} は既定値なのでタグを消す
+     */
+    public static void setElementKind(ItemStack stack, ElementDamageKind kind) {
+        if (stack.isEmpty()) return;
+        CompoundTag tag = stack.getOrCreateTag();
+        if (kind == null || kind == ElementDamageKind.PHYSICAL) {
+            tag.remove(ELEMENT_KIND_KEY);
+            return;
+        }
+        tag.putString(ELEMENT_KIND_KEY, kind.getName());
+    }
+
+    /**
+     * アイテムの属性ダメージ種類を取得。
+     * 未設定のアイテムは従来どおり {@link ElementDamageKind#PHYSICAL} 扱い。
+     */
+    public static ElementDamageKind getElementKind(ItemStack stack) {
+        if (stack.isEmpty()) return ElementDamageKind.PHYSICAL;
+        CompoundTag tag = stack.getTag();
+        if (tag == null || !tag.contains(ELEMENT_KIND_KEY)) return ElementDamageKind.PHYSICAL;
+        return ElementDamageKind.fromString(tag.getString(ELEMENT_KIND_KEY));
     }
 
     public static void setElementPair(ItemStack stack, ElementType primary, int primaryLevel,
@@ -154,6 +183,7 @@ public class ElementalDamageUtils {
             tag.remove(ELEMENT_LEVEL_KEY);
             tag.remove(ELEMENT_TYPE_2_KEY);
             tag.remove(ELEMENT_LEVEL_2_KEY);
+            tag.remove(ELEMENT_KIND_KEY);
         }
     }
 
@@ -293,8 +323,13 @@ public class ElementalDamageUtils {
     public static final class BookSlotInfo {
         public final ElementType type;
         public final int level;
+        /** 魔導書に設定された属性ダメージ種類 ( 未設定なら物理 )。 */
+        public final ElementDamageKind kind;
         public static final BookSlotInfo NONE = new BookSlotInfo(ElementType.NONE, 0);
-        public BookSlotInfo(ElementType t, int l) { this.type = t; this.level = l; }
+        public BookSlotInfo(ElementType t, int l) { this(t, l, ElementDamageKind.PHYSICAL); }
+        public BookSlotInfo(ElementType t, int l, ElementDamageKind k) {
+            this.type = t; this.level = l; this.kind = k;
+        }
     }
 
     /**
@@ -310,13 +345,13 @@ public class ElementalDamageUtils {
         if (mType != ElementType.NONE) {
             // クラスで book と判定できた場合、 NBT level が無くても最低 Lv1 として扱う
             // (= creative tab で入手 + 普通の武器で殴っても通常攻撃に属性が乗る)
-            return new BookSlotInfo(mType, Math.max(getElementLevel(main), 1));
+            return new BookSlotInfo(mType, Math.max(getElementLevel(main), 1), getElementKind(main));
         }
         // オフハンド
         ItemStack off = player.getOffhandItem();
         ElementType oType = getBookElementFromItem(off);
         if (oType != ElementType.NONE) {
-            return new BookSlotInfo(oType, Math.max(getElementLevel(off), 1));
+            return new BookSlotInfo(oType, Math.max(getElementLevel(off), 1), getElementKind(off));
         }
         // Curios の book スロット (1 回だけ走査)
         try {
@@ -330,7 +365,7 @@ public class ElementalDamageUtils {
                         if (s.isEmpty()) continue;
                         ElementType t = getBookElementFromItem(s);
                         if (t != ElementType.NONE) {
-                            result.set(new BookSlotInfo(t, Math.max(getElementLevel(s), 1)));
+                            result.set(new BookSlotInfo(t, Math.max(getElementLevel(s), 1), getElementKind(s)));
                             return;
                         }
                     }

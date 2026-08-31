@@ -126,6 +126,46 @@ public class ElementalDoTHandler {
         }
     }
 
+    // ── 蓄積 ( ElementDamageKind.BUILDUP ) 用 ─────────────────────
+
+    /** 蓄積の基礎持続tick ( 3秒 )。 */
+    private static final int   BUILDUP_BASE_DURATION      = 60;
+    /** 属性レベル1ごとの持続延長 ( +0.5秒/Lv )。 */
+    private static final int   BUILDUP_DURATION_PER_LEVEL = 10;
+    /** 蓄積の持続上限 ( 10秒 )。 */
+    private static final int   BUILDUP_DURATION_MAX       = 200;
+    /** 一発分の属性ダメージのうち、1tickに乗せる割合。 */
+    private static final float BUILDUP_TICK_RATIO         = 0.10f;
+    /** 連撃 ( 刀など ) で無限に積み上がらないための 1tick あたり上限。 */
+    private static final float BUILDUP_DAMAGE_CAP         = 3.0f;
+
+    /**
+     * {@link ElementDamageKind#BUILDUP} の属性ダメージを、時間をかけて削る DoT に変換する。
+     *
+     * <p>一発分として計算済みの「属性が足した分」を受け取り、
+     * 衰弱のようにじわじわ入る形へ置き換える。持続はレベルで伸びる。</p>
+     *
+     * @param elementBonus 属性が足した分 ( 一発で与えるはずだったダメージ )
+     * @param element      属性タイプ ( DamageSource の識別に使用 )
+     * @param level        属性レベル
+     */
+    public static void applyBuildup(LivingEntity target, float elementBonus,
+                                    ElementType element, int level) {
+        if (target == null || elementBonus <= 0.0F) return;
+        int duration = Math.min(BUILDUP_DURATION_MAX,
+                BUILDUP_BASE_DURATION + BUILDUP_DURATION_PER_LEVEL * Math.max(0, level - 1));
+
+        // 闇や血のように属性側が独自の DoT を掛けている場合、
+        // 蓄積の上限で既存の DoT を切り下げてしまわないよう上限を引き上げる。
+        float cap = BUILDUP_DAMAGE_CAP;
+        DoTEntry existing = dotMap.get(target.getUUID());
+        if (existing != null && existing.element == element) {
+            cap = Math.max(cap, existing.dmgPerTick);
+        }
+
+        applyCapped(target, duration, elementBonus * BUILDUP_TICK_RATIO, element, cap);
+    }
+
     /**
      * 対象エンティティのDoTを即時解除する。
      */
