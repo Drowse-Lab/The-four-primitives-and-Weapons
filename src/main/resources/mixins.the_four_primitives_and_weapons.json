@@ -9,7 +9,7 @@
     "MiasmaHealMixin",
     "WeaponStatsMixin",
     "LivingEntityAutoSpinAccessor",
-    "LivingEntityReachMixin",
+    "MobMeleeReachMixin",
     "ItemEnchantMixin",
     "ItemStackRarityMixin",
     "EnchantmentMaxLevelMixin"

@@ -133,7 +133,7 @@ public class CustomEntityInit {
                 .setShouldReceiveVelocityUpdates(true)
                 .setTrackingRange(64)
                 .setUpdateInterval(3)
-                .sized(0.5f, 1.2f)
+                .sized(0.5f, 0.99f)
                 .build("mini_mob"));
 
     // スポーンエッグ

@@ -61,6 +61,7 @@
   "attribute.the_four_primitives_and_weapons.mana": "Mana",
   "attribute.the_four_primitives_and_weapons.mana_max": "マナ最大値",
   "attribute.the_four_primitives_and_weapons.mana_regen": "マナ回復速度",
+  "attribute.the_four_primitives_and_weapons.evasion": "回避率",
   "attribute.the_four_primitives_and_weapons.fire_aptitude": "炎適性",
   "attribute.the_four_primitives_and_weapons.water_aptitude": "水適性",
   "attribute.the_four_primitives_and_weapons.wind_aptitude": "風適性",

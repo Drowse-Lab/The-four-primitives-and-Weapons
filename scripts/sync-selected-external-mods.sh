@@ -13,12 +13,21 @@
 # --light で除外する重いもの:
 #   gun_and_weapon / TACZ / Backpack Arsenal / Mekanism /
 #   Sophisticated Core / Sophisticated Backpacks
+#
+# 任意で取り込むもの ( libs/external/ に jar を置いたときだけ ):
+#   DuMmmMmmy ( ターゲットダミー ) と前提の Moonlight Lib。
+#   属性ダメージの計測に使う。 公式 ( Modrinth / CurseForge ) から落とした
+#   jar を libs/external/ に置くと、 軽量モードでも自動で取り込む。
+#     https://modrinth.com/mod/mmmmmmmmmmmm
+#     https://modrinth.com/mod/moonlight
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MODS_ROOT="/Users/hiromichi/Documents/github/mods"
 DATAPACK_ROOT="/Users/hiromichi/Documents/github/datapack"
 DEST="$ROOT/libs/runtime_selected"
+# 自前ビルドではない、手で置く外部 mod jar ( DuMmmMmmy 等 ) の置き場
+EXTERNAL_DIR="$ROOT/libs/external"
 OFFLINE_ARG=""
 LIGHT_MODE="no"
 
@@ -92,3 +101,20 @@ for jar in "${JARS[@]}"; do
     fi
     install_jar "$jar"
 done
+
+# --- 任意: libs/external/ に置かれた jar ( DuMmmMmmy / Moonlight など ) ---
+# 無ければ黙って飛ばす。 これらは自前ビルドではないので必須にしない。
+if [ -d "$EXTERNAL_DIR" ]; then
+    OPTIONAL_COUNT=0
+    while IFS= read -r jar; do
+        [ -f "$jar" ] || continue
+        install_jar "$jar"
+        OPTIONAL_COUNT=$((OPTIONAL_COUNT + 1))
+    done < <(find "$EXTERNAL_DIR" -maxdepth 2 -type f -name '*.jar' \
+                ! -name '*-sources.jar' ! -name '*-dev.jar' 2>/dev/null | sort)
+    if [ "$OPTIONAL_COUNT" -gt 0 ]; then
+        echo "==> libs/external/ から ${OPTIONAL_COUNT} 個を追加で取り込み"
+    fi
+else
+    echo "==> libs/external/ は未作成 ( DuMmmMmmy を使うならここに jar を置く )"
+fi

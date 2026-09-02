@@ -18,6 +18,7 @@ import net.minecraftforge.registries.RegistryObject;
  * MCreator 再生成の影響を受けない追加アトリビュート。
  *   - mana_max    : MP の最大値 (既存 MANA attribute の上限を担当)
  *   - mana_regen  : 1 tick あたりの MP 自動回復量
+ *   - evasion     : 回避率(%) 敵の攻撃を自動で回避する確率 (100 超過で反射)
  *   - *_aptitude  : 属性武器の持ち歩きデバフへの適性
  *
  * 装備・効果・/attribute コマンドで調整可能。
@@ -46,14 +47,33 @@ public class MawExtraAttributes {
                 /* max     */ 1000.0
             ).setSyncable(true));
 
-    /** プレイヤーの近接攻撃範囲。Forge の entity reach へ実効値を合成する。 */
+    /**
+     * 近接攻撃範囲(ブロック)。デフォルト 3.0 からの差分が実際のリーチへ加算される。
+     * プレイヤーは Forge の entity reach へ、MOB は近接攻撃判定の距離へ反映される。
+     */
     public static final RegistryObject<Attribute> ENTITY_REACH =
         ATTRIBUTES.register("entity_reach",
             () -> new RangedAttribute(
                 "attribute." + TheFourPrimitivesAndWeaponsMod.MODID + ".entity_reach",
                 /* default */ 3.0,
                 /* min     */ 0.0,
-                /* max     */ 1024.0
+                /* max     */ 100_000.0
+            ).setSyncable(true));
+
+    /**
+     * 回避率(%)。敵の攻撃を確率で自動的に流す。
+     * 0 = 回避しない、100 = 必ず回避。
+     * 100 を超えていると、回避した攻撃を攻撃者へ跳ね返す。
+     * 跳ね返す量は 100 ごとの段階式で、101〜200 は敵ダメージの 5%、201〜300 は 10%（+5%ずつ）。
+     * 上限は十分に大きく取ってあり、反射 100%（2001 以上）を超える設定もできる。
+     */
+    public static final RegistryObject<Attribute> EVASION =
+        ATTRIBUTES.register("evasion",
+            () -> new RangedAttribute(
+                "attribute." + TheFourPrimitivesAndWeaponsMod.MODID + ".evasion",
+                /* default */ 0.0,
+                /* min     */ 0.0,
+                /* max     */ 100_000.0
             ).setSyncable(true));
 
     public static final RegistryObject<Attribute> FIRE_APTITUDE = aptitude("fire");
@@ -113,9 +133,17 @@ public class MawExtraAttributes {
 
     @SubscribeEvent
     public static void addAttributes(EntityAttributeModificationEvent event) {
+        // 回避率・攻撃範囲はプレイヤー・MOB を問わず /attribute や防具の修飾子で設定できるようにする
+        for (EntityType<? extends net.minecraft.world.entity.LivingEntity> type : event.getTypes()) {
+            if (!event.has(type, EVASION.get())) {
+                event.add(type, EVASION.get());
+            }
+            if (!event.has(type, ENTITY_REACH.get())) {
+                event.add(type, ENTITY_REACH.get());
+            }
+        }
         event.add(EntityType.PLAYER, MANA_MAX.get());
         event.add(EntityType.PLAYER, MANA_REGEN.get());
-        event.add(EntityType.PLAYER, ENTITY_REACH.get());
         event.add(EntityType.PLAYER, FIRE_APTITUDE.get());
         event.add(EntityType.PLAYER, WATER_APTITUDE.get());
         event.add(EntityType.PLAYER, WIND_APTITUDE.get());

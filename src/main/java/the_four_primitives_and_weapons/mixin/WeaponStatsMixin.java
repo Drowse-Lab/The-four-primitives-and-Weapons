@@ -30,6 +30,8 @@ public abstract class WeaponStatsMixin {
     private static final UUID TFPW_BLOCK_REACH_UUID = UUID.fromString("7c30ae2b-9d4f-4b22-8e3c-3a5f8b2d0e44");
     /** バニラ ATTACK_DAMAGE_UUID と同値 ( protected なので複製 )。 */
     private static final UUID ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
+    /** 本MOD attribute の名前空間プレフィックス。 */
+    private static final String TFPW_ATTRIBUTE_PREFIX = "the_four_primitives_and_weapons:";
     /** バニラ ATTACK_SPEED_UUID と同値。 */
     private static final UUID ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
 
@@ -47,7 +49,14 @@ public abstract class WeaponStatsMixin {
         for (int i = 0; i < modifiers.size(); i++) {
             net.minecraft.nbt.CompoundTag modifier = modifiers.getCompound(i);
             String attributeName = modifier.getString("AttributeName");
-            if (!attributeName.isEmpty() && modifier.getString("Name").isEmpty()) {
+            if (attributeName.isEmpty()) continue;
+            if (attributeName.startsWith(TFPW_ATTRIBUTE_PREFIX)) {
+                // 本MODのattributeは短縮名 (例: evasion / entity_reach) で固定する
+                String shortName = attributeName.substring(TFPW_ATTRIBUTE_PREFIX.length());
+                if (!shortName.equals(modifier.getString("Name"))) {
+                    modifier.putString("Name", shortName);
+                }
+            } else if (modifier.getString("Name").isEmpty()) {
                 modifier.putString("Name", attributeName);
             }
         }

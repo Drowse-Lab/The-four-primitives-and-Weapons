@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.client.event.InputEvent;
@@ -135,12 +134,6 @@ public class ChargedAttackHandler {
         if (mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK) return;
 
         TheFourPrimitivesAndWeaponsMod.PACKET_HANDLER.sendToServer(new AttackPacket(0, 0));
-    }
-    
-    @SubscribeEvent
-    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
-        LivingEntity entity = event.getEntity();
-        
     }
     
     @SubscribeEvent

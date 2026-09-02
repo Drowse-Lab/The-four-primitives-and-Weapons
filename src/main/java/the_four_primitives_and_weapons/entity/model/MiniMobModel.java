@@ -1,46 +1,103 @@
 package the_four_primitives_and_weapons.entity.model;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.HumanoidArm;
 
 import the_four_primitives_and_weapons.entity.MiniMobEntity;
 
 /**
- * ミニmob用の2頭身モデル。
+ * ミニmobのモデル。中身は「小さいアーマースタンド」そのもの。
  *
- * バニラの PlayerModel をそのまま土台にして、頭だけ等倍のまま胴と手足を縮める。
- * こうするとUVがプレイヤースキンと完全に一致するので、64x64 のスキンPNGを
- * そのまま差し替えるだけで見た目を変えられる ( 第2レイヤーも効く )。
+ * ・骨組み ( 肩の棒・胴の縦棒2本・細い腕と脚 ) はバニラの ArmorStandModel と同じ寸法。
+ * ・頭だけはアーマースタンドの 2x7x2 の棒ではなく、player_head と同じ 8x8x8 にしてある。
+ *   元mobが Small アーマースタンドに player_head を被せたものだったため。
+ * ・{@code young = true} にすると HumanoidModel 側で「頭は0.75倍・体は0.5倍して下げる」
+ *   という処理が走る。これがバニラの Small アーマースタンドの縮小そのものなので、
+ *   自前でスケールをいじらずにそれを使う。
+ *
+ * UVは 64x64。頭と帽子だけプレイヤースキンと同じ位置で、骨組みは独自配置
+ * ( パーツごとに別領域なので、腕だけ肌色といった塗り分けができる )。
  */
-public class MiniMobModel extends PlayerModel<MiniMobEntity> {
+public class MiniMobModel extends HumanoidModel<MiniMobEntity> {
 
-    /** 胴・頭の付け根の高さ。地面は y=24。 */
-    private static final float BODY_PIVOT_Y = 13.0f;
-    /** 脚の付け根の高さ。脚長 12px * LEG_SCALE_Y = 5px で地面に届く。 */
-    private static final float LEG_PIVOT_Y = 19.0f;
-    // 太さはアーマースタンド ( ArmorStandModel ) 準拠。
-    // 腕は box 2x12x2、脚は 2x11x2 なので、プレイヤーの 4x4 断面に対して半分にする。
-    /** 胴 8x4px → 4.8x2.4px。防具を着たアーマースタンドの見え方に寄せる。 */
-    private static final float BODY_SCALE_XZ = 0.6f;
-    private static final float BODY_SCALE_Y = 0.5f;
-    /** 腕 4x4px → 2x2px ( アーマースタンドと同じ断面 )。 */
-    private static final float ARM_SCALE_XZ = 0.5f;
-    private static final float ARM_SCALE_Y = 0.5f;
-    /** 脚 4x4px → 2x2px ( アーマースタンドと同じ断面 )。 */
-    private static final float LEG_SCALE_XZ = 0.5f;
-    private static final float LEG_SCALE_Y = 0.42f;
-    /** 腕の付け根。細くした胴の側面 (2.4px) に腕がちょうど接する位置。 */
-    private static final float ARM_PIVOT_X = 3.0f;
-    /** 脚の付け根。脚の外側が胴の側面と揃う位置。 */
-    private static final float LEG_PIVOT_X = 1.5f;
-    /** 手に持つアイテムの大きさ。ちびの手に合わせて一律で縮める。 */
-    private static final float HELD_ITEM_SCALE = 0.6f;
+    public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(
+            new ResourceLocation("the_four_primitives_and_weapons", "mini_mob"), "main");
+
+    /** HumanoidModel が young のときに体へ掛ける倍率と下げ幅。手持ちアイテムを合わせるのに使う。 */
+    private static final float BABY_BODY_SCALE = 2.0f;
+    private static final float BODY_Y_OFFSET = 24.0f;
+
+    private final ModelPart rightBodyStick;
+    private final ModelPart leftBodyStick;
+    private final ModelPart shoulderStick;
 
     public MiniMobModel(ModelPart root) {
-        super(root, false); // wide 腕 = 標準のプレイヤースキンをそのまま使える
+        super(root);
+        this.rightBodyStick = root.getChild("right_body_stick");
+        this.leftBodyStick = root.getChild("left_body_stick");
+        this.shoulderStick = root.getChild("shoulder_stick");
+    }
+
+    public static LayerDefinition createBodyLayer() {
+        MeshDefinition mesh = HumanoidModel.createMesh(CubeDeformation.NONE, 0.0f);
+        PartDefinition root = mesh.getRoot();
+
+        // 頭は player_head と同じ 8x8x8。UVもプレイヤースキンと同じ位置。
+        root.addOrReplaceChild("head",
+                CubeListBuilder.create().texOffs(0, 0).addBox(-4.0f, -8.0f, -4.0f, 8.0f, 8.0f, 8.0f),
+                PartPose.offset(0.0f, 0.0f, 0.0f));
+        root.addOrReplaceChild("hat",
+                CubeListBuilder.create().texOffs(32, 0).addBox(-4.0f, -8.0f, -4.0f, 8.0f, 8.0f, 8.0f, new CubeDeformation(0.5f)),
+                PartPose.offset(0.0f, 0.0f, 0.0f));
+
+        // ここから下はバニラの ArmorStandModel と同じ寸法。UVだけ独自配置。
+        root.addOrReplaceChild("body",
+                CubeListBuilder.create().texOffs(0, 16).addBox(-6.0f, 0.0f, -1.5f, 12.0f, 3.0f, 3.0f),
+                PartPose.ZERO);
+        root.addOrReplaceChild("right_body_stick",
+                CubeListBuilder.create().texOffs(0, 22).addBox(-3.0f, 3.0f, -1.0f, 2.0f, 7.0f, 2.0f),
+                PartPose.ZERO);
+        root.addOrReplaceChild("left_body_stick",
+                CubeListBuilder.create().texOffs(8, 22).addBox(1.0f, 3.0f, -1.0f, 2.0f, 7.0f, 2.0f),
+                PartPose.ZERO);
+        root.addOrReplaceChild("shoulder_stick",
+                CubeListBuilder.create().texOffs(16, 22).addBox(-4.0f, 9.0f, -1.0f, 8.0f, 2.0f, 2.0f),
+                PartPose.ZERO);
+        root.addOrReplaceChild("right_arm",
+                CubeListBuilder.create().texOffs(36, 22).addBox(-2.0f, -2.0f, -1.0f, 2.0f, 12.0f, 2.0f),
+                PartPose.offset(-5.0f, 2.0f, 0.0f));
+        root.addOrReplaceChild("left_arm",
+                CubeListBuilder.create().texOffs(44, 22).addBox(0.0f, -2.0f, -1.0f, 2.0f, 12.0f, 2.0f),
+                PartPose.offset(5.0f, 2.0f, 0.0f));
+        root.addOrReplaceChild("right_leg",
+                CubeListBuilder.create().texOffs(0, 36).addBox(-1.0f, 0.0f, -1.0f, 2.0f, 11.0f, 2.0f),
+                PartPose.offset(-1.9f, 12.0f, 0.0f));
+        root.addOrReplaceChild("left_leg",
+                CubeListBuilder.create().texOffs(8, 36).addBox(-1.0f, 0.0f, -1.0f, 2.0f, 11.0f, 2.0f),
+                PartPose.offset(1.9f, 12.0f, 0.0f));
+
+        return LayerDefinition.create(mesh, 64, 64);
+    }
+
+    /** 骨組みの追加パーツも body と一緒に描く。 */
+    @Override
+    protected Iterable<ModelPart> bodyParts() {
+        return Iterables.concat(super.bodyParts(),
+                ImmutableList.of(this.rightBodyStick, this.leftBodyStick, this.shoulderStick));
     }
 
     @Override
@@ -48,7 +105,6 @@ public class MiniMobModel extends PlayerModel<MiniMobEntity> {
         super.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
 
         if (entity.isInSittingPose()) {
-            // おすわり: 脚を前へ折り、腕を少し下げる。
             this.rightLeg.xRot = -1.4137167f;
             this.rightLeg.yRot = 0.31415927f;
             this.rightLeg.zRot = 0.07853982f;
@@ -59,62 +115,42 @@ public class MiniMobModel extends PlayerModel<MiniMobEntity> {
             this.leftArm.xRot += 0.4f;
         }
 
-        applyChibiProportions();
+        // 骨組みは胴と一体で動く ( 非表示でも、服のレイヤーが回転を引き継ぐので姿勢は要る )。
+        this.rightBodyStick.copyFrom(this.body);
+        this.leftBodyStick.copyFrom(this.body);
+        this.shoulderStick.copyFrom(this.body);
     }
 
     /**
-     * バニラの体型をちび体型へ寄せる。
-     * setupAnim は毎フレーム pivot を既定値へ戻すので、必ずその後に呼ぶこと。
+     * 木の骨組みは描かない。同じ位置に服のレイヤーが乗るため見えず、
+     * 表に出るのは頭と腕だけになる。
      */
-    private void applyChibiProportions() {
-        this.head.y = BODY_PIVOT_Y;
-        this.body.y = BODY_PIVOT_Y;
-        setScale(this.body, BODY_SCALE_XZ, BODY_SCALE_Y, BODY_SCALE_XZ);
-
-        float armPivotY = BODY_PIVOT_Y + 2.0f * ARM_SCALE_Y;
-        this.rightArm.y = armPivotY;
-        this.leftArm.y = armPivotY;
-        this.rightArm.x = -ARM_PIVOT_X;
-        this.leftArm.x = ARM_PIVOT_X;
-        setScale(this.rightArm, ARM_SCALE_XZ, ARM_SCALE_Y, ARM_SCALE_XZ);
-        setScale(this.leftArm, ARM_SCALE_XZ, ARM_SCALE_Y, ARM_SCALE_XZ);
-
-        this.rightLeg.y = LEG_PIVOT_Y;
-        this.leftLeg.y = LEG_PIVOT_Y;
-        this.rightLeg.x = -LEG_PIVOT_X;
-        this.leftLeg.x = LEG_PIVOT_X;
-        setScale(this.rightLeg, LEG_SCALE_XZ, LEG_SCALE_Y, LEG_SCALE_XZ);
-        setScale(this.leftLeg, LEG_SCALE_XZ, LEG_SCALE_Y, LEG_SCALE_XZ);
-
-        // 第2レイヤーは PlayerModel#setupAnim の中でコピー済みなので、ここで貼り直す。
-        this.hat.copyFrom(this.head);
-        this.jacket.copyFrom(this.body);
-        this.rightSleeve.copyFrom(this.rightArm);
-        this.leftSleeve.copyFrom(this.leftArm);
-        this.rightPants.copyFrom(this.rightLeg);
-        this.leftPants.copyFrom(this.leftLeg);
+    private void hideWoodenFrame() {
+        this.body.visible = false;
+        this.rightBodyStick.visible = false;
+        this.leftBodyStick.visible = false;
+        this.shoulderStick.visible = false;
+        this.rightLeg.visible = false;
+        this.leftLeg.visible = false;
     }
 
-    private static void setScale(ModelPart part, float x, float y, float z) {
-        part.xScale = x;
-        part.yScale = y;
-        part.zScale = z;
+    @Override
+    public void renderToBuffer(PoseStack poseStack, VertexConsumer consumer, int packedLight, int packedOverlay,
+            float red, float green, float blue, float alpha) {
+        // Small アーマースタンド相当。LivingEntityRenderer が毎フレーム young を
+        // entity.isBaby() で上書きするので、描画直前に必ず立て直す。
+        this.young = true;
+        hideWoodenFrame();
+        super.renderToBuffer(poseStack, consumer, packedLight, packedOverlay, red, green, blue, alpha);
     }
 
     @Override
     public void translateToHand(HumanoidArm arm, PoseStack poseStack) {
-        ModelPart armPart = this.getArm(arm);
-        // 腕の非一様スケールをそのまま掛けるとアイテムが潰れるので、位置と回転だけ拾う。
-        float scaleX = armPart.xScale;
-        float scaleY = armPart.yScale;
-        float scaleZ = armPart.zScale;
-        setScale(armPart, 1.0f, 1.0f, 1.0f);
-        armPart.translateAndRotate(poseStack);
-        setScale(armPart, scaleX, scaleY, scaleZ);
-
-        // ItemInHandLayer は「付け根から 10px 下が手先」というバニラ前提で置くため、
-        // 縮んだ腕では下に浮く。その差分だけ引き上げてから一様に縮小する。
-        poseStack.translate(0.0f, -(1.0f - scaleY) * 10.0f / 16.0f, 0.0f);
-        poseStack.scale(HELD_ITEM_SCALE, HELD_ITEM_SCALE, HELD_ITEM_SCALE);
+        // young の縮小は renderToBuffer の中だけで効くため、手持ちアイテムには届かない。
+        // 体と同じ変換を先に掛けて、位置と大きさを腕に合わせる。
+        float scale = 1.0f / BABY_BODY_SCALE;
+        poseStack.scale(scale, scale, scale);
+        poseStack.translate(0.0f, BODY_Y_OFFSET / 16.0f, 0.0f);
+        super.translateToHand(arm, poseStack);
     }
 }

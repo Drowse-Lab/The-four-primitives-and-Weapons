@@ -61,6 +61,7 @@
   "attribute.the_four_primitives_and_weapons.mana": "Mana",
   "attribute.the_four_primitives_and_weapons.mana_max": "Max Mana",
   "attribute.the_four_primitives_and_weapons.mana_regen": "Mana Regen",
+  "attribute.the_four_primitives_and_weapons.evasion": "Evasion",
   "attribute.the_four_primitives_and_weapons.fire_aptitude": "Fire Aptitude",
   "attribute.the_four_primitives_and_weapons.water_aptitude": "Water Aptitude",
   "attribute.the_four_primitives_and_weapons.wind_aptitude": "Wind Aptitude",
